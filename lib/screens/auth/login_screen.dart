@@ -205,7 +205,7 @@ class _LoginState extends State<Login> {
                                 : ElevatedButton(
                                   onPressed: () {
                                     if (_formKey.currentState!.validate()) {
-                                      // TODO: Implémenter la logique de connexion
+                                      _login();
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
