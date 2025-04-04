@@ -1,4 +1,6 @@
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../routes.dart';
 
 class Login extends StatefulWidget {
@@ -11,6 +13,34 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  final AuthService authService = AuthService();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  void _login() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    bool success = await authService.login(
+      _usernameController.text,
+      _passwordController.text,
+    );
+
+    setState(() {
+      _isLoading = false;
+      if (success) {
+        // Rediriger vers l'accueil ou le dashboard après connexion
+        Navigator.pushReplacementNamed(context, '/forgot-password');
+      } else {
+        _errorMessage = "Identifiants incorrects. Réessayez.";
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +55,15 @@ class _LoginState extends State<Login> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40),
                     // Logo et Titre
                     Center(
-                      child: Icon(
-                        Icons.local_shipping_rounded,
-                        size: 80,
-                        color: Theme.of(context).primaryColor,
+                      child: SvgPicture.asset(
+                        'assets/images/hero.svg', // Chemin vers ton fichier SVG
+                        width:
+                            250, // Ajuste la largeur pour agrandir (par exemple, 100 au lieu de 80)
+                        height: 250, // Applique la couleur du thème si désiré
                       ),
                     ),
-                    const SizedBox(height: 20),
                     Center(
                       child: Text(
                         'BBD-LIMITED',
@@ -42,7 +71,6 @@ class _LoginState extends State<Login> {
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    const SizedBox(height: 10),
                     Center(
                       child: Text(
                         'Connectez-vous pour gérer vos livraisons',
@@ -51,7 +79,6 @@ class _LoginState extends State<Login> {
                         ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
                       ),
                     ),
-                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -61,7 +88,7 @@ class _LoginState extends State<Login> {
                 padding: const EdgeInsets.only(left: 34, right: 34, top: 54),
                 height: MediaQuery.of(context).size.height * 0.8,
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(34),
                     topRight: Radius.circular(34),
@@ -74,6 +101,7 @@ class _LoginState extends State<Login> {
                     children: [
                       // Champ Username
                       TextFormField(
+                        controller: _usernameController,
                         decoration: InputDecoration(
                           labelText: 'Nom d\'utilisateur',
                           prefixIcon: const Icon(
@@ -102,6 +130,7 @@ class _LoginState extends State<Login> {
 
                       // Champ Mot de passe
                       TextFormField(
+                        controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           labelText: 'Mot de passe',
@@ -145,7 +174,7 @@ class _LoginState extends State<Login> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // TODO: Implémenter la logique de mot de passe oublié
+                            Navigator.pushNamed(context, Routes.forgotPassword);
                           },
                           child: Text(
                             'Mot de passe oublié ?',
@@ -159,32 +188,41 @@ class _LoginState extends State<Login> {
                       ),
 
                       const SizedBox(height: 20),
+                      // Afficher les erreur de connexion
+                      if (_errorMessage != null)
+                        Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
 
                       // Bouton de connexion
                       SizedBox(
                         width: double.infinity,
                         height: 55,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // TODO: Implémenter la logique de connexion
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[900],
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Se connecter',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator()
+                                : ElevatedButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      // TODO: Implémenter la logique de connexion
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey[900],
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Se connecter',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                       ),
 
                       const SizedBox(height: 20),
@@ -197,19 +235,12 @@ class _LoginState extends State<Login> {
                             'Vous ne disposez pas d\'un compte ?',
                             style: TextStyle(color: Colors.white70),
                           ),
-                          TextButton(
-                            onPressed:
-                                () => Navigator.pushNamed(
-                                  context,
-                                  Routes.register,
-                                ),
-                            child: Text(
-                              textAlign: TextAlign.center,
-                              'Veuillez contacter l\'administrateur pour toute assistance.',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          Text(
+                            textAlign: TextAlign.center,
+                            'Veuillez contacter l\'administrateur pour toute assistance.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
