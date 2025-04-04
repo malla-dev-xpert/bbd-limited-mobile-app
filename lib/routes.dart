@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/login.dart';
-import 'screens/auth/register.dart';
+import 'screens/auth/forgot_password.dart';
 
 class Routes {
   static const String login = '/login';
-  static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case login:
         return MaterialPageRoute(builder: (_) => const Login());
-      case register:
-        return MaterialPageRoute(builder: (_) => const Register());
+      case forgotPassword:
+        return MaterialPageRoute(builder: (_) => const ForgotPassword());
       default:
         return MaterialPageRoute(
           builder:
