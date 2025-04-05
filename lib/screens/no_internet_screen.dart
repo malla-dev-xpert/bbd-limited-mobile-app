@@ -20,6 +20,7 @@ class NoInternetScreen extends StatelessWidget {
             const Text(
               "Pas de connexion Internet",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
             const Text(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/auth/login.dart';
-import 'screens/auth/forgot_password.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
 
 class Routes {
   static const String login = '/login';
