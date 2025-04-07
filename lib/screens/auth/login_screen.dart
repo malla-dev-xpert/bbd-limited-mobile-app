@@ -33,8 +33,7 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = false;
       if (success) {
-        // Rediriger vers l'accueil ou le dashboard après connexion
-        Navigator.pushReplacementNamed(context, '/forgot-password');
+        Navigator.pushReplacementNamed(context, '/welcome');
       } else {
         _errorMessage = "Identifiants incorrects. Réessayez.";
       }
@@ -91,7 +90,7 @@ class _LoginState extends State<Login> {
                 ),
                 height: MediaQuery.of(context).size.height * 0.6,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: const Color(0xFF13084F),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(34),
                     topRight: Radius.circular(34),
@@ -214,7 +213,7 @@ class _LoginState extends State<Login> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[900],
+                            backgroundColor: const Color(0xFF7F78AF),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

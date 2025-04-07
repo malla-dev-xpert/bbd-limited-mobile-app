@@ -9,17 +9,22 @@ class AuthService {
   final storage = FlutterSecureStorage();
 
   Future<bool> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/users/auth'), // Utilise l’URL du .env
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"username": username, "password": password}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/auth'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"username": username, "password": password}),
+      );
 
-    if (response.statusCode == 200) {
-      final token = jsonDecode(response.body)["token"];
-      await storage.write(key: "jwt", value: token);
-      return true;
-    } else {
+      if (response.statusCode == 200) {
+        final token = response.body;
+        await storage.write(key: "jwt", value: token);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Erreur de connexion: $e');
       return false;
     }
   }

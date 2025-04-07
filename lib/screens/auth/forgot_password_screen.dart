@@ -82,7 +82,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
                 height: MediaQuery.of(context).size.height * 0.8,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: const Color(0xFF13084F),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(34),
                     topRight: Radius.circular(34),
@@ -129,7 +129,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[900],
+                            backgroundColor: const Color(0xFF7F78AF),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
