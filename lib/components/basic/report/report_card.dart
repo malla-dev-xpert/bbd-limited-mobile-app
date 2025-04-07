@@ -16,7 +16,7 @@ class ReportCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      color: Colors.grey[900],
+      color: const Color(0xFF13084F),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.only(
@@ -41,7 +41,7 @@ class ReportCard extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 30,
-                  color: Colors.blue, // 🔥 icône en blanc
+                  color: const Color(0xFF13084F), // 🔥 icône en blanc
                 ),
               ),
             ),
