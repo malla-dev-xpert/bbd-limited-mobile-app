@@ -10,7 +10,7 @@ class ForgotPassword extends StatefulWidget {
 
 class _ForgotPasswordState extends State<ForgotPassword> {
   final _formKey = GlobalKey<FormState>();
-  String _email = '';
+  // String _email = '';
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -37,6 +37,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         ),
       ),
       body: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
         child: SafeArea(
           child: Column(
             children: [
@@ -75,10 +76,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
               //Formulaire
               Container(
-                padding: const EdgeInsets.only(left: 34, right: 34, top: 54),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 height: MediaQuery.of(context).size.height * 0.8,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: const Color(0xFF13084F),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(34),
                     topRight: Radius.circular(34),
@@ -125,7 +129,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[900],
+                            backgroundColor: const Color(0xFF7F78AF),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

@@ -1,7 +1,6 @@
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../routes.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -34,8 +33,7 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = false;
       if (success) {
-        // Rediriger vers l'accueil ou le dashboard après connexion
-        Navigator.pushReplacementNamed(context, '/forgot-password');
+        Navigator.pushReplacementNamed(context, '/welcome');
       } else {
         _errorMessage = "Identifiants incorrects. Réessayez.";
       }
@@ -47,6 +45,7 @@ class _LoginState extends State<Login> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
         child: SafeArea(
           child: Column(
             children: [
@@ -85,10 +84,13 @@ class _LoginState extends State<Login> {
 
               //Formulaire
               Container(
-                padding: const EdgeInsets.only(left: 34, right: 34, top: 54),
-                height: MediaQuery.of(context).size.height * 0.8,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
+                height: MediaQuery.of(context).size.height * 0.6,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: const Color(0xFF13084F),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(34),
                     topRight: Radius.circular(34),
@@ -102,6 +104,7 @@ class _LoginState extends State<Login> {
                       // Champ Username
                       TextFormField(
                         controller: _usernameController,
+                        autocorrect: false,
                         decoration: InputDecoration(
                           labelText: 'Nom d\'utilisateur',
                           prefixIcon: const Icon(
@@ -131,6 +134,7 @@ class _LoginState extends State<Login> {
                       // Champ Mot de passe
                       TextFormField(
                         controller: _passwordController,
+                        autocorrect: false,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           labelText: 'Mot de passe',
@@ -174,7 +178,7 @@ class _LoginState extends State<Login> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, Routes.forgotPassword);
+                            Navigator.pushNamed(context, '/forgot-password');
                           },
                           child: Text(
                             'Mot de passe oublié ?',
@@ -187,42 +191,48 @@ class _LoginState extends State<Login> {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
                       // Afficher les erreur de connexion
                       if (_errorMessage != null)
-                        Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                        Center(
+                          child: Text(
+                            _errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.red),
+                          ),
                         ),
 
+                      const SizedBox(height: 20),
                       // Bouton de connexion
                       SizedBox(
                         width: double.infinity,
                         height: 55,
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator()
-                                : ElevatedButton(
-                                  onPressed: () {
-                                    if (_formKey.currentState!.validate()) {
-                                      // TODO: Implémenter la logique de connexion
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[900],
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: const Text(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _login();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7F78AF),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child:
+                              _isLoading
+                                  ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  )
+                                  : Text(
                                     'Se connecter',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
+                        ),
                       ),
 
                       const SizedBox(height: 20),
