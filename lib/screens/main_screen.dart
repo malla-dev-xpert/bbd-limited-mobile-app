@@ -10,10 +10,10 @@ class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
-  _MainScreenState createState() => _MainScreenState();
+  MainScreenState createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   // Liste des écrans accessibles via la bottom navigation
@@ -32,8 +32,8 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: CurvedNavigationBar(
         index: _selectedIndex,
         backgroundColor: Colors.transparent,
-        color: Colors.blueAccent,
-        buttonBackgroundColor: Colors.white,
+        color: const Color(0xFF13084F),
+        buttonBackgroundColor: const Color(0xFF13084F),
         animationDuration: const Duration(milliseconds: 300),
         onTap: (index) {
           setState(() {
@@ -41,10 +41,10 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
         items: const [
-          Icon(Icons.home, size: 30, color: Colors.white),
-          Icon(Icons.search, size: 30, color: Colors.white),
-          Icon(Icons.add, size: 30, color: Colors.white),
-          Icon(Icons.notifications, size: 30, color: Colors.white),
+          Icon(Icons.home_rounded, size: 30, color: Colors.white),
+          Icon(Icons.supervised_user_circle, size: 30, color: Colors.white),
+          Icon(Icons.assessment, size: 30, color: Colors.white),
+          Icon(Icons.account_balance, size: 30, color: Colors.white),
           Icon(Icons.person, size: 30, color: Colors.white),
         ],
       ),
