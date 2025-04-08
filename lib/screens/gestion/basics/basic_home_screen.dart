@@ -159,6 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           titleColor: data.titleColor, // Couleur du titre
                           descriptionColor:
                               data.descriptionColor, // Couleur de la description
+                          onPressed: data.onPressed,
                         );
                       }).toList(),
                 ),

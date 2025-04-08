@@ -10,6 +10,7 @@ class CardData {
   final Color iconColor;
   final Color titleColor;
   final Color descriptionColor;
+  final void Function(BuildContext context) onPressed;
 
   CardData({
     required this.icon,
@@ -19,6 +20,7 @@ class CardData {
     required this.iconColor,
     required this.titleColor,
     required this.descriptionColor,
+    required this.onPressed,
   });
 }
 
@@ -32,6 +34,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/devises');
+    },
   ),
   CardData(
     icon: Icons.warehouse,
@@ -42,6 +47,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
   CardData(
     icon: Icons.info,
@@ -51,6 +59,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
   CardData(
     icon: Icons.directions_transit,
@@ -61,6 +72,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
   CardData(
     icon: Icons.monetization_on_rounded,
@@ -71,6 +85,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
   CardData(
     icon: Icons.warehouse,
@@ -81,6 +98,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
   CardData(
     icon: Icons.info,
@@ -90,6 +110,9 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
   CardData(
     icon: Icons.directions_transit,
@@ -100,5 +123,8 @@ List<CardData> cardDataList = [
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/home');
+    },
   ),
 ];
