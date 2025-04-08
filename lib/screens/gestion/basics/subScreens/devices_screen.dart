@@ -1,7 +1,49 @@
+import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:flutter/material.dart';
 
-class DevicesScreen extends StatelessWidget {
+class DevicesScreen extends StatefulWidget {
   const DevicesScreen({super.key});
+
+  @override
+  State<DevicesScreen> createState() => _DeviseState();
+}
+
+class _DeviseState extends State<DevicesScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final DeviseServices authService = DeviseServices();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _rateController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  void _create() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    String success = await authService.create(
+      _nameController.text,
+      _codeController.text,
+      double.parse(_rateController.text),
+    );
+
+    setState(() {
+      _isLoading = false;
+      if (success == "CREATED") {
+        _nameController.clear();
+        _codeController.clear();
+        _rateController.clear();
+        Navigator.pop(context); //femer le bottom shit
+      } else if (success == "CODE_EXIST") {
+        _errorMessage = "Le code existe déjà. Veuillez en choisir un autre.";
+      } else {
+        _errorMessage = "Une erreur est survenue. Veuillez réessayer.";
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,91 +77,143 @@ class DevicesScreen extends StatelessWidget {
                   top: 30,
                 ),
                 child: Container(
-                  height: 450,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: const Text(
-                                'Ajouter une nouvelle devise',
-                                style: TextStyle(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -1,
+                  height: 500,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: const Text(
+                                  'Ajouter une nouvelle devise',
+                                  style: TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -1,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
                                 ),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
                               ),
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.close_rounded, size: 30),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Nom de la devise',
-                          hintText: 'Ex: Dollar US',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.close_rounded, size: 30),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
                         ),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Code',
-                          hintText: 'Ex: USD, EUR, GBP',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+
+                        const SizedBox(height: 20),
+
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Nom de la devise',
+                            hintText: 'Ex: Dollar US',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez definir un nom';
+                            }
+                            return null;
+                          },
                         ),
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Taux de change',
-                          hintText: 'Ex: 545.0',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+
+                        const SizedBox(height: 16),
+
+                        TextFormField(
+                          controller: _codeController,
+                          decoration: InputDecoration(
+                            labelText: 'Code',
+                            hintText: 'Ex: USD, EUR, GBP',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez definir le code';
+                            }
+                            return null;
+                          },
                         ),
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.done,
-                      ),
-                      const SizedBox(height: 40),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Logique pour enregistrer la devise ici
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                          backgroundColor: const Color(0xFF13084F),
+
+                        const SizedBox(height: 16),
+
+                        TextFormField(
+                          controller: _rateController,
+                          decoration: InputDecoration(
+                            labelText: 'Taux de change',
+                            hintText: 'Ex: 545.0',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez definir le taux de change actuel.';
+                            }
+                            return null;
+                          },
                         ),
-                        child: const Text(
-                          'Enregistrer',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+
+                        const SizedBox(height: 40),
+                        // Afficher les erreur de connexion
+                        if (_errorMessage != null)
+                          Center(
+                            child: Text(
+                              _errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+
+                        const SizedBox(height: 10),
+
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _create();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: const Color(0xFF13084F),
+                          ),
+                          child:
+                              _isLoading
+                                  ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  )
+                                  : Text(
+                                    'Enregistrer',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
