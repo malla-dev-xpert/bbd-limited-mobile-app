@@ -102,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 10),
 
+                // Statistique card
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 0.0),
                   child: Column(
@@ -148,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
                   child: GridView.count(
                     shrinkWrap: true,
                     crossAxisCount: 2,
