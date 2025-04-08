@@ -36,146 +36,134 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  spacing: 10,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //display user profile picture
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.grey[200],
-                      backgroundImage:
-                          const AssetImage('assets/images/profile-picture.avif')
-                              as ImageProvider,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.blue[800]!,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    //display user profile phone and welcome username
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      spacing: 10,
                       children: [
-                        const Text(
-                          'Bienvenue',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -1,
+                        //display user profile picture
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage:
+                              const AssetImage(
+                                    'assets/images/profile-picture.avif',
+                                  )
+                                  as ImageProvider,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.blue[800]!,
+                                width: 2,
+                              ),
+                            ),
                           ),
                         ),
-                        Text(
-                          'Mr/Mme ${_user?.firstName ?? _user?.username ?? 'Utilisateur'}',
-                          style: const TextStyle(
-                            letterSpacing: 0,
-                            fontSize: 16,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bienvenue',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -1,
+                              ),
+                            ),
+                            Text(
+                              _user?.firstName ??
+                                  _user?.username ??
+                                  'Utilisateur',
+                              style: TextStyle(letterSpacing: 0, fontSize: 16),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    Text(
+                      "Statistique",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -1,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children:
+                            reportCardDataList.map((data) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 3.0,
+                                ),
+                                child: ReportCard(
+                                  icon: data.icon,
+                                  title: data.title,
+                                  quantity: data.quantity,
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ),
                   ],
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              SliverToBoxAdapter(child: const SizedBox(height: 20)),
 
-                Text(
-                  "Statistique",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // Statistique card
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 0.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children:
-                                reportCardDataList.map((data) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 3.0,
-                                    ),
-                                    child: ReportCard(
-                                      icon: data.icon,
-                                      title: data.title,
-                                      quantity: data.quantity,
-                                    ),
-                                  );
-                                }).toList(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                Text(
+              SliverToBoxAdapter(
+                child: Text(
                   "Informations de base",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -1,
+                    color: Colors.grey[700],
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 10),
-
-                SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  scrollDirection: Axis.vertical,
-                  child: GridView.count(
-                    shrinkWrap: true,
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    children:
-                        cardDataList.map((data) {
-                          return SizedBox(
-                            width:
-                                (MediaQuery.of(context).size.width - 30) /
-                                2, // Largeur de chaque carte
-                            child: CustomCard(
-                              icon: data.icon,
-                              title: data.title,
-                              description: data.description,
-                              backgroundColor: data.backgroundColor,
-                              iconColor: data.iconColor,
-                              titleColor: data.titleColor,
-                              descriptionColor: data.descriptionColor,
-                            ),
-                          );
-                        }).toList(),
-                  ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 0,
                 ),
-              ],
-            ),
+                sliver: SliverGrid.count(
+                  crossAxisCount: 2, // Nombre de colonnes
+                  mainAxisSpacing: 10, // Espacement vertical
+                  crossAxisSpacing: 10, // Espacement horizontal
+                  children:
+                      cardDataList.map((data) {
+                        return CustomCard(
+                          icon: data.icon,
+                          title: data.title,
+                          description:
+                              data.description, // Ajoutez vos données ici
+                          backgroundColor:
+                              data.backgroundColor, // Couleur de fond
+                          iconColor: data.iconColor, // Couleur des icônes
+                          titleColor: data.titleColor, // Couleur du titre
+                          descriptionColor:
+                              data.descriptionColor, // Couleur de la description
+                        );
+                      }).toList(),
+                ),
+              ),
+            ],
           ),
         ),
       ),

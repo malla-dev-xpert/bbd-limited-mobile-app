@@ -16,7 +16,7 @@ class ReportCardData {
 List<ReportCardData> reportCardDataList = [
   ReportCardData(
     icon: Icons.monetization_on_rounded,
-    title: 'Total des clients',
+    title: 'Total des partenaires',
     quantity: 100,
   ),
   ReportCardData(
