@@ -36,6 +36,10 @@ class _DeviseState extends State<DevicesScreen> {
         _nameController.clear();
         _codeController.clear();
         _rateController.clear();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Devise ajoutée avec succès !")));
+
         Navigator.pop(context); //femer le bottom shit
       } else if (success == "CODE_EXIST") {
         _errorMessage = "Le code existe déjà. Veuillez en choisir un autre.";
@@ -54,11 +58,11 @@ class _DeviseState extends State<DevicesScreen> {
           "Gestion des devises",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF13084F),
+        backgroundColor: const Color(0xFF1A1E49),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF13084F),
+        backgroundColor: const Color(0xFF1A1E49),
         tooltip: 'Add New devise',
         onPressed: () {
           showModalBottomSheet(
@@ -196,7 +200,7 @@ class _DeviseState extends State<DevicesScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: const Color(0xFF13084F),
+                            backgroundColor: const Color(0xFF1A1E49),
                           ),
                           child:
                               _isLoading

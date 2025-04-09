@@ -58,8 +58,8 @@ class MainScreenState extends State<MainScreen> {
       bottomNavigationBar: CurvedNavigationBar(
         index: _selectedIndex,
         backgroundColor: Colors.transparent,
-        color: const Color(0xFF13084F),
-        buttonBackgroundColor: const Color(0xFF13084F),
+        color: const Color(0xFF1A1E49),
+        buttonBackgroundColor: const Color(0xFF1A1E49),
         animationDuration: const Duration(milliseconds: 300),
         onTap: (index) {
           setState(() {
