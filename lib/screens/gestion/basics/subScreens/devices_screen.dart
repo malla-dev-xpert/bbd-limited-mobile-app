@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bbd_limited/core/services/devises_service.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
@@ -13,7 +14,7 @@ class DevicesScreen extends StatefulWidget {
 
 class _DeviseState extends State<DevicesScreen> {
   final _formKey = GlobalKey<FormState>();
-  final DeviseServices authService = DeviseServices();
+  final DeviseServices deviseServices = DeviseServices();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
@@ -22,12 +23,16 @@ class _DeviseState extends State<DevicesScreen> {
   late final KeyboardVisibilityController _keyboardVisibilityController;
   late final StreamSubscription<bool> _keyboardSubscription;
 
+  Future<List<Devise>>? devises;
+  int currentPage = 0;
+
   bool _isLoading = false;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    devises = deviseServices.findAllDevises(page: currentPage);
 
     _keyboardVisibilityController = KeyboardVisibilityController();
 
@@ -57,7 +62,7 @@ class _DeviseState extends State<DevicesScreen> {
       _errorMessage = null;
     });
 
-    String success = await authService.create(
+    String success = await deviseServices.create(
       _nameController.text,
       _codeController.text,
       double.tryParse(_rateController.text) ?? 0.0,
@@ -73,6 +78,7 @@ class _DeviseState extends State<DevicesScreen> {
         _nameController.clear();
         _codeController.clear();
         _rateController.clear();
+        devises = deviseServices.findAllDevises(page: currentPage);
       } else if (success == "CODE_EXIST") {
         setState(() {
           _errorMessage = "Le code existe déjà. Veuillez en choisir un autre.";
@@ -306,15 +312,65 @@ class _DeviseState extends State<DevicesScreen> {
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-              child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'Rechercher',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Rechercher',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(Icons.search),
+                    ),
                   ),
-                  prefixIcon: Icon(Icons.search),
-                ),
+
+                  const SizedBox(height: 40),
+
+                  FutureBuilder<List<Devise>>(
+                    future: devises,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            "Erreur: ${snapshot.error}",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(child: Text("Aucune devise trouvée"));
+                      } else {
+                        final list = snapshot.data!;
+                        return Column(
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              child: ListView.builder(
+                                itemCount: list.length,
+                                itemBuilder: (context, index) {
+                                  final devise = list[index];
+                                  return ListTile(
+                                    title: Text(devise.name),
+                                    subtitle: Text(devise.code),
+                                    trailing: Text(
+                                      devise.rate.toString(),
+                                      style: TextStyle(
+                                        color: const Color(0xFF7F78AF),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,6 +26,18 @@ class DeviseServices {
       }
     } catch (e) {
       return "Erreur générale : $e";
+    }
+  }
+
+  Future<List<Devise>> findAllDevises({int page = 0}) async {
+    final response = await http.get(Uri.parse('$baseUrl/devises?page=$page'));
+
+    if (response.statusCode == 200) {
+      final jsonBody = json.decode(response.body);
+      final List<dynamic> content = jsonBody['content'];
+      return content.map((e) => Devise.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des devises");
     }
   }
 }
