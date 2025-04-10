@@ -68,6 +68,8 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = false;
       if (success) {
+        _usernameController.clear();
+        _passwordController.clear();
         Navigator.pushReplacementNamed(context, '/welcome');
       } else {
         _errorMessage = "Identifiants incorrects. Réessayez.";
