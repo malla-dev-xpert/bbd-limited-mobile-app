@@ -40,4 +40,14 @@ class DeviseServices {
       throw Exception("Erreur lors du chargement des devises");
     }
   }
+
+  Future<void> deleteDevise(int id) async {
+    final url = Uri.parse("$baseUrl/devises/delete/$id");
+
+    final response = await http.delete(url);
+
+    if (response.statusCode != 200) {
+      throw Exception("Erreur lors de la suppression de la devise");
+    }
+  }
 }

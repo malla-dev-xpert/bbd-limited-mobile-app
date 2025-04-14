@@ -16,6 +16,7 @@ class _DeviseState extends State<DevicesScreen> {
   final _formKey = GlobalKey<FormState>();
   final DeviseServices deviseServices = DeviseServices();
   final TextEditingController _nameController = TextEditingController();
+
   final TextEditingController _rateController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
 
@@ -23,16 +24,55 @@ class _DeviseState extends State<DevicesScreen> {
   late final KeyboardVisibilityController _keyboardVisibilityController;
   late final StreamSubscription<bool> _keyboardSubscription;
 
-  Future<List<Devise>>? devises;
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Devise>? _allDevises; // liste complète récupérée une seule fois
+  List<Devise> _filteredDevises = [];
   int currentPage = 0;
 
   bool _isLoading = false;
   String? _errorMessage;
 
+  void _showTopSnackBar(BuildContext context, String message) {
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.green,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(message, style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    // Insert overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    Future.delayed(Duration(seconds: 2), () {
+      overlayEntry?.remove();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    devises = deviseServices.findAllDevises(page: currentPage);
+    loadDevises();
+    _searchController.addListener(_onSearchChanged);
 
     _keyboardVisibilityController = KeyboardVisibilityController();
 
@@ -49,46 +89,84 @@ class _DeviseState extends State<DevicesScreen> {
     });
   }
 
+  Future<void> loadDevises() async {
+    try {
+      final result = await deviseServices.findAllDevises(page: currentPage);
+      setState(() {
+        _allDevises = result;
+        _filteredDevises = result; // initialiser avec la liste complète
+      });
+    } catch (e) {
+      print('Erreur lors du chargement : $e');
+    }
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+
+    setState(() {
+      _filteredDevises =
+          _allDevises!.where((devise) {
+            final code = devise.code.toLowerCase();
+            final name = devise.name.toLowerCase();
+            return code.contains(query) || name.contains(query);
+          }).toList();
+    });
+  }
+
   @override
   void dispose() {
     _keyboardSubscription.cancel();
     _scrollController.dispose();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     super.dispose();
   }
 
-  void _create(BuildContext parentContext) async {
+  Future<void> _create(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    String success = await deviseServices.create(
-      _nameController.text,
-      _codeController.text,
-      double.tryParse(_rateController.text) ?? 0.0,
-    );
+    try {
+      String success = await deviseServices.create(
+        _nameController.text,
+        _codeController.text,
+        double.tryParse(_rateController.text) ?? 0.0,
+      );
 
-    setState(() {
-      _isLoading = false;
       if (success == "CREATED") {
-        Navigator.pop(parentContext); // Ferme le BottomSheet
-        ScaffoldMessenger.of(parentContext).showSnackBar(
-          const SnackBar(content: Text("Devise ajoutée avec succès !")),
-        );
+        setState(() {
+          deviseServices.findAllDevises(page: currentPage);
+        });
+
+        // Fermer la BottomSheet après le traitement
+        Navigator.pop(context);
+
+        // Effacer les champs
         _nameController.clear();
         _codeController.clear();
         _rateController.clear();
-        devises = deviseServices.findAllDevises(page: currentPage);
+
+        // Afficher une notification
+        _showTopSnackBar(context, 'Devise créée avec succès!');
       } else if (success == "CODE_EXIST") {
         setState(() {
           _errorMessage = "Le code existe déjà. Veuillez en choisir un autre.";
         });
-      } else {
-        setState(() {
-          _errorMessage = "Une erreur est survenue. Veuillez réessayer.";
-        });
       }
-    });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Erreur lors de la création';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -125,7 +203,7 @@ class _DeviseState extends State<DevicesScreen> {
                   right: 30,
                   top: 30,
                 ),
-                child: Container(
+                child: SizedBox(
                   height: 500,
                   child: Form(
                     key: _formKey,
@@ -316,8 +394,10 @@ class _DeviseState extends State<DevicesScreen> {
               child: Column(
                 children: [
                   TextField(
+                    controller: _searchController,
+                    autocorrect: false,
                     decoration: InputDecoration(
-                      labelText: 'Rechercher',
+                      labelText: 'Rechercher une devise...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -328,42 +408,120 @@ class _DeviseState extends State<DevicesScreen> {
                   const SizedBox(height: 40),
 
                   FutureBuilder<List<Devise>>(
-                    future: devises,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
+                    future:
+                        _allDevises != null ? Future.value(_allDevises!) : null,
+                    builder: (context, deviseData) {
+                      if (deviseData.connectionState ==
+                          ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
+                      } else if (deviseData.hasError) {
                         return Center(
                           child: Text(
-                            "Erreur: ${snapshot.error}",
+                            "Erreur: ${deviseData.error}",
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.red),
                           ),
                         );
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(child: Text("Aucune devise trouvée"));
+                      } else if (!deviseData.hasData ||
+                          deviseData.data!.isEmpty) {
+                        return Center(
+                          child: Column(
+                            children: [
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.hourglass_empty,
+                                  size: 50,
+                                ),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                "Aucune devise trouvée.",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ],
+                          ),
+                        );
                       } else {
-                        final list = snapshot.data!;
+                        List<Devise> list = _filteredDevises;
                         return Column(
                           children: [
                             SizedBox(
                               height: MediaQuery.of(context).size.height * 0.6,
-                              child: ListView.builder(
-                                itemCount: list.length,
-                                itemBuilder: (context, index) {
-                                  final devise = list[index];
-                                  return ListTile(
-                                    title: Text(devise.name),
-                                    subtitle: Text(devise.code),
-                                    trailing: Text(
-                                      devise.rate.toString(),
-                                      style: TextStyle(
-                                        color: const Color(0xFF7F78AF),
+                              child:
+                                  _isLoading
+                                      ? Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                      : _filteredDevises.isEmpty
+                                      ? Center(
+                                        child: Text("Aucune devise trouvée"),
+                                      )
+                                      : ListView.builder(
+                                        itemCount: _filteredDevises.length,
+                                        itemBuilder: (context, index) {
+                                          final devise =
+                                              _filteredDevises[index];
+                                          return Dismissible(
+                                            key: Key(devise.id.toString()),
+                                            direction:
+                                                DismissDirection.startToEnd,
+                                            background: Container(
+                                              color: Colors.red,
+                                              alignment: Alignment.centerLeft,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 20,
+                                                  ),
+                                              child: const Icon(
+                                                Icons.delete,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            onDismissed: (direction) async {
+                                              setState(() {
+                                                list.removeAt(index);
+                                              });
+
+                                              try {
+                                                await deviseServices
+                                                    .deleteDevise(devise.id);
+
+                                                final updatedList =
+                                                    await deviseServices
+                                                        .findAllDevises(
+                                                          page: currentPage,
+                                                        );
+                                                setState(() {
+                                                  list = updatedList;
+                                                });
+                                              } catch (e) {
+                                                setState(() {
+                                                  list.insert(index, devise);
+                                                });
+                                                _showTopSnackBar(
+                                                  context,
+                                                  "Erreur lors de la suppression.",
+                                                );
+                                              }
+                                            },
+                                            child: ListTile(
+                                              title: Text(devise.name),
+                                              subtitle: Text(devise.code),
+                                              trailing: Text(
+                                                devise.rate.toString(),
+                                                style: TextStyle(
+                                                  color: const Color(
+                                                    0xFF7F78AF,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
                             ),
                           ],
                         );
