@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DeviseServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
-  final storage = FlutterSecureStorage();
 
   Future<String> create(String name, String code, double rate) async {
     try {
