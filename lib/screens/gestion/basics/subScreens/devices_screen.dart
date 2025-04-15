@@ -422,11 +422,11 @@ class _DeviseState extends State<DevicesScreen> {
   Widget _buildDeviseItem(Devise devise) {
     return Dismissible(
       key: Key(devise.id.toString()),
-      direction: DismissDirection.startToEnd,
+      direction: DismissDirection.endToStart,
       background: Container(
-        padding: const EdgeInsets.only(left: 16),
+        padding: const EdgeInsets.only(right: 16),
         color: Colors.red,
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.centerRight,
         child: Icon(Icons.delete, color: Colors.white, size: 30),
       ),
       confirmDismiss: (direction) async {
