@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:intl/intl.dart';
@@ -37,41 +38,6 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   bool _isLoading = false;
   String? _errorMessage;
-
-  void _showTopSnackBar(BuildContext context, String message) {
-    OverlayEntry? overlayEntry;
-
-    overlayEntry = OverlayEntry(
-      builder:
-          (context) => Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 20,
-            right: 20,
-            child: Material(
-              elevation: 6,
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.green,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(message, style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-    );
-
-    // Insert overlay
-    Overlay.of(context).insert(overlayEntry);
-
-    Future.delayed(Duration(seconds: 2), () {
-      overlayEntry?.remove();
-    });
-  }
 
   @override
   void initState() {
@@ -215,7 +181,7 @@ class _WarehouseState extends State<WarehouseScreen> {
         setState(() {
           _isLoading = false;
         });
-        _showTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
         return;
       }
 
@@ -226,12 +192,12 @@ class _WarehouseState extends State<WarehouseScreen> {
         _isLoading = false;
       });
       Navigator.of(context).pop();
-      _showTopSnackBar(context, "Entrepot supprimée");
+      showSuccessTopSnackBar(context, "Entrepot supprimée");
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      _showTopSnackBar(context, "Erreur lors de la suppression");
+      showErrorTopSnackBar(context, "Erreur lors de la suppression");
     }
   }
 

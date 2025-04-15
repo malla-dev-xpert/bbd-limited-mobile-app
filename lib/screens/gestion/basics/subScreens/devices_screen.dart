@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
@@ -32,41 +33,6 @@ class _DeviseState extends State<DevicesScreen> {
 
   bool _isLoading = false;
   String? _errorMessage;
-
-  void _showTopSnackBar(BuildContext context, String message) {
-    OverlayEntry? overlayEntry;
-
-    overlayEntry = OverlayEntry(
-      builder:
-          (context) => Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 20,
-            right: 20,
-            child: Material(
-              elevation: 6,
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.green,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(message, style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-    );
-
-    // Insert overlay
-    Overlay.of(context).insert(overlayEntry);
-
-    Future.delayed(Duration(seconds: 2), () {
-      overlayEntry?.remove();
-    });
-  }
 
   @override
   void initState() {
@@ -174,7 +140,7 @@ class _DeviseState extends State<DevicesScreen> {
         Navigator.of(context).pop();
 
         // Show success message
-        _showTopSnackBar(context, 'Devise créée avec succès!');
+        showSuccessTopSnackBar(context, 'Devise créée avec succès!');
 
         // Refresh the list
         await loadDevises(reset: true);
@@ -470,10 +436,10 @@ class _DeviseState extends State<DevicesScreen> {
             _allDevises!.removeWhere((d) => d.id == devise.id);
             _filteredDevises = List.from(_allDevises!);
           });
-          _showTopSnackBar(context, "Devise supprimée");
+          showSuccessTopSnackBar(context, "Devise supprimée");
           return true;
         } catch (e) {
-          _showTopSnackBar(context, "Erreur lors de la suppression");
+          showErrorTopSnackBar(context, "Erreur lors de la suppression");
           return false;
         }
       },
