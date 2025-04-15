@@ -331,6 +331,7 @@ class _DeviseState extends State<DevicesScreen> {
                                         }
                                       } catch (e) {
                                         setModalState(() {
+                                          _isLoading = false;
                                           _errorMessage =
                                               'Erreur lors de la création: ${e.toString()}';
                                         });
@@ -371,6 +372,7 @@ class _DeviseState extends State<DevicesScreen> {
         },
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
