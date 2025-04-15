@@ -7,10 +7,15 @@ class WarehouseServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<String> create(String name, String adresse, String storageType) async {
+  Future<String> create(
+    String name,
+    String adresse,
+    String storageType,
+    int userId,
+  ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/warehouses/create'),
+        Uri.parse('$baseUrl/warehouses/create?userId=$userId'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "name": name,
@@ -21,13 +26,18 @@ class WarehouseServices {
 
       if (response.statusCode == 200) {
         return "CREATED";
-      } else if (response.statusCode == 409) {
+      } else if (response.body == 'Cet entrepot existe déjà !' &&
+          response.statusCode == 409) {
         return "NAME_EXIST";
+      } else if (response.body ==
+              'Un entrepôt existe déjà avec cette adresse !' &&
+          response.statusCode == 409) {
+        return "ADRESS_EXIST";
       } else {
         return "Erreur (${response.statusCode}) : ${response.body}";
       }
     } catch (e) {
-      return "Erreur générale : $e";
+      return "Erreur de connexion : $e";
     }
   }
 

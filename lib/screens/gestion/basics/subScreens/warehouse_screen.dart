@@ -39,11 +39,17 @@ class _WarehouseState extends State<WarehouseScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  final StreamController<void> _refreshController =
+      StreamController<void>.broadcast();
+
   @override
   void initState() {
     super.initState();
     loadWarehouses();
     _searchController.addListener(_onSearchChanged);
+    _refreshController.stream.listen((_) {
+      loadWarehouses(reset: true);
+    });
 
     _keyboardVisibilityController = KeyboardVisibilityController();
     _keyboardSubscription = _keyboardVisibilityController.onChange.listen((
@@ -120,54 +126,12 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   @override
   void dispose() {
+    _refreshController.close();
     _keyboardSubscription.cancel();
     _scrollController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _create(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      String success = await warehousServices.create(
-        _nameController.text,
-        _adressController.text,
-        _storageTypeController.text,
-      );
-
-      if (success == "CREATED") {
-        final result = await warehousServices.findAllWarehouses(
-          page: currentPage,
-        );
-        setState(() {
-          _allWarehouses = result;
-          _filteredWarehouse = result;
-        });
-
-        _nameController.clear();
-        _adressController.clear();
-        _storageTypeController.clear();
-      } else if (success == "NAME_EXIST") {
-        setState(() {
-          _errorMessage = "Cet entrepôt existe déjà.";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Erreur lors de la création';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   Future<void> _deleteWarehouse(BuildContext context, int id) async {
@@ -222,174 +186,237 @@ class _WarehouseState extends State<WarehouseScreen> {
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.white,
-            isScrollControlled: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
             builder: (BuildContext context) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 30,
-                  right: 30,
-                  top: 30,
-                ),
-                child: SizedBox(
-                  height: 500,
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: const Text(
-                                  'Ajouter un nouveau entrepôt',
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: -1,
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setModalState) {
+                  return Container(
+                    padding: EdgeInsets.all(30),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: const Text(
+                                    'Ajouter un nouveau entrepôt',
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -1,
+                                    ),
+                                    softWrap: true,
+                                    overflow: TextOverflow.visible,
                                   ),
-                                  softWrap: true,
-                                  overflow: TextOverflow.visible,
                                 ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _storageTypeController.clear();
-                                _adressController.clear();
-                                _nameController.clear();
-                                _errorMessage = null;
-                              },
-                              icon: const Icon(Icons.close_rounded, size: 30),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _nameController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.warehouse,
-                              color: Colors.black,
-                            ),
-                            labelText: 'Nom de l\'entrepôt',
-                            hintText: 'Ex: Entrepôt de la maison',
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _storageTypeController.clear();
+                                  _adressController.clear();
+                                  _nameController.clear();
+                                  _errorMessage = null;
+                                },
+                                icon: const Icon(Icons.close_rounded, size: 30),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
                           ),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez definir un nom';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _storageTypeController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.map_outlined,
-                              color: Colors.black,
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _nameController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.warehouse,
+                                color: Colors.black,
+                              ),
+                              labelText: 'Nom de l\'entrepôt',
+                              hintText: 'Ex: Entrepôt de la maison',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            labelText: 'Adresse',
-                            hintText: 'Ex: Faladie SEMA',
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez definir un nom';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _adressController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.map_outlined,
+                                color: Colors.black,
+                              ),
+                              labelText: 'Adresse',
+                              hintText: 'Ex: Faladie SEMA',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez definir une adresse';
+                              }
+                              return null;
+                            },
                           ),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez definir une adresse';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _adressController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.type_specimen,
-                              color: Colors.black,
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _storageTypeController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.type_specimen,
+                                color: Colors.black,
+                              ),
+                              labelText: 'Type de stockage',
+                              hintText: 'Ex: Stockage de PC',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            labelText: 'Type de stockage',
-                            hintText: 'Ex: Stockage de PC',
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.done,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez definir un type de stockage';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 40),
+                          if (_errorMessage != null)
+                            Text(
+                              _errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
                             ),
-                          ),
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.done,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez definir un type de stockage';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 40),
-                        if (_errorMessage != null)
-                          Text(
-                            _errorMessage!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed:
-                              _isLoading
-                                  ? null
-                                  : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _create(context);
-                                    }
-                                  },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: const Color(0xFF1A1E49),
-                          ),
-                          child:
-                              _isLoading
-                                  ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed:
+                                _isLoading
+                                    ? null
+                                    : () async {
+                                      if (!_formKey.currentState!.validate())
+                                        return;
+
+                                      setModalState(() {
+                                        _isLoading = true;
+                                        _errorMessage = null;
+                                      });
+
+                                      final user =
+                                          await authService.getUserInfo();
+                                      if (user == null) {
+                                        setModalState(() {
+                                          _isLoading = false;
+                                          _errorMessage =
+                                              "Erreur: Utilisateur non connecté";
+                                        });
+                                        return;
+                                      }
+
+                                      try {
+                                        final success = await warehousServices
+                                            .create(
+                                              _nameController.text,
+                                              _adressController.text,
+                                              _storageTypeController.text,
+                                              user.id,
+                                            );
+
+                                        if (success == "NAME_EXIST") {
+                                          setModalState(() {
+                                            _errorMessage =
+                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+                                            _isLoading = false;
+                                          });
+                                          return;
+                                        }
+
+                                        if (success == "ADRESS_EXIST") {
+                                          setModalState(() {
+                                            _errorMessage =
+                                                "L'adresse '${_adressController.text}' existe déjà. Veuillez en choisir une autre.";
+                                            _isLoading = false;
+                                          });
+                                          return;
+                                        }
+
+                                        if (success == "CREATED") {
+                                          _nameController.clear();
+                                          _adressController.clear();
+                                          _storageTypeController.clear();
+                                          Navigator.of(context).pop();
+                                          showSuccessTopSnackBar(
+                                            context,
+                                            'Entrepôt créé avec succès!',
+                                          );
+                                          _refreshController.add(null);
+                                        }
+                                      } catch (e) {
+                                        setModalState(() {
+                                          _isLoading = false;
+                                          _errorMessage =
+                                              'Erreur lors de la création: ${e.toString()}';
+                                        });
+                                      } finally {
+                                        setModalState(() {
+                                          _isLoading = false;
+                                        });
+                                      }
+                                    },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              backgroundColor: const Color(0xFF1A1E49),
+                            ),
+                            child:
+                                _isLoading
+                                    ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Enregistrer',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  )
-                                  : const Text(
-                                    'Enregistrer',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
             },
           );
