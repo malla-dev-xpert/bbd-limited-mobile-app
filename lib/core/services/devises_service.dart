@@ -15,15 +15,19 @@ class DeviseServices {
         body: jsonEncode({"name": name, "code": code, "rate": rate}),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return "CREATED";
-      } else if (response.statusCode == 409) {
+      } else if (response.statusCode == 409 &&
+          response.body == 'Nom de devise déjà utilisé !') {
+        return "NAME_EXIST";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Code déjà utilisé !') {
         return "CODE_EXIST";
       } else {
-        return "Erreur (${response.statusCode}) : ${response.body}";
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
       }
     } catch (e) {
-      return "Erreur générale : $e";
+      throw Exception("Erreur de connexion: $e");
     }
   }
 

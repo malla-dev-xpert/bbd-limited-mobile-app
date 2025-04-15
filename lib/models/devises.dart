@@ -1,21 +1,21 @@
 import 'package:bbd_limited/core/enums/status.dart';
 
 class Devise {
-  final int id;
+  final int? id;
   final String name;
   final double rate;
   final String code;
-  final Status status;
-  final DateTime createdAt;
+  final Status? status;
+  final DateTime? createdAt;
   final DateTime? editedAt;
 
   Devise({
-    required this.id,
+    this.id,
     required this.name,
     required this.rate,
     required this.code,
-    required this.status,
-    required this.createdAt,
+    this.status,
+    this.createdAt,
     this.editedAt,
   });
 

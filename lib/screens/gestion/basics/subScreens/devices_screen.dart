@@ -32,13 +32,19 @@ class _DeviseState extends State<DevicesScreen> {
   int currentPage = 0;
 
   bool _isLoading = false;
-  String? _errorMessage;
+  String _errorMessage = '';
+
+  final StreamController<void> _refreshController =
+      StreamController<void>.broadcast();
 
   @override
   void initState() {
     super.initState();
     loadDevises();
     _searchController.addListener(_onSearchChanged);
+    _refreshController.stream.listen((_) {
+      loadDevises(reset: true);
+    });
 
     _keyboardVisibilityController = KeyboardVisibilityController();
 
@@ -108,56 +114,12 @@ class _DeviseState extends State<DevicesScreen> {
 
   @override
   void dispose() {
+    _refreshController.close();
     _keyboardSubscription.cancel();
     _scrollController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _create(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      String success = await deviseServices.create(
-        _nameController.text,
-        _codeController.text,
-        double.tryParse(_rateController.text) ?? 0.0,
-      );
-
-      if (success == "CREATED") {
-        // Clear fields first
-        _nameController.clear();
-        _codeController.clear();
-        _rateController.clear();
-
-        // Close the bottom sheet before any other operations
-        Navigator.of(context).pop();
-
-        // Show success message
-        showSuccessTopSnackBar(context, 'Devise créée avec succès!');
-
-        // Refresh the list
-        await loadDevises(reset: true);
-      } else if (success == "CODE_EXIST") {
-        setState(() {
-          _errorMessage = "Le code existe déjà. Veuillez en choisir un autre.";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Erreur lors de la création';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -182,174 +144,227 @@ class _DeviseState extends State<DevicesScreen> {
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.white,
-            isScrollControlled: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
             builder: (BuildContext context) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 30,
-                  right: 30,
-                  top: 30,
-                ),
-                child: SizedBox(
-                  height: 500,
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: const Text(
-                                  'Ajouter une nouvelle devise',
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: -1,
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setModalState) {
+                  return Container(
+                    padding: EdgeInsets.all(30),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: const Text(
+                                    'Ajouter une nouvelle devise',
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -1,
+                                    ),
+                                    softWrap: true,
+                                    overflow: TextOverflow.visible,
                                   ),
-                                  softWrap: true,
-                                  overflow: TextOverflow.visible,
                                 ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _codeController.clear();
-                                _rateController.clear();
-                                _nameController.clear();
-                                _errorMessage = null;
-                              },
-                              icon: const Icon(Icons.close_rounded, size: 30),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _nameController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.attach_money,
-                              color: Colors.black,
-                            ),
-                            labelText: 'Nom de la devise',
-                            hintText: 'Ex: Dollar US',
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _codeController.clear();
+                                  _rateController.clear();
+                                  _nameController.clear();
+                                  setModalState(() => _errorMessage = '');
+                                },
+                                icon: const Icon(Icons.close_rounded, size: 30),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
                           ),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez definir un nom';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _codeController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.abc,
-                              color: Colors.black,
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _nameController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.attach_money,
+                                color: Colors.black,
+                              ),
+                              labelText: 'Nom de la devise',
+                              hintText: 'Ex: Dollar US',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            labelText: 'Code',
-                            hintText: 'Ex: USD, EUR, GBP',
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez definir un nom';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _codeController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.abc,
+                                color: Colors.black,
+                              ),
+                              labelText: 'Code',
+                              hintText: 'Ex: USD, EUR, GBP',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez definir le code';
+                              }
+                              return null;
+                            },
                           ),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez definir le code';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _rateController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.percent,
-                              color: Colors.black,
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _rateController,
+                            autocorrect: false,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.percent,
+                                color: Colors.black,
+                              ),
+                              labelText: 'Taux de change',
+                              hintText: 'Ex: 545.0',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            labelText: 'Taux de change',
-                            hintText: 'Ex: 545.0',
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.done,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez definir le taux de change actuel.';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          if (_errorMessage != '')
+                            Text(
+                              _errorMessage,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
                             ),
-                          ),
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.done,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez definir le taux de change actuel.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 40),
-                        if (_errorMessage != null)
-                          Text(
-                            _errorMessage!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed:
-                              _isLoading
-                                  ? null
-                                  : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _create(context);
-                                    }
-                                  },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: const Color(0xFF1A1E49),
-                          ),
-                          child:
-                              _isLoading
-                                  ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed:
+                                _isLoading
+                                    ? null
+                                    : () async {
+                                      if (!_formKey.currentState!.validate())
+                                        return;
+
+                                      setModalState(() {
+                                        _isLoading = true;
+                                        _errorMessage = '';
+                                      });
+
+                                      try {
+                                        final success = await deviseServices
+                                            .create(
+                                              _nameController.text,
+                                              _codeController.text,
+                                              double.tryParse(
+                                                    _rateController.text,
+                                                  ) ??
+                                                  0.0,
+                                            );
+
+                                        if (success == "CODE_EXIST") {
+                                          setModalState(() {
+                                            _errorMessage =
+                                                "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
+                                            _isLoading = false;
+                                          });
+                                          return;
+                                        }
+
+                                        if (success == "NAME_EXIST") {
+                                          setModalState(() {
+                                            _errorMessage =
+                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+                                            _isLoading = false;
+                                          });
+                                          return;
+                                        }
+
+                                        if (success == "CREATED") {
+                                          _nameController.clear();
+                                          _codeController.clear();
+                                          _rateController.clear();
+                                          Navigator.pop(context);
+                                          showSuccessTopSnackBar(
+                                            context,
+                                            'Devise créée avec succès!',
+                                          );
+                                          _refreshController.add(null);
+                                        }
+                                      } catch (e) {
+                                        setModalState(() {
+                                          _errorMessage =
+                                              'Erreur lors de la création: ${e.toString()}';
+                                        });
+                                      } finally {
+                                        setModalState(() {
+                                          _isLoading = false;
+                                        });
+                                      }
+                                    },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              backgroundColor: const Color(0xFF1A1E49),
+                            ),
+                            child:
+                                _isLoading
+                                    ? const SizedBox(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Enregistrer',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  )
-                                  : const Text(
-                                    'Enregistrer',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
             },
           );
@@ -392,6 +407,7 @@ class _DeviseState extends State<DevicesScreen> {
     );
   }
 
+  // la liste des devises
   Widget _buildDeviseList() {
     if (_allDevises == null) {
       return Center(child: CircularProgressIndicator());
@@ -419,6 +435,7 @@ class _DeviseState extends State<DevicesScreen> {
     );
   }
 
+  // Les donnees de la liste
   Widget _buildDeviseItem(Devise devise) {
     return Dismissible(
       key: Key(devise.id.toString()),
@@ -431,7 +448,7 @@ class _DeviseState extends State<DevicesScreen> {
       ),
       confirmDismiss: (direction) async {
         try {
-          await deviseServices.deleteDevise(devise.id);
+          await deviseServices.deleteDevise(devise.id!);
           setState(() {
             _allDevises!.removeWhere((d) => d.id == devise.id);
             _filteredDevises = List.from(_allDevises!);
