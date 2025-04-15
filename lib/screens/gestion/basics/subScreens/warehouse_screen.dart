@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bbd_limited/core/services/warehouse_services.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -16,6 +17,7 @@ class WarehouseScreen extends StatefulWidget {
 class _WarehouseState extends State<WarehouseScreen> {
   final _formKey = GlobalKey<FormState>();
   final WarehouseServices warehousServices = WarehouseServices();
+  final AuthService authService = AuthService();
 
   String formattedDate = '';
 
@@ -199,6 +201,37 @@ class _WarehouseState extends State<WarehouseScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _deleteWarehouse(BuildContext context, int id) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = await authService.getUserInfo();
+      if (user == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        return;
+      }
+
+      await warehousServices.deleteWarehouse(id, user.id);
+      setState(() {
+        _allWarehouses!.removeWhere((d) => d.id == id);
+        _filteredWarehouse = List.from(_allWarehouses!);
+        _isLoading = false;
+      });
+      Navigator.of(context).pop();
+      _showTopSnackBar(context, "Entrepot supprimée");
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showTopSnackBar(context, "Erreur lors de la suppression");
     }
   }
 
@@ -475,7 +508,145 @@ class _WarehouseState extends State<WarehouseScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildTag(warehouse.storageType ?? ''),
-                    Icon(Icons.info, size: 30, color: Colors.grey[500]),
+                    // display warehouse info and actions
+                    IconButton(
+                      icon: Icon(Icons.info, size: 30, color: Colors.grey[500]),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                          ),
+                          builder:
+                              (context) => Container(
+                                padding: EdgeInsets.all(20),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          spacing: 5,
+                                          children: [
+                                            Icon(
+                                              Icons.warehouse_sharp,
+                                              size: 30,
+                                              color: Colors.grey[800],
+                                            ),
+                                            Text(
+                                              warehouse.name!,
+                                              textAlign: TextAlign.left,
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: -1,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        IconButton(
+                                          onPressed: () {},
+                                          icon: Icon(
+                                            Icons.edit_document,
+                                            size: 30,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    SizedBox(height: 20),
+
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.map_rounded,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                        SizedBox(width: 5),
+                                        Text(warehouse.adresse!),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.calendar_month,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                        SizedBox(width: 5),
+                                        Text(formattedDate),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.type_specimen_rounded,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          "Type de stockage : ${warehouse.storageType!}",
+                                        ),
+                                      ],
+                                    ),
+
+                                    SizedBox(height: 20),
+
+                                    // actions buttons
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: () {
+                                            _deleteWarehouse(
+                                              context,
+                                              warehouse.id,
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          label:
+                                              _isLoading
+                                                  ? CircularProgressIndicator(
+                                                    color: const Color(
+                                                      0xFF1A1E49,
+                                                    ),
+                                                    strokeWidth: 2,
+                                                  )
+                                                  : Text(
+                                                    'Supprimer',
+                                                    style: TextStyle(
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 20),
+                                  ],
+                                ),
+                              ),
+                        );
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),

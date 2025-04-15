@@ -45,8 +45,8 @@ class WarehouseServices {
     }
   }
 
-  Future<void> deleteWarehouse(int id) async {
-    final url = Uri.parse("$baseUrl/warehouses/delete/$id");
+  Future<void> deleteWarehouse(int id, int userID) async {
+    final url = Uri.parse("$baseUrl/warehouses/delete/$id?userId=$userID");
 
     final response = await http.delete(url);
 
