@@ -1,4 +1,5 @@
 class User {
+  final int id;
   final String username;
   final String? firstName;
   final String? lastName;
@@ -7,6 +8,7 @@ class User {
   final Role? role; // 👈 Ajouté ici
 
   User({
+    required this.id,
     required this.username,
     this.firstName,
     this.lastName,
@@ -17,6 +19,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+      id: json['id'] as int,
       username: json['username'] as String,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
@@ -28,6 +31,7 @@ class User {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'username': username,
       'firstName': firstName,
       'lastName': lastName,

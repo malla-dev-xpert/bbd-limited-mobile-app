@@ -11,7 +11,7 @@ class CustomCard extends StatelessWidget {
   final void Function(BuildContext context)? onPressed;
 
   const CustomCard({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     required this.description,
@@ -20,7 +20,7 @@ class CustomCard extends StatelessWidget {
     this.titleColor = Colors.black,
     this.descriptionColor = Colors.grey,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
