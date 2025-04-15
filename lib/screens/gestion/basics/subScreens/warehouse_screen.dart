@@ -89,23 +89,20 @@ class _WarehouseState extends State<WarehouseScreen> {
         );
       }
     });
-
-    // écouteur de scroll pour charger plus de données
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        loadWarehouses();
-      }
-    });
   }
 
   bool _hasMoreData = true;
 
-  Future<void> loadWarehouses() async {
-    if (_isLoading || !_hasMoreData) return;
+  Future<void> loadWarehouses({bool reset = false}) async {
+    if (_isLoading || (!reset && !_hasMoreData)) return;
 
     setState(() {
       _isLoading = true;
+      if (reset) {
+        currentPage = 0;
+        _hasMoreData = true;
+        _allWarehouses = null;
+      }
     });
 
     try {
@@ -114,27 +111,23 @@ class _WarehouseState extends State<WarehouseScreen> {
       );
 
       setState(() {
-        if (_allWarehouses == null) {
-          _allWarehouses = result;
-        } else {
-          _allWarehouses!.addAll(result);
-        }
-        _filteredWarehouse = _allWarehouses!;
-      });
+        _allWarehouses ??= [];
+        if (reset) _allWarehouses!.clear();
+        _allWarehouses!.addAll(result);
+        _filteredWarehouse = List.from(_allWarehouses!);
 
-      // Gérer la fin de la liste
-      if (result.length < 20) {
-        _hasMoreData = false;
-        print('Fin de la liste atteinte');
-      } else {
-        currentPage++;
-      }
-    } catch (e) {
-      print('Erreur lors du chargement : $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
+        if (result.isEmpty || result.length < 10) {
+          _hasMoreData = false;
+        } else {
+          currentPage++;
+        }
       });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Erreur de chargement: ${e.toString()}";
+      });
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -225,19 +218,16 @@ class _WarehouseState extends State<WarehouseScreen> {
 
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
-        tooltip: 'Add New devise',
+        tooltip: 'Add New warehouse',
         onPressed: () {
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.white,
-            isScrollControlled: true, // Ajouté pour gérer le clavier
+            isScrollControlled: true,
             builder: (BuildContext context) {
               return Padding(
                 padding: EdgeInsets.only(
-                  bottom:
-                      MediaQuery.of(
-                        context,
-                      ).viewInsets.bottom, // Gère le clavier
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
                   left: 30,
                   right: 30,
                   top: 30,
@@ -282,9 +272,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 20),
-
                         TextFormField(
                           controller: _nameController,
                           autocorrect: false,
@@ -309,9 +297,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _storageTypeController,
                           autocorrect: false,
@@ -336,9 +322,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _adressController,
                           autocorrect: false,
@@ -364,18 +348,14 @@ class _WarehouseState extends State<WarehouseScreen> {
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 40),
-                        // Afficher les erreur de connexion
                         if (_errorMessage != null)
                           Text(
                             _errorMessage!,
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.red),
                           ),
-
                         const SizedBox(height: 10),
-
                         ElevatedButton(
                           onPressed:
                               _isLoading
@@ -424,94 +404,28 @@ class _WarehouseState extends State<WarehouseScreen> {
           children: [
             TextField(
               controller: _searchController,
+              autocorrect: false,
               decoration: InputDecoration(
                 labelText: 'Rechercher un entrepôt...',
+                prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                prefixIcon: Icon(Icons.search),
               ),
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount:
-                    _filteredWarehouse.length + 1, // Ajouter 1 pour le loader
-                itemBuilder: (context, index) {
-                  if (index < _filteredWarehouse.length) {
-                    final warehouse = _filteredWarehouse[index];
-                    final formattedDate = DateFormat.yMMMMEEEEd().format(
-                      warehouse.createdAt,
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 228, 229, 247),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 5,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _buildTag(warehouse.storageType ?? ''),
-                                Icon(
-                                  Icons.info,
-                                  size: 30,
-                                  color: Colors.grey[500],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              warehouse.name!,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.map_rounded,
-                                  size: 18,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(width: 5),
-                                Text(warehouse.adresse!),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.calendar_month,
-                                  size: 18,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(width: 5),
-                                Text(formattedDate),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else {
-                    return _isLoading
-                        ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        )
-                        : SizedBox.shrink();
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (scrollInfo) {
+                  if (scrollInfo.metrics.pixels ==
+                          scrollInfo.metrics.maxScrollExtent &&
+                      !_isLoading &&
+                      _hasMoreData) {
+                    loadWarehouses();
                   }
+                  return false;
                 },
+                child: _buildWarehouseList(),
               ),
             ),
           ],
@@ -519,23 +433,93 @@ class _WarehouseState extends State<WarehouseScreen> {
       ),
     );
   }
-}
 
-@override
-Widget _buildTag(String label) {
-  return Container(
-    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      color: const Color(0xFF7F78AF),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      label,
-      style: TextStyle(
-        fontSize: 12,
-        color: Colors.white,
-        fontWeight: FontWeight.w500,
+  Widget _buildWarehouseList() {
+    if (_allWarehouses == null) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (_filteredWarehouse.isEmpty) {
+      return Center(child: Text("Aucun entrepôt trouvé"));
+    }
+
+    return ListView.builder(
+      physics: AlwaysScrollableScrollPhysics(),
+      itemCount:
+          _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= _filteredWarehouse.length) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        final warehouse = _filteredWarehouse[index];
+        final formattedDate = DateFormat.yMMMMEEEEd().format(
+          warehouse.createdAt,
+        );
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 228, 229, 247),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildTag(warehouse.storageType ?? ''),
+                    Icon(Icons.info, size: 30, color: Colors.grey[500]),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  warehouse.name!,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.map_rounded, size: 18, color: Colors.grey),
+                    SizedBox(width: 5),
+                    Text(warehouse.adresse!),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_month, size: 18, color: Colors.grey),
+                    SizedBox(width: 5),
+                    Text(formattedDate),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTag(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF7F78AF),
+        borderRadius: BorderRadius.circular(20),
       ),
-    ),
-  );
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
 }
