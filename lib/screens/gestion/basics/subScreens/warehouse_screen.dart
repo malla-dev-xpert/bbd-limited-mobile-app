@@ -371,7 +371,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                                           _nameController.clear();
                                           _adressController.clear();
                                           _storageTypeController.clear();
+
+                                          setModalState(() {
+                                            _isLoading = false;
+                                          });
+
                                           Navigator.of(context).pop();
+
                                           showSuccessTopSnackBar(
                                             context,
                                             'Entrepôt créé avec succès!',
@@ -382,7 +388,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                                         setModalState(() {
                                           _isLoading = false;
                                           _errorMessage =
-                                              'Erreur lors de la création: ${e.toString()}';
+                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
                                         });
                                       } finally {
                                         setModalState(() {

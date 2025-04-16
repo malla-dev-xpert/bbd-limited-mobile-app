@@ -24,7 +24,7 @@ class WarehouseServices {
         }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return "CREATED";
       } else if (response.body == 'Cet entrepot existe déjà !' &&
           response.statusCode == 409) {
