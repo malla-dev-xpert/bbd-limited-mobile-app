@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
 
   List<Packages> _allPackages = [];
   List<Packages> _filteredPackages = [];
+  String? _currentFilter;
 
   @override
   void initState() {
@@ -50,12 +52,37 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
   void filterPackages(String query) {
     setState(() {
       _filteredPackages =
-          _allPackages
-              .where(
-                (pkg) =>
-                    pkg.reference!.toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
+          _allPackages.where((pkg) {
+            final matchesSearch = pkg.reference!.toLowerCase().contains(
+              query.toLowerCase(),
+            );
+
+            if (_currentFilter == null) return matchesSearch;
+
+            final matchesStatus =
+                _currentFilter == 'receptionnes'
+                    ? pkg.status == Status.CREATE
+                    : pkg.status == Status.PENDING;
+
+            return matchesSearch && matchesStatus;
+          }).toList();
+    });
+  }
+
+  void handleStatusFilter(String value) {
+    setState(() {
+      _currentFilter = value;
+      _filteredPackages =
+          _allPackages.where((pkg) {
+            return value == 'receptionnes'
+                ? pkg.status == Status.CREATE
+                : pkg.status == Status.PENDING;
+          }).toList();
+
+      // Réappliquer la recherche si un texte est déjà saisi
+      if (searchController.text.isNotEmpty) {
+        filterPackages(searchController.text);
+      }
     });
   }
 
@@ -66,7 +93,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    // final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -164,6 +191,9 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                FiltreDropdown(onSelected: handleStatusFilter),
+
+                const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A1E49),
@@ -184,7 +214,36 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
             const SizedBox(height: 20),
 
             // Liste des colis
-            Text("La liste des colis"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "La liste des colis" +
+                      (_currentFilter == null
+                          ? ""
+                          : _currentFilter == 'receptionnes'
+                          ? " réceptionnés"
+                          : " en attente"),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (_currentFilter != null)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _currentFilter = null;
+                        _filteredPackages = _allPackages;
+                        if (searchController.text.isNotEmpty) {
+                          filterPackages(searchController.text);
+                        }
+                      });
+                    },
+                    child: const Text("Voir tout"),
+                  ),
+              ],
+            ),
             const SizedBox(height: 10),
             Expanded(
               child:
@@ -195,7 +254,13 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                         itemBuilder: (context, index) {
                           final pkg = _filteredPackages[index];
                           return ListTile(
-                            leading: Icon(Icons.inventory),
+                            leading: Icon(
+                              Icons.inventory,
+                              color:
+                                  pkg.status == Status.PENDING
+                                      ? Colors.orange
+                                      : Colors.green,
+                            ),
                             title: Text(pkg.reference!),
                             subtitle: Text("Dimensions: ${pkg.dimensions}"),
                             trailing: Text(
@@ -211,6 +276,46 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class FiltreDropdown extends StatelessWidget {
+  final Function(String) onSelected;
+
+  const FiltreDropdown({super.key, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF7F78AF),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: PopupMenuButton<String>(
+        icon: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.filter_list, color: Colors.white),
+            SizedBox(width: 8),
+            Text('Filtrer', style: TextStyle(color: Colors.white)),
+            SizedBox(width: 8),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        onSelected: onSelected,
+        itemBuilder:
+            (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'receptionnes',
+                child: Text('Colis réceptionnés'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'en_attente',
+                child: Text('Colis en attente'),
+              ),
+            ],
       ),
     );
   }

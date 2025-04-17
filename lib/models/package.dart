@@ -18,14 +18,16 @@ class Packages {
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
+    String? statusString = json['status']; // Get status as String?
     Status status;
-    try {
+
+    if (statusString != null) {
       status = Status.values.firstWhere(
-        (statut) => statut.name == json['status'],
-        orElse: () => Status.CREATE,
+        (e) => e.toString() == 'Status.+$statusString',
+        orElse: () => Status.CREATE, // Default value if not found
       );
-    } catch (e) {
-      status = Status.CREATE;
+    } else {
+      status = Status.CREATE; // Default value if json['status'] is null
     }
 
     return Packages(
