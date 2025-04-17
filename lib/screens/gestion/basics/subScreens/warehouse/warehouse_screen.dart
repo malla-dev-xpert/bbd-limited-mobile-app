@@ -322,8 +322,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                                 _isLoading
                                     ? null
                                     : () async {
-                                      if (!_formKey.currentState!.validate())
+                                      if (!_formKey.currentState!.validate()) {
                                         return;
+                                      }
 
                                       setModalState(() {
                                         _isLoading = true;

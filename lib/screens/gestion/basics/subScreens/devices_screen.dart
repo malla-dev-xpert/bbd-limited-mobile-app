@@ -281,8 +281,9 @@ class _DeviseState extends State<DevicesScreen> {
                                 _isLoading
                                     ? null
                                     : () async {
-                                      if (!_formKey.currentState!.validate())
+                                      if (!_formKey.currentState!.validate()) {
                                         return;
+                                      }
 
                                       setModalState(() {
                                         _isLoading = true;
