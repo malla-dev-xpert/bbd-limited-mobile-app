@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class WarehouseDetailPage extends StatefulWidget {
   final int warehouseId;
@@ -57,37 +58,41 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
     setState(() {
       _filteredPackages =
           _allPackages.where((pkg) {
-            final matchesSearch = pkg.reference!.toLowerCase().contains(
+            final searchPackage = pkg.reference!.toLowerCase().contains(
               query.toLowerCase(),
             );
 
-            if (_currentFilter == null) return matchesSearch;
+            bool allStatus = true;
+            if (_currentFilter == 'receptionnes') {
+              allStatus = pkg.status == Status.CREATE;
+            } else if (_currentFilter == 'en_attente') {
+              allStatus = pkg.status == Status.PENDING;
+            }
 
-            final matchesStatus =
-                _currentFilter == 'receptionnes'
-                    ? pkg.status == Status.CREATE
-                    : pkg.status == Status.PENDING;
-
-            return matchesSearch && matchesStatus;
+            return searchPackage && allStatus;
           }).toList();
     });
+  }
+
+  Color getStatusColor(Status? status) {
+    switch (status) {
+      case Status.PENDING:
+        return Colors.orange;
+      case Status.RECEIVED:
+        return Colors.green;
+      case Status.DELIVERED:
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
   }
 
   void handleStatusFilter(String value) {
     setState(() {
       _currentFilter = value;
-      _filteredPackages =
-          _allPackages.where((pkg) {
-            return value == 'receptionnes'
-                ? pkg.status == Status.CREATE
-                : pkg.status == Status.PENDING;
-          }).toList();
-
-      // Réappliquer la recherche si un texte est déjà saisi
-      if (searchController.text.isNotEmpty) {
-        filterPackages(searchController.text);
-      }
     });
+
+    filterPackages(searchController.text);
   }
 
   void onAddPackagePressed() {
@@ -206,6 +211,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(width: 8),
                 FiltreDropdown(onSelected: handleStatusFilter),
 
@@ -234,12 +240,12 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "La liste des colis" +
-                      (_currentFilter == null
-                          ? ""
-                          : _currentFilter == 'receptionnes'
-                          ? " réceptionnés"
-                          : " en attente"),
+                  "La liste des colis${_currentFilter == null
+                      ? ''
+                      : _currentFilter == 'receptionnes'
+                      ? ' réceptionnés'
+                      : ' en attente'}",
+
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -317,12 +323,14 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                               }
                             },
                             child: ListTile(
+                              onTap:
+                                  () => _showPackageDetailsBottomSheet(
+                                    context,
+                                    pkg,
+                                  ),
                               leading: Icon(
                                 Icons.inventory,
-                                color:
-                                    pkg.status == Status.PENDING
-                                        ? Colors.orange
-                                        : Colors.green,
+                                color: getStatusColor(pkg.status),
                               ),
                               title: Text(pkg.reference!),
                               subtitle: Text("Dimensions: ${pkg.dimensions}"),
@@ -383,4 +391,78 @@ class FiltreDropdown extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _detailRow(String label, String? value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text("$label :", style: TextStyle(fontWeight: FontWeight.w500)),
+        Expanded(
+          child: Text(
+            value ?? '',
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.black87),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showPackageDetailsBottomSheet(BuildContext context, Packages pkg) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    builder:
+        (context) => Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Wrap(
+            children: [
+              Text(
+                "Détails du colis",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 50),
+              _detailRow("Référence", pkg.reference),
+              _detailRow("Dimensions", pkg.dimensions),
+              _detailRow("Poids", "${pkg.weight} kg"),
+              _detailRow(
+                "Date de reception",
+                DateFormat.yMMMMEEEEd().format(pkg.createdAt!),
+              ),
+              _detailRow("Client", pkg.partnerName ?? "Non trouver"),
+              _detailRow("Téléphone", pkg.partnerPhoneNumber ?? "Non trouver"),
+
+              const SizedBox(height: 60),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: Icon(Icons.check, color: Colors.white),
+                label: Text(
+                  "Confirmer la réception",
+                  style: TextStyle(color: Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  showSuccessTopSnackBar(context, "Réception confirmée !");
+                },
+              ),
+              const SizedBox(height: 70),
+            ],
+          ),
+        ),
+  );
 }

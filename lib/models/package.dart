@@ -7,6 +7,9 @@ class Packages {
   final String? reference;
   final String? dimensions;
   final Status status;
+  final DateTime? createdAt;
+  final String? partnerName;
+  final String? partnerPhoneNumber;
 
   Packages({
     required this.id,
@@ -15,19 +18,22 @@ class Packages {
     this.reference,
     this.dimensions,
     required this.status,
+    this.createdAt,
+    this.partnerName,
+    this.partnerPhoneNumber,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
-    String? statusString = json['status']; // Get status as String?
+    String? statusString = json['status'];
     Status status;
 
     if (statusString != null) {
       status = Status.values.firstWhere(
         (e) => e.toString() == 'Status.+$statusString',
-        orElse: () => Status.CREATE, // Default value if not found
+        orElse: () => Status.CREATE,
       );
     } else {
-      status = Status.CREATE; // Default value if json['status'] is null
+      status = Status.CREATE;
     }
 
     return Packages(
@@ -35,9 +41,12 @@ class Packages {
       name: json['name'],
       reference: json['reference'],
       dimensions: json['dimensions'],
+      createdAt: DateTime.parse(json['createdAt']),
       weight:
           json['weight'] != null ? (json['weight'] as num).toDouble() : null,
       status: status,
+      partnerName: json['partnerName'],
+      partnerPhoneNumber: json['partnerPhoneNumber'],
     );
   }
 }
