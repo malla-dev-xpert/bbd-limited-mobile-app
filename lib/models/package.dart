@@ -1,4 +1,5 @@
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/models/items.dart';
 
 class Packages {
   final int id;
@@ -11,6 +12,7 @@ class Packages {
   final String? partnerName;
   final String? partnerPhoneNumber;
   final int? warehouseId;
+  final List<Item>? items;
 
   Packages({
     required this.id,
@@ -23,6 +25,7 @@ class Packages {
     this.partnerName,
     this.partnerPhoneNumber,
     this.warehouseId,
+    this.items,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
@@ -38,6 +41,12 @@ class Packages {
       status = Status.CREATE;
     }
 
+    List<Item> itemList = [];
+    if (json['items'] != null) {
+      itemList =
+          (json['items'] as List).map((item) => Item.fromJson(item)).toList();
+    }
+
     return Packages(
       id: json['id'] as int,
       name: json['name'],
@@ -50,6 +59,7 @@ class Packages {
       partnerName: json['partnerName'],
       partnerPhoneNumber: json['partnerPhoneNumber'],
       warehouseId: json['warehouseId'],
+      items: itemList,
     );
   }
 }

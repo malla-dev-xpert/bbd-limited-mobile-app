@@ -405,7 +405,10 @@ Widget _detailRow(String label, String? value) {
             value ?? '',
             textAlign: TextAlign.right,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.black87),
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -429,9 +432,27 @@ void _showPackageDetailsBottomSheet(BuildContext context, Packages pkg) {
           padding: const EdgeInsets.all(24.0),
           child: Wrap(
             children: [
-              Text(
-                "Détails du colis",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Détails du colis",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.grey[800],
+                    ),
+                    child: IconButton(
+                      onPressed: () => {Navigator.of(context).pop()},
+                      icon: Icon(Icons.clear, color: Colors.white, size: 15),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 50),
               _detailRow("Référence", pkg.reference),
@@ -443,45 +464,318 @@ void _showPackageDetailsBottomSheet(BuildContext context, Packages pkg) {
               ),
               _detailRow("Client", pkg.partnerName ?? "Non trouver"),
               _detailRow("Téléphone", pkg.partnerPhoneNumber ?? "Non trouver"),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(),
+                  Text(
+                    "La liste des articles",
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 10),
+
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.4,
+                    ),
+                    child:
+                        pkg.items == null || pkg.items!.isEmpty
+                            ? Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text("Pas d’articles pour ce colis."),
+                                  const SizedBox(height: 10),
+                                  ElevatedButton.icon(
+                                    onPressed:
+                                        () =>
+                                            _showAddItemsModal(context, pkg.id),
+                                    icon: Icon(Icons.add, color: Colors.white),
+                                    label: Text(
+                                      "Ajouter un article",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF7F78AF),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: pkg.items!.length,
+                              itemBuilder: (context, index) {
+                                final item = pkg.items![index];
+                                return ListTile(
+                                  leading: Icon(Icons.label),
+                                  title: Text(item.description),
+                                  trailing: Text("x${item.quantity}"),
+                                );
+                              },
+                            ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 60),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: Icon(Icons.check, color: Colors.white),
-                label: Text(
-                  "Confirmer la réception",
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () async {
-                  final user = await authService.getUserInfo();
+              pkg.items != null && pkg.items!.isNotEmpty
+                  ? ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50),
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: Icon(Icons.check, color: Colors.white),
+                    label: Text(
+                      "Confirmer la réception",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () async {
+                      final user = await authService.getUserInfo();
 
-                  try {
-                    await packageServices.receivePackage(
-                      pkg.id,
-                      user?.id.toInt(),
-                      pkg.warehouseId,
-                    );
-                    Navigator.of(context).pop();
-                    showSuccessTopSnackBar(context, "Réception confirmée !");
-                  } catch (e) {
-                    showErrorTopSnackBar(
-                      context,
-                      "Erreur lors de la réception",
-                    );
-                  }
-                  // Navigator.of(context).pop();
-                  // showSuccessTopSnackBar(context, "Réception confirmée !");
-                },
-              ),
+                      try {
+                        await packageServices.receivePackage(
+                          pkg.id,
+                          user?.id.toInt(),
+                          pkg.warehouseId,
+                        );
+                        Navigator.of(context).pop();
+                        showSuccessTopSnackBar(
+                          context,
+                          "Réception confirmée !",
+                        );
+                      } catch (e) {
+                        showErrorTopSnackBar(
+                          context,
+                          "Erreur lors de la réception",
+                        );
+                      }
+                      // Navigator.of(context).pop();
+                      // showSuccessTopSnackBar(context, "Réception confirmée !");
+                    },
+                  )
+                  : Text(""),
               const SizedBox(height: 70),
             ],
           ),
         ),
+  );
+}
+
+void _showAddItemsModal(BuildContext context, int packageId) {
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController quantityController = TextEditingController();
+  final List<Map<String, dynamic>> localItems = [];
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Ajouter des articles au colis",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Description input
+                  TextFormField(
+                    controller: descriptionController,
+                    autocorrect: false,
+                    decoration: InputDecoration(
+                      labelText: 'Description du colis',
+                      prefixIcon: const Icon(
+                        Icons.description,
+                        color: Colors.black,
+                      ), // Change icon color to black
+                      fillColor: Colors.white, // Set background color to white
+                      filled: true, // Enable filled background
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrer la description';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Quantity input
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: quantityController,
+                          autocorrect: false,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Quantité de colis',
+                            prefixIcon: const Icon(
+                              Icons.numbers,
+                              color: Colors.black,
+                            ), // Change icon color to black
+                            fillColor:
+                                Colors.white, // Set background color to white
+                            filled: true, // Enable filled background
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez entrer la quantité';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+
+                      // Ajouter button
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          final description = descriptionController.text.trim();
+                          final quantity = double.tryParse(
+                            quantityController.text.trim(),
+                          );
+
+                          if (description.isNotEmpty && quantity != null) {
+                            setState(() {
+                              localItems.add({
+                                'description': description,
+                                'quantity': quantity,
+                              });
+                              descriptionController.clear();
+                              quantityController.clear();
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add, color: Colors.white),
+                        label: Text(
+                          "Ajouter",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7F78AF),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  const SizedBox(height: 10),
+
+                  // Liste des articles ajoutés
+                  if (localItems.isNotEmpty)
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: localItems.length,
+                        itemBuilder: (context, index) {
+                          final item = localItems[index];
+                          return ListTile(
+                            title: Text(item['description']),
+                            subtitle: Text("Quantité : ${item['quantity']}"),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  localItems.removeAt(index);
+                                });
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        "Aucun article ajouté.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  // Boutons d'action
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          "Annuler",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                      if (localItems.isNotEmpty)
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            // TODO: Appel API pour enregistrer les articles
+                            Navigator.pop(context);
+                            showSuccessTopSnackBar(
+                              context,
+                              "Articles ajoutés avec succès !",
+                            );
+                          },
+                          icon: Icon(Icons.check_circle, color: Colors.white),
+                          label: Text(
+                            "Confirmer",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    },
   );
 }
