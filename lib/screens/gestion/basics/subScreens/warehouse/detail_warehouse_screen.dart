@@ -1,6 +1,8 @@
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
 class WarehouseDetailPage extends StatefulWidget {
@@ -24,6 +26,7 @@ class WarehouseDetailPage extends StatefulWidget {
 class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
   final TextEditingController searchController = TextEditingController();
   final PackageServices _packageServices = PackageServices();
+  final AuthService _authService = AuthService();
 
   List<Packages> _allPackages = [];
   List<Packages> _filteredPackages = [];
@@ -40,6 +43,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
       final packages = await _packageServices.findByWarehouse(
         widget.warehouseId.toInt(),
       );
+
       setState(() {
         _allPackages = packages;
         _filteredPackages = packages;
@@ -125,43 +129,55 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                   children: [
                     Row(
                       spacing: 5,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.warehouse,
                           size: 20,
                           color: const Color(0xFF7F78AF),
                         ),
-                        Text(
-                          widget.name!,
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Text(
+                            widget.name!,
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                            softWrap: true,
+                          ),
                         ),
                       ],
                     ),
                     Row(
                       spacing: 5,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.map_rounded,
                           size: 20,
                           color: const Color(0xFF7F78AF),
                         ),
-                        Text(
-                          widget.adresse!,
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Text(
+                            widget.adresse!,
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                            softWrap: true,
+                          ),
                         ),
                       ],
                     ),
                     Row(
                       spacing: 5,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.type_specimen_rounded,
                           size: 20,
                           color: const Color(0xFF7F78AF),
                         ),
-                        Text(
-                          widget.storageType!,
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Text(
+                            widget.storageType!,
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                            softWrap: true,
+                          ),
                         ),
                       ],
                     ),
@@ -253,21 +269,69 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                         itemCount: _filteredPackages.length,
                         itemBuilder: (context, index) {
                           final pkg = _filteredPackages[index];
-                          return ListTile(
-                            leading: Icon(
-                              Icons.inventory,
-                              color:
-                                  pkg.status == Status.PENDING
-                                      ? Colors.orange
-                                      : Colors.green,
+                          return Dismissible(
+                            key: Key(pkg.id.toString()),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              padding: const EdgeInsets.only(right: 16),
+                              color: Colors.red,
+                              alignment: Alignment.centerRight,
+                              child: Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                             ),
-                            title: Text(pkg.reference!),
-                            subtitle: Text("Dimensions: ${pkg.dimensions}"),
-                            trailing: Text(
-                              "Poids: ${pkg.weight!} kg",
-                              style: TextStyle(
-                                color: const Color(0xFF7F78AF),
-                                fontWeight: FontWeight.w600,
+                            confirmDismiss: (direction) async {
+                              try {
+                                final user = await _authService.getUserInfo();
+                                if (user == null) {
+                                  showErrorTopSnackBar(
+                                    context,
+                                    "Erreur: Utilisateur non connecté",
+                                  );
+                                  return;
+                                }
+
+                                await _packageServices.deletePackage(
+                                  pkg.id,
+                                  user.id.toInt(),
+                                );
+
+                                setState(() {
+                                  _allPackages.removeWhere(
+                                    (d) => d.id == pkg.id,
+                                  );
+                                  _filteredPackages = List.from(_allPackages);
+                                });
+
+                                showSuccessTopSnackBar(
+                                  context,
+                                  "Colis supprimé avec succès",
+                                );
+                              } catch (e) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Erreur lors de la suppression",
+                                );
+                              }
+                            },
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.inventory,
+                                color:
+                                    pkg.status == Status.PENDING
+                                        ? Colors.orange
+                                        : Colors.green,
+                              ),
+                              title: Text(pkg.reference!),
+                              subtitle: Text("Dimensions: ${pkg.dimensions}"),
+                              trailing: Text(
+                                "Poids: ${pkg.weight!} kg",
+                                style: TextStyle(
+                                  color: const Color(0xFF7F78AF),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           );

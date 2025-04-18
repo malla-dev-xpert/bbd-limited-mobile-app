@@ -19,4 +19,18 @@ class PackageServices {
       throw Exception("Erreur lors du chargement des colis");
     }
   }
+
+  Future<void> deletePackage(int id, int? userId) async {
+    final url = Uri.parse("$baseUrl/packages/delete/$id?userId=$userId");
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 201) {
+        return;
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
 }
