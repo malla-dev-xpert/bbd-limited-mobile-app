@@ -414,6 +414,9 @@ Widget _detailRow(String label, String? value) {
 }
 
 void _showPackageDetailsBottomSheet(BuildContext context, Packages pkg) {
+  final PackageServices packageServices = PackageServices();
+  final AuthService authService = AuthService();
+
   showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -455,9 +458,25 @@ void _showPackageDetailsBottomSheet(BuildContext context, Packages pkg) {
                   "Confirmer la réception",
                   style: TextStyle(color: Colors.white),
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  showSuccessTopSnackBar(context, "Réception confirmée !");
+                onPressed: () async {
+                  final user = await authService.getUserInfo();
+
+                  try {
+                    await packageServices.receivePackage(
+                      pkg.id,
+                      user?.id.toInt(),
+                      pkg.warehouseId,
+                    );
+                    Navigator.of(context).pop();
+                    showSuccessTopSnackBar(context, "Réception confirmée !");
+                  } catch (e) {
+                    showErrorTopSnackBar(
+                      context,
+                      "Erreur lors de la réception",
+                    );
+                  }
+                  // Navigator.of(context).pop();
+                  // showSuccessTopSnackBar(context, "Réception confirmée !");
                 },
               ),
               const SizedBox(height: 70),

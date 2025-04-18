@@ -10,6 +10,7 @@ class Packages {
   final DateTime? createdAt;
   final String? partnerName;
   final String? partnerPhoneNumber;
+  final int? warehouseId;
 
   Packages({
     required this.id,
@@ -21,6 +22,7 @@ class Packages {
     this.createdAt,
     this.partnerName,
     this.partnerPhoneNumber,
+    this.warehouseId,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,7 @@ class Packages {
       status: status,
       partnerName: json['partnerName'],
       partnerPhoneNumber: json['partnerPhoneNumber'],
+      warehouseId: json['warehouseId'],
     );
   }
 }
