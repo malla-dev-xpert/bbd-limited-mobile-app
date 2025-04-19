@@ -7,7 +7,7 @@ class Packages {
   final double? weight;
   final String? reference;
   final String? dimensions;
-  final Status status;
+  Status status;
   final DateTime? createdAt;
   final String? partnerName;
   final String? partnerPhoneNumber;
@@ -34,7 +34,7 @@ class Packages {
 
     if (statusString != null) {
       status = Status.values.firstWhere(
-        (e) => e.toString() == 'Status.+$statusString',
+        (e) => e.name.toUpperCase() == statusString.toUpperCase(),
         orElse: () => Status.CREATE,
       );
     } else {

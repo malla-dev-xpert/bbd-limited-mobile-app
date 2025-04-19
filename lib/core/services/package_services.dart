@@ -49,4 +49,28 @@ class PackageServices {
       throw Exception("Erreur lors de la réception du colis : $e");
     }
   }
+
+  Future<void> addItemsToPackage(
+    int packageId,
+    List<Map<String, dynamic>> items,
+    int userId,
+  ) async {
+    final url = Uri.parse(
+      '$baseUrl/packages/$packageId/add-items?userId=$userId',
+    );
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(items),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to add items to package');
+      }
+    } catch (e) {
+      throw Exception('Error adding items to package: $e');
+    }
+  }
 }
