@@ -33,11 +33,11 @@ Widget _detailRow(String label, String? value) {
   );
 }
 
-Future<bool?> showPackageDetailsBottomSheet(
+void showPackageDetailsBottomSheet(
   BuildContext context,
   Packages pkg,
   int warehouseId,
-) {
+) async {
   final PackageServices packageServices = PackageServices();
   final AuthService authService = AuthService();
   final ItemServices itemServices = ItemServices();
@@ -116,8 +116,19 @@ Future<bool?> showPackageDetailsBottomSheet(
                           ),
                           pkg.status == Status.PENDING
                               ? TextButton.icon(
-                                onPressed:
-                                    () => showAddItemsModal(context, pkg.id),
+                                onPressed: () async {
+                                  final result = await showAddItemsModal(
+                                    context,
+                                    pkg.id,
+                                  );
+                                  if (result == true) {
+                                    final updatedItems = await itemServices
+                                        .findByPackageId(pkg.id);
+                                    setState(() {
+                                      pkg.items = updatedItems;
+                                    });
+                                  }
+                                },
                                 label: Text("Ajouter des articles"),
                                 icon: Icon(Icons.add),
                               )
@@ -226,6 +237,7 @@ Future<bool?> showPackageDetailsBottomSheet(
                               "Réception confirmée !",
                             );
                           } catch (e) {
+                            print(e);
                             showErrorTopSnackBar(
                               context,
                               "Erreur lors de la réception",
