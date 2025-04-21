@@ -323,11 +323,17 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                               }
                             },
                             child: ListTile(
-                              onTap:
-                                  () => showPackageDetailsBottomSheet(
-                                    context,
-                                    pkg,
-                                  ),
+                              onTap: () async {
+                                final updated = showPackageDetailsBottomSheet(
+                                  context,
+                                  pkg,
+                                  widget.warehouseId.toInt(),
+                                );
+
+                                if (updated == true && mounted) {
+                                  fetchPackages();
+                                }
+                              },
                               leading: Icon(
                                 Icons.inventory,
                                 color: getStatusColor(pkg.status),

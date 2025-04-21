@@ -327,7 +327,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                                       }
 
                                       setModalState(() {
-                                        _isLoading = true;
+                                        _isLoading = false;
                                         _errorMessage = null;
                                       });
 
