@@ -20,6 +20,41 @@ class PackageServices {
     }
   }
 
+  Future<int?> create(
+    String reference,
+    String dimension,
+    double weight,
+    int userId,
+    int warehouseId,
+    int partnerId,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+          '$baseUrl/packages/create?userId=$userId&warehouseId=$warehouseId&partnerId=$partnerId',
+        ),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "reference": reference,
+          "dimensions": dimension,
+          "weight": weight,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse['id'];
+      } else if (response.statusCode == 409 &&
+          response.body == 'Ce colis existe deja !') {
+        return null;
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion: $e");
+    }
+  }
+
   Future<void> deletePackage(int id, int? userId) async {
     final url = Uri.parse("$baseUrl/packages/delete/$id?userId=$userId");
 
