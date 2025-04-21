@@ -10,6 +10,7 @@ Widget buildTextField({
   return TextFormField(
     controller: controller,
     keyboardType: keyboardType,
+    autocorrect: false,
     decoration: InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, color: Colors.black),
