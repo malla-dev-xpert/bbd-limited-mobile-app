@@ -29,7 +29,7 @@ void showSuccessTopSnackBar(BuildContext context, String message) {
 
   Overlay.of(context).insert(overlayEntry);
 
-  Future.delayed(Duration(seconds: 2), () {
+  Future.delayed(Duration(seconds: 3), () {
     overlayEntry?.remove();
   });
 }
@@ -63,7 +63,7 @@ void showErrorTopSnackBar(BuildContext context, String message) {
 
   Overlay.of(context).insert(overlayEntry);
 
-  Future.delayed(Duration(seconds: 2), () {
+  Future.delayed(Duration(seconds: 3), () {
     overlayEntry?.remove();
   });
 }
