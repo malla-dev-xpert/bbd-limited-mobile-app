@@ -1,8 +1,9 @@
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
-import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_items_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -32,35 +33,6 @@ Widget _detailRow(String label, String? value) {
   );
 }
 
-Widget _confirmationButton({
-  required bool isLoading,
-  required VoidCallback onPressed,
-}) {
-  return ElevatedButton.icon(
-    style: ElevatedButton.styleFrom(
-      minimumSize: Size(double.infinity, 50),
-      backgroundColor: Colors.green,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-    icon:
-        isLoading
-            ? SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-            : Icon(Icons.check, color: Colors.white),
-    label: Text(
-      isLoading ? "Confirmation..." : "Confirmer la réception",
-      style: TextStyle(color: Colors.white),
-    ),
-    onPressed: isLoading ? null : onPressed,
-  );
-}
-
 Future<bool?> showPackageDetailsBottomSheet(
   BuildContext context,
   Packages pkg,
@@ -68,6 +40,7 @@ Future<bool?> showPackageDetailsBottomSheet(
 ) {
   final PackageServices packageServices = PackageServices();
   final AuthService authService = AuthService();
+  final ItemServices itemServices = ItemServices();
   bool isLoading = false;
 
   return showModalBottomSheet(
@@ -134,9 +107,22 @@ Future<bool?> showPackageDetailsBottomSheet(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Divider(),
-                      Text(
-                        "La liste des articles",
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "La liste des articles",
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          pkg.status == Status.PENDING
+                              ? TextButton.icon(
+                                onPressed:
+                                    () => showAddItemsModal(context, pkg.id),
+                                label: Text("Ajouter des articles"),
+                                icon: Icon(Icons.add),
+                              )
+                              : Text(""),
+                        ],
                       ),
                       const SizedBox(height: 10),
 
@@ -153,11 +139,21 @@ Future<bool?> showPackageDetailsBottomSheet(
                                       Text("Pas d’articles pour ce colis."),
                                       const SizedBox(height: 10),
                                       ElevatedButton.icon(
-                                        onPressed:
-                                            () => showAddItemsModal(
-                                              context,
-                                              pkg.id,
-                                            ),
+                                        onPressed: () async {
+                                          final result = showAddItemsModal(
+                                            context,
+                                            pkg.id,
+                                          );
+                                          if (result == true) {
+                                            final updatedPackage =
+                                                await itemServices
+                                                    .findByPackageId(pkg.id);
+
+                                            setState(() {
+                                              pkg.items = updatedPackage;
+                                            });
+                                          }
+                                        },
                                         icon: Icon(
                                           Icons.add,
                                           color: Colors.white,
@@ -200,7 +196,10 @@ Future<bool?> showPackageDetailsBottomSheet(
                   pkg.items != null &&
                           pkg.items!.isNotEmpty &&
                           pkg.status != Status.RECEIVED
-                      ? _confirmationButton(
+                      ? confirmationButton(
+                        subLabel: "Confirmation...",
+                        icon: Icons.check,
+                        label: "Confirmer la réception",
                         isLoading: isLoading,
                         onPressed: () async {
                           setState(() {

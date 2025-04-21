@@ -12,7 +12,7 @@ class Packages {
   final String? partnerName;
   final String? partnerPhoneNumber;
   final int? warehouseId;
-  final List<Item>? items;
+  List<Item>? items;
 
   Packages({
     required this.id,

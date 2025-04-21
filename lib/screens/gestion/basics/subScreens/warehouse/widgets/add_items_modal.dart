@@ -1,10 +1,11 @@
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
-void showAddItemsModal(BuildContext context, int packageId) {
+Future<bool?> showAddItemsModal(BuildContext context, int packageId) async {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final List<Map<String, dynamic>> localItems = [];
@@ -13,7 +14,7 @@ void showAddItemsModal(BuildContext context, int packageId) {
   final ItemServices itemServices = ItemServices();
   bool isLoading = false;
 
-  showDialog(
+  return showDialog(
     context: context,
     barrierDismissible: false,
     builder: (context) {
@@ -190,75 +191,54 @@ void showAddItemsModal(BuildContext context, int packageId) {
 
                   // Boutons d'action
                   if (localItems.isNotEmpty)
-                    ElevatedButton.icon(
-                      onPressed:
-                          isLoading
-                              ? null
-                              : () async {
-                                setState(() {
-                                  isLoading = true;
-                                });
+                    confirmationButton(
+                      isLoading: isLoading,
+                      onPressed: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
 
-                                final user = await authService.getUserInfo();
+                        final user = await authService.getUserInfo();
 
-                                if (user == null) {
-                                  setState(() => isLoading = false);
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur: Utilisateur non connecté",
-                                  );
-                                  return;
-                                }
+                        if (user == null) {
+                          setState(() => isLoading = false);
+                          showErrorTopSnackBar(
+                            context,
+                            "Erreur: Utilisateur non connecté",
+                          );
+                          return;
+                        }
 
-                                if (localItems.isEmpty) {
-                                  setState(() => isLoading = false);
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur: Aucun article à ajouter",
-                                  );
-                                  return;
-                                }
+                        if (localItems.isEmpty) {
+                          setState(() => isLoading = false);
+                          showErrorTopSnackBar(
+                            context,
+                            "Erreur: Aucun article à ajouter",
+                          );
+                          return;
+                        }
 
-                                await packageServices.addItemsToPackage(
-                                  packageId,
-                                  localItems,
-                                  user.id.toInt(),
-                                );
+                        await packageServices.addItemsToPackage(
+                          packageId,
+                          localItems,
+                          user.id.toInt(),
+                        );
 
-                                setState(() {
-                                  isLoading = false;
-                                  localItems.clear();
-                                  itemServices.findByPackageId(packageId);
-                                });
+                        setState(() {
+                          isLoading = false;
+                          localItems.clear();
+                          itemServices.findByPackageId(packageId);
+                        });
 
-                                Navigator.pop(context);
-                                showSuccessTopSnackBar(
-                                  context,
-                                  "Articles ajoutés avec succès !",
-                                );
-                              },
-                      icon:
-                          isLoading
-                              ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                              : Icon(Icons.check_circle, color: Colors.white),
-                      label: Text(
-                        isLoading ? "Chargement..." : "Confirmer",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        minimumSize: Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                        Navigator.pop(context, true);
+                        showSuccessTopSnackBar(
+                          context,
+                          "Articles ajoutés avec succès !",
+                        );
+                      },
+                      label: "Confirmer",
+                      icon: Icons.check_circle_outline_rounded,
+                      subLabel: "Confirmation...",
                     ),
                 ],
               ),
