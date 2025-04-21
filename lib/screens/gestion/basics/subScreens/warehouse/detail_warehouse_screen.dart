@@ -2,6 +2,7 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
     fetchPackages();
   }
 
-  void fetchPackages() async {
+  Future<void> fetchPackages() async {
     try {
       final packages = await _packageServices.findByWarehouse(
         widget.warehouseId.toInt(),
@@ -51,6 +52,15 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
       });
     } catch (e) {
       print("Erreur de récupération des colis : $e");
+    }
+  }
+
+  void _openAddPackageModal() async {
+    final result = await showAddPackageModal(context, widget.warehouseId);
+
+    if (result == true) {
+      await fetchPackages();
+      setState(() {});
     }
   }
 
@@ -222,7 +232,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: _openAddPackageModal,
                     icon: const Icon(Icons.add, color: Colors.white, size: 24),
                     padding: const EdgeInsets.all(8),
                     constraints: const BoxConstraints(
@@ -324,15 +334,11 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                             },
                             child: ListTile(
                               onTap: () async {
-                                final updated = showPackageDetailsBottomSheet(
+                                showPackageDetailsBottomSheet(
                                   context,
                                   pkg,
                                   widget.warehouseId.toInt(),
                                 );
-
-                                if (updated == true && mounted) {
-                                  fetchPackages();
-                                }
                               },
                               leading: Icon(
                                 Icons.inventory,

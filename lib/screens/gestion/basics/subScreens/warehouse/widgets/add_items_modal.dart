@@ -1,4 +1,5 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
@@ -52,31 +53,15 @@ Future<bool?> showAddItemsModal(BuildContext context, int packageId) async {
                   const SizedBox(height: 40),
 
                   // Description input
-                  TextFormField(
+                  buildTextField(
                     controller: descriptionController,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: 'Description du colis',
-                      prefixIcon: const Icon(
-                        Icons.description,
-                        color: Colors.black,
-                      ), // Change icon color to black
-                      fillColor: Colors.white, // Set background color to white
-                      filled: true, // Enable filled background
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez entrer la description';
-                      }
-                      return null;
-                    },
+                    label: "Description de l'article",
+                    icon: Icons.description,
+                    validator:
+                        (v) =>
+                            v == null || v.isEmpty
+                                ? 'Veuillez entrer la description'
+                                : null,
                   ),
                   const SizedBox(height: 10),
 
@@ -87,35 +72,16 @@ Future<bool?> showAddItemsModal(BuildContext context, int packageId) async {
                     spacing: 10,
                     children: [
                       Expanded(
-                        child: TextFormField(
+                        child: buildTextField(
                           controller: quantityController,
-                          autocorrect: false,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Quantité de colis',
-                            prefixIcon: const Icon(
-                              Icons.numbers,
-                              color: Colors.black,
-                            ), // Change icon color to black
-                            fillColor:
-                                Colors.white, // Set background color to white
-                            filled: true, // Enable filled background
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer la quantité';
-                            }
-                            return null;
-                          },
+                          label: "Quantité",
+                          icon: Icons.numbers,
+                          validator:
+                              (v) =>
+                                  v == null || v.isEmpty
+                                      ? 'Veuillez entrer la quantité'
+                                      : null,
                         ),
                       ),
 
