@@ -3,20 +3,25 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
 Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController refController = TextEditingController();
   final TextEditingController dimensionController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final List<Map<String, dynamic>> localItems = [];
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
   final ItemServices itemServices = ItemServices();
+  final PartnerServices partnerServices = PartnerServices();
+  List<Partner> clients = [];
   bool isLoading = false;
+  Partner? selectedClient;
 
   return showDialog(
     context: context,
@@ -27,10 +32,35 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
         insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
         child: StatefulBuilder(
           builder: (context, setState) {
+            Future<void> loadClients() async {
+              try {
+                final data = await partnerServices.fetchPartnersByType(
+                  'CLIENT',
+                  page: 0,
+                );
+
+                setState(() {
+                  clients = data;
+                  isLoading = false;
+                });
+              } catch (e, stackTrace) {
+                setState(() => isLoading = false);
+                showErrorTopSnackBar(
+                  context,
+                  "Erreur lors du chargement des partenaires",
+                );
+              }
+            }
+
+            if (clients.isEmpty && !isLoading) {
+              isLoading = true;
+              loadClients();
+            }
+
             return Container(
               width: MediaQuery.of(context).size.width * 0.9,
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
+                maxHeight: MediaQuery.of(context).size.height * 0.9,
               ),
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -60,7 +90,7 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       buildTextField(
-                        controller: nameController,
+                        controller: refController,
                         label: "Libellé du colis",
                         icon: Icons.description,
                         validator:
@@ -101,6 +131,52 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                             ),
                           ),
                         ],
+                      ),
+
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<Partner>(
+                        isExpanded: true,
+                        value: selectedClient,
+                        onChanged: (Partner? value) {
+                          setState(() {
+                            selectedClient = value;
+                          });
+                        },
+                        items:
+                            clients.map((client) {
+                              return DropdownMenuItem<Partner>(
+                                value: client,
+                                child: Row(
+                                  children: [
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[700],
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                        decoration: InputDecoration(
+                          labelText: "Choisir un client",
+                          prefixIcon: Icon(Icons.person, color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        dropdownColor: Colors.white,
                       ),
                     ],
                   ),
@@ -179,8 +255,6 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                       ),
                       const SizedBox(height: 10),
 
-                      const SizedBox(height: 10),
-
                       // Liste des articles ajoutés
                       if (localItems.isNotEmpty)
                         SizedBox(
@@ -238,6 +312,15 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                                 return;
                               }
 
+                              if (selectedClient == null) {
+                                setState(() => isLoading = false);
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Veuillez sélectionner un client.",
+                                );
+                                return;
+                              }
+
                               if (localItems.isEmpty) {
                                 setState(() => isLoading = false);
                                 showErrorTopSnackBar(
@@ -248,12 +331,12 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                               }
 
                               final packageId = await packageServices.create(
-                                nameController.text,
+                                refController.text,
                                 dimensionController.text,
                                 double.parse(weightController.text),
                                 user.id,
                                 warehouseId,
-                                1,
+                                selectedClient!.id.toInt(),
                               );
 
                               if (packageId == null) {
