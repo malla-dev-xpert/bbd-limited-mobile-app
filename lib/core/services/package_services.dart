@@ -20,8 +20,8 @@ class PackageServices {
     }
   }
 
-  Future<List<Packages>> findAll() async {
-    final response = await http.get(Uri.parse('$baseUrl/packages'));
+  Future<List<Packages>> findAll({int page = 0}) async {
+    final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(response.body);

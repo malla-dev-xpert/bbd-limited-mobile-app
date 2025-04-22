@@ -11,6 +11,8 @@ class Packages {
   final DateTime? createdAt;
   final String? partnerName;
   final String? partnerPhoneNumber;
+  final String? warehouseName;
+  final String? warehouseAddress;
   final int? warehouseId;
   List<Item>? items;
 
@@ -26,6 +28,8 @@ class Packages {
     this.partnerPhoneNumber,
     this.warehouseId,
     this.items,
+    this.warehouseName,
+    this.warehouseAddress,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
@@ -58,6 +62,8 @@ class Packages {
       status: status,
       partnerName: json['partnerName'],
       partnerPhoneNumber: json['partnerPhoneNumber'],
+      warehouseName: json['warehouseName'],
+      warehouseAddress: json['warehouseAddress'],
       warehouseId: json['warehouseId'],
       items: itemList,
     );

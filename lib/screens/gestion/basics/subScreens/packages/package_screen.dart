@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package_to_warehouse.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -21,33 +22,61 @@ class _PackageScreen extends State<PackageScreen> {
   List<Packages> _filteredPackages = [];
   String? _currentFilter;
 
+  bool _isLoading = false;
+  bool _hasMoreData = true;
+  int currentPage = 0;
+
+  final StreamController<void> _refreshController =
+      StreamController<void>.broadcast();
+
   @override
   void initState() {
     super.initState();
     fetchPackages();
+    _refreshController.stream.listen((_) {
+      fetchPackages(reset: true);
+    });
   }
 
-  Future<void> fetchPackages() async {
+  @override
+  void dispose() {
+    _refreshController.close();
+    super.dispose();
+  }
+
+  Future<void> fetchPackages({bool reset = false}) async {
+    if (_isLoading || (!reset && !_hasMoreData)) return;
+
+    setState(() {
+      _isLoading = true;
+      if (reset) {
+        currentPage = 0;
+        _hasMoreData = true;
+        _allPackages = [];
+      }
+    });
     try {
-      final packages = await _packageServices.findAll();
+      final packages = await _packageServices.findAll(page: currentPage);
 
       setState(() {
-        _allPackages = packages;
-        _filteredPackages = packages;
+        _allPackages ??= [];
+        if (reset) _allPackages.clear();
+        _allPackages.addAll(packages);
+        _filteredPackages = List.from(_allPackages);
+
+        if (packages.isEmpty || packages.length < 10) {
+          _hasMoreData = false;
+        } else {
+          currentPage++;
+        }
       });
     } catch (e) {
+      showErrorTopSnackBar(context, "Erreur de chargement des colis.");
       print("Erreur de récupération des colis : $e");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
-
-  // void _openAddPackageModal() async {
-  //   final result = await showAddPackageModal(context, widget.warehouseId);
-
-  //   if (result == true) {
-  //     await fetchPackages();
-  //     setState(() {});
-  //   }
-  // }
 
   void filterPackages(String query) {
     setState(() {
@@ -92,15 +121,8 @@ class _PackageScreen extends State<PackageScreen> {
     filterPackages(searchController.text);
   }
 
-  // void onAddPackagePressed() {
-  //   // Tu peux ici ouvrir une modal ou naviguer vers une page d'ajout
-  //   print("Ajouter un colis à l'entrepôt ${widget.warehouseId}");
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
@@ -188,81 +210,112 @@ class _PackageScreen extends State<PackageScreen> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child:
-                  _filteredPackages.isEmpty
-                      ? Center(child: Text("Aucun colis trouvé."))
-                      : ListView.builder(
-                        itemCount: _filteredPackages.length,
-                        itemBuilder: (context, index) {
-                          final pkg = _filteredPackages[index];
-                          return Dismissible(
-                            key: Key(pkg.id.toString()),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              padding: const EdgeInsets.only(right: 16),
-                              color: Colors.red,
-                              alignment: Alignment.centerRight,
-                              child: Icon(
-                                Icons.delete,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              try {
-                                final user = await _authService.getUserInfo();
-                                if (user == null) {
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur: Utilisateur non connecté",
-                                  );
-                                  return;
-                                }
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (scrollInfo) {
+                  if (scrollInfo.metrics.pixels ==
+                          scrollInfo.metrics.maxScrollExtent &&
+                      !_isLoading &&
+                      _hasMoreData) {
+                    fetchPackages();
+                  }
+                  return false;
+                },
+                child:
+                    _filteredPackages.isEmpty
+                        ? Center(child: Text("Aucun colis trouvé."))
+                        : ListView.builder(
+                          physics: AlwaysScrollableScrollPhysics(),
+                          itemCount:
+                              _filteredPackages.length +
+                              (_hasMoreData && _isLoading ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index >= _filteredPackages.length) {
+                              return Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            final pkg = _filteredPackages[index];
 
-                                await _packageServices.deletePackage(
-                                  pkg.id,
-                                  user.id.toInt(),
-                                );
-
-                                setState(() {
-                                  _allPackages.removeWhere(
-                                    (d) => d.id == pkg.id,
-                                  );
-                                  _filteredPackages = List.from(_allPackages);
-                                });
-
-                                showSuccessTopSnackBar(
-                                  context,
-                                  "Colis supprimé avec succès",
-                                );
-                              } catch (e) {
-                                showErrorTopSnackBar(
-                                  context,
-                                  "Erreur lors de la suppression",
-                                );
-                              }
-                            },
-                            child: ListTile(
-                              onTap: () async {
-                                showPackageDetailsBottomSheet(context, pkg, 1);
-                              },
-                              leading: Icon(
-                                Icons.inventory,
-                                color: getStatusColor(pkg.status),
-                              ),
-                              title: Text(pkg.reference!),
-                              subtitle: Text("Dimensions: ${pkg.dimensions}"),
-                              trailing: Text(
-                                "Poids: ${pkg.weight!} kg",
-                                style: TextStyle(
-                                  color: const Color(0xFF7F78AF),
-                                  fontWeight: FontWeight.w600,
+                            return Dismissible(
+                              key: Key(pkg.id.toString()),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                padding: const EdgeInsets.only(right: 16),
+                                color: Colors.red,
+                                alignment: Alignment.centerRight,
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                  size: 30,
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                              confirmDismiss: (direction) async {
+                                try {
+                                  final user = await _authService.getUserInfo();
+                                  if (user == null) {
+                                    showErrorTopSnackBar(
+                                      context,
+                                      "Erreur: Utilisateur non connecté",
+                                    );
+                                    return;
+                                  }
+
+                                  await _packageServices.deletePackage(
+                                    pkg.id,
+                                    user.id.toInt(),
+                                  );
+
+                                  setState(() {
+                                    _allPackages.removeWhere(
+                                      (d) => d.id == pkg.id,
+                                    );
+                                    _filteredPackages = List.from(_allPackages);
+                                  });
+
+                                  showSuccessTopSnackBar(
+                                    context,
+                                    "Colis supprimé avec succès",
+                                  );
+                                } catch (e) {
+                                  showErrorTopSnackBar(
+                                    context,
+                                    "Erreur lors de la suppression",
+                                  );
+                                }
+                              },
+                              child: ListTile(
+                                onTap: () async {
+                                  showPackageDetailsBottomSheet(
+                                    context,
+                                    pkg,
+                                    1,
+                                  );
+                                },
+                                leading: Icon(
+                                  Icons.inventory,
+                                  color: getStatusColor(pkg.status),
+                                ),
+                                title: Text(pkg.reference!),
+                                subtitle: Text(
+                                  "Dimensions: ${pkg.dimensions}" +
+                                      "\n" +
+                                      "Nombre d'articles: ${pkg.items!.length}",
+                                ),
+                                trailing: Text(
+                                  "Poids: ${pkg.weight!} kg",
+                                  style: TextStyle(
+                                    color: const Color(0xFF7F78AF),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+              ),
             ),
           ],
         ),
