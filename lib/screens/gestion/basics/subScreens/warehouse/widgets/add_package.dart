@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -6,8 +8,8 @@ import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
 
 Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
   final TextEditingController descriptionController = TextEditingController();
@@ -135,68 +137,23 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                       ),
 
                       const SizedBox(height: 10),
-                      DropdownSearch<Partner>(
-                        selectedItem: selectedClient,
-                        asyncItems: (String filter) async {
-                          final results = await partnerServices
-                              .fetchPartnersByType(
-                                'CLIENT',
-                                page:
-                                    0, // optionnel si backend gère la recherche
-                              );
-                          return results;
-                        },
-                        compareFn: (a, b) => a.id == b.id,
-                        onChanged: (Partner? value) {
-                          setState(() {
-                            selectedClient = value;
-                          });
-                        },
-                        dropdownBuilder:
-                            (context, selectedItem) => Expanded(
-                              child: Text(
-                                selectedItem == null
-                                    ? "Choisir un client..."
-                                    : '${selectedItem.firstName} ${selectedItem.lastName} | ${selectedItem.phoneNumber}',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                        popupProps: PopupProps.dialog(
-                          showSearchBox: true,
-                          searchFieldProps: TextFieldProps(
-                            autocorrect: false,
-                            decoration: InputDecoration(
-                              labelText: "Rechercher un client...",
-                              prefixIcon: Icon(Icons.search),
-                              fillColor: Colors.white,
-                              filled: true,
-                            ),
-                          ),
-                          dialogProps: DialogProps(
-                            backgroundColor: Colors.white,
-                          ),
-                          constraints: BoxConstraints(
-                            minHeight: MediaQuery.of(context).size.height * 0.3,
-                            maxHeight: MediaQuery.of(context).size.height * 0.6,
-                            maxWidth: MediaQuery.of(context).size.width * 0.8,
-                            minWidth: MediaQuery.of(context).size.width * 0.8,
-                          ),
-                          itemBuilder:
-                              (context, partner, isSelected) => ListTile(
-                                title: Text(
-                                  '${partner.firstName} ${partner.lastName}',
-                                ),
-                                subtitle: Text(partner.phoneNumber),
-                              ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
                         ),
-                        dropdownDecoratorProps: DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: "Client",
-                            prefixIcon: Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                        child: CustomDropdown<String>.search(
+                          hintText: 'Choisir un client...',
+                          items:
+                              clients
+                                  .map(
+                                    (e) =>
+                                        '${e.firstName} ${e.lastName} | ${e.phoneNumber}',
+                                  )
+                                  .toList(),
+                          onChanged: (value) {
+                            log('changing value to: $value');
+                          },
                         ),
                       ),
                     ],
