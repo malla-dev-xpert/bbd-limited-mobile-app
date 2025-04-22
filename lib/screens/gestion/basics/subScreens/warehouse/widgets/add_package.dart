@@ -152,7 +152,25 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                                   )
                                   .toList(),
                           onChanged: (value) {
-                            log('changing value to: $value');
+                            setState(() {
+                              // Trouver le client sélectionné
+                              selectedClient = clients.firstWhere(
+                                (client) =>
+                                    '${client.firstName} ${client.lastName} | ${client.phoneNumber}' ==
+                                    value,
+                                orElse:
+                                    () => Partner(
+                                      id: 0,
+                                      firstName: '',
+                                      lastName: '',
+                                      phoneNumber: '',
+                                      email: '',
+                                      accountType: '',
+                                      adresse: '',
+                                      country: '',
+                                    ),
+                              );
+                            });
                           },
                         ),
                       ),
