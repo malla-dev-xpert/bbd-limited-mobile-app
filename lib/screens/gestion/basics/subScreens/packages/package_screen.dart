@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -121,6 +122,27 @@ class _PackageScreen extends State<PackageScreen> {
     filterPackages(searchController.text);
   }
 
+  Future<void> _openCreatePackageBottomSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return CreatePackageForm();
+      },
+    );
+
+    if (result == true) {
+      // Recharger la liste ou afficher un message
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Colis créé avec succès')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +157,7 @@ class _PackageScreen extends State<PackageScreen> {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => _openCreatePackageBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
         child: const Icon(Icons.add, color: Colors.white),
       ),
