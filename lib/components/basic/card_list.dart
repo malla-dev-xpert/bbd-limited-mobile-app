@@ -26,16 +26,15 @@ class CardData {
 
 List<CardData> cardDataList = [
   CardData(
-    icon: Icons.monetization_on_rounded,
-    title: 'Gestion des devises',
-    description:
-        'Paramétrage des monnaies utilisées pour les transactions internationales.',
+    icon: Icons.inventory_2,
+    title: 'Gestion des colis',
+    description: 'Ajout et gestion des informations spécifiques aux colis',
     backgroundColor: Colors.grey[50]!,
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
     onPressed: (context) {
-      Navigator.of(context).pushNamed('/devises');
+      Navigator.of(context).pushNamed('/package');
     },
   ),
   CardData(
@@ -49,6 +48,19 @@ List<CardData> cardDataList = [
     descriptionColor: Colors.black54,
     onPressed: (context) {
       Navigator.of(context).pushNamed('/warehouse');
+    },
+  ),
+  CardData(
+    icon: Icons.monetization_on_rounded,
+    title: 'Gestion des devises',
+    description:
+        'Paramétrage des monnaies utilisées pour les transactions internationales.',
+    backgroundColor: Colors.grey[50]!,
+    iconColor: const Color(0xFF13084F),
+    titleColor: const Color(0xFF13084F),
+    descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/devises');
     },
   ),
   CardData(

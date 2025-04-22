@@ -20,6 +20,17 @@ class PackageServices {
     }
   }
 
+  Future<List<Packages>> findAll() async {
+    final response = await http.get(Uri.parse('$baseUrl/packages'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(response.body);
+      return jsonBody.map((e) => Packages.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des colis");
+    }
+  }
+
   Future<int?> create(
     String reference,
     String dimension,

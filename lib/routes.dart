@@ -1,5 +1,6 @@
 import 'package:bbd_limited/screens/gestion/basics/basic_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/devices_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/package_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
 import 'package:bbd_limited/screens/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class Routes {
   static const String main = '/welcome';
   static const String devises = '/devises';
   static const String warehouse = '/warehouse';
+  static const String package = '/package';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -28,6 +30,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const DevicesScreen());
       case warehouse:
         return MaterialPageRoute(builder: (_) => const WarehouseScreen());
+      case package:
+        return MaterialPageRoute(builder: (_) => PackageScreen());
       default:
         return MaterialPageRoute(
           builder:
