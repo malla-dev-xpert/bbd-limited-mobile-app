@@ -105,11 +105,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
     filterPackages(searchController.text);
   }
 
-  void onAddPackagePressed() {
-    // Tu peux ici ouvrir une modal ou naviguer vers une page d'ajout
-    print("Ajouter un colis à l'entrepôt ${widget.warehouseId}");
-  }
-
   @override
   Widget build(BuildContext context) {
     // final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
