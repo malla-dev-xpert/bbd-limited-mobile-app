@@ -338,6 +338,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                                   context,
                                   pkg,
                                   widget.warehouseId.toInt(),
+                                  false,
                                 );
                               },
                               leading: Icon(

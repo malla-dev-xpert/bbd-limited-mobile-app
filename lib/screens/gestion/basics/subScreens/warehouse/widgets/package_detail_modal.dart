@@ -37,6 +37,7 @@ void showPackageDetailsBottomSheet(
   BuildContext context,
   Packages pkg,
   int warehouseId,
+  bool? isPackageScreen,
 ) async {
   final PackageServices packageServices = PackageServices();
   final AuthService authService = AuthService();
@@ -94,6 +95,12 @@ void showPackageDetailsBottomSheet(
                   _detailRow("Référence", pkg.reference),
                   _detailRow("Dimensions", pkg.dimensions),
                   _detailRow("Poids", "${pkg.weight} kg"),
+                  isPackageScreen == true
+                      ? _detailRow(
+                        "Entrepot",
+                        pkg.warehouseName ?? "Non trouver",
+                      )
+                      : Text(""),
                   _detailRow(
                     "Date de reception",
                     DateFormat.yMMMMEEEEd().format(pkg.createdAt!),
