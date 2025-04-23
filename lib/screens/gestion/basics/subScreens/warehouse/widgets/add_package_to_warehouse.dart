@@ -224,6 +224,22 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                                 quantityController.text.trim(),
                               );
 
+                              if (description.isEmpty) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Veuillez entrer la description",
+                                );
+                                return;
+                              }
+
+                              if (quantity == null) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Veuillez entrer la quantité",
+                                );
+                                return;
+                              }
+
                               if (description.isNotEmpty && quantity != null) {
                                 setState(() {
                                   localItems.add({
@@ -313,6 +329,33 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                                 showErrorTopSnackBar(
                                   context,
                                   "Veuillez sélectionner un client.",
+                                );
+                                return;
+                              }
+
+                              if (refController.text.isEmpty) {
+                                setState(() => isLoading = false);
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Veuillez entrer un libellé pour le colis.",
+                                );
+                                return;
+                              }
+
+                              if (dimensionController.text.isEmpty) {
+                                setState(() => isLoading = false);
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Veuillez entrer une dimension pour le colis.",
+                                );
+                                return;
+                              }
+
+                              if (weightController.text.isEmpty) {
+                                setState(() => isLoading = false);
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Veuillez entrer un poids pour le colis.",
                                 );
                                 return;
                               }
