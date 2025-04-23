@@ -136,10 +136,7 @@ class _PackageScreen extends State<PackageScreen> {
     );
 
     if (result == true) {
-      // Recharger la liste ou afficher un message
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Colis créé avec succès')));
+      fetchPackages(reset: true);
     }
   }
 

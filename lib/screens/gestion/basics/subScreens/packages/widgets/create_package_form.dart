@@ -1,11 +1,13 @@
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -27,22 +29,48 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
   final List<Map<String, dynamic>> localItems = [];
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
-  final ItemServices itemServices = ItemServices();
   final PartnerServices partnerServices = PartnerServices();
+  final WarehouseServices warehouseServices = WarehouseServices();
   List<Partner> clients = [];
   Partner? selectedClient;
+  List<Warehouses> warehouses = [];
+  Warehouses? selectedWarehouse;
 
-  void _submit() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() => isLoading = true);
+  @override
+  void initState() {
+    super.initState();
+    loadClients();
+    loadWarehouses();
+  }
 
-      // Simule l’envoi
-      await Future.delayed(const Duration(seconds: 1));
+  Future<void> loadWarehouses() async {
+    try {
+      final data = await warehouseServices.findAllWarehouses(page: 0);
 
+      setState(() {
+        warehouses = data;
+        isLoading = false;
+      });
+    } catch (e, stackTrace) {
       setState(() => isLoading = false);
+      showErrorTopSnackBar(context, "Erreur lors du chargement des entrepots");
+    }
+  }
 
-      // Fermer le bottomSheet avec un résultat
-      Navigator.pop(context, true);
+  Future<void> loadClients() async {
+    try {
+      final data = await partnerServices.fetchPartnersByType('CLIENT', page: 0);
+
+      setState(() {
+        clients = data;
+        isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      setState(() => isLoading = false);
+      showErrorTopSnackBar(
+        context,
+        "Erreur lors du chargement des partenaires",
+      );
     }
   }
 
@@ -176,29 +204,25 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                         child: CustomDropdown<String>.search(
                           hintText: 'Choisir un entrepôt...',
                           items:
-                              clients
-                                  .map(
-                                    (e) =>
-                                        '${e.firstName} ${e.lastName} | ${e.phoneNumber}',
-                                  )
+                              warehouses
+                                  .map((e) => '${e.name} | ${e.adresse} ')
                                   .toList(),
                           onChanged: (value) {
                             setState(() {
                               // Trouver le client sélectionné
-                              selectedClient = clients.firstWhere(
-                                (client) =>
-                                    '${client.firstName} ${client.lastName} | ${client.phoneNumber}' ==
+                              selectedWarehouse = warehouses.firstWhere(
+                                (warehouse) =>
+                                    '${warehouse.name} | ${warehouse.adresse}' ==
                                     value,
                                 orElse:
-                                    () => Partner(
+                                    () => Warehouses(
                                       id: 0,
-                                      firstName: '',
-                                      lastName: '',
-                                      phoneNumber: '',
-                                      email: '',
-                                      accountType: '',
+                                      name: '',
                                       adresse: '',
-                                      country: '',
+                                      storageType: '',
+                                      status: Status.CREATE,
+                                      createdAt: DateTime.now(),
+                                      editedAt: null,
                                     ),
                               );
                             });
@@ -255,6 +279,22 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                           final quantity = double.tryParse(
                             quantityController.text.trim(),
                           );
+
+                          if (description.isEmpty) {
+                            showErrorTopSnackBar(
+                              context,
+                              "Veuillez entrer la description",
+                            );
+                            return;
+                          }
+
+                          if (quantity == null) {
+                            showErrorTopSnackBar(
+                              context,
+                              "Veuillez entrer la quantité",
+                            );
+                            return;
+                          }
 
                           if (description.isNotEmpty && quantity != null) {
                             setState(() {
@@ -347,6 +387,42 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                             return;
                           }
 
+                          if (selectedWarehouse == null) {
+                            setState(() => isLoading = false);
+                            showErrorTopSnackBar(
+                              context,
+                              "Veuillez sélectionner un entrepôt.",
+                            );
+                            return;
+                          }
+
+                          if (refController.text.isEmpty) {
+                            setState(() => isLoading = false);
+                            showErrorTopSnackBar(
+                              context,
+                              "Veuillez entrer un libellé pour le colis.",
+                            );
+                            return;
+                          }
+
+                          if (dimensionController.text.isEmpty) {
+                            setState(() => isLoading = false);
+                            showErrorTopSnackBar(
+                              context,
+                              "Veuillez entrer une dimension pour le colis.",
+                            );
+                            return;
+                          }
+
+                          if (weightController.text.isEmpty) {
+                            setState(() => isLoading = false);
+                            showErrorTopSnackBar(
+                              context,
+                              "Veuillez entrer un poids pour le colis.",
+                            );
+                            return;
+                          }
+
                           if (localItems.isEmpty) {
                             setState(() => isLoading = false);
                             showErrorTopSnackBar(
@@ -361,7 +437,7 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                             dimensionController.text,
                             double.parse(weightController.text),
                             user.id,
-                            1,
+                            35,
                             selectedClient!.id.toInt(),
                           );
 
@@ -383,7 +459,7 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                           setState(() {
                             isLoading = false;
                             localItems.clear();
-                            itemServices.findByPackageId(packageId);
+                            packageServices.findAll(page: 0);
                           });
 
                           Navigator.pop(context, true);
