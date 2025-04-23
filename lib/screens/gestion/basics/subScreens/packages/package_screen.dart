@@ -65,7 +65,7 @@ class _PackageScreen extends State<PackageScreen> {
         _allPackages.addAll(packages);
         _filteredPackages = List.from(_allPackages);
 
-        if (packages.isEmpty || packages.length < 10) {
+        if (packages.isEmpty || packages.length < 30) {
           _hasMoreData = false;
         } else {
           currentPage++;
@@ -319,6 +319,7 @@ class _PackageScreen extends State<PackageScreen> {
                                         context,
                                         pkg,
                                         1,
+                                        true,
                                       );
                                     },
                                     leading: Icon(
