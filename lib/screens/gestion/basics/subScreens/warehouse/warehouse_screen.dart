@@ -33,7 +33,7 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  List<Warehouses>? _allWarehouses;
+  List<Warehouses> _allWarehouses = [];
   List<Warehouses> _filteredWarehouse = [];
   int currentPage = 0;
 
@@ -76,7 +76,7 @@ class _WarehouseState extends State<WarehouseScreen> {
       if (reset) {
         currentPage = 0;
         _hasMoreData = true;
-        _allWarehouses = null;
+        _allWarehouses = [];
       }
     });
 
@@ -86,12 +86,13 @@ class _WarehouseState extends State<WarehouseScreen> {
       );
 
       setState(() {
-        _allWarehouses ??= [];
-        if (reset) _allWarehouses!.clear();
-        _allWarehouses!.addAll(result);
-        _filteredWarehouse = List.from(_allWarehouses!);
+        if (reset) {
+          _allWarehouses.clear();
+        }
+        _allWarehouses.addAll(result);
+        _filteredWarehouse = List.from(_allWarehouses);
 
-        if (result.isEmpty || result.length < 10) {
+        if (result.isEmpty || result.length < 30) {
           _hasMoreData = false;
         } else {
           currentPage++;
