@@ -1,7 +1,6 @@
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
-import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
@@ -209,7 +208,8 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                                   .toList(),
                           onChanged: (value) {
                             setState(() {
-                              // Trouver le client sélectionné
+                              // Trouver l'entrepôt correspondant à la valeur
+                              // de la dropdown
                               selectedWarehouse = warehouses.firstWhere(
                                 (warehouse) =>
                                     '${warehouse.name} | ${warehouse.adresse}' ==
@@ -220,9 +220,6 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                                       name: '',
                                       adresse: '',
                                       storageType: '',
-                                      status: Status.CREATE,
-                                      createdAt: DateTime.now(),
-                                      editedAt: null,
                                     ),
                               );
                             });
@@ -437,7 +434,7 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                             dimensionController.text,
                             double.parse(weightController.text),
                             user.id,
-                            34,
+                            selectedWarehouse!.id.toInt(),
                             selectedClient!.id.toInt(),
                           );
 

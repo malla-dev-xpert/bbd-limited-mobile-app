@@ -492,7 +492,7 @@ class _WarehouseState extends State<WarehouseScreen> {
         }
         final warehouse = _filteredWarehouse[index];
         final formattedDate = DateFormat.yMMMMEEEEd().format(
-          warehouse.createdAt,
+          warehouse.createdAt!,
         );
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
