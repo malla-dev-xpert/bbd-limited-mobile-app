@@ -72,7 +72,7 @@ List<CardData> cardDataList = [
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
     onPressed: (context) {
-      Navigator.of(context).pushNamed('/home');
+      Navigator.of(context).pushNamed('/harbor');
     },
   ),
   CardData(

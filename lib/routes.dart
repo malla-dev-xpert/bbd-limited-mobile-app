@@ -1,5 +1,6 @@
 import 'package:bbd_limited/screens/gestion/basics/basic_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/devises/devices_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/harbor_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/package_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
 import 'package:bbd_limited/screens/main_screen.dart';
@@ -15,6 +16,7 @@ class Routes {
   static const String devises = '/devises';
   static const String warehouse = '/warehouse';
   static const String package = '/package';
+  static const String harbor = '/harbor';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -32,6 +34,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const WarehouseScreen());
       case package:
         return MaterialPageRoute(builder: (_) => PackageScreen());
+      case harbor:
+        return MaterialPageRoute(builder: (_) => HarborScreen());
       default:
         return MaterialPageRoute(
           builder:
