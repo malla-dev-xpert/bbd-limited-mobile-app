@@ -1,5 +1,5 @@
 import 'package:bbd_limited/screens/gestion/basics/basic_home_screen.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/devices_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/devises/devices_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/package_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
 import 'package:bbd_limited/screens/main_screen.dart';
