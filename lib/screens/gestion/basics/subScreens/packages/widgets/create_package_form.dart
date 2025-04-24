@@ -437,7 +437,7 @@ class _CreatePackageFormState extends State<CreatePackageForm> {
                             dimensionController.text,
                             double.parse(weightController.text),
                             user.id,
-                            35,
+                            34,
                             selectedClient!.id.toInt(),
                           );
 
