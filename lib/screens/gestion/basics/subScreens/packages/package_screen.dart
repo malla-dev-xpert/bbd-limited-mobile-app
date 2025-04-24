@@ -163,9 +163,6 @@ class _PackageScreen extends State<PackageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Carte d'info entrepôt
-            Text("Informations de l'entrepot", textAlign: TextAlign.left),
-
             const SizedBox(height: 16),
 
             // Barre de recherche
