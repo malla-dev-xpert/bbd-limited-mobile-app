@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/models/harbor.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -88,6 +89,15 @@ class _HarborScreen extends State<HarborScreen> {
     }
   }
 
+  void _openAddHarborModal() async {
+    final result = await showAddHarborModal(context);
+
+    if (result == true) {
+      await fetchHarbor(reset: true);
+      setState(() {});
+    }
+  }
+
   void searchHarbor(String query) async {
     if (query.isEmpty) {
       await fetchHarbor(reset: true, searchQuery: null);
@@ -159,7 +169,7 @@ class _HarborScreen extends State<HarborScreen> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: _openAddHarborModal,
                   label: Text("Ajouter", style: TextStyle(color: Colors.white)),
                   icon: Icon(Icons.add, color: Colors.white),
                   style: ElevatedButton.styleFrom(
@@ -210,6 +220,8 @@ class _HarborScreen extends State<HarborScreen> {
                                     color: Colors.grey[50],
                                     elevation: 2,
                                     child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         // image du port
                                         Stack(
