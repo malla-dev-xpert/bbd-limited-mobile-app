@@ -1,15 +1,19 @@
 class Containers {
-  final int id;
-  final String name;
-  final String location;
+  final String? reference;
+  final DateTime? createdAt;
+  final DateTime? editedAt;
+  final bool? isAvailable;
 
-  Containers({required this.id, required this.name, required this.location});
+  Containers({this.reference, this.createdAt, this.editedAt, this.isAvailable});
 
   factory Containers.fromJson(Map<String, dynamic> json) {
     return Containers(
-      id: json['id'] as int,
-      name: json['name'],
-      location: json['location'],
+      reference: json['reference'] as String?,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      editedAt:
+          json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
+      isAvailable: json['isAvailable'] as bool?,
     );
   }
 }
