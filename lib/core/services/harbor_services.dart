@@ -19,4 +19,25 @@ class HarborServices {
       throw Exception("Erreur lors du chargement des ports");
     }
   }
+
+  Future<String?> create(String name, String location, int userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/harbors/create?userId=$userId'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": name, "location": location}),
+      );
+
+      if (response.statusCode == 201) {
+        return "CREATED";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Nom de port déjà utilisé !') {
+        return "NAME_EXIST";
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion: $e");
+    }
+  }
 }
