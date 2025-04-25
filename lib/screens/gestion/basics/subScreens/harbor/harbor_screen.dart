@@ -22,21 +22,15 @@ class _HarborScreen extends State<HarborScreen> {
   bool _hasMoreData = true;
   int currentPage = 0;
 
-  final StreamController<void> _refreshController =
-      StreamController<void>.broadcast();
-
   @override
   void initState() {
     super.initState();
     fetchHarbor();
-    _refreshController.stream.listen((_) {
-      fetchHarbor(reset: true);
-    });
   }
 
   @override
   void dispose() {
-    _refreshController.close();
+    searchController.dispose();
     super.dispose();
   }
 
@@ -48,9 +42,11 @@ class _HarborScreen extends State<HarborScreen> {
       if (reset) {
         currentPage = 0;
         _hasMoreData = true;
-        _allHarbor = [];
+        _allHarbor.clear();
+        // _filteredHarbor.clear();
       }
     });
+
     try {
       final result = await _harborServices.findAll(
         page: currentPage,
@@ -58,6 +54,9 @@ class _HarborScreen extends State<HarborScreen> {
       );
 
       setState(() {
+        if (reset) {
+          _allHarbor.clear();
+        }
         _allHarbor.addAll(result);
 
         _filteredHarbor =
@@ -134,8 +133,6 @@ class _HarborScreen extends State<HarborScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-
-            // Barre de recherche
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -154,11 +151,9 @@ class _HarborScreen extends State<HarborScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: () {},
-
                   label: Text("Ajouter", style: TextStyle(color: Colors.white)),
                   icon: Icon(Icons.add, color: Colors.white),
                   style: ElevatedButton.styleFrom(
@@ -172,123 +167,134 @@ class _HarborScreen extends State<HarborScreen> {
               ],
             ),
             const SizedBox(height: 20),
-
             Expanded(
-              child: NotificationListener<ScrollNotification>(
-                onNotification: (scrollInfo) {
-                  if (scrollInfo.metrics.pixels ==
-                          scrollInfo.metrics.maxScrollExtent &&
-                      !_isLoading &&
-                      _hasMoreData) {
-                    fetchHarbor();
-                  }
-                  return false;
-                },
-                child: ListView.builder(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  itemCount:
-                      _filteredHarbor.length +
-                      (_hasMoreData && _isLoading ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    return GridView.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 4,
-                      crossAxisSpacing: 4,
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      children: List.generate(_filteredHarbor.length, (index) {
-                        final port = _filteredHarbor[index];
-                        if (_allHarbor == []) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-
-                        if (_filteredHarbor.isEmpty) {
-                          return Center(child: Text("Aucun port trouvé"));
-                        }
-
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          color: Colors.grey[50],
-                          elevation: 2,
-                          child: Column(
-                            children: [
-                              // Image de fond avec overlay sombre
-                              Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                    child: Image.asset(
-                                      "assets/images/ports.jpg",
-                                      height: 70,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
+              child:
+                  _isLoading && _filteredHarbor.isEmpty
+                      ? Center(child: CircularProgressIndicator())
+                      : (_filteredHarbor.isNotEmpty
+                          ? NotificationListener<ScrollNotification>(
+                            onNotification: (scrollInfo) {
+                              if (scrollInfo.metrics.pixels ==
+                                      scrollInfo.metrics.maxScrollExtent &&
+                                  !_isLoading &&
+                                  _hasMoreData) {
+                                fetchHarbor();
+                              }
+                              return false;
+                            },
+                            child: GridView.builder(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 4,
+                                    crossAxisSpacing: 4,
                                   ),
-                                  Container(
-                                    height: 70,
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(20),
-                                      ),
-                                      color: Colors.black.withOpacity(0.4),
+                              itemCount:
+                                  _filteredHarbor.length +
+                                  (_hasMoreData ? 1 : 0),
+                              padding: EdgeInsets.zero,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                if (index < _filteredHarbor.length) {
+                                  final port = _filteredHarbor[index];
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.local_shipping,
-                                      size: 30,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              // Informations du port
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        port.name!,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          letterSpacing: -1,
+                                    color: Colors.grey[50],
+                                    elevation: 2,
+                                    child: Column(
+                                      children: [
+                                        // image du port
+                                        Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(20),
+                                                  ),
+                                              child: Image.asset(
+                                                "assets/images/ports.jpg",
+                                                height: 70,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            Container(
+                                              height: 70,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    const BorderRadius.vertical(
+                                                      top: Radius.circular(20),
+                                                    ),
+                                                color: Colors.black.withOpacity(
+                                                  0.4,
+                                                ),
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: const Icon(
+                                                Icons.local_shipping,
+                                                size: 30,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "Adresse : ${port.location ?? 'Non spécifiée'}",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          letterSpacing: -1,
+
+                                        // donnees du port
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  port.name!,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                    letterSpacing: -1,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  "Adresse : ${port.location ?? 'Non spécifiée'}",
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    letterSpacing: -1,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  "Conteneurs : ${port.containers?.length ?? 0}",
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    letterSpacing: -1,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "Conteneurs : ${port.containers?.length ?? 0}",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    );
-                  },
-                ),
-              ),
+                                      ],
+                                    ),
+                                  );
+                                } else {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                              },
+                            ),
+                          )
+                          : Center(child: Text("Aucun port trouvé"))),
             ),
           ],
         ),
