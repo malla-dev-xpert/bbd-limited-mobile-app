@@ -63,7 +63,9 @@ class _HarborScreen extends State<HarborScreen> {
             _allHarbor
                 .where(
                   (port) =>
-                      searchQuery == null || searchQuery.isEmpty
+                      searchQuery == null ||
+                              searchQuery.isEmpty ||
+                              searchQuery == ""
                           ? true
                           : (port.name?.toLowerCase().contains(
                                 searchQuery.toLowerCase(),
@@ -87,29 +89,33 @@ class _HarborScreen extends State<HarborScreen> {
   }
 
   void searchHarbor(String query) async {
-    // recherche locale
-    final localResults =
-        _allHarbor.where((port) {
-          return port.name?.toLowerCase().contains(query.toLowerCase()) ??
-              false;
-        }).toList();
-
-    if (localResults.isNotEmpty) {
-      setState(() => _filteredHarbor = localResults);
+    if (query.isEmpty) {
+      await fetchHarbor(reset: true, searchQuery: null);
     } else {
-      // recherche dans la base de donnee
-      try {
-        await fetchHarbor(reset: true, searchQuery: query);
+      // recherche locale
+      final localResults =
+          _allHarbor.where((port) {
+            return port.name?.toLowerCase().contains(query.toLowerCase()) ??
+                false;
+          }).toList();
 
-        final newResults =
-            _allHarbor.where((port) {
-              return port.name?.toLowerCase().contains(query.toLowerCase()) ??
-                  false;
-            }).toList();
+      if (localResults.isNotEmpty) {
+        setState(() => _filteredHarbor = localResults);
+      } else {
+        // recherche dans la base de donnee
+        try {
+          await fetchHarbor(reset: true, searchQuery: query);
 
-        setState(() => _filteredHarbor = newResults);
-      } catch (e) {
-        showErrorTopSnackBar(context, "Erreur lors de la recherche");
+          final newResults =
+              _allHarbor.where((port) {
+                return port.name?.toLowerCase().contains(query.toLowerCase()) ??
+                    false;
+              }).toList();
+
+          setState(() => _filteredHarbor = newResults);
+        } catch (e) {
+          showErrorTopSnackBar(context, "Erreur lors de la recherche");
+        }
       }
     }
   }
@@ -178,7 +184,7 @@ class _HarborScreen extends State<HarborScreen> {
                                       scrollInfo.metrics.maxScrollExtent &&
                                   !_isLoading &&
                                   _hasMoreData) {
-                                fetchHarbor();
+                                fetchHarbor(searchQuery: searchController.text);
                               }
                               return false;
                             },
