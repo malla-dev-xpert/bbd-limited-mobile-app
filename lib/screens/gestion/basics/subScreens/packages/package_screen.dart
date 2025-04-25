@@ -60,8 +60,9 @@ class _PackageScreen extends State<PackageScreen> {
       final packages = await _packageServices.findAll(page: currentPage);
 
       setState(() {
-        _allPackages = [];
-        if (reset) _allPackages.clear();
+        if (reset) {
+          _allPackages.clear();
+        }
         _allPackages.addAll(packages);
         _filteredPackages = List.from(_allPackages);
 
