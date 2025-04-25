@@ -86,9 +86,6 @@ class _WarehouseState extends State<WarehouseScreen> {
       );
 
       setState(() {
-        if (reset) {
-          _allWarehouses.clear();
-        }
         _allWarehouses.addAll(result);
         _filteredWarehouse = List.from(_allWarehouses);
 
@@ -110,11 +107,11 @@ class _WarehouseState extends State<WarehouseScreen> {
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
 
-    if (_allWarehouses == null) return; // ✅ sécurité ajoutée
+    if (_allWarehouses == []) return;
 
     setState(() {
       _filteredWarehouse =
-          _allWarehouses!.where((warehouse) {
+          _allWarehouses.where((warehouse) {
             final adresse = warehouse.adresse?.toLowerCase() ?? '';
             final name = warehouse.name?.toLowerCase() ?? '';
             final storageType = warehouse.storageType?.toLowerCase() ?? '';

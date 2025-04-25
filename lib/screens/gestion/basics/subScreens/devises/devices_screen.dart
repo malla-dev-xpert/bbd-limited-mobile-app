@@ -80,7 +80,6 @@ class _DeviseState extends State<DevicesScreen> {
 
       setState(() {
         _allDevises ??= [];
-        if (reset) _allDevises!.clear();
         _allDevises!.addAll(result);
         _filteredDevises = List.from(_allDevises!);
 
