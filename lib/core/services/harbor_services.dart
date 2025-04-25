@@ -7,8 +7,10 @@ class HarborServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<List<Harbor>> findAll({int page = 0}) async {
-    final response = await http.get(Uri.parse('$baseUrl/harbors?page=$page'));
+  Future<List<Harbor>> findAll({int page = 0, String? query}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/harbors?page=$page&query=${query ?? ''}'),
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(response.body);
