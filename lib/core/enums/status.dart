@@ -6,4 +6,5 @@ enum Status {
   RECEIVED,
   INPROGRESS,
   DELIVERED,
+  RETRIEVE,
 }
