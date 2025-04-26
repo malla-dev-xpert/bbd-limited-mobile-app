@@ -121,12 +121,32 @@ class _PartnerScreenState extends State<PartnerScreen> {
     }
   }
 
+  void filterPartners(String query) {
+    setState(() {
+      _filteredPartners =
+          _allPartners.where((parter) {
+            final searchPackage = parter.firstName.toLowerCase().contains(
+              query.toLowerCase(),
+            );
+
+            bool allStatus = true;
+            if (_currentFilter == 'clients') {
+              allStatus = parter.accountType == 'CLIENT';
+            } else if (_currentFilter == 'fournisseurs') {
+              allStatus = parter.accountType == 'FOURNISSEUR';
+            }
+
+            return searchPackage && allStatus;
+          }).toList();
+    });
+  }
+
   void handleStatusFilter(String value) {
     setState(() {
       _currentFilter = value;
     });
 
-    loadPartners();
+    filterPartners(searchController.text);
   }
 
   @override
@@ -175,7 +195,41 @@ class _PartnerScreenState extends State<PartnerScreen> {
                 FiltreDropdown(onSelected: handleStatusFilter),
               ],
             ),
+
             const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "La liste des ${_currentFilter == null
+                      ? 'partenaires'
+                      : _currentFilter == 'clients'
+                      ? 'clients'
+                      : _currentFilter == 'fournisseurs'
+                      ? 'fournisseurs'
+                      : ''}",
+
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (_currentFilter != null)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _currentFilter = null;
+                        _filteredPartners = _allPartners;
+                        if (searchController.text.isNotEmpty) {
+                          filterPartners(searchController.text);
+                        }
+                      });
+                    },
+                    child: const Text("Voir tout"),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
             Expanded(
               child:
                   _isLoading && _filteredPartners.isEmpty
@@ -256,12 +310,12 @@ class FiltreDropdown extends StatelessWidget {
         itemBuilder:
             (BuildContext context) => [
               const PopupMenuItem<String>(
-                value: 'client',
-                child: Text('Clients'),
+                value: 'clients',
+                child: Text('Par clients'),
               ),
               const PopupMenuItem<String>(
-                value: 'fournisseur',
-                child: Text('Fournisseurs'),
+                value: 'fournisseurs',
+                child: Text('Par fournisseurs'),
               ),
             ],
       ),
