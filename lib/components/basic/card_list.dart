@@ -88,4 +88,16 @@ List<CardData> cardDataList = [
       Navigator.of(context).pushNamed('/home');
     },
   ),
+  CardData(
+    icon: Icons.person_3_rounded,
+    title: 'Gestion des partenaires',
+    description: 'Suivi des partenaires, clients et prestataires.',
+    backgroundColor: Colors.grey[50]!,
+    iconColor: const Color(0xFF13084F),
+    titleColor: const Color(0xFF13084F),
+    descriptionColor: Colors.black54,
+    onPressed: (context) {
+      Navigator.of(context).pushNamed('/partners');
+    },
+  ),
 ];
