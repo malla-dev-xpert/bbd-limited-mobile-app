@@ -40,4 +40,24 @@ class HarborServices {
       throw Exception("Erreur de connexion: $e");
     }
   }
+
+  Future<void> retrieveContainerToHarbor(
+    int id,
+    int? userId,
+    int harborId,
+  ) async {
+    final url = Uri.parse(
+      "$baseUrl/harbors/retrieve/$id/harbor/$harborId?userId=$userId",
+    );
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 201) {
+        return;
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
 }
