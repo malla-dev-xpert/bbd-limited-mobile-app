@@ -35,4 +35,45 @@ class PartnerServices {
       throw Exception("Erreur lors du chargement des partenaires");
     }
   }
+
+  Future<String?> create(
+    String firstName,
+    String lastName,
+    String phoneNumber,
+    String email,
+    String country,
+    String adresse,
+    String accountType,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/partners/create'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "firstName": firstName,
+          "lastName": lastName,
+          "email": email,
+          "phoneNumber": phoneNumber,
+          "accountType": accountType,
+          "adresse": adresse,
+          "country": country,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return "CREATED";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Email déjà utilisé par un partenaire !') {
+        return "EMAIL_EXIST";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              'Numéro de téléphone déjà enregistré au nom d\'un partenaire !') {
+        return "PHONE_EXIST";
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion: $e");
+    }
+  }
 }

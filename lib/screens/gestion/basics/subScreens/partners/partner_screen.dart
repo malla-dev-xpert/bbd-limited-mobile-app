@@ -1,5 +1,6 @@
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -165,7 +166,17 @@ class _PartnerScreenState extends State<PartnerScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         tooltip: 'Add New partner',
-        onPressed: () {},
+        onPressed: () async {
+          final shouldRefresh = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => CreatePartnerBottomSheet(),
+          );
+
+          if (shouldRefresh == true) {
+            loadPartners(reset: true);
+          }
+        },
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       body: Padding(

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
