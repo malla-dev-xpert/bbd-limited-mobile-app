@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,6 +19,21 @@ class PartnerServices {
       final List content = jsonData['content'];
 
       return content.map((e) => Partner.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des partenaires");
+    }
+  }
+
+  Future<List<Partner>> findAll({int page = 0, String? query}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/partners?page=$page&query=${query ?? ''}'),
+    );
+
+    log(response.body);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(response.body);
+      return jsonBody.map((e) => Partner.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des partenaires");
     }
