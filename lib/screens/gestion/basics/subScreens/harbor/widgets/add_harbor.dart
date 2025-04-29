@@ -129,17 +129,17 @@ Future<bool?> showAddHarborModal(BuildContext context) async {
                                 "Le nom '${nameController.text}' existe déjà.",
                               );
                               return;
+                            } else if (result == "CREATED") {
+                              setState(() {
+                                isLoading = false;
+                              });
+
+                              Navigator.pop(context, true);
+                              showSuccessTopSnackBar(
+                                context,
+                                "Nouveau port ajouté avec succès !",
+                              );
                             }
-
-                            setState(() {
-                              isLoading = false;
-                            });
-
-                            Navigator.pop(context, true);
-                            showSuccessTopSnackBar(
-                              context,
-                              "Nouveau port ajouté avec succès !",
-                            );
                           } catch (e) {
                             setState(() {
                               isLoading = false;
