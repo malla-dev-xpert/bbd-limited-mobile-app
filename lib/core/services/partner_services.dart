@@ -44,10 +44,11 @@ class PartnerServices {
     String country,
     String adresse,
     String accountType,
+    int userId,
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/partners/create'),
+        Uri.parse('$baseUrl/partners/create?userId=$userId'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "firstName": firstName,
@@ -63,6 +64,9 @@ class PartnerServices {
       if (response.statusCode == 201) {
         return "CREATED";
       } else if (response.statusCode == 409 &&
+          response.body == 'User not found') {
+        return "USER_NOT_FOUND";
+      } else if (response.statusCode == 409 &&
           response.body == 'Email déjà utilisé par un partenaire !') {
         return "EMAIL_EXIST";
       } else if (response.statusCode == 409 &&
@@ -74,6 +78,27 @@ class PartnerServices {
       }
     } catch (e) {
       throw Exception("Erreur de connexion: $e");
+    }
+  }
+
+  Future<String?> deletePartner(int id, int? userId) async {
+    final url = Uri.parse("$baseUrl/partners/delete/$id?userId=$userId");
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.statusCode == 409 &&
+          response.body == "Partenaire non trouvé !") {
+        return "PARTNER_NOT_FOUND";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              "Impossible de supprimer, des colis existent pour ce partenaire.") {
+        return "PACKAGE_FOUND";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du partenaire : $e");
     }
   }
 }
