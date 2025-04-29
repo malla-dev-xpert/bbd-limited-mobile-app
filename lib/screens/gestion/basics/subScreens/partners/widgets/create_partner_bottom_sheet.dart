@@ -1,8 +1,9 @@
-import 'dart:developer';
+import 'dart:math';
 
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
@@ -199,10 +200,18 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
 
   Future<void> _savePartner() async {
     setState(() => isFormLoading = true);
+    final AuthService authService = AuthService();
 
     try {
+      final user = await authService.getUserInfo();
+
       if (_firstNameController.text.isEmpty) {
         showErrorTopSnackBar(context, "Veuillez entrer un nom");
+        return;
+      }
+
+      if (user == null) {
+        showErrorTopSnackBar(context, "Veuillez vous connecter.");
         return;
       }
 
@@ -229,7 +238,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         return;
       }
 
-      await _partnerServices.create(
+      final success = await _partnerServices.create(
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
         _emailController.text.trim(),
@@ -237,20 +246,35 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         _selectedCountry!.name,
         _adresseController.text.trim(),
         _acccountType.toString(),
+        user.id,
       );
 
-      Navigator.of(context).pop(true);
-      setState(() {
-        isFormLoading = false;
-        _firstNameController.clear();
-        _lastNameController.clear();
-        _emailController.clear();
-        _phoneController.clear();
-        _adresseController.clear();
-        _acccountType = '';
-        _selectedCountry = null;
-        showSuccessTopSnackBar(context, "Partenaire créé avec succès !");
-      });
+      if (success == "USER_NOT_FOUND") {
+        showErrorTopSnackBar(context, "Veuillez vous connecter.");
+        return;
+      } else if (success == "EMAIL_EXIST") {
+        showErrorTopSnackBar(context, "Cet email est déjà utilisé.");
+        return;
+      } else if (success == "PHONE_EXIST") {
+        showErrorTopSnackBar(
+          context,
+          "Ce numéro de téléphone est déjà utilisé.",
+        );
+        return;
+      } else if (success == "CREATED") {
+        Navigator.of(context).pop(true);
+        setState(() {
+          isFormLoading = false;
+          _firstNameController.clear();
+          _lastNameController.clear();
+          _emailController.clear();
+          _phoneController.clear();
+          _adresseController.clear();
+          _acccountType = '';
+          _selectedCountry = null;
+          showSuccessTopSnackBar(context, "Partenaire créé avec succès !");
+        });
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors de l\'enregistrement')),
