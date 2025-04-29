@@ -48,12 +48,22 @@ void showErrorTopSnackBar(BuildContext context, String message) {
             borderRadius: BorderRadius.circular(10),
             color: Colors.red,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.error_outline, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(message, style: TextStyle(color: Colors.white)),
+                  const Icon(Icons.error_outline, color: Colors.white),
+                  const SizedBox(width: 8),
+                  // Expanded to wrap long text
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: const TextStyle(color: Colors.white),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -63,7 +73,7 @@ void showErrorTopSnackBar(BuildContext context, String message) {
 
   Overlay.of(context).insert(overlayEntry);
 
-  Future.delayed(Duration(seconds: 3), () {
+  Future.delayed(const Duration(seconds: 3), () {
     overlayEntry?.remove();
   });
 }
