@@ -50,6 +50,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
           bottom: MediaQuery.of(context).viewInsets.bottom + 24,
         ),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -241,8 +242,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
       final success = await _partnerServices.create(
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
-        _emailController.text.trim(),
         _phoneController.text.trim(),
+        _emailController.text.trim(),
         _selectedCountry!.name,
         _adresseController.text.trim(),
         _acccountType.toString(),
