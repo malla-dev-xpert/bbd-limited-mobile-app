@@ -1,1 +1,10 @@
-enum Status { CREATE, UPDATE, DELETE }
+enum Status {
+  CREATE,
+  DELETE,
+  DISABLE,
+  PENDING,
+  RECEIVED,
+  INPROGRESS,
+  DELIVERED,
+  RETRIEVE,
+}

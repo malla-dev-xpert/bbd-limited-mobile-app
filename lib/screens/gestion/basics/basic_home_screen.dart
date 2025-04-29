@@ -143,22 +143,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 0,
                 ),
                 sliver: SliverGrid.count(
-                  crossAxisCount: 2, // Nombre de colonnes
-                  mainAxisSpacing: 10, // Espacement vertical
-                  crossAxisSpacing: 10, // Espacement horizontal
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
                   children:
                       cardDataList.map((data) {
                         return CustomCard(
                           icon: data.icon,
                           title: data.title,
-                          description:
-                              data.description, // Ajoutez vos données ici
-                          backgroundColor:
-                              data.backgroundColor, // Couleur de fond
-                          iconColor: data.iconColor, // Couleur des icônes
-                          titleColor: data.titleColor, // Couleur du titre
-                          descriptionColor:
-                              data.descriptionColor, // Couleur de la description
+                          description: data.description,
+                          backgroundColor: data.backgroundColor,
+                          iconColor: data.iconColor,
+                          titleColor: data.titleColor,
+                          descriptionColor: data.descriptionColor,
                           onPressed: data.onPressed,
                         );
                       }).toList(),

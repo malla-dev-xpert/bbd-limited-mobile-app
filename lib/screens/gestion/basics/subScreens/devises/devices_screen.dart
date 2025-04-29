@@ -80,7 +80,6 @@ class _DeviseState extends State<DevicesScreen> {
 
       setState(() {
         _allDevises ??= [];
-        if (reset) _allDevises!.clear();
         _allDevises!.addAll(result);
         _filteredDevises = List.from(_allDevises!);
 
@@ -281,8 +280,9 @@ class _DeviseState extends State<DevicesScreen> {
                                 _isLoading
                                     ? null
                                     : () async {
-                                      if (!_formKey.currentState!.validate())
+                                      if (!_formKey.currentState!.validate()) {
                                         return;
+                                      }
 
                                       setModalState(() {
                                         _isLoading = true;
@@ -300,19 +300,19 @@ class _DeviseState extends State<DevicesScreen> {
                                                   0.0,
                                             );
 
-                                        if (success == "CODE_EXIST") {
+                                        if (success == "NAME_EXIST") {
                                           setModalState(() {
                                             _errorMessage =
-                                                "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
+                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
                                             _isLoading = false;
                                           });
                                           return;
                                         }
 
-                                        if (success == "NAME_EXIST") {
+                                        if (success == "CODE_EXIST") {
                                           setModalState(() {
                                             _errorMessage =
-                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+                                                "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
                                             _isLoading = false;
                                           });
                                           return;
@@ -333,7 +333,7 @@ class _DeviseState extends State<DevicesScreen> {
                                         setModalState(() {
                                           _isLoading = false;
                                           _errorMessage =
-                                              'Erreur lors de la création: ${e.toString()}';
+                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
                                         });
                                       } finally {
                                         setModalState(() {

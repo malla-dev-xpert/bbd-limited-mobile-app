@@ -5,8 +5,8 @@ class Warehouses {
   final String? name;
   final String? adresse;
   final String? storageType;
-  final Status status;
-  final DateTime createdAt;
+  final Status? status;
+  final DateTime? createdAt;
   final DateTime? editedAt;
 
   Warehouses({
@@ -14,8 +14,8 @@ class Warehouses {
     this.name,
     this.adresse,
     this.storageType,
-    required this.status,
-    required this.createdAt,
+    this.status,
+    this.createdAt,
     this.editedAt,
   });
 

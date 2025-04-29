@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/detail_warehouse_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -32,7 +33,7 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  List<Warehouses>? _allWarehouses;
+  List<Warehouses> _allWarehouses = [];
   List<Warehouses> _filteredWarehouse = [];
   int currentPage = 0;
 
@@ -75,7 +76,7 @@ class _WarehouseState extends State<WarehouseScreen> {
       if (reset) {
         currentPage = 0;
         _hasMoreData = true;
-        _allWarehouses = null;
+        _allWarehouses = [];
       }
     });
 
@@ -85,12 +86,10 @@ class _WarehouseState extends State<WarehouseScreen> {
       );
 
       setState(() {
-        _allWarehouses ??= [];
-        if (reset) _allWarehouses!.clear();
-        _allWarehouses!.addAll(result);
-        _filteredWarehouse = List.from(_allWarehouses!);
+        _allWarehouses.addAll(result);
+        _filteredWarehouse = List.from(_allWarehouses);
 
-        if (result.isEmpty || result.length < 10) {
+        if (result.isEmpty || result.length < 30) {
           _hasMoreData = false;
         } else {
           currentPage++;
@@ -108,11 +107,11 @@ class _WarehouseState extends State<WarehouseScreen> {
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
 
-    if (_allWarehouses == null) return; // ✅ sécurité ajoutée
+    if (_allWarehouses == []) return;
 
     setState(() {
       _filteredWarehouse =
-          _allWarehouses!.where((warehouse) {
+          _allWarehouses.where((warehouse) {
             final adresse = warehouse.adresse?.toLowerCase() ?? '';
             final name = warehouse.name?.toLowerCase() ?? '';
             final storageType = warehouse.storageType?.toLowerCase() ?? '';
@@ -321,11 +320,12 @@ class _WarehouseState extends State<WarehouseScreen> {
                                 _isLoading
                                     ? null
                                     : () async {
-                                      if (!_formKey.currentState!.validate())
+                                      if (!_formKey.currentState!.validate()) {
                                         return;
+                                      }
 
                                       setModalState(() {
-                                        _isLoading = true;
+                                        _isLoading = false;
                                         _errorMessage = null;
                                       });
 
@@ -371,7 +371,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                                           _nameController.clear();
                                           _adressController.clear();
                                           _storageTypeController.clear();
+
+                                          setModalState(() {
+                                            _isLoading = false;
+                                          });
+
                                           Navigator.of(context).pop();
+
                                           showSuccessTopSnackBar(
                                             context,
                                             'Entrepôt créé avec succès!',
@@ -382,7 +388,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                                         setModalState(() {
                                           _isLoading = false;
                                           _errorMessage =
-                                              'Erreur lors de la création: ${e.toString()}';
+                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
                                         });
                                       } finally {
                                         setModalState(() {
@@ -484,7 +490,7 @@ class _WarehouseState extends State<WarehouseScreen> {
         }
         final warehouse = _filteredWarehouse[index];
         final formattedDate = DateFormat.yMMMMEEEEd().format(
-          warehouse.createdAt,
+          warehouse.createdAt!,
         );
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -501,142 +507,21 @@ class _WarehouseState extends State<WarehouseScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildTag(warehouse.storageType ?? ''),
-                    // display warehouse info and actions
+                    // warehous detail
                     IconButton(
                       icon: Icon(Icons.info, size: 30, color: Colors.grey[500]),
                       onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
-                            ),
-                          ),
-                          builder:
-                              (context) => Container(
-                                padding: EdgeInsets.all(20),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          spacing: 5,
-                                          children: [
-                                            Icon(
-                                              Icons.warehouse_sharp,
-                                              size: 30,
-                                              color: Colors.grey[800],
-                                            ),
-                                            Text(
-                                              warehouse.name!,
-                                              textAlign: TextAlign.left,
-                                              style: TextStyle(
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: -1,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        IconButton(
-                                          onPressed: () {},
-                                          icon: Icon(
-                                            Icons.edit_document,
-                                            size: 30,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    SizedBox(height: 20),
-
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.map_rounded,
-                                          size: 18,
-                                          color: Colors.grey,
-                                        ),
-                                        SizedBox(width: 5),
-                                        Text(warehouse.adresse!),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_month,
-                                          size: 18,
-                                          color: Colors.grey,
-                                        ),
-                                        SizedBox(width: 5),
-                                        Text(formattedDate),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.type_specimen_rounded,
-                                          size: 18,
-                                          color: Colors.grey,
-                                        ),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          "Type de stockage : ${warehouse.storageType!}",
-                                        ),
-                                      ],
-                                    ),
-
-                                    SizedBox(height: 20),
-
-                                    // actions buttons
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        ElevatedButton.icon(
-                                          onPressed: () {
-                                            _deleteWarehouse(
-                                              context,
-                                              warehouse.id,
-                                            );
-                                          },
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          label:
-                                              _isLoading
-                                                  ? CircularProgressIndicator(
-                                                    color: const Color(
-                                                      0xFF1A1E49,
-                                                    ),
-                                                    strokeWidth: 2,
-                                                  )
-                                                  : Text(
-                                                    'Supprimer',
-                                                    style: TextStyle(
-                                                      color: Colors.red,
-                                                    ),
-                                                  ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 20),
-                                  ],
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => WarehouseDetailPage(
+                                  warehouseId: warehouse.id,
+                                  name: warehouse.name!,
+                                  storageType: warehouse.storageType!,
+                                  adresse: warehouse.adresse!,
                                 ),
-                              ),
+                          ),
                         );
                       },
                     ),
