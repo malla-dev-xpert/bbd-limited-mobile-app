@@ -295,7 +295,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
                 );
 
                 if (success) {
-                  loadPartners(reset: true);
+                  await loadPartners(reset: true);
                   Navigator.pop(context);
                   showSuccessTopSnackBar(
                     context,
