@@ -419,21 +419,30 @@ class _DeviseState extends State<DevicesScreen> {
       return Center(child: Text("Aucune devise trouvée"));
     }
 
-    return ListView.builder(
-      physics: AlwaysScrollableScrollPhysics(),
-      itemCount: _filteredDevises.length + (_hasMoreData && _isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= _filteredDevises.length) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        final devise = _filteredDevises[index];
-        return _buildDeviseItem(devise);
+    return RefreshIndicator(
+      onRefresh: () async {
+        await loadDevises(reset: true);
       },
+      displacement: 40,
+      color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.white,
+      child: ListView.builder(
+        physics: AlwaysScrollableScrollPhysics(),
+        itemCount:
+            _filteredDevises.length + (_hasMoreData && _isLoading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _filteredDevises.length) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          final devise = _filteredDevises[index];
+          return _buildDeviseItem(devise);
+        },
+      ),
     );
   }
 

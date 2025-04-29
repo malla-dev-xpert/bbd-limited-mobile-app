@@ -475,82 +475,94 @@ class _WarehouseState extends State<WarehouseScreen> {
       return Center(child: Text("Aucun entrepôt trouvé"));
     }
 
-    return ListView.builder(
-      physics: AlwaysScrollableScrollPhysics(),
-      itemCount:
-          _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= _filteredWarehouse.length) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await loadWarehouses(reset: true);
+      },
+      displacement: 40,
+      color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.white,
+      child: ListView.builder(
+        physics: AlwaysScrollableScrollPhysics(),
+        itemCount:
+            _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _filteredWarehouse.length) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          final warehouse = _filteredWarehouse[index];
+          final formattedDate = DateFormat.yMMMMEEEEd().format(
+            warehouse.createdAt!,
+          );
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 228, 229, 247),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildTag(warehouse.storageType ?? ''),
+                      // warehous detail
+                      IconButton(
+                        icon: Icon(
+                          Icons.info,
+                          size: 30,
+                          color: Colors.grey[500],
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => WarehouseDetailPage(
+                                    warehouseId: warehouse.id,
+                                    name: warehouse.name!,
+                                    storageType: warehouse.storageType!,
+                                    adresse: warehouse.adresse!,
+                                  ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    warehouse.name!,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.map_rounded, size: 18, color: Colors.grey),
+                      SizedBox(width: 5),
+                      Text(warehouse.adresse!),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_month, size: 18, color: Colors.grey),
+                      SizedBox(width: 5),
+                      Text(formattedDate),
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
-        }
-        final warehouse = _filteredWarehouse[index];
-        final formattedDate = DateFormat.yMMMMEEEEd().format(
-          warehouse.createdAt!,
-        );
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 228, 229, 247),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildTag(warehouse.storageType ?? ''),
-                    // warehous detail
-                    IconButton(
-                      icon: Icon(Icons.info, size: 30, color: Colors.grey[500]),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => WarehouseDetailPage(
-                                  warehouseId: warehouse.id,
-                                  name: warehouse.name!,
-                                  storageType: warehouse.storageType!,
-                                  adresse: warehouse.adresse!,
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  warehouse.name!,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.map_rounded, size: 18, color: Colors.grey),
-                    SizedBox(width: 5),
-                    Text(warehouse.adresse!),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_month, size: 18, color: Colors.grey),
-                    SizedBox(width: 5),
-                    Text(formattedDate),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 
