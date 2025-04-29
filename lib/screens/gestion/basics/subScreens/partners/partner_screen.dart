@@ -1,8 +1,10 @@
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class PartnerScreen extends StatefulWidget {
   const PartnerScreen({Key? key}) : super(key: key);
@@ -14,6 +16,8 @@ class PartnerScreen extends StatefulWidget {
 class _PartnerScreenState extends State<PartnerScreen> {
   final TextEditingController searchController = TextEditingController();
   final PartnerServices _partnerServices = PartnerServices();
+  final AuthService authService = AuthService();
+  String? _deletingPartnerId;
 
   List<Partner> _allPartners = [];
   List<Partner> _filteredPartners = [];
@@ -273,14 +277,136 @@ class _PartnerScreenState extends State<PartnerScreen> {
                                   );
                                 }
                                 final partner = _filteredPartners[index];
-                                return ListTile(
-                                  title: Text(
-                                    "${partner.firstName} ${partner.lastName}",
+                                return Slidable(
+                                  key: ValueKey(
+                                    partner.id,
+                                  ), // Assure-toi que chaque élément a une clé unique
+                                  endActionPane: ActionPane(
+                                    motion: const DrawerMotion(),
+                                    children: [
+                                      SlidableAction(
+                                        onPressed: (context) {
+                                          // Affiche le modal d'édition
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (context) {
+                                              return Padding(
+                                                padding: const EdgeInsets.all(
+                                                  16.0,
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      "Modifier les informations",
+                                                    ),
+                                                    TextField(
+                                                      controller:
+                                                          TextEditingController(
+                                                            text:
+                                                                partner
+                                                                    .firstName,
+                                                          ),
+                                                      decoration:
+                                                          InputDecoration(
+                                                            labelText: "Prénom",
+                                                          ),
+                                                    ),
+                                                    TextField(
+                                                      controller:
+                                                          TextEditingController(
+                                                            text:
+                                                                partner
+                                                                    .lastName,
+                                                          ),
+                                                      decoration:
+                                                          InputDecoration(
+                                                            labelText: "Nom",
+                                                          ),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Text(
+                                                        "Sauvegarder",
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.edit,
+                                        label: 'Modifier',
+                                      ),
+                                      SlidableAction(
+                                        onPressed: (context) async {
+                                          try {
+                                            final user =
+                                                await authService.getUserInfo();
+
+                                            if (user == null) {
+                                              showErrorTopSnackBar(
+                                                context,
+                                                "Veuillez vous connecter.",
+                                              );
+                                              return;
+                                            }
+                                            final result =
+                                                await _partnerServices
+                                                    .deletePartner(
+                                                      partner.id,
+                                                      user.id,
+                                                    );
+                                            if (result == "DELETED") {
+                                              loadPartners(reset: true);
+                                              showSuccessTopSnackBar(
+                                                context,
+                                                "Le partenaire a été supprimé avec succès !",
+                                              );
+                                            } else if (result ==
+                                                "PARTNER_NOT_FOUND") {
+                                              showErrorTopSnackBar(
+                                                context,
+                                                "Le partenaire n'existe pas.",
+                                              );
+                                            } else if (result ==
+                                                "PACKAGE_FOUND") {
+                                              showErrorTopSnackBar(
+                                                context,
+                                                "Impossible de supprimer, des colis existent pour ce partenaire.",
+                                              );
+                                            }
+                                          } catch (e) {
+                                            showErrorTopSnackBar(
+                                              context,
+                                              "Une erreur est survenue lors de la suppression du partenaire.",
+                                            );
+                                          } finally {
+                                            setState(() => _isLoading = false);
+                                          }
+                                        },
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.delete,
+                                        label: 'Supprimer',
+                                      ),
+                                    ],
                                   ),
-                                  subtitle: Text(
-                                    partner.phoneNumber.toString(),
+                                  child: ListTile(
+                                    title: Text(
+                                      "${partner.firstName} ${partner.lastName}",
+                                    ),
+                                    subtitle: Text(
+                                      partner.phoneNumber.toString(),
+                                    ),
+                                    trailing: Text(partner.accountType),
                                   ),
-                                  trailing: Text(partner.accountType),
                                 );
                               },
                             ),
