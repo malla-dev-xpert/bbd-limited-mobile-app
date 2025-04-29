@@ -83,7 +83,7 @@ class _LoginState extends State<Login> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         controller: _scrollController,
         physics:
