@@ -276,82 +276,90 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
               child:
                   _filteredPackages.isEmpty
                       ? Center(child: Text("Aucun colis trouvé."))
-                      : ListView.builder(
-                        itemCount: _filteredPackages.length,
-                        itemBuilder: (context, index) {
-                          final pkg = _filteredPackages[index];
-                          return Dismissible(
-                            key: Key(pkg.id.toString()),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              padding: const EdgeInsets.only(right: 16),
-                              color: Colors.red,
-                              alignment: Alignment.centerRight,
-                              child: Icon(
-                                Icons.delete,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              try {
-                                final user = await _authService.getUserInfo();
-                                if (user == null) {
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur: Utilisateur non connecté",
-                                  );
-                                  return;
-                                }
-
-                                await _packageServices.deletePackage(
-                                  pkg.id,
-                                  user.id.toInt(),
-                                );
-
-                                setState(() {
-                                  _allPackages.removeWhere(
-                                    (d) => d.id == pkg.id,
-                                  );
-                                  _filteredPackages = List.from(_allPackages);
-                                });
-
-                                showSuccessTopSnackBar(
-                                  context,
-                                  "Colis supprimé avec succès",
-                                );
-                              } catch (e) {
-                                showErrorTopSnackBar(
-                                  context,
-                                  "Erreur lors de la suppression",
-                                );
-                              }
-                            },
-                            child: ListTile(
-                              onTap: () async {
-                                showPackageDetailsBottomSheet(
-                                  context,
-                                  pkg,
-                                  widget.warehouseId.toInt(),
-                                  false,
-                                );
-                              },
-                              leading: Icon(
-                                Icons.inventory,
-                                color: getStatusColor(pkg.status),
-                              ),
-                              title: Text(pkg.reference!),
-                              subtitle: Text("Dimensions: ${pkg.dimensions}"),
-                              trailing: Text(
-                                "Poids: ${pkg.weight!} kg",
-                                style: TextStyle(
-                                  color: const Color(0xFF7F78AF),
-                                  fontWeight: FontWeight.w600,
+                      : RefreshIndicator(
+                        onRefresh: () async {
+                          await fetchPackages();
+                        },
+                        displacement: 40,
+                        color: Theme.of(context).primaryColor,
+                        backgroundColor: Colors.white,
+                        child: ListView.builder(
+                          itemCount: _filteredPackages.length,
+                          itemBuilder: (context, index) {
+                            final pkg = _filteredPackages[index];
+                            return Dismissible(
+                              key: Key(pkg.id.toString()),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                padding: const EdgeInsets.only(right: 16),
+                                color: Colors.red,
+                                alignment: Alignment.centerRight,
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                  size: 30,
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                              confirmDismiss: (direction) async {
+                                try {
+                                  final user = await _authService.getUserInfo();
+                                  if (user == null) {
+                                    showErrorTopSnackBar(
+                                      context,
+                                      "Erreur: Utilisateur non connecté",
+                                    );
+                                    return;
+                                  }
+
+                                  await _packageServices.deletePackage(
+                                    pkg.id,
+                                    user.id.toInt(),
+                                  );
+
+                                  setState(() {
+                                    _allPackages.removeWhere(
+                                      (d) => d.id == pkg.id,
+                                    );
+                                    _filteredPackages = List.from(_allPackages);
+                                  });
+
+                                  showSuccessTopSnackBar(
+                                    context,
+                                    "Colis supprimé avec succès",
+                                  );
+                                } catch (e) {
+                                  showErrorTopSnackBar(
+                                    context,
+                                    "Erreur lors de la suppression",
+                                  );
+                                }
+                              },
+                              child: ListTile(
+                                onTap: () async {
+                                  showPackageDetailsBottomSheet(
+                                    context,
+                                    pkg,
+                                    widget.warehouseId.toInt(),
+                                    false,
+                                  );
+                                },
+                                leading: Icon(
+                                  Icons.inventory,
+                                  color: getStatusColor(pkg.status),
+                                ),
+                                title: Text(pkg.reference!),
+                                subtitle: Text("Dimensions: ${pkg.dimensions}"),
+                                trailing: Text(
+                                  "Poids: ${pkg.weight!} kg",
+                                  style: TextStyle(
+                                    color: const Color(0xFF7F78AF),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
             ),
           ],
