@@ -107,8 +107,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
@@ -131,7 +129,9 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              color: const Color(0xFFF3F4F6),
+              color: Colors.white,
+              elevation: 3,
+              shadowColor: Colors.grey[50],
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
