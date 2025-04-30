@@ -4,8 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WarehouseServices {
-  final String baseUrl =
-      dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
+  final String baseUrl = dotenv.env['BASE_URL'] ?? '';
 
   Future<String> create(
     String name,
@@ -55,13 +54,21 @@ class WarehouseServices {
     }
   }
 
-  Future<void> deleteWarehouse(int id, int userID) async {
-    final url = Uri.parse("$baseUrl/warehouses/delete/$id?userId=$userID");
+  Future<String?> deleteWarehouse(int id, int? userId) async {
+    final url = Uri.parse("$baseUrl/warehouses/delete/$id?userId=$userId");
 
-    final response = await http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    if (response.statusCode != 200) {
-      throw Exception("Erreur lors de la suppression de l'entrepot");
+      if (response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              "Impossible de supprimer, des colis existent dans cet entrepôt.") {
+        return "PACKAGE_FOUND";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression de l'entrepôt : $e");
     }
   }
 }

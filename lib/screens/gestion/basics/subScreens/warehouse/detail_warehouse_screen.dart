@@ -1,7 +1,9 @@
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package_to_warehouse.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -29,10 +31,12 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
   final TextEditingController searchController = TextEditingController();
   final PackageServices _packageServices = PackageServices();
   final AuthService _authService = AuthService();
+  final WarehouseServices _warehouseServices = WarehouseServices();
 
   List<Packages> _allPackages = [];
   List<Packages> _filteredPackages = [];
   String? _currentFilter;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -103,6 +107,62 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
     });
 
     filterPackages(searchController.text);
+  }
+
+  Future<Warehouses?> _deleteWarehouse(Warehouses warehouse) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Confirmer la suppression"),
+            backgroundColor: Colors.white,
+            content: Text("Supprimer le magasin ${warehouse.name}?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Annuler"),
+              ),
+              TextButton.icon(
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.delete, color: Colors.red),
+                label: const Text(
+                  "Supprimer",
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final user = await _authService.getUserInfo();
+
+        if (user == null) {
+          showErrorTopSnackBar(context, "Veuillez vous connecter.");
+          return null;
+        }
+        setState(() => _isLoading = true);
+        final result = await _warehouseServices.deleteWarehouse(
+          warehouse.id,
+          user.id,
+        );
+
+        if (result == "DELETED") {
+          Navigator.pop(context, true);
+          showSuccessTopSnackBar(context, "Warehouse supprimé avec succès");
+        } else if (result == "PACKAGE_FOUND") {
+          showErrorTopSnackBar(
+            context,
+            "Impossible de supprimer - Il y'a des colis existants pour ce magasin.",
+          );
+        }
+      } catch (e) {
+        showErrorTopSnackBar(context, "Erreur lors de la suppression");
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -187,6 +247,41 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                             widget.storageType!,
                             style: TextStyle(fontWeight: FontWeight.w600),
                             softWrap: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 5,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () {},
+                          label: Text(
+                            "Modifier",
+                            style: TextStyle(color: Colors.blueGrey),
+                          ),
+                          icon: const Icon(
+                            Icons.edit_document,
+                            color: Colors.blueGrey,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed:
+                              () => _deleteWarehouse(
+                                Warehouses(
+                                  id: widget.warehouseId,
+                                  name: widget.name,
+                                ),
+                              ),
+                          label: Text(
+                            "Supprimer cet entrepôt",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          icon: const Icon(
+                            Icons.delete_forever,
+                            color: Colors.red,
                           ),
                         ),
                       ],

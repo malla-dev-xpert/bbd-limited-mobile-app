@@ -133,37 +133,6 @@ class _WarehouseState extends State<WarehouseScreen> {
     super.dispose();
   }
 
-  Future<void> _deleteWarehouse(BuildContext context, int id) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final user = await authService.getUserInfo();
-      if (user == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
-        return;
-      }
-
-      await warehousServices.deleteWarehouse(id, user.id);
-      setState(() {
-        _allWarehouses!.removeWhere((d) => d.id == id);
-        _filteredWarehouse = List.from(_allWarehouses!);
-        _isLoading = false;
-      });
-      Navigator.of(context).pop();
-      showSuccessTopSnackBar(context, "Entrepot supprimée");
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      showErrorTopSnackBar(context, "Erreur lors de la suppression");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -521,19 +490,27 @@ class _WarehouseState extends State<WarehouseScreen> {
                           size: 30,
                           color: Colors.grey[500],
                         ),
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder:
                                   (context) => WarehouseDetailPage(
                                     warehouseId: warehouse.id,
-                                    name: warehouse.name!,
-                                    storageType: warehouse.storageType!,
-                                    adresse: warehouse.adresse!,
+                                    name: warehouse.name,
+                                    adresse: warehouse.adresse,
+                                    storageType: warehouse.storageType,
                                   ),
                             ),
                           );
+
+                          // Si result est true, l'entrepôt a été supprimé
+                          if (result == true) {
+                            // Rafraîchir la liste des entrepôts
+                            setState(() {
+                              loadWarehouses(reset: true);
+                            });
+                          }
                         },
                       ),
                     ],
