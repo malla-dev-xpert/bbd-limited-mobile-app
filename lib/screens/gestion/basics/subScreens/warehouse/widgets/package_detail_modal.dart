@@ -154,7 +154,7 @@ void showPackageDetailsBottomSheet(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text("Pas d’articles pour ce colis."),
+                                      Text("Pas d'articles pour ce colis."),
                                       const SizedBox(height: 10),
                                       ElevatedButton.icon(
                                         onPressed: () async {
