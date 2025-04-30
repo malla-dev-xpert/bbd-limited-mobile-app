@@ -128,11 +128,16 @@ class _EditPackageModalState extends State<EditPackageModal> {
         warehouseId: _selectedWarehouse!.id,
       );
 
-      await _packageServices.updatePackage(
+      final success = await _packageServices.updatePackage(
         widget.package.id,
         user.id,
         updatedPackage,
       );
+
+      if (success == false) {
+        showErrorTopSnackBar(context, "Le nom du colis existe déjà !");
+        return;
+      }
 
       widget.onPackageUpdated();
       if (mounted) {

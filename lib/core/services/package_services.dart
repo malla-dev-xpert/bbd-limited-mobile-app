@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/package.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -129,10 +128,13 @@ class PackageServices {
       final response = await http.put(
         url,
         headers: headers,
-        body: jsonEncode(dto.toJson()), // Utilisez toJson() ici
+        body: jsonEncode(dto.toJson()),
       );
 
-      log(response.body);
+      if (response.statusCode == 409 &&
+          response.body == 'Nom de colis déjà utilisé !') {
+        return false;
+      }
 
       if (response.statusCode == 200) {
         return true;
@@ -141,7 +143,6 @@ class PackageServices {
         throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
       }
     } catch (e) {
-      log('Erreur lors de la mise à jour du colis: $e');
       rethrow;
     }
   }
