@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -119,6 +120,61 @@ class _DeviseState extends State<DevicesScreen> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final success = await deviseServices.create(
+        _nameController.text,
+        _codeController.text,
+        double.tryParse(_rateController.text) ?? 0.0,
+      );
+
+      if (success == "NAME_EXIST") {
+        setState(() {
+          _errorMessage =
+              "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "CODE_EXIST") {
+        setState(() {
+          _errorMessage =
+              "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "CREATED") {
+        _nameController.clear();
+        _codeController.clear();
+        _rateController.clear();
+        Navigator.pop(context);
+        showSuccessTopSnackBar(context, 'Devise créée avec succès!');
+        _refreshController.add(null);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erreur liée au serveur, veuillez réessayer plus tard.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -275,91 +331,12 @@ class _DeviseState extends State<DevicesScreen> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed:
-                                _isLoading
-                                    ? null
-                                    : () async {
-                                      if (!_formKey.currentState!.validate()) {
-                                        return;
-                                      }
-
-                                      setModalState(() {
-                                        _isLoading = true;
-                                        _errorMessage = '';
-                                      });
-
-                                      try {
-                                        final success = await deviseServices
-                                            .create(
-                                              _nameController.text,
-                                              _codeController.text,
-                                              double.tryParse(
-                                                    _rateController.text,
-                                                  ) ??
-                                                  0.0,
-                                            );
-
-                                        if (success == "NAME_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "CODE_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "CREATED") {
-                                          _nameController.clear();
-                                          _codeController.clear();
-                                          _rateController.clear();
-                                          Navigator.pop(context);
-                                          showSuccessTopSnackBar(
-                                            context,
-                                            'Devise créée avec succès!',
-                                          );
-                                          _refreshController.add(null);
-                                        }
-                                      } catch (e) {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                          _errorMessage =
-                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
-                                        });
-                                      } finally {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                        });
-                                      }
-                                    },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: const Color(0xFF1A1E49),
-                            ),
-                            child:
-                                _isLoading
-                                    ? const SizedBox(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                    : const Text(
-                                      'Enregistrer',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                          confirmationButton(
+                            isLoading: _isLoading,
+                            onPressed: _submitForm,
+                            label: "Enregistrer",
+                            icon: Icons.check_circle_outline_outlined,
+                            subLabel: "Enregistrement...",
                           ),
                         ],
                       ),
