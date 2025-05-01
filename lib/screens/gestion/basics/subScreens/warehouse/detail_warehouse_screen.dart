@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
@@ -14,6 +18,7 @@ class WarehouseDetailPage extends StatefulWidget {
   final String? name;
   final String? adresse;
   final String? storageType;
+  final Function()? onWarehouseUpdated;
 
   const WarehouseDetailPage({
     super.key,
@@ -21,6 +26,7 @@ class WarehouseDetailPage extends StatefulWidget {
     this.name,
     this.adresse,
     this.storageType,
+    this.onWarehouseUpdated,
   });
 
   @override
@@ -28,20 +34,246 @@ class WarehouseDetailPage extends StatefulWidget {
 }
 
 class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
+  // Contrôleurs et services
   final TextEditingController searchController = TextEditingController();
   final PackageServices _packageServices = PackageServices();
   final AuthService _authService = AuthService();
   final WarehouseServices _warehouseServices = WarehouseServices();
 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _adressController = TextEditingController();
+  final TextEditingController _storageTypeController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  // final ScrollController _scrollController = ScrollController();
+
+  // State variables
   List<Packages> _allPackages = [];
   List<Packages> _filteredPackages = [];
   String? _currentFilter;
   bool _isLoading = false;
+  String? _errorMessage;
+  final StreamController<void> _refreshController =
+      StreamController<void>.broadcast();
 
   @override
   void initState() {
     super.initState();
+    _nameController.text = widget.name ?? '';
+    _adressController.text = widget.adresse ?? '';
+    _storageTypeController.text = widget.storageType ?? '';
     fetchPackages();
+    _refreshController.stream.listen((_) => fetchPackages());
+  }
+
+  Future<void> _updateWarehouse() async {
+    try {
+      await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => _buildEditWarehouseModal(context),
+      );
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(
+          context,
+          "Erreur lors de la modification: ${e.toString()}",
+        );
+      }
+    }
+  }
+
+  Future<void> _handleWarehouseUpdate() async {
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final user = await _authService.getUserInfo();
+      if (user == null || user.id == null) {
+        setState(() {
+          _errorMessage = "Erreur: Utilisateur non connecté ou ID manquant";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (_nameController.text.isEmpty ||
+          _adressController.text.isEmpty ||
+          _storageTypeController.text.isEmpty) {
+        setState(() {
+          _errorMessage = "Tous les champs doivent être remplis";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final warehouseData = Warehouses(
+        id: widget.warehouseId,
+        name: _nameController.text,
+        adresse: _adressController.text,
+        storageType: _storageTypeController.text,
+      );
+
+      final result = await _warehouseServices.updateWarehouse(
+        widget.warehouseId,
+        warehouseData,
+        user.id,
+      );
+      log(result.toString());
+
+      if (result == true) {
+        if (mounted) {
+          Navigator.pop(context, true);
+          showSuccessTopSnackBar(context, "Entrepôt modifié avec succès");
+          _refreshController.add(null);
+          final updatedWarehouse = await _warehouseServices.getWarehouseById(
+            widget.warehouseId,
+          );
+
+          if (updatedWarehouse != null && mounted) {
+            // Notifier le screen parent
+            if (widget.onWarehouseUpdated != null) {
+              widget.onWarehouseUpdated!();
+            }
+            setState(() {
+              _nameController.text = updatedWarehouse.name ?? '';
+              _adressController.text = updatedWarehouse.adresse ?? '';
+              _storageTypeController.text = updatedWarehouse.storageType ?? '';
+            });
+          }
+        }
+      } else {
+        if (mounted) {
+          showErrorTopSnackBar(context, "Ce nom est déjà utilisé");
+          setState(() => _isLoading = false);
+        }
+      }
+    } catch (e, stackTrace) {
+      log(
+        "Erreur lors de la modification de l'entrepôt",
+        error: e,
+        stackTrace: stackTrace,
+      );
+      if (mounted) {
+        showErrorTopSnackBar(context, "Erreur technique: ${e.toString()}");
+        setState(() => _isLoading = false);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Widget _buildEditWarehouseModal(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: StatefulBuilder(
+        builder: (context, setModalState) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Modifier l\'entrepôt',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        icon: const Icon(Icons.close_rounded, size: 30),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Nom
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.warehouse),
+                      labelText: 'Nom de l\'entrepôt',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Adresse
+                  TextFormField(
+                    controller: _adressController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.maps_home_work),
+                      labelText: 'Adresse de l\'entrepôt',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Type de stockage
+                  TextFormField(
+                    controller: _storageTypeController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.storage),
+                      labelText: 'Type de stockage',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Erreur éventuelle
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  const SizedBox(height: 10),
+
+                  // Bouton de confirmation
+                  confirmationButton(
+                    isLoading: _isLoading,
+                    onPressed: _handleWarehouseUpdate,
+                    label: "Modifier",
+                    icon: Icons.edit_document,
+                    subLabel: "Modification...",
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> fetchPackages() async {
@@ -169,7 +401,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           'Détail : ${widget.name}',
@@ -257,7 +489,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton.icon(
-                          onPressed: () {},
+                          onPressed: () => _updateWarehouse(),
                           label: Text(
                             "Modifier",
                             style: TextStyle(color: Colors.blueGrey),
@@ -461,6 +693,16 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _adressController.dispose();
+    _storageTypeController.dispose();
+    searchController.dispose();
+    _refreshController.close();
+    super.dispose();
   }
 }
 

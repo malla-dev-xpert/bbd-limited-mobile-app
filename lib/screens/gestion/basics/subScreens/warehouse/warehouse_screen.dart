@@ -476,6 +476,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                                     name: warehouse.name,
                                     adresse: warehouse.adresse,
                                     storageType: warehouse.storageType,
+                                    onWarehouseUpdated: () {
+                                      loadWarehouses(reset: true);
+                                    },
                                   ),
                             ),
                           );
