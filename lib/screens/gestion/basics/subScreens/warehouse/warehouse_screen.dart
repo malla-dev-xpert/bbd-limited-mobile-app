@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
@@ -121,6 +122,77 @@ class _WarehouseState extends State<WarehouseScreen> {
                 storageType.contains(query);
           }).toList();
     });
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+      _errorMessage = null;
+    });
+
+    final user = await authService.getUserInfo();
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "Erreur: Utilisateur non connecté";
+      });
+      return;
+    }
+
+    try {
+      final success = await warehousServices.create(
+        _nameController.text,
+        _adressController.text,
+        _storageTypeController.text,
+        user.id,
+      );
+
+      if (success == "NAME_EXIST") {
+        setState(() {
+          _errorMessage =
+              "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "ADRESS_EXIST") {
+        setState(() {
+          _errorMessage =
+              "L'adresse '${_adressController.text}' existe déjà. Veuillez en choisir une autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "CREATED") {
+        _nameController.clear();
+        _adressController.clear();
+        _storageTypeController.clear();
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        Navigator.of(context).pop();
+
+        showSuccessTopSnackBar(context, 'Entrepôt créé avec succès!');
+        _refreshController.add(null);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erreur liée au serveur, veuillez réessayer plus tard.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -284,108 +356,12 @@ class _WarehouseState extends State<WarehouseScreen> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed:
-                                _isLoading
-                                    ? null
-                                    : () async {
-                                      if (!_formKey.currentState!.validate()) {
-                                        return;
-                                      }
-
-                                      setModalState(() {
-                                        _isLoading = false;
-                                        _errorMessage = null;
-                                      });
-
-                                      final user =
-                                          await authService.getUserInfo();
-                                      if (user == null) {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                          _errorMessage =
-                                              "Erreur: Utilisateur non connecté";
-                                        });
-                                        return;
-                                      }
-
-                                      try {
-                                        final success = await warehousServices
-                                            .create(
-                                              _nameController.text,
-                                              _adressController.text,
-                                              _storageTypeController.text,
-                                              user.id,
-                                            );
-
-                                        if (success == "NAME_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "ADRESS_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "L'adresse '${_adressController.text}' existe déjà. Veuillez en choisir une autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "CREATED") {
-                                          _nameController.clear();
-                                          _adressController.clear();
-                                          _storageTypeController.clear();
-
-                                          setModalState(() {
-                                            _isLoading = false;
-                                          });
-
-                                          Navigator.of(context).pop();
-
-                                          showSuccessTopSnackBar(
-                                            context,
-                                            'Entrepôt créé avec succès!',
-                                          );
-                                          _refreshController.add(null);
-                                        }
-                                      } catch (e) {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                          _errorMessage =
-                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
-                                        });
-                                      } finally {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                        });
-                                      }
-                                    },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: const Color(0xFF1A1E49),
-                            ),
-                            child:
-                                _isLoading
-                                    ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                    : const Text(
-                                      'Enregistrer',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                          confirmationButton(
+                            isLoading: _isLoading,
+                            onPressed: _submitForm,
+                            label: "Enregistrer",
+                            icon: Icons.check_circle_outline_outlined,
+                            subLabel: "Enregistrement...",
                           ),
                         ],
                       ),
