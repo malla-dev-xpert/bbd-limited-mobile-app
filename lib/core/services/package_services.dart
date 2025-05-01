@@ -136,7 +136,7 @@ class PackageServices {
         return false;
       }
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return true;
       } else {
         final errorData = jsonDecode(response.body);
