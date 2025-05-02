@@ -140,11 +140,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
             if (widget.onWarehouseUpdated != null) {
               widget.onWarehouseUpdated!();
             }
-            setState(() {
-              _nameController.text = updatedWarehouse.name ?? '';
-              _adressController.text = updatedWarehouse.adresse ?? '';
-              _storageTypeController.text = updatedWarehouse.storageType ?? '';
-            });
+            Navigator.pop(context);
           }
         }
       } else {
