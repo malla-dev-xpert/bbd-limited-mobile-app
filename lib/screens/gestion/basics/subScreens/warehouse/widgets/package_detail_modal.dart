@@ -1,8 +1,10 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/models/items.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_items_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -30,6 +32,133 @@ Widget _detailRow(String label, String? value) {
         ),
       ],
     ),
+  );
+}
+
+Future<bool?> _showEditItemModal(
+  BuildContext context,
+  Item item,
+  Packages pkg,
+) async {
+  final TextEditingController descriptionController = TextEditingController(
+    text: item.description,
+  );
+  final TextEditingController quantityController = TextEditingController(
+    text: item.quantity.toString(),
+  );
+  final AuthService authService = AuthService();
+  bool _isLoading = false;
+  final ItemServices itemServices = ItemServices();
+
+  return showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              spacing: 50,
+              children: [
+                const Text(
+                  'Modifier l\'article',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.white,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildTextField(
+                    controller: descriptionController,
+                    label: "Description",
+                    icon: Icons.description,
+                  ),
+                  const SizedBox(height: 16),
+                  buildTextField(
+                    controller: quantityController,
+                    keyboardType: TextInputType.number,
+                    label: "Quantité",
+                    icon: Icons.numbers,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annuler'),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  try {
+                    final user = await authService.getUserInfo();
+                    if (user == null) return;
+
+                    setState(() => _isLoading = true);
+
+                    final itemDto = item.copyWith(
+                      description: descriptionController.text,
+                      quantity: double.parse(quantityController.text),
+                    );
+
+                    final updatedItem = await itemServices.updateItem(
+                      item.id,
+                      pkg.id,
+                      itemDto,
+                    );
+
+                    if (updatedItem != null) {
+                      final updatedItems =
+                          pkg.items
+                              ?.map((i) => i.id == item.id ? updatedItem : i)
+                              .toList();
+
+                      setState(() {
+                        _isLoading = false;
+                      });
+
+                      Navigator.pop(context, true);
+
+                      showSuccessTopSnackBar(
+                        context,
+                        "Article modifié avec succès",
+                      );
+                    }
+                  } catch (e) {
+                    setState(() => _isLoading = false);
+                    showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+                  } finally {
+                    setState(() => _isLoading = false);
+                  }
+                },
+                icon: const Icon(
+                  Icons.check_circle_outline_outlined,
+                  color: Colors.green,
+                ),
+                label:
+                    _isLoading
+                        ? const Text('Modification...')
+                        : Text(
+                          'Modifier',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+              ),
+            ],
+          );
+        },
+      );
+    },
   );
 }
 
@@ -156,53 +285,169 @@ void showPackageDetailsBottomSheet(
                                     children: [
                                       Text("Pas d'articles pour ce colis."),
                                       const SizedBox(height: 10),
-                                      ElevatedButton.icon(
-                                        onPressed: () async {
-                                          final result = showAddItemsModal(
-                                            context,
-                                            pkg.id,
-                                          );
-                                          if (result == true) {
-                                            final updatedPackage =
-                                                await itemServices
-                                                    .findByPackageId(pkg.id);
-
-                                            setState(() {
-                                              pkg.items = updatedPackage;
-                                            });
-                                          }
-                                        },
-                                        icon: Icon(
-                                          Icons.add,
-                                          color: Colors.white,
-                                        ),
-                                        label: Text(
-                                          "Ajouter un article",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF7F78AF,
+                                      if (pkg.status != Status.RECEIVED)
+                                        ElevatedButton.icon(
+                                          onPressed: () async {
+                                            final result =
+                                                await showAddItemsModal(
+                                                  context,
+                                                  pkg.id,
+                                                );
+                                            if (result == true) {
+                                              final updatedItems =
+                                                  await itemServices
+                                                      .findByPackageId(pkg.id);
+                                              setState(() {
+                                                pkg.items = updatedItems;
+                                              });
+                                            }
+                                          },
+                                          icon: Icon(
+                                            Icons.add,
+                                            color: Colors.white,
                                           ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              10,
+                                          label: Text(
+                                            "Ajouter un article",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFF7F78AF,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 )
                                 : ListView.builder(
                                   shrinkWrap: true,
-                                  itemCount: pkg.items!.length,
+                                  itemCount:
+                                      pkg.items!
+                                          .where(
+                                            (item) =>
+                                                item.status != Status.DELETE,
+                                          )
+                                          .length,
                                   itemBuilder: (context, index) {
                                     final item = pkg.items![index];
-                                    return ListTile(
-                                      leading: Icon(Icons.label),
-                                      title: Text(item.description),
-                                      trailing: Text("x${item.quantity}"),
+
+                                    return Dismissible(
+                                      key: Key('${item.id}'),
+                                      direction:
+                                          pkg.status != Status.RECEIVED
+                                              ? DismissDirection.endToStart
+                                              : DismissDirection.none,
+                                      background: Container(
+                                        padding: const EdgeInsets.only(
+                                          right: 16,
+                                        ),
+                                        color:
+                                            pkg.status != Status.RECEIVED
+                                                ? Colors.red
+                                                : Colors.grey,
+                                        alignment: Alignment.centerRight,
+                                        child: Icon(
+                                          Icons.delete,
+                                          color: Colors.white,
+                                          size: 30,
+                                        ),
+                                      ),
+                                      confirmDismiss:
+                                          pkg.status != Status.RECEIVED
+                                              ? (direction) async {
+                                                try {
+                                                  final user =
+                                                      await authService
+                                                          .getUserInfo();
+                                                  if (user == null) {
+                                                    showErrorTopSnackBar(
+                                                      context,
+                                                      "Erreur: Utilisateur non connecté",
+                                                    );
+                                                    return false;
+                                                  }
+
+                                                  final response =
+                                                      await itemServices
+                                                          .deleteItem(
+                                                            item.id,
+                                                            user.id.toInt(),
+                                                            pkg.id,
+                                                          );
+
+                                                  if (response ==
+                                                      "ITEM_NOT_FOUND") {
+                                                    showErrorTopSnackBar(
+                                                      context,
+                                                      "Article non trouvé.",
+                                                    );
+                                                    return false;
+                                                  } else if (response ==
+                                                      "PACKAGE_NOT_FOUND") {
+                                                    showErrorTopSnackBar(
+                                                      context,
+                                                      "Colis non trouvé.",
+                                                    );
+                                                    return false;
+                                                  } else if (response ==
+                                                      "DELETED") {
+                                                    final updatedItems =
+                                                        await itemServices
+                                                            .findByPackageId(
+                                                              pkg.id,
+                                                            );
+                                                    setState(() {
+                                                      pkg.items = updatedItems;
+                                                    });
+                                                    showSuccessTopSnackBar(
+                                                      context,
+                                                      "Article supprimé avec succès",
+                                                    );
+                                                    return true;
+                                                  }
+                                                  return false;
+                                                } catch (e) {
+                                                  showErrorTopSnackBar(
+                                                    context,
+                                                    "Erreur lors de la suppression: ${e.toString()}",
+                                                  );
+                                                  return false;
+                                                }
+                                              }
+                                              : null,
+                                      child: ListTile(
+                                        onTap:
+                                            pkg.status == Status.RECEIVED
+                                                ? null
+                                                : () async {
+                                                  final result =
+                                                      await _showEditItemModal(
+                                                        context,
+                                                        item,
+                                                        pkg,
+                                                      );
+                                                  if (result == true) {
+                                                    final updatedItems =
+                                                        await itemServices
+                                                            .findByPackageId(
+                                                              pkg.id,
+                                                            );
+                                                    setState(() {
+                                                      pkg.items = updatedItems;
+                                                    });
+                                                  }
+                                                },
+
+                                        leading: Icon(Icons.label),
+                                        title: Text(item.description),
+                                        trailing: Text("x${item.quantity}"),
+                                      ),
                                     );
                                   },
                                 ),
