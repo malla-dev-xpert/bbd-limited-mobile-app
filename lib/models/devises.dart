@@ -9,6 +9,38 @@ class Devise {
   final DateTime? createdAt;
   final DateTime? editedAt;
 
+  Devise copyWith({
+    int? id,
+    String? name,
+    double? rate,
+    String? code,
+    Status? status,
+    DateTime? createdAt,
+    DateTime? editedAt,
+  }) {
+    return Devise(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      rate: rate ?? this.rate,
+      code: code ?? this.code,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      editedAt: editedAt ?? this.editedAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'rate': rate,
+      'code': code,
+      'status': status?.name,
+      'createdAt': createdAt?.toIso8601String(),
+      'editedAt': editedAt?.toIso8601String(),
+    };
+  }
+
   Devise({
     this.id,
     required this.name,

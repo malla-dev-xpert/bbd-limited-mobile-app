@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -175,6 +176,132 @@ class _DeviseState extends State<DevicesScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<bool?> _showEditDeviseModal(
+    BuildContext context,
+    Devise devise,
+  ) async {
+    final TextEditingController nameController = TextEditingController(
+      text: devise.name,
+    );
+    final TextEditingController codeController = TextEditingController(
+      text: devise.code,
+    );
+    final TextEditingController rateController = TextEditingController(
+      text: devise.rate.toString(),
+    );
+    bool _isLoading = false;
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 50,
+                children: [
+                  const Text(
+                    'Modifier un devise',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.white,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    buildTextField(
+                      controller: nameController,
+                      label: "Nom de la devise",
+                      icon: Icons.description,
+                    ),
+                    const SizedBox(height: 16),
+                    buildTextField(
+                      controller: codeController,
+                      label: "Code de la devise",
+                      icon: Icons.numbers,
+                    ),
+                    const SizedBox(height: 16),
+                    buildTextField(
+                      controller: rateController,
+                      keyboardType: TextInputType.number,
+                      label: "Taux de change",
+                      icon: Icons.numbers,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Annuler'),
+                ),
+                TextButton.icon(
+                  onPressed: () async {
+                    try {
+                      setState(() => _isLoading = true);
+
+                      final deviseDto = devise.copyWith(
+                        name: nameController.text,
+                        code: codeController.text,
+                        rate: double.parse(rateController.text),
+                      );
+
+                      final updatedDevise = await deviseServices.updateDevise(
+                        devise.id!,
+                        deviseDto,
+                      );
+
+                      if (updatedDevise) {
+                        setState(() {
+                          _isLoading = false;
+                          loadDevises(reset: true);
+                        });
+
+                        Navigator.pop(context, true);
+
+                        showSuccessTopSnackBar(
+                          context,
+                          "Devise modifiée avec succès",
+                        );
+                      }
+                    } catch (e) {
+                      setState(() => _isLoading = false);
+                      showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+                    } finally {
+                      setState(() => _isLoading = false);
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.check_circle_outline_outlined,
+                    color: Colors.green,
+                  ),
+                  label:
+                      _isLoading
+                          ? const Text('Modification...')
+                          : Text(
+                            'Modifier',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -449,6 +576,14 @@ class _DeviseState extends State<DevicesScreen> {
         }
       },
       child: ListTile(
+        onTap: () async {
+          final result = await _showEditDeviseModal(context, devise);
+          if (result == true) {
+            setState(() {
+              loadDevises(reset: true);
+            });
+          }
+        },
         title: Text(devise.name, style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(devise.code),
         trailing: Text(
