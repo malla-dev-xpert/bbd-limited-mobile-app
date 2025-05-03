@@ -108,19 +108,20 @@ class Packages {
 
     return Packages(
       id: json['id'] as int,
-      name: json['name'],
-      reference: json['reference'],
-      dimensions: json['dimensions'],
-      createdAt: DateTime.parse(json['createdAt']),
+      name: json['name'] as String?,
+      reference: json['reference'] as String?,
+      dimensions: json['dimensions'] as String?,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       weight:
           json['weight'] != null ? (json['weight'] as num).toDouble() : null,
       status: status,
-      partnerName: json['partnerName'],
-      partnerId: json['partnerId'] as int,
-      partnerPhoneNumber: json['partnerPhoneNumber'],
-      warehouseName: json['warehouseName'],
-      warehouseAddress: json['warehouseAddress'],
-      warehouseId: json['warehouseId'],
+      partnerName: json['partnerName'] as String?,
+      partnerId: json['partnerId'] as int?,
+      partnerPhoneNumber: json['partnerPhoneNumber'] as String?,
+      warehouseName: json['warehouseName'] as String?,
+      warehouseAddress: json['warehouseAddress'] as String?,
+      warehouseId: json['warehouseId'] as int?,
       items: itemList,
     );
   }

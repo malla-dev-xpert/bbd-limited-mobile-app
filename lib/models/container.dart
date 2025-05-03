@@ -86,9 +86,9 @@ class Containers {
     }
 
     List<Packages> packageList = [];
-    if (json['items'] != null) {
+    if (json['packages'] != null) {
       packageList =
-          (json['items'] as List)
+          (json['packages'] as List)
               .map((item) => Packages.fromJson(item))
               .toList();
     }
@@ -105,8 +105,6 @@ class Containers {
       packages: packageList,
       userId: json['userId'] as int?,
       userName: json['userName'] as String?,
-      // harborId: json['harborId'] as int?,
-      // harborName: json['harborName'] as String?,
     );
   }
 }
