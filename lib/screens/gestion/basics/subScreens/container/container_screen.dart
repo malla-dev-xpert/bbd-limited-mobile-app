@@ -6,6 +6,7 @@ import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/edit_package_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -93,7 +94,7 @@ class _ContainerScreen extends State<ContainerScreen> {
     }
   }
 
-  void _showEditPackageModal(BuildContext context, Packages pkg) {
+  void _showEditContainerModal(BuildContext context, Containers container) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -102,9 +103,9 @@ class _ContainerScreen extends State<ContainerScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return EditPackageModal(
-          package: pkg,
-          onPackageUpdated: () => fetchContainers(reset: true),
+        return EditContainerModal(
+          container: container,
+          onContainerUpdated: () => fetchContainers(reset: true),
         );
       },
     );
@@ -300,9 +301,11 @@ class _ContainerScreen extends State<ContainerScreen> {
                                     //   1,
                                     //   true,
                                     // ),
-                                    onEdit: () {},
-                                    // () =>
-                                    //     _showEditPackageModal(context, pkg),
+                                    onEdit:
+                                        () => _showEditContainerModal(
+                                          context,
+                                          container,
+                                        ),
                                     onDelete: () => _delete(container),
                                   );
                                 },

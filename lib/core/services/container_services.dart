@@ -68,4 +68,31 @@ class ContainerServices {
       throw Exception("Erreur lors de la suppression du conteneur : $e");
     }
   }
+
+  Future<String?> update(int id, int? userId, Containers dto) async {
+    try {
+      final url = Uri.parse('$baseUrl/containers/update/$id?userId=$userId');
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 409 &&
+          response.body == 'Ce conteneur existe déjà !') {
+        return "REF_EXIST";
+      }
+
+      if (response.statusCode == 201) {
+        return "UPDATED";
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
