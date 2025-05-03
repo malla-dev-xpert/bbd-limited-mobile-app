@@ -35,14 +35,29 @@ class _ContainerScreen extends State<ContainerScreen> {
   void initState() {
     super.initState();
     fetchContainers();
+    searchController.addListener(_onSearchChanged);
     _refreshController.stream.listen((_) {
       fetchContainers(reset: true);
+    });
+  }
+
+  void _onSearchChanged() {
+    final query = searchController.text.toLowerCase();
+
+    setState(() {
+      _filteredContainers =
+          _allContainers!.where((devise) {
+            final reference = devise.reference!.toLowerCase();
+            return reference.contains(query);
+          }).toList();
     });
   }
 
   @override
   void dispose() {
     _refreshController.close();
+    searchController.removeListener(_onSearchChanged);
+    searchController.dispose();
     super.dispose();
   }
 
@@ -196,7 +211,7 @@ class _ContainerScreen extends State<ContainerScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    // onChanged: _filteredPackages,
+                    // onChanged: _filteredContainers,
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
@@ -224,19 +239,6 @@ class _ContainerScreen extends State<ContainerScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (_currentFilter != null)
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentFilter = null;
-                        _filteredContainers = _allContainers;
-                        // if (searchController.text.isNotEmpty) {
-                        //   filterPackages(searchController.text);
-                        // }
-                      });
-                    },
-                    child: const Text("Voir tout"),
-                  ),
               ],
             ),
             const SizedBox(height: 10),
