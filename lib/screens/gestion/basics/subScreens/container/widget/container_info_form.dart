@@ -12,10 +12,10 @@ class ContainerInfoForm extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ContainerInfoFormState createState() => _ContainerInfoFormState();
+  ContainerInfoFormState createState() => ContainerInfoFormState();
 }
 
-class _ContainerInfoFormState extends State<ContainerInfoForm> {
+class ContainerInfoFormState extends State<ContainerInfoForm> {
   late bool _isAvailable;
 
   @override
@@ -23,6 +23,8 @@ class _ContainerInfoFormState extends State<ContainerInfoForm> {
     super.initState();
     _isAvailable = widget.initialAvailability;
   }
+
+  bool get isAvailable => _isAvailable;
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +46,14 @@ class _ContainerInfoFormState extends State<ContainerInfoForm> {
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              border: Border.all(
-                style: BorderStyle.solid,
-                color: Colors.grey[300]!,
-              ),
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
+                const Expanded(
                   child: Text("Disponibilité", style: TextStyle(fontSize: 16)),
                 ),
                 Switch(
@@ -74,7 +73,4 @@ class _ContainerInfoFormState extends State<ContainerInfoForm> {
       ),
     );
   }
-
-  // Méthode pour récupérer l'état actuel si nécessaire
-  bool get currentAvailability => _isAvailable;
 }
