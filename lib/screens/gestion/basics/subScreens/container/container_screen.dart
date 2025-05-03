@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_detail_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/edit_package_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +22,6 @@ class _ContainerScreen extends State<ContainerScreen> {
 
   List<Containers> _allContainers = [];
   List<Containers> _filteredContainers = [];
-  String? _currentFilter;
 
   bool _isLoading = false;
   bool _hasMoreData = true;
@@ -294,13 +292,11 @@ class _ContainerScreen extends State<ContainerScreen> {
 
                                   return ContainerListItem(
                                     container: container,
-                                    onTap: () {},
-                                    // () => showPackageDetailsBottomSheet(
-                                    //   context,
-                                    //   pkg,
-                                    //   1,
-                                    //   true,
-                                    // ),
+                                    onTap:
+                                        () => showContainerDetailsBottomSheet(
+                                          context,
+                                          container,
+                                        ),
                                     onEdit:
                                         () => _showEditContainerModal(
                                           context,
