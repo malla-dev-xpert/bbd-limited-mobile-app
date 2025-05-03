@@ -40,13 +40,17 @@ class ContainerListItem extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(Icons.inventory),
+        leading: Icon(
+          Icons.view_quilt_sharp,
+          size: 30,
+          color: const Color(0xFF1A1E49),
+        ),
         title: Text(container.reference!),
         subtitle: Text("Nombre de colis: ${container.packages?.length ?? 0}"),
         trailing: Text(
-          "${container.isAvailable} == true ? 'Disponible' : 'Indisponible'",
-          style: const TextStyle(
-            color: Color(0xFF7F78AF),
+          container.isAvailable == true ? 'Disponible' : 'Indisponible',
+          style: TextStyle(
+            color: container.isAvailable == true ? Colors.green : Colors.grey,
             fontWeight: FontWeight.w600,
           ),
         ),
