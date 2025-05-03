@@ -10,11 +10,46 @@ class Packages {
   Status status;
   final DateTime? createdAt;
   final String? partnerName;
+  final int? partnerId;
   final String? partnerPhoneNumber;
   final String? warehouseName;
   final String? warehouseAddress;
   final int? warehouseId;
   List<Item>? items;
+
+  Packages copyWith({
+    int? id,
+    String? name,
+    double? weight,
+    String? reference,
+    String? dimensions,
+    Status? status,
+    DateTime? createdAt,
+    String? partnerName,
+    int? partnerId,
+    String? partnerPhoneNumber,
+    String? warehouseName,
+    String? warehouseAddress,
+    int? warehouseId,
+    List<Item>? items,
+  }) {
+    return Packages(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      weight: weight ?? this.weight,
+      reference: reference ?? this.reference,
+      dimensions: dimensions ?? this.dimensions,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      partnerName: partnerName ?? this.partnerName,
+      partnerId: partnerId ?? this.partnerId,
+      partnerPhoneNumber: partnerPhoneNumber ?? this.partnerPhoneNumber,
+      warehouseName: warehouseName ?? this.warehouseName,
+      warehouseAddress: warehouseAddress ?? this.warehouseAddress,
+      warehouseId: warehouseId ?? this.warehouseId,
+      items: items ?? this.items,
+    );
+  }
 
   Packages({
     required this.id,
@@ -25,12 +60,32 @@ class Packages {
     required this.status,
     this.createdAt,
     this.partnerName,
+    this.partnerId,
     this.partnerPhoneNumber,
     this.warehouseId,
     this.items,
     this.warehouseName,
     this.warehouseAddress,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'weight': weight,
+      'reference': reference,
+      'dimensions': dimensions,
+      'status': status.name,
+      'createdAt': createdAt?.toIso8601String(),
+      'partnerName': partnerName,
+      'partnerId': partnerId,
+      'partnerPhoneNumber': partnerPhoneNumber,
+      'warehouseName': warehouseName,
+      'warehouseAddress': warehouseAddress,
+      'warehouseId': warehouseId,
+      // 'items': items?.map((item) => item.toJson()).toList(),
+    };
+  }
 
   factory Packages.fromJson(Map<String, dynamic> json) {
     String? statusString = json['status'];
@@ -53,18 +108,20 @@ class Packages {
 
     return Packages(
       id: json['id'] as int,
-      name: json['name'],
-      reference: json['reference'],
-      dimensions: json['dimensions'],
-      createdAt: DateTime.parse(json['createdAt']),
+      name: json['name'] as String?,
+      reference: json['reference'] as String?,
+      dimensions: json['dimensions'] as String?,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       weight:
           json['weight'] != null ? (json['weight'] as num).toDouble() : null,
       status: status,
-      partnerName: json['partnerName'],
-      partnerPhoneNumber: json['partnerPhoneNumber'],
-      warehouseName: json['warehouseName'],
-      warehouseAddress: json['warehouseAddress'],
-      warehouseId: json['warehouseId'],
+      partnerName: json['partnerName'] as String?,
+      partnerId: json['partnerId'] as int?,
+      partnerPhoneNumber: json['partnerPhoneNumber'] as String?,
+      warehouseName: json['warehouseName'] as String?,
+      warehouseAddress: json['warehouseAddress'] as String?,
+      warehouseId: json['warehouseId'] as int?,
       items: itemList,
     );
   }

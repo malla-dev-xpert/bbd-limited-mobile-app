@@ -76,8 +76,8 @@ List<CardData> cardDataList = [
     },
   ),
   CardData(
-    icon: Icons.directions_transit,
-    title: 'Gestion des transporteurs',
+    icon: Icons.view_quilt,
+    title: 'Gestion des conteneurs',
     description:
         'Suivi des partenaires logistiques et gestion des prestataires de transport.',
     backgroundColor: Colors.grey[50]!,
@@ -85,7 +85,7 @@ List<CardData> cardDataList = [
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
     onPressed: (context) {
-      Navigator.of(context).pushNamed('/home');
+      Navigator.of(context).pushNamed('/container');
     },
   ),
   CardData(

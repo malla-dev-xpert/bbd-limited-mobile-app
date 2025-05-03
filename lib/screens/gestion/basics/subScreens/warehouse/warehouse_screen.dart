@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
@@ -123,6 +124,77 @@ class _WarehouseState extends State<WarehouseScreen> {
     });
   }
 
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+      _errorMessage = null;
+    });
+
+    final user = await authService.getUserInfo();
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "Erreur: Utilisateur non connecté";
+      });
+      return;
+    }
+
+    try {
+      final success = await warehousServices.create(
+        _nameController.text,
+        _adressController.text,
+        _storageTypeController.text,
+        user.id,
+      );
+
+      if (success == "NAME_EXIST") {
+        setState(() {
+          _errorMessage =
+              "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "ADRESS_EXIST") {
+        setState(() {
+          _errorMessage =
+              "L'adresse '${_adressController.text}' existe déjà. Veuillez en choisir une autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "CREATED") {
+        _nameController.clear();
+        _adressController.clear();
+        _storageTypeController.clear();
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        Navigator.of(context).pop();
+
+        showSuccessTopSnackBar(context, 'Entrepôt créé avec succès!');
+        _refreshController.add(null);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erreur liée au serveur, veuillez réessayer plus tard.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _refreshController.close();
@@ -131,37 +203,6 @@ class _WarehouseState extends State<WarehouseScreen> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _deleteWarehouse(BuildContext context, int id) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final user = await authService.getUserInfo();
-      if (user == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
-        return;
-      }
-
-      await warehousServices.deleteWarehouse(id, user.id);
-      setState(() {
-        _allWarehouses!.removeWhere((d) => d.id == id);
-        _filteredWarehouse = List.from(_allWarehouses!);
-        _isLoading = false;
-      });
-      Navigator.of(context).pop();
-      showSuccessTopSnackBar(context, "Entrepot supprimée");
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      showErrorTopSnackBar(context, "Erreur lors de la suppression");
-    }
   }
 
   @override
@@ -315,108 +356,12 @@ class _WarehouseState extends State<WarehouseScreen> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed:
-                                _isLoading
-                                    ? null
-                                    : () async {
-                                      if (!_formKey.currentState!.validate()) {
-                                        return;
-                                      }
-
-                                      setModalState(() {
-                                        _isLoading = false;
-                                        _errorMessage = null;
-                                      });
-
-                                      final user =
-                                          await authService.getUserInfo();
-                                      if (user == null) {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                          _errorMessage =
-                                              "Erreur: Utilisateur non connecté";
-                                        });
-                                        return;
-                                      }
-
-                                      try {
-                                        final success = await warehousServices
-                                            .create(
-                                              _nameController.text,
-                                              _adressController.text,
-                                              _storageTypeController.text,
-                                              user.id,
-                                            );
-
-                                        if (success == "NAME_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "ADRESS_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "L'adresse '${_adressController.text}' existe déjà. Veuillez en choisir une autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "CREATED") {
-                                          _nameController.clear();
-                                          _adressController.clear();
-                                          _storageTypeController.clear();
-
-                                          setModalState(() {
-                                            _isLoading = false;
-                                          });
-
-                                          Navigator.of(context).pop();
-
-                                          showSuccessTopSnackBar(
-                                            context,
-                                            'Entrepôt créé avec succès!',
-                                          );
-                                          _refreshController.add(null);
-                                        }
-                                      } catch (e) {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                          _errorMessage =
-                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
-                                        });
-                                      } finally {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                        });
-                                      }
-                                    },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: const Color(0xFF1A1E49),
-                            ),
-                            child:
-                                _isLoading
-                                    ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                    : const Text(
-                                      'Enregistrer',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                          confirmationButton(
+                            isLoading: _isLoading,
+                            onPressed: _submitForm,
+                            label: "Enregistrer",
+                            icon: Icons.check_circle_outline_outlined,
+                            subLabel: "Enregistrement...",
                           ),
                         ],
                       ),
@@ -475,82 +420,105 @@ class _WarehouseState extends State<WarehouseScreen> {
       return Center(child: Text("Aucun entrepôt trouvé"));
     }
 
-    return ListView.builder(
-      physics: AlwaysScrollableScrollPhysics(),
-      itemCount:
-          _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= _filteredWarehouse.length) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await loadWarehouses(reset: true);
+      },
+      displacement: 40,
+      color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.white,
+      child: ListView.builder(
+        physics: AlwaysScrollableScrollPhysics(),
+        itemCount:
+            _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _filteredWarehouse.length) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          final warehouse = _filteredWarehouse[index];
+          final formattedDate = DateFormat.yMMMMEEEEd().format(
+            warehouse.createdAt!,
+          );
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 228, 229, 247),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildTag(warehouse.storageType ?? ''),
+                      // warehous detail
+                      IconButton(
+                        icon: Icon(
+                          Icons.info,
+                          size: 30,
+                          color: Colors.grey[500],
+                        ),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => WarehouseDetailPage(
+                                    warehouseId: warehouse.id,
+                                    name: warehouse.name,
+                                    adresse: warehouse.adresse,
+                                    storageType: warehouse.storageType,
+                                    onWarehouseUpdated: () {
+                                      loadWarehouses(reset: true);
+                                    },
+                                  ),
+                            ),
+                          );
+
+                          // Si result est true, l'entrepôt a été supprimé
+                          if (result == true) {
+                            // Rafraîchir la liste des entrepôts
+                            setState(() {
+                              loadWarehouses(reset: true);
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    warehouse.name!,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.map_rounded, size: 18, color: Colors.grey),
+                      SizedBox(width: 5),
+                      Text(warehouse.adresse!),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_month, size: 18, color: Colors.grey),
+                      SizedBox(width: 5),
+                      Text(formattedDate),
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
-        }
-        final warehouse = _filteredWarehouse[index];
-        final formattedDate = DateFormat.yMMMMEEEEd().format(
-          warehouse.createdAt!,
-        );
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 228, 229, 247),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildTag(warehouse.storageType ?? ''),
-                    // warehous detail
-                    IconButton(
-                      icon: Icon(Icons.info, size: 30, color: Colors.grey[500]),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => WarehouseDetailPage(
-                                  warehouseId: warehouse.id,
-                                  name: warehouse.name!,
-                                  storageType: warehouse.storageType!,
-                                  adresse: warehouse.adresse!,
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  warehouse.name!,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.map_rounded, size: 18, color: Colors.grey),
-                    SizedBox(width: 5),
-                    Text(warehouse.adresse!),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_month, size: 18, color: Colors.grey),
-                    SizedBox(width: 5),
-                    Text(formattedDate),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 

@@ -119,4 +119,31 @@ class PackageServices {
       throw Exception('Error adding items to package: $e');
     }
   }
+
+  Future<bool> updatePackage(int id, int? userId, Packages dto) async {
+    try {
+      final url = Uri.parse('$baseUrl/packages/update/$id?userId=$userId');
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 409 &&
+          response.body == 'Nom de colis déjà utilisé !') {
+        return false;
+      }
+
+      if (response.statusCode == 201) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

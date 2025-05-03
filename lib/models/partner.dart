@@ -19,6 +19,20 @@ class Partner {
     required this.accountType,
   });
 
+  // Convertir Partner en Map (pour JSON)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'firstName': firstName,
+      'lastName': lastName,
+      'phoneNumber': phoneNumber,
+      'email': email,
+      'accountType': accountType,
+      'adresse': adresse,
+      'country': country,
+    };
+  }
+
   factory Partner.fromJson(Map<String, dynamic> json) {
     return Partner(
       id: json['id'],

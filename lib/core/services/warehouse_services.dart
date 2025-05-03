@@ -4,8 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WarehouseServices {
-  final String baseUrl =
-      dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
+  final String baseUrl = dotenv.env['BASE_URL'] ?? '';
 
   Future<String> create(
     String name,
@@ -55,13 +54,61 @@ class WarehouseServices {
     }
   }
 
-  Future<void> deleteWarehouse(int id, int userID) async {
-    final url = Uri.parse("$baseUrl/warehouses/delete/$id?userId=$userID");
+  Future<String?> deleteWarehouse(int id, int? userId) async {
+    final url = Uri.parse("$baseUrl/warehouses/delete/$id?userId=$userId");
 
-    final response = await http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    if (response.statusCode != 200) {
-      throw Exception("Erreur lors de la suppression de l'entrepot");
+      if (response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              "Impossible de supprimer, des colis existent dans cet entrepôt.") {
+        return "PACKAGE_FOUND";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression de l'entrepôt : $e");
+    }
+  }
+
+  Future<bool> updateWarehouse(int id, Warehouses dto, int? userId) async {
+    try {
+      final url = Uri.parse('$baseUrl/warehouses/update/$id?userId=$userId');
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 409 &&
+          response.body == 'Cet entrepot existe déjà !') {
+        return false;
+      }
+
+      if (response.statusCode == 201) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Warehouses> getWarehouseById(int id) async {
+    final response = await http.get(Uri.parse('$baseUrl/warehouses/$id'));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return Warehouses.fromJson(jsonData);
+    } else if (response.statusCode == 404) {
+      throw Exception('Entrepôt non trouvé avec l\'ID : $id');
+    } else {
+      throw Exception('Erreur serveur : ${response.statusCode}');
     }
   }
 }

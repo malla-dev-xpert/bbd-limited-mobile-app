@@ -5,6 +5,8 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/edit_package_modal.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/packages_list.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -77,6 +79,23 @@ class _PackageScreen extends State<PackageScreen> {
     }
   }
 
+  void _showEditPackageModal(BuildContext context, Packages pkg) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return EditPackageModal(
+          package: pkg,
+          onPackageUpdated: () => fetchPackages(reset: true),
+        );
+      },
+    );
+  }
+
   void filterPackages(String query) {
     setState(() {
       _filteredPackages =
@@ -97,19 +116,6 @@ class _PackageScreen extends State<PackageScreen> {
             return searchPackage && allStatus;
           }).toList();
     });
-  }
-
-  Color getStatusColor(Status? status) {
-    switch (status) {
-      case Status.PENDING:
-        return Colors.orange;
-      case Status.RECEIVED:
-        return Colors.green;
-      case Status.DELIVERED:
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
   }
 
   void handleStatusFilter(String value) {
@@ -135,6 +141,57 @@ class _PackageScreen extends State<PackageScreen> {
 
     if (result == true) {
       fetchPackages(reset: true);
+    }
+  }
+
+  Future<void> _deletePackage(Packages pkg) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Confirmer la suppression"),
+            content: Text(
+              "Voulez-vous vraiment supprimer le colis ${pkg.reference}?",
+            ),
+            backgroundColor: Colors.white,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Annuler"),
+              ),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : TextButton.icon(
+                    onPressed: () => Navigator.pop(context, true),
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    label: const Text(
+                      "Supprimer",
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  ),
+            ],
+          ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final user = await _authService.getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        return;
+      }
+
+      await _packageServices.deletePackage(pkg.id, user.id.toInt());
+
+      setState(() {
+        _allPackages.removeWhere((d) => d.id == pkg.id);
+        _filteredPackages = List.from(_allPackages);
+      });
+
+      showSuccessTopSnackBar(context, "Colis supprimé avec succès");
+    } catch (e) {
+      showErrorTopSnackBar(context, "Erreur lors de la suppression");
     }
   }
 
@@ -239,101 +296,45 @@ class _PackageScreen extends State<PackageScreen> {
                     child:
                         _filteredPackages.isEmpty
                             ? Center(child: Text("Aucun colis trouvé."))
-                            : ListView.builder(
-                              physics: AlwaysScrollableScrollPhysics(),
-                              itemCount:
-                                  _filteredPackages.length +
-                                  (_hasMoreData && _isLoading ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= _filteredPackages.length) {
-                                  return Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                                final pkg = _filteredPackages[index];
-
-                                return Dismissible(
-                                  key: Key(pkg.id.toString()),
-                                  direction: DismissDirection.endToStart,
-                                  background: Container(
-                                    padding: const EdgeInsets.only(right: 16),
-                                    color: Colors.red,
-                                    alignment: Alignment.centerRight,
-                                    child: Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ),
-                                  confirmDismiss: (direction) async {
-                                    try {
-                                      final user =
-                                          await _authService.getUserInfo();
-                                      if (user == null) {
-                                        showErrorTopSnackBar(
-                                          context,
-                                          "Erreur: Utilisateur non connecté",
-                                        );
-                                        return;
-                                      }
-
-                                      await _packageServices.deletePackage(
-                                        pkg.id,
-                                        user.id.toInt(),
-                                      );
-
-                                      setState(() {
-                                        _allPackages.removeWhere(
-                                          (d) => d.id == pkg.id,
-                                        );
-                                        _filteredPackages = List.from(
-                                          _allPackages,
-                                        );
-                                      });
-
-                                      showSuccessTopSnackBar(
-                                        context,
-                                        "Colis supprimé avec succès",
-                                      );
-                                    } catch (e) {
-                                      showErrorTopSnackBar(
-                                        context,
-                                        "Erreur lors de la suppression",
-                                      );
-                                    }
-                                  },
-                                  child: ListTile(
-                                    onTap: () async {
-                                      showPackageDetailsBottomSheet(
-                                        context,
-                                        pkg,
-                                        1,
-                                        true,
-                                      );
-                                    },
-                                    leading: Icon(
-                                      Icons.inventory,
-                                      color: getStatusColor(pkg.status),
-                                    ),
-                                    title: Text(pkg.reference!),
-                                    subtitle: Text(
-                                      "Dimensions: ${pkg.dimensions}" +
-                                          "\n" +
-                                          "Nombre d'articles: ${pkg.items!.length}",
-                                    ),
-                                    trailing: Text(
-                                      "Poids: ${pkg.weight!} kg",
-                                      style: TextStyle(
-                                        color: const Color(0xFF7F78AF),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                );
+                            : RefreshIndicator(
+                              onRefresh: () async {
+                                await fetchPackages(reset: true);
                               },
+                              displacement: 40,
+                              color: Theme.of(context).primaryColor,
+                              backgroundColor: Colors.white,
+                              child: ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount:
+                                    _filteredPackages.length +
+                                    (_hasMoreData && _isLoading ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >= _filteredPackages.length) {
+                                    return const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+                                  final pkg = _filteredPackages[index];
+
+                                  return PackageListItem(
+                                    package: pkg,
+                                    onTap:
+                                        () => showPackageDetailsBottomSheet(
+                                          context,
+                                          pkg,
+                                          1,
+                                          true,
+                                        ),
+                                    onEdit:
+                                        () =>
+                                            _showEditPackageModal(context, pkg),
+                                    onDelete: () => _deletePackage(pkg),
+                                  );
+                                },
+                              ),
                             ),
                   ),
                 ),

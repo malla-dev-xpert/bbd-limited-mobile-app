@@ -52,4 +52,26 @@ class DeviseServices {
       throw Exception("Erreur lors de la suppression de la devise");
     }
   }
+
+  Future<bool> updateDevise(int id, Devise dto) async {
+    try {
+      final url = Uri.parse('$baseUrl/devises/update/$id');
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

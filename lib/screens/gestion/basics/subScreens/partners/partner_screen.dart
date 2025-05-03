@@ -2,9 +2,10 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_edit_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_list_items.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 
 class PartnerScreen extends StatefulWidget {
   const PartnerScreen({Key? key}) : super(key: key);
@@ -17,7 +18,6 @@ class _PartnerScreenState extends State<PartnerScreen> {
   final TextEditingController searchController = TextEditingController();
   final PartnerServices _partnerServices = PartnerServices();
   final AuthService authService = AuthService();
-  String? _deletingPartnerId;
 
   List<Partner> _allPartners = [];
   List<Partner> _filteredPartners = [];
@@ -139,6 +139,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
               allStatus = parter.accountType == 'CLIENT';
             } else if (_currentFilter == 'fournisseurs') {
               allStatus = parter.accountType == 'FOURNISSEUR';
+            } else if (_currentFilter == 'all') {
+              allStatus;
             }
 
             return searchPackage && allStatus;
@@ -210,213 +212,176 @@ class _PartnerScreenState extends State<PartnerScreen> {
                 FiltreDropdown(onSelected: handleStatusFilter),
               ],
             ),
-
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "La liste des ${_currentFilter == null
-                      ? 'partenaires'
-                      : _currentFilter == 'clients'
-                      ? 'clients'
-                      : _currentFilter == 'fournisseurs'
-                      ? 'fournisseurs'
-                      : ''}",
-
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (_currentFilter != null)
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentFilter = null;
-                        _filteredPartners = _allPartners;
-                        if (searchController.text.isNotEmpty) {
-                          filterPartners(searchController.text);
-                        }
-                      });
-                    },
-                    child: const Text("Voir tout"),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child:
-                  _isLoading && _filteredPartners.isEmpty
-                      ? Center(child: CircularProgressIndicator())
-                      : (_filteredPartners.isNotEmpty
-                          ? NotificationListener<ScrollNotification>(
-                            onNotification: (scrollInfo) {
-                              if (scrollInfo.metrics.pixels ==
-                                      scrollInfo.metrics.maxScrollExtent &&
-                                  !_isLoading &&
-                                  _hasMoreData) {
-                                loadPartners(
-                                  searchQuery: searchController.text,
-                                );
-                              }
-                              return false;
-                            },
-                            child: ListView.builder(
-                              physics: AlwaysScrollableScrollPhysics(),
-                              itemCount:
-                                  _filteredPartners.length +
-                                  (_hasMoreData && _isLoading ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= _filteredPartners.length) {
-                                  return Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                                final partner = _filteredPartners[index];
-                                return Slidable(
-                                  key: ValueKey(
-                                    partner.id,
-                                  ), // Assure-toi que chaque élément a une clé unique
-                                  endActionPane: ActionPane(
-                                    motion: const DrawerMotion(),
-                                    children: [
-                                      SlidableAction(
-                                        onPressed: (context) {
-                                          // Affiche le modal d'édition
-                                          showModalBottomSheet(
-                                            context: context,
-                                            builder: (context) {
-                                              return Padding(
-                                                padding: const EdgeInsets.all(
-                                                  16.0,
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      "Modifier les informations",
-                                                    ),
-                                                    TextField(
-                                                      controller:
-                                                          TextEditingController(
-                                                            text:
-                                                                partner
-                                                                    .firstName,
-                                                          ),
-                                                      decoration:
-                                                          InputDecoration(
-                                                            labelText: "Prénom",
-                                                          ),
-                                                    ),
-                                                    TextField(
-                                                      controller:
-                                                          TextEditingController(
-                                                            text:
-                                                                partner
-                                                                    .lastName,
-                                                          ),
-                                                      decoration:
-                                                          InputDecoration(
-                                                            labelText: "Nom",
-                                                          ),
-                                                    ),
-                                                    ElevatedButton(
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child: Text(
-                                                        "Sauvegarder",
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                        icon: Icons.edit,
-                                        label: 'Modifier',
-                                      ),
-                                      SlidableAction(
-                                        onPressed: (context) async {
-                                          try {
-                                            final user =
-                                                await authService.getUserInfo();
-
-                                            if (user == null) {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Veuillez vous connecter.",
-                                              );
-                                              return;
-                                            }
-                                            final result =
-                                                await _partnerServices
-                                                    .deletePartner(
-                                                      partner.id,
-                                                      user.id,
-                                                    );
-                                            if (result == "DELETED") {
-                                              loadPartners(reset: true);
-                                              showSuccessTopSnackBar(
-                                                context,
-                                                "Le partenaire a été supprimé avec succès !",
-                                              );
-                                            } else if (result ==
-                                                "PARTNER_NOT_FOUND") {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Le partenaire n'existe pas.",
-                                              );
-                                            } else if (result ==
-                                                "PACKAGE_FOUND") {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Impossible de supprimer, des colis existent pour ce partenaire.",
-                                              );
-                                            }
-                                          } catch (e) {
-                                            showErrorTopSnackBar(
-                                              context,
-                                              "Une erreur est survenue lors de la suppression du partenaire.",
-                                            );
-                                          } finally {
-                                            setState(() => _isLoading = false);
-                                          }
-                                        },
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                        icon: Icons.delete,
-                                        label: 'Supprimer',
-                                      ),
-                                    ],
-                                  ),
-                                  child: ListTile(
-                                    title: Text(
-                                      "${partner.firstName} ${partner.lastName}",
-                                    ),
-                                    subtitle: Text(
-                                      partner.phoneNumber.toString(),
-                                    ),
-                                    trailing: Text(partner.accountType),
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                          : Center(child: Text("Aucun partenaire trouvé"))),
-            ),
+            const SizedBox(height: 16),
+            Expanded(child: _buildPartnerList()),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildPartnerList() {
+    if (_isLoading && _filteredPartners.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_filteredPartners.isEmpty) {
+      return const Center(child: Text("Aucun partenaire trouvé"));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        await loadPartners(reset: true);
+      },
+      displacement: 40,
+      color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.white,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _handleScrollNotification,
+        child: ListView.builder(
+          physics:
+              const AlwaysScrollableScrollPhysics(), // permet le pull même si la liste est courte
+          itemCount: _filteredPartners.length + (_hasMoreData ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= _filteredPartners.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 8),
+                      Text("Chargement en cours..."),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final partner = _filteredPartners[index];
+            return PartnerListItem(
+              partner: partner,
+              onEdit: _editPartner,
+              onDelete: _deletePartner,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  bool _handleScrollNotification(ScrollNotification scrollInfo) {
+    if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent &&
+        !_isLoading &&
+        _hasMoreData) {
+      loadPartners(searchQuery: searchController.text);
+    }
+    return false;
+  }
+
+  void _editPartner(Partner partner) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder:
+          (context) => PartnerEditForm(
+            partner: partner,
+            onSubmit: (updatedPartner) async {
+              try {
+                setState(() => _isLoading = true);
+                final success = await _partnerServices.updatePartner(
+                  updatedPartner.id,
+                  updatedPartner,
+                );
+
+                if (success) {
+                  await loadPartners(reset: true);
+                  Navigator.pop(context);
+                  showSuccessTopSnackBar(
+                    context,
+                    "Partenaire modifié avec succès",
+                  );
+                }
+              } catch (e) {
+                showErrorTopSnackBar(context, "Erreur lors de la modification");
+              } finally {
+                setState(() => _isLoading = false);
+              }
+            },
+          ),
+    );
+  }
+
+  Future<void> _deletePartner(Partner partner) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Confirmer la suppression"),
+            backgroundColor: Colors.white,
+            content: Text(
+              "Supprimer le partenaire ${partner.firstName} ${partner.lastName}?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Annuler"),
+              ),
+              TextButton.icon(
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.delete, color: Colors.red),
+                label: const Text(
+                  "Supprimer",
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final user = await authService.getUserInfo();
+
+        if (user == null) {
+          showErrorTopSnackBar(context, "Veuillez vous connecter.");
+          return;
+        }
+        setState(() => _isLoading = true);
+        final result = await _partnerServices.deletePartner(
+          partner.id,
+          user.id,
+        );
+
+        if (result == "DELETED") {
+          loadPartners(reset: true);
+          _filteredPartners.removeWhere((element) => element.id == partner.id);
+          showSuccessTopSnackBar(context, "Partenaire supprimé avec succès");
+        } else {
+          _handleDeleteError(result);
+        }
+      } catch (e) {
+        showErrorTopSnackBar(context, "Erreur lors de la suppression");
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _handleDeleteError(String? errorCode) {
+    switch (errorCode) {
+      case "PARTNER_NOT_FOUND":
+        showErrorTopSnackBar(context, "Partenaire introuvable");
+        break;
+      case "PACKAGE_FOUND":
+        showErrorTopSnackBar(
+          context,
+          "Impossible de supprimer - Il y'a des colis existants pour ce partenaire.",
+        );
+        break;
+      default:
+        showErrorTopSnackBar(context, "Erreur inconnue");
+    }
   }
 }
 
@@ -454,6 +419,8 @@ class FiltreDropdown extends StatelessWidget {
                 value: 'fournisseurs',
                 child: Text('Par fournisseurs'),
               ),
+
+              const PopupMenuItem<String>(value: 'all', child: Text('Tous')),
             ],
       ),
     );

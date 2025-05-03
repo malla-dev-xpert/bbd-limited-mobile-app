@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -99,6 +100,26 @@ class PartnerServices {
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du partenaire : $e");
+    }
+  }
+
+  Future<bool> updatePartner(int id, Partner dto) async {
+    final url = Uri.parse('$baseUrl/partners/update/$id');
+    final headers = {'Content-Type': 'application/json'};
+
+    final response = await http.put(
+      url,
+      headers: headers,
+      body: jsonEncode(dto),
+    );
+
+    log(response.body);
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print('Erreur: ${response.statusCode}, ${response.body}');
+      throw Exception('Échec de la mise à jour');
     }
   }
 }

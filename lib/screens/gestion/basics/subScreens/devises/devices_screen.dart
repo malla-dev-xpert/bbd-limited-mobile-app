@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -119,6 +121,187 @@ class _DeviseState extends State<DevicesScreen> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final success = await deviseServices.create(
+        _nameController.text,
+        _codeController.text,
+        double.tryParse(_rateController.text) ?? 0.0,
+      );
+
+      if (success == "NAME_EXIST") {
+        setState(() {
+          _errorMessage =
+              "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "CODE_EXIST") {
+        setState(() {
+          _errorMessage =
+              "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (success == "CREATED") {
+        _nameController.clear();
+        _codeController.clear();
+        _rateController.clear();
+        Navigator.pop(context);
+        showSuccessTopSnackBar(context, 'Devise créée avec succès!');
+        _refreshController.add(null);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erreur liée au serveur, veuillez réessayer plus tard.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<bool?> _showEditDeviseModal(
+    BuildContext context,
+    Devise devise,
+  ) async {
+    final TextEditingController nameController = TextEditingController(
+      text: devise.name,
+    );
+    final TextEditingController codeController = TextEditingController(
+      text: devise.code,
+    );
+    final TextEditingController rateController = TextEditingController(
+      text: devise.rate.toString(),
+    );
+    bool _isLoading = false;
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 50,
+                children: [
+                  const Text(
+                    'Modifier un devise',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.white,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    buildTextField(
+                      controller: nameController,
+                      label: "Nom de la devise",
+                      icon: Icons.description,
+                    ),
+                    const SizedBox(height: 16),
+                    buildTextField(
+                      controller: codeController,
+                      label: "Code de la devise",
+                      icon: Icons.numbers,
+                    ),
+                    const SizedBox(height: 16),
+                    buildTextField(
+                      controller: rateController,
+                      keyboardType: TextInputType.number,
+                      label: "Taux de change",
+                      icon: Icons.numbers,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Annuler'),
+                ),
+                TextButton.icon(
+                  onPressed: () async {
+                    try {
+                      setState(() => _isLoading = true);
+
+                      final deviseDto = devise.copyWith(
+                        name: nameController.text,
+                        code: codeController.text,
+                        rate: double.parse(rateController.text),
+                      );
+
+                      final updatedDevise = await deviseServices.updateDevise(
+                        devise.id!,
+                        deviseDto,
+                      );
+
+                      if (updatedDevise) {
+                        setState(() {
+                          _isLoading = false;
+                          loadDevises(reset: true);
+                        });
+
+                        Navigator.pop(context, true);
+
+                        showSuccessTopSnackBar(
+                          context,
+                          "Devise modifiée avec succès",
+                        );
+                      }
+                    } catch (e) {
+                      setState(() => _isLoading = false);
+                      showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+                    } finally {
+                      setState(() => _isLoading = false);
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.check_circle_outline_outlined,
+                    color: Colors.green,
+                  ),
+                  label:
+                      _isLoading
+                          ? const Text('Modification...')
+                          : Text(
+                            'Modifier',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -275,91 +458,12 @@ class _DeviseState extends State<DevicesScreen> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed:
-                                _isLoading
-                                    ? null
-                                    : () async {
-                                      if (!_formKey.currentState!.validate()) {
-                                        return;
-                                      }
-
-                                      setModalState(() {
-                                        _isLoading = true;
-                                        _errorMessage = '';
-                                      });
-
-                                      try {
-                                        final success = await deviseServices
-                                            .create(
-                                              _nameController.text,
-                                              _codeController.text,
-                                              double.tryParse(
-                                                    _rateController.text,
-                                                  ) ??
-                                                  0.0,
-                                            );
-
-                                        if (success == "NAME_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "CODE_EXIST") {
-                                          setModalState(() {
-                                            _errorMessage =
-                                                "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
-                                            _isLoading = false;
-                                          });
-                                          return;
-                                        }
-
-                                        if (success == "CREATED") {
-                                          _nameController.clear();
-                                          _codeController.clear();
-                                          _rateController.clear();
-                                          Navigator.pop(context);
-                                          showSuccessTopSnackBar(
-                                            context,
-                                            'Devise créée avec succès!',
-                                          );
-                                          _refreshController.add(null);
-                                        }
-                                      } catch (e) {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                          _errorMessage =
-                                              'Erreur liée au serveur, veuillez réessayer plus tard.';
-                                        });
-                                      } finally {
-                                        setModalState(() {
-                                          _isLoading = false;
-                                        });
-                                      }
-                                    },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: const Color(0xFF1A1E49),
-                            ),
-                            child:
-                                _isLoading
-                                    ? const SizedBox(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                    : const Text(
-                                      'Enregistrer',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                          confirmationButton(
+                            isLoading: _isLoading,
+                            onPressed: _submitForm,
+                            label: "Enregistrer",
+                            icon: Icons.check_circle_outline_outlined,
+                            subLabel: "Enregistrement...",
                           ),
                         ],
                       ),
@@ -419,21 +523,30 @@ class _DeviseState extends State<DevicesScreen> {
       return Center(child: Text("Aucune devise trouvée"));
     }
 
-    return ListView.builder(
-      physics: AlwaysScrollableScrollPhysics(),
-      itemCount: _filteredDevises.length + (_hasMoreData && _isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= _filteredDevises.length) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        final devise = _filteredDevises[index];
-        return _buildDeviseItem(devise);
+    return RefreshIndicator(
+      onRefresh: () async {
+        await loadDevises(reset: true);
       },
+      displacement: 40,
+      color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.white,
+      child: ListView.builder(
+        physics: AlwaysScrollableScrollPhysics(),
+        itemCount:
+            _filteredDevises.length + (_hasMoreData && _isLoading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _filteredDevises.length) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          final devise = _filteredDevises[index];
+          return _buildDeviseItem(devise);
+        },
+      ),
     );
   }
 
@@ -463,6 +576,14 @@ class _DeviseState extends State<DevicesScreen> {
         }
       },
       child: ListTile(
+        onTap: () async {
+          final result = await _showEditDeviseModal(context, devise);
+          if (result == true) {
+            setState(() {
+              loadDevises(reset: true);
+            });
+          }
+        },
         title: Text(devise.name, style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(devise.code),
         trailing: Text(

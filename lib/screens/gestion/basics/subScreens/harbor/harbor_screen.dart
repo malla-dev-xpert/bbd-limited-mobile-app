@@ -136,7 +136,7 @@ class _HarborScreen extends State<HarborScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           'Gestion des ports',
@@ -200,133 +200,147 @@ class _HarborScreen extends State<HarborScreen> {
                               }
                               return false;
                             },
-                            child: GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 4,
-                                    crossAxisSpacing: 4,
-                                  ),
-                              itemCount:
-                                  _filteredHarbor.length +
-                                  (_hasMoreData ? 1 : 0),
-                              padding: EdgeInsets.zero,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                if (index < _filteredHarbor.length) {
-                                  final port = _filteredHarbor[index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (_) => HarborDetailPage(
-                                                harbor: port,
-                                              ),
-                                        ),
-                                      );
-                                    },
-                                    child: Card(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      color: Colors.grey[50],
-                                      elevation: 2,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // image du port
-                                          Stack(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    const BorderRadius.vertical(
-                                                      top: Radius.circular(20),
-                                                    ),
-                                                child: Image.asset(
-                                                  "assets/images/ports.jpg",
-                                                  height: 70,
-                                                  width: double.infinity,
-                                                  fit: BoxFit.cover,
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                await fetchHarbor(reset: true);
+                              },
+                              displacement: 40,
+                              color: Theme.of(context).primaryColor,
+                              backgroundColor: Colors.white,
+                              child: GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 4,
+                                      crossAxisSpacing: 4,
+                                    ),
+                                itemCount:
+                                    _filteredHarbor.length +
+                                    (_hasMoreData ? 1 : 0),
+                                padding: EdgeInsets.zero,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  if (index < _filteredHarbor.length) {
+                                    final port = _filteredHarbor[index];
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => HarborDetailPage(
+                                                  harbor: port,
                                                 ),
-                                              ),
-                                              Container(
-                                                height: 70,
-                                                decoration: BoxDecoration(
+                                          ),
+                                        );
+                                      },
+                                      child: Card(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        color: Colors.grey[50],
+                                        elevation: 2,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // image du port
+                                            Stack(
+                                              children: [
+                                                ClipRRect(
                                                   borderRadius:
                                                       const BorderRadius.vertical(
                                                         top: Radius.circular(
                                                           20,
                                                         ),
                                                       ),
-                                                  color: Colors.black
-                                                      .withOpacity(0.4),
+                                                  child: Image.asset(
+                                                    "assets/images/ports.jpg",
+                                                    height: 70,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  ),
                                                 ),
-                                                alignment: Alignment.center,
-                                                child: const Icon(
-                                                  Icons.local_shipping,
-                                                  size: 30,
-                                                  color: Colors.white,
+                                                Container(
+                                                  height: 70,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        const BorderRadius.vertical(
+                                                          top: Radius.circular(
+                                                            20,
+                                                          ),
+                                                        ),
+                                                    color: Colors.black
+                                                        .withOpacity(0.4),
+                                                  ),
+                                                  alignment: Alignment.center,
+                                                  child: const Icon(
+                                                    Icons.local_shipping,
+                                                    size: 30,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
+                                              ],
+                                            ),
 
-                                          // donnees du port
-                                          Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(10),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    port.name!,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
-                                                      letterSpacing: -1,
+                                            // donnees du port
+                                            Expanded(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  10,
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      port.name!,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14,
+                                                        letterSpacing: -1,
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    "Adresse : ${port.location ?? 'Non spécifiée'}",
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      letterSpacing: -1,
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      "Adresse : ${port.location ?? 'Non spécifiée'}",
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        letterSpacing: -1,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    "Conteneurs : ${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length}",
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      letterSpacing: -1,
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      "Conteneurs : ${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length}",
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        letterSpacing: -1,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                } else {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
-                              },
+                                    );
+                                  } else {
+                                    return Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+                                },
+                              ),
                             ),
                           )
                           : Center(child: Text("Aucun port trouvé"))),

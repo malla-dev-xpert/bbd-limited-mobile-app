@@ -152,19 +152,30 @@ class HarborDetailPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: Icon(Icons.delete, color: Colors.white),
-                            label: Text(
-                              "Supprimer ce port",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () {},
+                                label: Text("Modifier"),
+                                icon: const Icon(Icons.edit),
                               ),
-                            ),
+                              TextButton.icon(
+                                onPressed: () {},
+                                label: Text(
+                                  "Supprimer",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.delete_forever,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
