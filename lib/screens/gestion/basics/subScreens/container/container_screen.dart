@@ -128,14 +128,14 @@ class _ContainerScreen extends State<ContainerScreen> {
     }
   }
 
-  Future<void> _deletePackage(Packages pkg) async {
+  Future<void> _delete(Containers container) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
             title: const Text("Confirmer la suppression"),
             content: Text(
-              "Voulez-vous vraiment supprimer le colis ${pkg.reference}?",
+              "Voulez-vous vraiment supprimer le conteneur ${container.reference}?",
             ),
             backgroundColor: Colors.white,
             actions: [
@@ -143,16 +143,14 @@ class _ContainerScreen extends State<ContainerScreen> {
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text("Annuler"),
               ),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : TextButton.icon(
-                    onPressed: () => Navigator.pop(context, true),
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    label: const Text(
-                      "Supprimer",
-                      style: TextStyle(color: Colors.red, fontSize: 16),
-                    ),
-                  ),
+              TextButton.icon(
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.delete, color: Colors.red),
+                label: Text(
+                  _isLoading ? 'Suppression...' : 'Supprimer',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
             ],
           ),
     );
@@ -166,14 +164,26 @@ class _ContainerScreen extends State<ContainerScreen> {
         return;
       }
 
-      // await _containerServices.deletePackage(pkg.id, user.id.toInt());
+      final result = await _containerServices.delete(
+        container.id!,
+        user.id.toInt(),
+      );
 
-      // setState(() {
-      //   _allPackages.removeWhere((d) => d.id == pkg.id);
-      //   _filteredPackages = List.from(_allPackages);
-      // });
+      if (result == "DELETED") {
+        setState(() {
+          _allContainers.removeWhere((d) => d.id == container.id);
+          _filteredContainers = List.from(_allContainers);
+        });
 
-      showSuccessTopSnackBar(context, "Colis supprimé avec succès");
+        showSuccessTopSnackBar(context, "Conteneur supprimé avec succès");
+      } else if (result == "CONTAINER_NOT_FOUND") {
+        showErrorTopSnackBar(context, "Conteneur introuvable");
+      } else if (result == "PACKAGE_EXIST") {
+        showErrorTopSnackBar(
+          context,
+          "Impossible de supprimer : Des colis existent dans ce conteneur.",
+        );
+      }
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur lors de la suppression");
     }
@@ -293,8 +303,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                                     onEdit: () {},
                                     // () =>
                                     //     _showEditPackageModal(context, pkg),
-                                    onDelete: () {},
-                                    // () => _deletePackage(pkg),
+                                    onDelete: () => _delete(container),
                                   );
                                 },
                               ),

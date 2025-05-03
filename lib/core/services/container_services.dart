@@ -44,4 +44,28 @@ class ContainerServices {
       throw Exception("Erreur de connexion: $e");
     }
   }
+
+  Future<String?> delete(int id, int? userId) async {
+    final url = Uri.parse("$baseUrl/containers/delete/$id?userId=$userId");
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Conteneur introuvable.') {
+        return "CONTAINER_NOT_FOUND";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Utilisateur introuvable.') {
+        return "USER_NOT_FOUND";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              'Impossible de supprimer : Des colis existent dans ce conteneur.') {
+        return "PACKAGE_EXIST";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du conteneur : $e");
+    }
+  }
 }
