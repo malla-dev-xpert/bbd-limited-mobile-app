@@ -7,4 +7,5 @@ enum Status {
   INPROGRESS,
   DELIVERED,
   RETRIEVE,
+  DELETE_ON_CONTAINER,
 }
