@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -46,7 +47,9 @@ class ContainerListItem extends StatelessWidget {
           color: const Color(0xFF1A1E49),
         ),
         title: Text(container.reference!),
-        subtitle: Text("Nombre de colis: ${container.packages?.length ?? 0}"),
+        subtitle: Text(
+          "Nombre de colis: ${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length}",
+        ),
         trailing: Text(
           container.isAvailable == true ? 'Disponible' : 'Indisponible',
           style: TextStyle(
