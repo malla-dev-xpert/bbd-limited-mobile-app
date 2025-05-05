@@ -80,6 +80,26 @@ class PackageServices {
     }
   }
 
+  Future<void> deletePackageOnContainer(
+    int id,
+    int? userId,
+    int? containerId,
+  ) async {
+    final url = Uri.parse(
+      "$baseUrl/packages/$id/container/$containerId/delete?userId=$userId",
+    );
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
+
   Future<void> receivePackage(int id, int? userId, int? warehouseId) async {
     final url = Uri.parse(
       "$baseUrl/packages/receive/$id?userId=$userId&warehouseId=$warehouseId",
