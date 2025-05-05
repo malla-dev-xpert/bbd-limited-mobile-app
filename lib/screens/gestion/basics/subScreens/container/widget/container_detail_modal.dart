@@ -99,6 +99,7 @@ void showContainerDetailsBottomSheet(
                     "Date de reception",
                     DateFormat.yMMMMEEEEd().format(container.createdAt!),
                   ),
+
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -172,78 +173,120 @@ void showContainerDetailsBottomSheet(
                                     ],
                                   ),
                                 )
-                                : ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount:
-                                      container.packages!
-                                          .where(
-                                            (ctn) =>
-                                                ctn.status != Status.DELETE,
-                                          )
-                                          .length,
-                                  itemBuilder: (context, index) {
-                                    final ctn = container.packages![index];
-
-                                    return Dismissible(
-                                      key: Key('${ctn.id}'),
-                                      direction:
-                                          container.status != Status.INPROGRESS
-                                              ? DismissDirection.endToStart
-                                              : DismissDirection.none,
-                                      background: Container(
-                                        padding: const EdgeInsets.only(
-                                          right: 16,
-                                        ),
-                                        color:
-                                            container.status != Status.RECEIVED
-                                                ? Colors.red
-                                                : Colors.grey,
-                                        alignment: Alignment.centerRight,
-                                        child: Icon(
-                                          Icons.delete,
-                                          color: Colors.white,
-                                          size: 30,
-                                        ),
-                                      ),
-                                      confirmDismiss:
-                                          container.status != Status.INPROGRESS
-                                              ? (direction) async {}
-                                              : null,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          color: Colors.grey[50],
-                                          border: Border.all(
-                                            color: Colors.grey[300]!,
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.all(8),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            _detailRow(
-                                              "Référence",
-                                              ctn.reference,
-                                            ),
-                                            _detailRow(
-                                              "Client",
-                                              ctn.partnerName,
-                                            ),
-                                            _detailRow(
-                                              "Téléphone",
-                                              ctn.partnerPhoneNumber,
-                                            ),
-                                            _detailRow(
-                                              "Nombre  d'articles",
-                                              ctn.items!.length.toString(),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
+                                : RefreshIndicator(
+                                  onRefresh: () async {
+                                    await container.packages!;
                                   },
+                                  displacement: 40,
+                                  color: Theme.of(context).primaryColor,
+                                  backgroundColor: Colors.white,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount:
+                                        container.packages!
+                                            .where(
+                                              (ctn) =>
+                                                  ctn.status != Status.DELETE ||
+                                                  ctn.status !=
+                                                      Status
+                                                          .DELETE_ON_CONTAINER,
+                                            )
+                                            .length,
+                                    itemBuilder: (context, index) {
+                                      final ctn = container.packages![index];
+
+                                      return Dismissible(
+                                        key: Key('${ctn.id}'),
+                                        direction:
+                                            container.status !=
+                                                    Status.INPROGRESS
+                                                ? DismissDirection.endToStart
+                                                : DismissDirection.none,
+                                        background: Container(
+                                          padding: const EdgeInsets.only(
+                                            right: 16,
+                                          ),
+                                          color:
+                                              container.status !=
+                                                      Status.RECEIVED
+                                                  ? Colors.red
+                                                  : Colors.grey,
+                                          alignment: Alignment.centerRight,
+                                          child: Icon(
+                                            Icons.delete,
+                                            color: Colors.white,
+                                            size: 30,
+                                          ),
+                                        ),
+                                        confirmDismiss:
+                                            container.status !=
+                                                    Status.INPROGRESS
+                                                ? (direction) async {
+                                                  try {
+                                                    final user =
+                                                        await authService
+                                                            .getUserInfo();
+                                                    await packageServices
+                                                        .deletePackageOnContainer(
+                                                          ctn.id,
+                                                          user!.id.toInt(),
+                                                          container.id,
+                                                        );
+                                                    setState(() {
+                                                      container.packages!
+                                                          .removeWhere(
+                                                            (p) =>
+                                                                p.id == ctn.id,
+                                                          );
+                                                    });
+                                                    showSuccessTopSnackBar(
+                                                      context,
+                                                      "Colis retiré du conteneur",
+                                                    );
+                                                  } catch (e) {
+                                                    showErrorTopSnackBar(
+                                                      context,
+                                                      "Erreur lors de la suppression",
+                                                    );
+                                                  }
+                                                }
+                                                : null,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            color: Colors.grey[50],
+                                            border: Border.all(
+                                              color: Colors.grey[300]!,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              _detailRow(
+                                                "Référence",
+                                                ctn.reference,
+                                              ),
+                                              _detailRow(
+                                                "Client",
+                                                ctn.partnerName,
+                                              ),
+                                              _detailRow(
+                                                "Téléphone",
+                                                ctn.partnerPhoneNumber,
+                                              ),
+                                              _detailRow(
+                                                "Nombre  d'articles",
+                                                ctn.items!.length.toString(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                       ),
                     ],
