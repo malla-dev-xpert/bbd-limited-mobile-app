@@ -81,16 +81,19 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
       );
       final result = await widget.packageServices.embarquerColis(request);
 
-      if (result == true) {
+      if (result == "SUCCESS") {
         showSuccessTopSnackBar(context, "Colis embarqués avec succès");
 
         Navigator.of(context).pop(_selectedPackages);
+      } else if (result == "NETWORK_ERROR") {
+        showErrorTopSnackBar(context, "Erreur de connexion");
+      } else if (result == "TIMEOUT_ERROR") {
+        showErrorTopSnackBar(context, "Temps d'execution trop long");
       } else {
         showErrorTopSnackBar(context, "Erreur lors de l'embarquement");
       }
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
-      log("error====================" + e.toString());
     } finally {
       setState(() => _isLoading = false);
     }

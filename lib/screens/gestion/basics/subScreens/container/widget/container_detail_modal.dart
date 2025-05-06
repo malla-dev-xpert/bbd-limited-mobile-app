@@ -132,7 +132,7 @@ void showContainerDetailsBottomSheet(
                                             .getContainerDetails(container.id!);
 
                                     setState(() {
-                                      container.packages!;
+                                      container = updatedContainer;
                                     });
                                   }
                                 },
@@ -156,31 +156,6 @@ void showContainerDetailsBottomSheet(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text("Pas de colis pour ce conteneur."),
-                                      const SizedBox(height: 10),
-                                      if (container.status == Status.PENDING &&
-                                          container.isAvailable == true)
-                                        ElevatedButton.icon(
-                                          onPressed: () async {},
-                                          icon: Icon(
-                                            Icons.add,
-                                            color: Colors.white,
-                                          ),
-                                          label: Text(
-                                            "Ajouter un colis",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(
-                                              0xFF7F78AF,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                        ),
                                     ],
                                   ),
                                 )
