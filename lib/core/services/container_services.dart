@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/container.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -78,6 +79,27 @@ class ContainerServices {
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du conteneur : $e");
+    }
+  }
+
+  Future<String?> startDelivery(int id, int? userId) async {
+    final url = Uri.parse("$baseUrl/containers/delivery/$id?userId=$userId");
+
+    try {
+      final response = await http.get(url);
+
+      log(response.body);
+      log(response.statusCode.toString());
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return "SUCCESS";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              'Impossible de démarrer la livraison, pas de colis dans le conteneur.') {
+        return "NO_PACKAGE_FOR_DELIVERY";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors du démarrage de la livraison : $e");
     }
   }
 

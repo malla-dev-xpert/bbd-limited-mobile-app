@@ -51,7 +51,13 @@ class ContainerListItem extends StatelessWidget {
           "Nombre de colis: ${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length}",
         ),
         trailing: Text(
-          container.isAvailable == true ? 'Disponible' : 'Indisponible',
+          container.status != Status.INPROGRESS
+              ? container.isAvailable == true
+                  ? 'Disponible'
+                  : 'Indisponible'
+              : container.status == Status.INPROGRESS
+              ? "En cours de livraison"
+              : container.status.toString(),
           style: TextStyle(
             color: container.isAvailable == true ? Colors.green : Colors.grey,
             fontWeight: FontWeight.w600,

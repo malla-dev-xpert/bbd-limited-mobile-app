@@ -358,7 +358,7 @@ void showContainerDetailsBottomSheet(
                   const SizedBox(height: 60),
                   container.packages != null &&
                           container.packages!.isNotEmpty &&
-                          container.status != Status.RECEIVED
+                          container.status == Status.PENDING
                       ? confirmationButton(
                         subLabel: "Démarrage...",
                         icon: Icons.check,
@@ -371,19 +371,31 @@ void showContainerDetailsBottomSheet(
 
                           final user = await authService.getUserInfo();
 
-                          try {
-                            await packageServices.receivePackage(
-                              container.id!,
-                              user?.id.toInt(),
-                              container.userId,
-                            );
-
-                            Navigator.of(context).pop(true);
-
-                            showSuccessTopSnackBar(
+                          if (user == null) {
+                            showErrorTopSnackBar(
                               context,
-                              "Livraison démarrée avec succès !",
+                              "Erreur: Utilisateur non connecté",
                             );
+                            return;
+                          }
+
+                          try {
+                            final result = await containerServices
+                                .startDelivery(container.id!, user.id.toInt());
+
+                            if (result == "SUCCESS") {
+                              Navigator.of(context).pop(true);
+
+                              showSuccessTopSnackBar(
+                                context,
+                                "Livraison démarrée avec succès !",
+                              );
+                            } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+                              showErrorTopSnackBar(
+                                context,
+                                "Impossible de démarrer la livraison, pas de colis dans le conteneur.",
+                              );
+                            }
                           } catch (e) {
                             print(e);
                             showErrorTopSnackBar(
