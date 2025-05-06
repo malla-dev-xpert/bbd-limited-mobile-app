@@ -24,8 +24,14 @@ class ContainerListItem extends StatelessWidget {
         motion: const DrawerMotion(),
         children: [
           SlidableAction(
-            onPressed: (context) => onEdit(),
-            backgroundColor: Colors.blue,
+            onPressed:
+                container.status != Status.INPROGRESS
+                    ? (context) => onEdit()
+                    : null,
+            backgroundColor:
+                container.status != Status.INPROGRESS
+                    ? Colors.blue
+                    : Colors.grey[300]!,
             foregroundColor: Colors.white,
             icon: Icons.edit,
             label: 'Modifier',
