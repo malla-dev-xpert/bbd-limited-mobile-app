@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/container.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,6 +18,21 @@ class ContainerServices {
       return jsonBody.map((e) => Containers.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des conteneurs");
+    }
+  }
+
+  Future<Containers> getContainerDetails(int containerId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/containers/$containerId'),
+    );
+
+    log(response.body);
+    log(response.statusCode.toString());
+
+    if (response.statusCode == 200) {
+      return Containers.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Erreur lors du chargement du conteneur');
     }
   }
 
