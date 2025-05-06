@@ -1,5 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:io';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:http/http.dart' as http;
@@ -136,24 +137,32 @@ class PackageServices {
     }
   }
 
-  Future<Map<String, dynamic>> embarquerColis(
-    EmbarquementRequest request,
-  ) async {
-    final url = Uri.parse('$baseUrl/containers/embarquer');
+  Future<String?> embarquerColis(EmbarquementRequest request) async {
+    try {
+      final url = Uri.parse('$baseUrl/containers/embarquer');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(request.toJson()),
+      );
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(request.toJson()),
-    );
-
-    log(response.body);
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['message'] ?? 'Erreur lors de l\'embarquement');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else if (response.body ==
+          "Le conteneur n'est pas disponible pour l'embarquement.") {
+        return "CONTAINER_NOT_AVAILABLE";
+      } else if (response.body ==
+          "Le conteneur n'est pas dans le bon statut pour l'embarquement.") {
+        return "CONTAINER_NOT_IN_PENDING";
+      }
+    } on SocketException {
+      return "NETWORK_ERROR";
+    } on TimeoutException {
+      return "TIMEOUT_ERROR";
+    } on FormatException {
+      return "FORMAT_ERROR";
+    } catch (e) {
+      return "Une erreur inattendue s'est produite: ${e.toString()}";
     }
   }
 
