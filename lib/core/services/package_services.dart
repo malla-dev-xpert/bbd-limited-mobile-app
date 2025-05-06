@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,6 +24,19 @@ class PackageServices {
 
   Future<List<Packages>> findAll({int page = 0}) async {
     final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(response.body);
+      return jsonBody.map((e) => Packages.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des colis");
+    }
+  }
+
+  Future<List<Packages>> findAllPackageReceived({int page = 0}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/packages/received?page=$page'),
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(response.body);
@@ -80,7 +95,7 @@ class PackageServices {
     }
   }
 
-  Future<void> deletePackageOnContainer(
+  Future<String?> deletePackageOnContainer(
     int id,
     int? userId,
     int? containerId,
@@ -93,7 +108,12 @@ class PackageServices {
       final response = await http.delete(url);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return;
+        return "DELETED";
+      } else if (response.body == "Le colis n'appartient pas à ce conteneur") {
+        return "PACKAGES_NOT_FOR_CONTAINER";
+      } else if (response.body ==
+          "Impossible de retirer un colis d'un conteneur en cours de livraison") {
+        return "CONTAINER_IN_PROGRESS";
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du colis : $e");
@@ -113,6 +133,27 @@ class PackageServices {
       }
     } catch (e) {
       throw Exception("Erreur lors de la réception du colis : $e");
+    }
+  }
+
+  Future<Map<String, dynamic>> embarquerColis(
+    EmbarquementRequest request,
+  ) async {
+    final url = Uri.parse('$baseUrl/containers/embarquer');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    log(response.body);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['message'] ?? 'Erreur lors de l\'embarquement');
     }
   }
 
