@@ -111,10 +111,10 @@ class PackageServices {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "DELETED";
       } else if (response.body == "Le colis n'appartient pas à ce conteneur") {
-        return "PACKAGES_NOT_FOR_CONTAINER";
+        return "PACKAGE_NOT_IN_SPECIFIED_CONTAINER";
       } else if (response.body ==
           "Impossible de retirer un colis d'un conteneur en cours de livraison") {
-        return "CONTAINER_IN_PROGRESS";
+        return "CONTAINER_NOT_EDITABLE";
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du colis : $e");
