@@ -1,9 +1,10 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_items_modal.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/add_package_to_container_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -37,6 +38,7 @@ void showContainerDetailsBottomSheet(
   Containers container,
 ) async {
   final PackageServices packageServices = PackageServices();
+  final ContainerServices containerServices = ContainerServices();
   final AuthService authService = AuthService();
   bool isLoading = false;
 
@@ -111,20 +113,28 @@ void showContainerDetailsBottomSheet(
                             "La liste des colis",
                             style: TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          container.status == Status.PENDING
+                          container.status == Status.PENDING &&
+                                  container.isAvailable == true
                               ? TextButton.icon(
                                 onPressed: () async {
-                                  final result = await showAddItemsModal(
-                                    context,
-                                    container.id!,
-                                  );
-                                  // if (result == true) {
-                                  //   final updatedItems = await itemServices
-                                  //       .findByPackageId(container.id);
-                                  //   setState(() {
-                                  //     container.items = updatedItems;
-                                  //   });
-                                  // }
+                                  final selectedPackages =
+                                      await showAddPackagesToContainerDialog(
+                                        context,
+                                        container.id!,
+                                        packageServices,
+                                      );
+
+                                  if (selectedPackages != null &&
+                                      selectedPackages.isNotEmpty) {
+                                    // Rafraîchir les données du conteneur
+                                    final updatedContainer =
+                                        await containerServices
+                                            .getContainerDetails(container.id!);
+
+                                    setState(() {
+                                      container.packages!;
+                                    });
+                                  }
                                 },
                                 label: Text("Ajouter des colis"),
                                 icon: Icon(Icons.add),
@@ -147,7 +157,8 @@ void showContainerDetailsBottomSheet(
                                     children: [
                                       Text("Pas de colis pour ce conteneur."),
                                       const SizedBox(height: 10),
-                                      if (container.status != Status.RECEIVED)
+                                      if (container.status == Status.PENDING &&
+                                          container.isAvailable == true)
                                         ElevatedButton.icon(
                                           onPressed: () async {},
                                           icon: Icon(
@@ -193,10 +204,10 @@ void showContainerDetailsBottomSheet(
                                             )
                                             .length,
                                     itemBuilder: (context, index) {
-                                      final ctn = container.packages![index];
+                                      final pkg = container.packages![index];
 
                                       return Dismissible(
-                                        key: Key('${ctn.id}'),
+                                        key: Key('${pkg.id}'),
                                         direction:
                                             container.status !=
                                                     Status.INPROGRESS
@@ -222,33 +233,111 @@ void showContainerDetailsBottomSheet(
                                             container.status !=
                                                     Status.INPROGRESS
                                                 ? (direction) async {
+                                                  final bool
+                                                  confirm = await showDialog(
+                                                    context: context,
+                                                    builder: (
+                                                      BuildContext context,
+                                                    ) {
+                                                      return AlertDialog(
+                                                        backgroundColor:
+                                                            Colors.white,
+                                                        title: Text(
+                                                          "Confirmation",
+                                                        ),
+                                                        content: Text(
+                                                          "Voulez-vous vraiment retirer ce colis du conteneur ?",
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed:
+                                                                () =>
+                                                                    Navigator.of(
+                                                                      context,
+                                                                    ).pop(
+                                                                      false,
+                                                                    ),
+                                                            child: Text(
+                                                              "Annuler",
+                                                            ),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed:
+                                                                () =>
+                                                                    Navigator.of(
+                                                                      context,
+                                                                    ).pop(true),
+                                                            child: Text(
+                                                              isLoading
+                                                                  ? "Suppression..."
+                                                                  : "Confirmer",
+                                                              style: TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+
+                                                  if (confirm != true)
+                                                    return false;
+
                                                   try {
                                                     final user =
                                                         await authService
                                                             .getUserInfo();
-                                                    await packageServices
-                                                        .deletePackageOnContainer(
-                                                          ctn.id,
-                                                          user!.id.toInt(),
-                                                          container.id,
-                                                        );
                                                     setState(() {
-                                                      container.packages!
-                                                          .removeWhere(
-                                                            (p) =>
-                                                                p.id == ctn.id,
-                                                          );
+                                                      isLoading = true;
                                                     });
-                                                    showSuccessTopSnackBar(
-                                                      context,
-                                                      "Colis retiré du conteneur",
-                                                    );
+                                                    final result =
+                                                        await packageServices
+                                                            .deletePackageOnContainer(
+                                                              pkg.id,
+                                                              user!.id.toInt(),
+                                                              container.id,
+                                                            );
+
+                                                    if (result == "DELETED") {
+                                                      setState(() {
+                                                        container.packages!
+                                                            .removeWhere(
+                                                              (p) =>
+                                                                  p.id ==
+                                                                  pkg.id,
+                                                            );
+                                                      });
+                                                      showSuccessTopSnackBar(
+                                                        context,
+                                                        "Colis retiré du conteneur",
+                                                      );
+                                                      return true;
+                                                    } else if (result ==
+                                                        "PACKAGES_NOT_FOR_CONTAINER") {
+                                                      showErrorTopSnackBar(
+                                                        context,
+                                                        "Le colis n'appartient pas à ce conteneur",
+                                                      );
+                                                    } else if (result ==
+                                                        "CONTAINER_IN_PROGRESS") {
+                                                      showErrorTopSnackBar(
+                                                        context,
+                                                        "Impossible de retirer un colis d'un conteneur en cours de livraison",
+                                                      );
+                                                    }
                                                   } catch (e) {
                                                     showErrorTopSnackBar(
                                                       context,
                                                       "Erreur lors de la suppression",
                                                     );
+                                                  } finally {
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
                                                   }
+                                                  return false;
                                                 }
                                                 : null,
                                         child: Container(
@@ -262,24 +351,23 @@ void showContainerDetailsBottomSheet(
                                             ),
                                           ),
                                           padding: const EdgeInsets.all(8),
+                                          margin: const EdgeInsets.symmetric(
+                                            vertical: 5,
+                                          ),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               _detailRow(
                                                 "Référence",
-                                                ctn.reference,
+                                                pkg.reference,
                                               ),
                                               _detailRow(
                                                 "Client",
-                                                ctn.partnerName,
+                                                pkg.partnerName,
                                               ),
                                               _detailRow(
                                                 "Téléphone",
-                                                ctn.partnerPhoneNumber,
-                                              ),
-                                              _detailRow(
-                                                "Nombre  d'articles",
-                                                ctn.items!.length.toString(),
+                                                pkg.partnerPhoneNumber,
                                               ),
                                             ],
                                           ),
