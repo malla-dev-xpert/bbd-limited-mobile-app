@@ -365,6 +365,38 @@ void showContainerDetailsBottomSheet(
                         label: "Démarrer la livraison",
                         isLoading: isLoading,
                         onPressed: () async {
+                          final bool confirm = await showDialog(
+                            context: context,
+
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text("Confirmer le démarrage"),
+                                backgroundColor: Colors.white,
+                                content: Text(
+                                  "Voulez-vous vraiment démarrer la livraison de ce conteneur ?",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(false),
+                                    child: Text("Annuler"),
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(true),
+                                    child: Text(
+                                      isLoading ? "Démarrage..." : "Confirmer",
+                                      style: TextStyle(color: Colors.green),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          // Si l'utilisateur annule, on ne fait rien
+                          if (confirm != true) return;
+
                           setState(() {
                             isLoading = true;
                           });
@@ -376,6 +408,7 @@ void showContainerDetailsBottomSheet(
                               context,
                               "Erreur: Utilisateur non connecté",
                             );
+                            setState(() => isLoading = false);
                             return;
                           }
 
@@ -385,7 +418,6 @@ void showContainerDetailsBottomSheet(
 
                             if (result == "SUCCESS") {
                               Navigator.of(context).pop(true);
-
                               showSuccessTopSnackBar(
                                 context,
                                 "Livraison démarrée avec succès !",
