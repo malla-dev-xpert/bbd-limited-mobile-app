@@ -145,6 +145,11 @@ class _HarborScreen extends State<HarborScreen> {
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: IconThemeData(color: Colors.white),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddHarborModal,
+        backgroundColor: const Color(0xFF1A1E49),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -167,19 +172,6 @@ class _HarborScreen extends State<HarborScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: _openAddHarborModal,
-                  label: Text("Ajouter", style: TextStyle(color: Colors.white)),
-                  icon: Icon(Icons.add, color: Colors.white),
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    backgroundColor: const Color(0xFF1A1E49),
                   ),
                 ),
               ],
