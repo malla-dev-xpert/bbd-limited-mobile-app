@@ -409,6 +409,7 @@ class FiltreDropdown extends StatelessWidget {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         onSelected: onSelected,
+        color: Colors.white,
         itemBuilder:
             (BuildContext context) => [
               const PopupMenuItem<String>(
