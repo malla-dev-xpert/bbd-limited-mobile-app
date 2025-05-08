@@ -1,17 +1,17 @@
+import 'package:bbd_limited/models/items.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 
 class PackageListItem extends StatelessWidget {
-  final Packages package;
+  final Item items;
   final Function() onEdit;
   final Function() onDelete;
   final Function() onTap;
 
   const PackageListItem({
     super.key,
-    required this.package,
+    required this.items,
     required this.onEdit,
     required this.onDelete,
     required this.onTap,
@@ -41,14 +41,11 @@ class PackageListItem extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(Icons.inventory, color: _getStatusColor(package.status)),
-        title: Text(package.reference!),
-        subtitle: Text(
-          "Dimensions: ${package.dimensions}\n" +
-              "Articles: ${package.items?.length ?? 0}",
-        ),
+        leading: Icon(Icons.inventory, color: _getStatusColor(items.status)),
+        title: Text(items.description),
+        subtitle: Text("Quantité: ${items.quantity}"),
         trailing: Text(
-          "${package.weight} kg",
+          items.unitPrice.toString(),
           style: const TextStyle(
             color: Color(0xFF7F78AF),
             fontWeight: FontWeight.w600,

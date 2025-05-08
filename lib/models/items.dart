@@ -4,36 +4,47 @@ class Item {
   final int id;
   final String description;
   final double quantity;
+  final double unitPrice;
+  final DateTime achatDate;
+  final int? clientId;
+  final String? clientName;
+  final String? clientPhone;
   Status status;
+
+  Item({
+    required this.id,
+    required this.description,
+    required this.quantity,
+    required this.unitPrice,
+    required this.achatDate,
+    this.clientId,
+    this.clientName,
+    this.clientPhone,
+    required this.status,
+  });
 
   Item copyWith({
     int? id,
     String? description,
     double? quantity,
+    double? unitPrice,
+    DateTime? achatDate,
+    int? clientId,
+    String? clientName,
+    String? clientPhone,
     Status? status,
   }) {
     return Item(
       id: id ?? this.id,
       description: description ?? this.description,
       quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice ?? this.unitPrice,
+      achatDate: achatDate ?? this.achatDate,
+      clientId: clientId ?? this.clientId,
+      clientName: clientName ?? this.clientName,
+      clientPhone: clientPhone ?? this.clientPhone,
       status: status ?? this.status,
     );
-  }
-
-  Item({
-    required this.id,
-    required this.description,
-    required this.quantity,
-    required this.status,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'description': description,
-      'quantity': quantity,
-      'status': status.name,
-    };
   }
 
   factory Item.fromJson(Map<String, dynamic> json) {
@@ -48,11 +59,31 @@ class Item {
     } else {
       status = Status.CREATE;
     }
+
     return Item(
-      id: json['id'],
+      id: json['itemId'],
       description: json['description'],
-      quantity: json['quantity'],
+      quantity: (json['quantity'] as num).toDouble(),
+      unitPrice: (json['unitPrice'] as num).toDouble(),
+      achatDate: DateTime.parse(json['achatDate']),
+      clientId: json['clientId'],
+      clientName: json['clientName'],
+      clientPhone: json['clientPhone'],
       status: status,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'itemId': id,
+      'description': description,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'achatDate': achatDate.toIso8601String(),
+      'clientId': clientId,
+      'clientName': clientName,
+      'clientPhone': clientPhone,
+      'status': status.name,
+    };
   }
 }
