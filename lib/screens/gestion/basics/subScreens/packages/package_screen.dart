@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
-import 'package:bbd_limited/models/items.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/edit_package_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/packages_list.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -21,8 +21,8 @@ class _PackageScreen extends State<PackageScreen> {
   final PackageServices _packageServices = PackageServices();
   final AuthService _authService = AuthService();
 
-  List<Item> _allPackages = [];
-  List<Item> _filteredPackages = [];
+  List<Packages> _allPackages = [];
+  List<Packages> _filteredPackages = [];
   String? _currentFilter;
 
   bool _isLoading = false;
@@ -72,7 +72,7 @@ class _PackageScreen extends State<PackageScreen> {
         }
       });
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de chargement des colis.");
+      showErrorTopSnackBar(context, "Erreur de récupération des colis.");
       print("Erreur de récupération des colis : $e");
     } finally {
       setState(() => _isLoading = false);
@@ -100,7 +100,7 @@ class _PackageScreen extends State<PackageScreen> {
     setState(() {
       _filteredPackages =
           _allPackages.where((pkg) {
-            final searchPackage = pkg.description.toLowerCase().contains(
+            final searchPackage = pkg.reference!.toLowerCase().contains(
               query.toLowerCase(),
             );
 
@@ -182,7 +182,7 @@ class _PackageScreen extends State<PackageScreen> {
         return;
       }
 
-      await _packageServices.deletePackage(pkg.id, user.id.toInt());
+      await _packageServices.deletePackage(pkg.id!, user.id.toInt());
 
       setState(() {
         _allPackages.removeWhere((d) => d.id == pkg.id);
@@ -320,19 +320,18 @@ class _PackageScreen extends State<PackageScreen> {
                                   final pkg = _filteredPackages[index];
 
                                   return PackageListItem(
-                                    items: pkg,
-                                    onTap: () {},
-                                    // () => showPackageDetailsBottomSheet(
-                                    //   context,
-                                    //   pkg,
-                                    //   1,
-                                    //   true,
-                                    // ),
-                                    onEdit: () {},
-                                    // () =>
-                                    //     _showEditPackageModal(context, pkg),
-                                    onDelete: () {},
-                                    // () => _deletePackage(pkg),
+                                    packages: pkg,
+                                    onTap:
+                                        () => showPackageDetailsBottomSheet(
+                                          context,
+                                          pkg,
+                                          1,
+                                          true,
+                                        ),
+                                    onEdit:
+                                        () =>
+                                            _showEditPackageModal(context, pkg),
+                                    onDelete: () => _deletePackage(pkg),
                                   );
                                 },
                               ),

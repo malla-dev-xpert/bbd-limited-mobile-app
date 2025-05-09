@@ -9,12 +9,14 @@ class Packages {
   final String? dimensions;
   Status status;
   final DateTime? createdAt;
+  final DateTime? editedAt;
   final String? partnerName;
   final int? partnerId;
   final String? partnerPhoneNumber;
   final String? warehouseName;
   final String? warehouseAddress;
   final int? warehouseId;
+  final int? containerId;
   List<Item>? items;
 
   Packages copyWith({
@@ -25,12 +27,14 @@ class Packages {
     String? dimensions,
     Status? status,
     DateTime? createdAt,
+    DateTime? editedAt,
     String? partnerName,
     int? partnerId,
     String? partnerPhoneNumber,
     String? warehouseName,
     String? warehouseAddress,
     int? warehouseId,
+    int? containerId,
     List<Item>? items,
   }) {
     return Packages(
@@ -41,12 +45,14 @@ class Packages {
       dimensions: dimensions ?? this.dimensions,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      editedAt: editedAt ?? this.editedAt,
       partnerName: partnerName ?? this.partnerName,
       partnerId: partnerId ?? this.partnerId,
       partnerPhoneNumber: partnerPhoneNumber ?? this.partnerPhoneNumber,
       warehouseName: warehouseName ?? this.warehouseName,
       warehouseAddress: warehouseAddress ?? this.warehouseAddress,
       warehouseId: warehouseId ?? this.warehouseId,
+      containerId: containerId ?? this.containerId,
       items: items ?? this.items,
     );
   }
@@ -59,6 +65,7 @@ class Packages {
     this.dimensions,
     required this.status,
     this.createdAt,
+    this.editedAt,
     this.partnerName,
     this.partnerId,
     this.partnerPhoneNumber,
@@ -66,6 +73,7 @@ class Packages {
     this.items,
     this.warehouseName,
     this.warehouseAddress,
+    this.containerId,
   });
 
   Map<String, dynamic> toJson() {
@@ -77,13 +85,15 @@ class Packages {
       'dimensions': dimensions,
       'status': status.name,
       'createdAt': createdAt?.toIso8601String(),
+      'editedAt': editedAt?.toIso8601String(),
       'partnerName': partnerName,
       'partnerId': partnerId,
       'partnerPhoneNumber': partnerPhoneNumber,
       'warehouseName': warehouseName,
       'warehouseAddress': warehouseAddress,
       'warehouseId': warehouseId,
-      // 'items': items?.map((item) => item.toJson()).toList(),
+      'containerId': containerId,
+      'items': items?.map((item) => item.toJson()).toList(),
     };
   }
 
@@ -106,6 +116,11 @@ class Packages {
           (json['items'] as List).map((item) => Item.fromJson(item)).toList();
     }
 
+    int? parseNullableInt(dynamic value) {
+      if (value == null) return null;
+      return int.tryParse(value.toString());
+    }
+
     return Packages(
       id: json['id'] as int,
       name: json['name'] as String?,
@@ -113,16 +128,19 @@ class Packages {
       dimensions: json['dimensions'] as String?,
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      editedAt:
+          json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
       weight:
           json['weight'] != null ? (json['weight'] as num).toDouble() : null,
       status: status,
       partnerName: json['partnerName'] as String?,
-      partnerId: json['partnerId'] as int?,
       partnerPhoneNumber: json['partnerPhoneNumber'] as String?,
       warehouseName: json['warehouseName'] as String?,
       warehouseAddress: json['warehouseAddress'] as String?,
-      warehouseId: json['warehouseId'] as int?,
       items: itemList,
+      containerId: parseNullableInt(json['containerId']),
+      partnerId: parseNullableInt(json['partnerId']),
+      warehouseId: parseNullableInt(json['warehouseId']),
     );
   }
 }

@@ -5,7 +5,7 @@ class Item {
   final String description;
   final double quantity;
   final double unitPrice;
-  final DateTime achatDate;
+  final DateTime? achatDate;
   final int? clientId;
   final String? clientName;
   final String? clientPhone;
@@ -16,7 +16,7 @@ class Item {
     required this.description,
     required this.quantity,
     required this.unitPrice,
-    required this.achatDate,
+    this.achatDate,
     this.clientId,
     this.clientName,
     this.clientPhone,
@@ -61,11 +61,12 @@ class Item {
     }
 
     return Item(
-      id: json['itemId'],
+      id: json['id'],
       description: json['description'],
       quantity: (json['quantity'] as num).toDouble(),
       unitPrice: (json['unitPrice'] as num).toDouble(),
-      achatDate: DateTime.parse(json['achatDate']),
+      achatDate:
+          json['achatDate'] != null ? DateTime.parse(json['achatDate']) : null,
       clientId: json['clientId'],
       clientName: json['clientName'],
       clientPhone: json['clientPhone'],
@@ -75,11 +76,11 @@ class Item {
 
   Map<String, dynamic> toJson() {
     return {
-      'itemId': id,
+      'id': id,
       'description': description,
       'quantity': quantity,
       'unitPrice': unitPrice,
-      'achatDate': achatDate.toIso8601String(),
+      'achatDate': achatDate?.toIso8601String(),
       'clientId': clientId,
       'clientName': clientName,
       'clientPhone': clientPhone,

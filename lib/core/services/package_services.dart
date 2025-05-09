@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:bbd_limited/models/embarquement.dart';
-import 'package:bbd_limited/models/items.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,12 +23,12 @@ class PackageServices {
     }
   }
 
-  Future<List<Item>> findAll({int page = 0}) async {
-    final response = await http.get(Uri.parse('$baseUrl/items?page=$page'));
+  Future<List<Packages>> findAll({int page = 0}) async {
+    final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(response.body);
-      return jsonBody.map((e) => Item.fromJson(e)).toList();
+      return jsonBody.map((e) => Packages.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des colis");
     }
