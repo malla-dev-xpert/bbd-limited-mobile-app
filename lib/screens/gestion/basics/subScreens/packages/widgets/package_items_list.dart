@@ -21,7 +21,13 @@ class PackageItemsList extends StatelessWidget {
               final item = items[index];
               return ListTile(
                 title: Text(item['description']),
-                subtitle: Text("Quantité : ${item['quantity']}"),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Quantité : ${item['quantity']}"),
+                    Text("P.U : ${item['unitPrice']}"),
+                  ],
+                ),
                 trailing: IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () => onRemoveItem(index),
@@ -31,10 +37,12 @@ class PackageItemsList extends StatelessWidget {
           ),
         )
         : Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Text(
-            "Aucun article ajouté.",
-            style: TextStyle(color: Colors.grey),
+          padding: const EdgeInsets.symmetric(vertical: 50),
+          child: Center(
+            child: Text(
+              "Aucun article ajouté.",
+              style: TextStyle(color: Colors.grey),
+            ),
           ),
         );
   }
