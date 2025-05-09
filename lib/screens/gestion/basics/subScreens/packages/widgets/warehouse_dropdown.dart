@@ -23,6 +23,9 @@ class WarehouseDropdown extends StatelessWidget {
       ),
       child: CustomDropdown<String>.search(
         hintText: 'Choisir un entrepôt...',
+        decoration: CustomDropdownDecoration(
+          prefixIcon: Icon(Icons.local_shipping_rounded),
+        ),
         items: warehouses.map((e) => '${e.name} | ${e.adresse}').toList(),
         onChanged: (value) {
           // Correction: Trouver l'entrepôt correspondant
