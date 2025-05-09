@@ -6,12 +6,14 @@ class ClientDropdown extends StatelessWidget {
   final List<Partner> clients;
   final Partner? selectedClient;
   final Function(Partner?) onChanged;
+  final bool isCLient;
 
   const ClientDropdown({
     Key? key,
     required this.clients,
     required this.selectedClient,
     required this.onChanged,
+    required this.isCLient,
   }) : super(key: key);
 
   @override
@@ -22,7 +24,14 @@ class ClientDropdown extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
       child: CustomDropdown<String>.search(
-        hintText: 'Choisir un client...',
+        hintText:
+            isCLient == true
+                ? 'Choisir un client...'
+                : 'Choisir un fournisseur...',
+        decoration: CustomDropdownDecoration(
+          prefixIcon:
+              isCLient == true ? Icon(Icons.person) : Icon(Icons.person_4),
+        ),
         items:
             clients
                 .map((e) => '${e.firstName} ${e.lastName} | ${e.phoneNumber}')
