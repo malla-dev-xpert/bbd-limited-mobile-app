@@ -28,4 +28,19 @@ class Achat {
       'prixUnitaire': prixUnitaire,
     };
   }
+
+  factory Achat.fromJson(Map<String, dynamic> json) {
+    return Achat(
+      id: json['id'] as int?,
+      descriptionItem: json['descriptionItem'] as String?,
+      quantityItem:
+          json['quantityItem'] != null
+              ? (json['quantityItem'] as num).toDouble()
+              : null,
+      prixUnitaire:
+          json['prixUnitaire'] != null
+              ? (json['prixUnitaire'] as num).toDouble()
+              : null,
+    );
+  }
 }
