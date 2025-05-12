@@ -77,7 +77,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
     try {
       final request = EmbarquementRequest(
         containerId: widget.containerId.toInt(),
-        packageId: _selectedPackages.map((p) => p.id).toList(),
+        packageId: _selectedPackages.map((p) => p.id!).toList(),
       );
       final result = await widget.packageServices.embarquerColis(request);
 

@@ -623,7 +623,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                                   }
 
                                   await _packageServices.deletePackage(
-                                    pkg.id,
+                                    pkg.id!,
                                     user.id.toInt(),
                                   );
 

@@ -270,7 +270,7 @@ void showContainerDetailsBottomSheet(
                                                     final result =
                                                         await packageServices
                                                             .deletePackageOnContainer(
-                                                              pkg.id,
+                                                              pkg.id!,
                                                               user!.id.toInt(),
                                                               container.id,
                                                             );

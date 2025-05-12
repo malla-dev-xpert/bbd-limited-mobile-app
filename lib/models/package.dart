@@ -2,12 +2,12 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/items.dart';
 
 class Packages {
-  final int id;
+  final int? id;
   final String? name;
   final double? weight;
   final String? reference;
   final String? dimensions;
-  Status status;
+  Status? status;
   final DateTime? createdAt;
   final DateTime? editedAt;
   final String? partnerName;
@@ -58,12 +58,12 @@ class Packages {
   }
 
   Packages({
-    required this.id,
+    this.id,
     this.weight,
     this.name,
     this.reference,
     this.dimensions,
-    required this.status,
+    this.status,
     this.createdAt,
     this.editedAt,
     this.partnerName,
@@ -83,7 +83,7 @@ class Packages {
       'weight': weight,
       'reference': reference,
       'dimensions': dimensions,
-      'status': status.name,
+      'status': status!.name,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
       'partnerName': partnerName,
@@ -122,7 +122,7 @@ class Packages {
     }
 
     return Packages(
-      id: json['id'] as int,
+      id: json['id'] as int?,
       name: json['name'] as String?,
       reference: json['reference'] as String?,
       dimensions: json['dimensions'] as String?,

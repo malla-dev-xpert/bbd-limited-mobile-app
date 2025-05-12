@@ -255,11 +255,11 @@ void showPackageDetailsBottomSheet(
                                 onPressed: () async {
                                   final result = await showAddItemsModal(
                                     context,
-                                    pkg.id,
+                                    pkg.id!,
                                   );
                                   if (result == true) {
                                     final updatedItems = await itemServices
-                                        .findByPackageId(pkg.id);
+                                        .findByPackageId(pkg.id!);
                                     setState(() {
                                       pkg.items = updatedItems;
                                     });
@@ -291,12 +291,12 @@ void showPackageDetailsBottomSheet(
                                             final result =
                                                 await showAddItemsModal(
                                                   context,
-                                                  pkg.id,
+                                                  pkg.id!,
                                                 );
                                             if (result == true) {
                                               final updatedItems =
                                                   await itemServices
-                                                      .findByPackageId(pkg.id);
+                                                      .findByPackageId(pkg.id!);
                                               setState(() {
                                                 pkg.items = updatedItems;
                                               });
@@ -378,7 +378,7 @@ void showPackageDetailsBottomSheet(
                                                           .deleteItem(
                                                             item.id,
                                                             user.id.toInt(),
-                                                            pkg.id,
+                                                            pkg.id!,
                                                           );
 
                                                   if (response ==
@@ -400,7 +400,7 @@ void showPackageDetailsBottomSheet(
                                                     final updatedItems =
                                                         await itemServices
                                                             .findByPackageId(
-                                                              pkg.id,
+                                                              pkg.id!,
                                                             );
                                                     setState(() {
                                                       pkg.items = updatedItems;
@@ -436,7 +436,7 @@ void showPackageDetailsBottomSheet(
                                                     final updatedItems =
                                                         await itemServices
                                                             .findByPackageId(
-                                                              pkg.id,
+                                                              pkg.id!,
                                                             );
                                                     setState(() {
                                                       pkg.items = updatedItems;
@@ -473,7 +473,7 @@ void showPackageDetailsBottomSheet(
 
                           try {
                             await packageServices.receivePackage(
-                              pkg.id,
+                              pkg.id!,
                               user?.id.toInt(),
                               pkg.warehouseId,
                             );
