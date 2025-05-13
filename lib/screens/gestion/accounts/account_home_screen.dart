@@ -3,9 +3,11 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/paiment_detail_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AccountHomeScreen extends StatefulWidget {
   @override
@@ -27,6 +29,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
+
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
   @override
   void initState() {
@@ -74,23 +78,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       setState(() => _isLoading = false);
     }
   }
-
-  // void _showEditPackageModal(BuildContext context, Packages pkg) {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     backgroundColor: Colors.white,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-  //     ),
-  //     builder: (context) {
-  //       return EditPackageModal(
-  //         package: pkg,
-  //         onPackageUpdated: () => fetchPackages(reset: true),
-  //       );
-  //     },
-  //   );
-  // }
 
   void filterPackages(String query) {
     setState(() {
@@ -177,8 +164,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         return;
       }
 
-      // await _packageServices.deletePackage(pkg.id!, user.id.toInt());
-
       setState(() {
         _allPaiements.removeWhere((d) => d.id == item.id);
         _filteredPaiements = List.from(_allPaiements);
@@ -195,24 +180,96 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: Text(
-          'Gestion des colis',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCreatePackageBottomSheet(context),
-        backgroundColor: const Color(0xFF1A1E49),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 30),
+            Text(
+              "Gestion des paiements",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -1,
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Reporting Cards
+            Row(
+              children: [
+                Expanded(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    color: Colors.blue[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total des versements',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${_allPaiements.length}',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1E49),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    color: Colors.amber[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Montant total',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            currencyFormat.format(
+                              _allPaiements.fold<double>(
+                                0,
+                                (sum, item) => sum + (item.montantRestant ?? 0),
+                              ),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1E49),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Barre de recherche
@@ -239,8 +296,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                 FiltreDropdown(onSelected: handleStatusFilter),
               ],
             ),
-            const SizedBox(height: 20),
-
+            const SizedBox(height: 12),
             // Liste des colis
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,7 +309,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                       : _currentFilter == 'delivered'
                       ? 'supplier'
                       : ' fournisseurs'}",
-
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -274,9 +329,13 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 10),
             _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF1A1E49),
+                    strokeWidth: 3,
+                  ),
+                )
                 : Expanded(
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (scrollInfo) {
@@ -295,7 +354,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                               onRefresh: () async {
                                 await fetchPaiements(reset: true);
                               },
-                              displacement: 40,
+                              displacement: 20,
                               color: Theme.of(context).primaryColor,
                               backgroundColor: Colors.white,
                               child: ListView.builder(
@@ -312,22 +371,17 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                       ),
                                     );
                                   }
-                                  final item = _filteredPaiements[index];
+                                  final paiement = _filteredPaiements[index];
 
                                   return PaiementListItem(
-                                    versement: item,
-                                    onTap: () {},
-                                    // () => showPackageDetailsBottomSheet(
-                                    //   context,
-                                    //   item,
-                                    //   1,
-                                    //   true,
-                                    // ),
+                                    versement: paiement,
+                                    onTap:
+                                        () => showPaiementDetailsBottomSheet(
+                                          context,
+                                          paiement,
+                                        ),
                                     onEdit: () {},
-                                    // () =>
-                                    //     _showEditPackageModal(context, pkg),
                                     onDelete: () {},
-                                    // () => _deletePackage(pkg),
                                   );
                                 },
                               ),
@@ -359,12 +413,18 @@ class FiltreDropdown extends StatelessWidget {
           children: [
             Icon(Icons.filter_list, color: Colors.white),
             SizedBox(width: 8),
-            Text('Filtrer', style: TextStyle(color: Colors.white)),
+            Text(
+              'Filtrer',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             SizedBox(width: 8),
           ],
         ),
         color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         onSelected: onSelected,
         itemBuilder:
             (BuildContext context) => [

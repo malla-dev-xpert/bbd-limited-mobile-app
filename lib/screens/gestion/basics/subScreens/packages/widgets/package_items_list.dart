@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class PackageItemsList extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final Function(int index) onRemoveItem;
 
-  const PackageItemsList({
-    Key? key,
-    required this.items,
-    required this.onRemoveItem,
-  }) : super(key: key);
+  PackageItemsList({Key? key, required this.items, required this.onRemoveItem})
+    : super(key: key);
 
   // Fonction pour calculer le total
   double _calculateTotal() {
@@ -18,6 +16,8 @@ class PackageItemsList extends StatelessWidget {
     }
     return total;
   }
+
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class PackageItemsList extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  _calculateTotal().toStringAsFixed(1),
+                  currencyFormat.format(_calculateTotal()),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

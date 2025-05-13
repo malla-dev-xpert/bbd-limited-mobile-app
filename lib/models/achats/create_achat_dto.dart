@@ -4,7 +4,7 @@ import 'package:bbd_limited/models/package.dart';
 class CreateAchatDto {
   final int versementId;
   final Packages packageDto;
-  final List<Achat> lignes;
+  final List<LigneAchat> lignes;
 
   CreateAchatDto({
     required this.versementId,
