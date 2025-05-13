@@ -11,6 +11,7 @@ class Versement {
   final DateTime? editedAt;
   final String? partnerName;
   final String? partnerPhone;
+  final int? clientId;
   List<Achat>? achats;
 
   Versement copyWith({
@@ -23,6 +24,7 @@ class Versement {
     DateTime? editedAt,
     String? partnerName,
     String? partnerPhone,
+    int? clientId,
     List<Achat>? achats,
   }) {
     return Versement(
@@ -35,6 +37,7 @@ class Versement {
       editedAt: editedAt ?? this.editedAt,
       partnerName: partnerName ?? this.partnerName,
       partnerPhone: partnerPhone ?? this.partnerPhone,
+      clientId: clientId ?? this.clientId,
       achats: achats ?? this.achats,
     );
   }
@@ -49,6 +52,7 @@ class Versement {
     this.editedAt,
     this.partnerName,
     this.partnerPhone,
+    this.clientId,
     this.achats,
   });
 
@@ -63,6 +67,7 @@ class Versement {
       'editedAt': editedAt?.toIso8601String(),
       'partnerName': partnerName,
       'partnerPhone': partnerPhone,
+      'clientId': clientId,
       'achats': achats?.map((item) => item.toJson()).toList(),
     };
   }
@@ -111,6 +116,7 @@ class Versement {
           json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
       partnerName: json['partnerName'] as String?,
       partnerPhone: json['partnerPhone'] as String?,
+      clientId: json['clientId'] as int?,
       achats: achatList,
     );
   }

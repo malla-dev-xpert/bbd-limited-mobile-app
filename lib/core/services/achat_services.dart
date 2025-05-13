@@ -23,10 +23,12 @@ class AchatServices {
     required int clientId,
     required int supplierId,
     required int userId,
+    required int warehouseId,
+    required int containerId,
     required CreateAchatDto dto,
   }) async {
     final url = Uri.parse(
-      '$baseUrl/achats/create?clientId=$clientId&supplierId=$supplierId&userId=$userId',
+      '$baseUrl/achats/create?clientId=$clientId&supplierId=$supplierId&userId=$userId&warehouseId=$warehouseId&containerId=$containerId',
     );
 
     try {
