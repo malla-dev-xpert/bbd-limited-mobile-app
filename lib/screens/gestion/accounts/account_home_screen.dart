@@ -1,16 +1,9 @@
 import 'dart:async';
-
-import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
-import 'package:bbd_limited/models/package.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/edit_package_modal.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/packages_list.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
