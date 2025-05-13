@@ -11,6 +11,7 @@ class Versement {
   final DateTime? editedAt;
   final String? partnerName;
   final String? partnerPhone;
+  final String? partnerAccountType;
   final int? clientId;
   List<Achat>? achats;
 
@@ -24,6 +25,7 @@ class Versement {
     DateTime? editedAt,
     String? partnerName,
     String? partnerPhone,
+    String? partnerAccountType,
     int? clientId,
     List<Achat>? achats,
   }) {
@@ -37,6 +39,7 @@ class Versement {
       editedAt: editedAt ?? this.editedAt,
       partnerName: partnerName ?? this.partnerName,
       partnerPhone: partnerPhone ?? this.partnerPhone,
+      partnerAccountType: partnerAccountType ?? this.partnerAccountType,
       clientId: clientId ?? this.clientId,
       achats: achats ?? this.achats,
     );
@@ -52,6 +55,7 @@ class Versement {
     this.editedAt,
     this.partnerName,
     this.partnerPhone,
+    this.partnerAccountType,
     this.clientId,
     this.achats,
   });
@@ -67,6 +71,7 @@ class Versement {
       'editedAt': editedAt?.toIso8601String(),
       'partnerName': partnerName,
       'partnerPhone': partnerPhone,
+      'partnerAccountType': partnerAccountType,
       'clientId': clientId,
       'achats': achats?.map((item) => item.toJson()).toList(),
     };
@@ -116,6 +121,7 @@ class Versement {
           json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
       partnerName: json['partnerName'] as String?,
       partnerPhone: json['partnerPhone'] as String?,
+      partnerAccountType: json['partnerAccountType'] as String?,
       clientId: json['clientId'] as int?,
       achats: achatList,
     );
