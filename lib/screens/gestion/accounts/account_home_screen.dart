@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiment_detail_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
@@ -108,7 +109,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     filterPackages(searchController.text);
   }
 
-  Future<void> _openCreatePackageBottomSheet(BuildContext context) async {
+  Future<void> _openNewPaiementBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -117,7 +118,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreatePackageForm();
+        return CreatePaiementModal();
       },
     );
 
@@ -126,60 +127,18 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     }
   }
 
-  Future<void> _deletePackage(Versement item) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirmer la suppression"),
-            content: Text(
-              "Voulez-vous vraiment supprimer le colis ${item.reference}?",
-            ),
-            backgroundColor: Colors.white,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : TextButton.icon(
-                    onPressed: () => Navigator.pop(context, true),
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    label: const Text(
-                      "Supprimer",
-                      style: TextStyle(color: Colors.red, fontSize: 16),
-                    ),
-                  ),
-            ],
-          ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      final user = await _authService.getUserInfo();
-      if (user == null) {
-        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
-        return;
-      }
-
-      setState(() {
-        _allPaiements.removeWhere((d) => d.id == item.id);
-        _filteredPaiements = List.from(_allPaiements);
-      });
-
-      showSuccessTopSnackBar(context, "Colis supprimé avec succès");
-    } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de la suppression");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF1A1E49),
+        onPressed: () {
+          _openNewPaiementBottomSheet(context);
+        },
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -196,80 +155,61 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
             ),
             const SizedBox(height: 10),
             // Reporting Cards
-            Row(
-              children: [
-                Expanded(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    color: Colors.blue[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Total des versements',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      color: Colors.blue[50],
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: _StatItem(
+                          title: 'Total des versements',
+                          value: _allPaiements.length.toString(),
+                          valueStyle: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1E49),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${_allPaiements.length}',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1E49),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    color: Colors.amber[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Montant total',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      color: Colors.amber[50],
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: _StatItem(
+                          title: 'Montant total',
+                          value: currencyFormat.format(
+                            _allPaiements.fold<double>(
+                              0,
+                              (sum, item) => sum + (item.montantRestant ?? 0),
                             ),
+                          ), // Utilisez votre formatage
+                          valueStyle: TextStyle(
+                            fontSize:
+                                18, // Un peu plus petit pour les grands nombres
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1E49),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            currencyFormat.format(
-                              _allPaiements.fold<double>(
-                                0,
-                                (sum, item) => sum + (item.montantRestant ?? 0),
-                              ),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1E49),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+
+            // Widget réutilisable
             const SizedBox(height: 16),
 
             // Barre de recherche
@@ -438,6 +378,31 @@ class FiltreDropdown extends StatelessWidget {
               ),
             ],
       ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String title;
+  final String value;
+  final TextStyle valueStyle;
+
+  const _StatItem({
+    required this.title,
+    required this.value,
+    required this.valueStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(title, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+        const SizedBox(height: 8),
+        Text(value, style: valueStyle),
+      ],
     );
   }
 }

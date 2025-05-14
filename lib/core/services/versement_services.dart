@@ -33,4 +33,24 @@ class VersementServices {
       throw Exception("Erreur lors du chargement des colis");
     }
   }
+
+  Future<String?> create(int userId, int partnerId, Versement versement) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+          '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId',
+        ),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(versement.toJson()),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return "CREATED";
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion: $e");
+    }
+  }
 }

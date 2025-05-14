@@ -66,7 +66,7 @@ class Versement {
       'reference': reference,
       'montantVerser': montantVerser,
       'montantRestant': montantRestant,
-      'status': status!.name,
+      'status': status?.name ?? Status.CREATE.name,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
       'partnerName': partnerName,
