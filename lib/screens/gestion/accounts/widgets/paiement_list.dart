@@ -23,7 +23,28 @@ class PaiementListItem extends StatelessWidget {
       locale: 'fr_FR',
       symbol: 'FCFA',
     );
-    final isNegative = versement.montantRestant! < 0;
+
+    // Calculer le montant restant en fonction des achats
+    double calculateMontantRestant() {
+      if (versement.achats == null || versement.achats!.isEmpty) {
+        return versement.montantVerser ?? 0.0;
+      }
+
+      double totalAchats = versement.achats!.fold(0.0, (sum, achat) {
+        double prixTotal =
+            achat.lignes?.fold(
+              0.0,
+              (sum, ligne) => sum! + (ligne.prixTotal ?? 0.0),
+            ) ??
+            0.0;
+        return sum + prixTotal;
+      });
+
+      return (versement.montantVerser ?? 0.0) - totalAchats;
+    }
+
+    final montantRestant = calculateMontantRestant();
+    final isNegative = montantRestant < 0;
     final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
 
     // Déterminer l'icône en fonction du type de compte
@@ -88,7 +109,7 @@ class PaiementListItem extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  currencyFormat.format(versement.montantRestant),
+                  currencyFormat.format(montantRestant),
                   style: TextStyle(
                     color: statusColor,
                     fontWeight: FontWeight.w600,

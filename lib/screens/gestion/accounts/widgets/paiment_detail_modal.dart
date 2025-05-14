@@ -150,11 +150,17 @@ void showPaiementDetailsBottomSheet(
                                             .toList();
                                     final ligne = allLignes[index];
 
-                                    return Card(
-                                      margin: EdgeInsets.symmetric(vertical: 4),
-                                      color: Colors.white,
+                                    return Container(
+                                      margin: EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.grey[50],
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                        ),
+                                      ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(8),
+                                        padding: EdgeInsets.all(10),
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,

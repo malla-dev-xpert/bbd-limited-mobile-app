@@ -244,11 +244,10 @@ class _CreatePackageFormState extends State<CreatePackageForm>
         lignes:
             localItems
                 .map(
-                  (item) => LigneAchat(
-                    descriptionItem: item['description']?.toString() ?? '',
-                    quantityItem: (item['quantity'] as num?)?.toDouble() ?? 0.0,
-                    unitPriceItem:
-                        (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
+                  (item) => CreateLigneDto(
+                    descriptionItem: item['description']?.toString(),
+                    quantityItem: (item['quantity'] as num?)?.toDouble(),
+                    prixUnitaire: (item['unitPrice'] as num?)?.toDouble(),
                   ),
                 )
                 .toList(),
