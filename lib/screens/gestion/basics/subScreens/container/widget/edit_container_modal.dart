@@ -23,6 +23,7 @@ class EditContainerModal extends StatefulWidget {
 class _EditContainerModalState extends State<EditContainerModal> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _refController;
+  late final TextEditingController _sizeController;
 
   final _infoFormKey = GlobalKey<ContainerInfoFormState>();
 
@@ -34,6 +35,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
   void initState() {
     super.initState();
     _refController = TextEditingController(text: widget.container.reference);
+    _sizeController = TextEditingController(text: widget.container.size);
   }
 
   Future<void> _submitForm() async {
@@ -51,6 +53,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
 
       final updatedContainer = widget.container.copyWith(
         reference: _refController.text,
+        size: _sizeController.text,
         isAvailable: isAvailable,
       );
 
@@ -113,6 +116,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
               ContainerInfoForm(
                 key: _infoFormKey,
                 refController: _refController,
+                size: _sizeController,
                 initialAvailability: widget.container.isAvailable ?? false,
               ),
               const SizedBox(height: 16),

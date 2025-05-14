@@ -91,12 +91,14 @@ void showContainerDetailsBottomSheet(
                   ),
                   const SizedBox(height: 50),
                   _detailRow("Référence", container.reference),
+                  _detailRow("Taille", "${container.size} pieds"),
                   _detailRow(
                     "Disponibilité",
                     container.isAvailable == true
                         ? 'Disponible'
                         : 'Indisponible',
                   ),
+
                   _detailRow(
                     "Date de reception",
                     DateFormat.yMMMMEEEEd().format(container.createdAt!),

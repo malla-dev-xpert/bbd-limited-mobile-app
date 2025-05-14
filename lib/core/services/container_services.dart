@@ -35,6 +35,7 @@ class ContainerServices {
 
   Future<String?> create(
     String reference,
+    String size,
     bool isAvailable,
     int? userId,
   ) async {
@@ -42,7 +43,11 @@ class ContainerServices {
       final response = await http.post(
         Uri.parse('$baseUrl/containers/create?userId=$userId'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"reference": reference, "isAvailable": isAvailable}),
+        body: jsonEncode({
+          "reference": reference,
+          "size": size,
+          "isAvailable": isAvailable,
+        }),
       );
 
       if (response.statusCode == 201) {

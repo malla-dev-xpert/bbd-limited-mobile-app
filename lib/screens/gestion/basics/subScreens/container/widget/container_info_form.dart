@@ -3,11 +3,13 @@ import 'package:bbd_limited/components/text_input.dart';
 
 class ContainerInfoForm extends StatefulWidget {
   final TextEditingController refController;
+  final TextEditingController size;
   final bool initialAvailability;
 
   const ContainerInfoForm({
     Key? key,
     required this.refController,
+    required this.size,
     this.initialAvailability = false,
   }) : super(key: key);
 
@@ -37,6 +39,17 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
             controller: widget.refController,
             label: "Référence du conteneur",
             icon: Icons.description,
+            validator:
+                (v) =>
+                    v == null || v.isEmpty
+                        ? 'Veuillez entrer la référence'
+                        : null,
+          ),
+          const SizedBox(height: 10),
+          buildTextField(
+            controller: widget.size,
+            label: "Taille du conteneur",
+            icon: Icons.height,
             validator:
                 (v) =>
                     v == null || v.isEmpty
