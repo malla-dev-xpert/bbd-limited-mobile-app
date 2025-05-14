@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -23,8 +24,14 @@ class ContainerListItem extends StatelessWidget {
         motion: const DrawerMotion(),
         children: [
           SlidableAction(
-            onPressed: (context) => onEdit(),
-            backgroundColor: Colors.blue,
+            onPressed:
+                container.status != Status.INPROGRESS
+                    ? (context) => onEdit()
+                    : null,
+            backgroundColor:
+                container.status != Status.INPROGRESS
+                    ? Colors.blue
+                    : Colors.grey[300]!,
             foregroundColor: Colors.white,
             icon: Icons.edit,
             label: 'Modifier',
@@ -46,9 +53,17 @@ class ContainerListItem extends StatelessWidget {
           color: const Color(0xFF1A1E49),
         ),
         title: Text(container.reference!),
-        subtitle: Text("Nombre de colis: ${container.packages?.length ?? 0}"),
+        subtitle: Text(
+          "Nombre de colis: ${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length}",
+        ),
         trailing: Text(
-          container.isAvailable == true ? 'Disponible' : 'Indisponible',
+          container.status != Status.INPROGRESS
+              ? container.isAvailable == true
+                  ? 'Disponible'
+                  : 'Indisponible'
+              : container.status == Status.INPROGRESS
+              ? "En cours de livraison"
+              : container.status.toString(),
           style: TextStyle(
             color: container.isAvailable == true ? Colors.green : Colors.grey,
             fontWeight: FontWeight.w600,

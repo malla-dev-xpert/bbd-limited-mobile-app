@@ -406,6 +406,11 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: IconThemeData(color: Colors.white),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddPackageModal,
+        backgroundColor: const Color(0xFF1A1E49),
+        child: Icon(Icons.add, color: Colors.white, size: 28),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -542,23 +547,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
 
                 const SizedBox(width: 8),
                 FiltreDropdown(onSelected: handleStatusFilter),
-
-                const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1E49),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    onPressed: _openAddPackageModal,
-                    icon: const Icon(Icons.add, color: Colors.white, size: 24),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(
-                      minWidth: 50,
-                      minHeight: 50,
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -635,7 +623,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                                   }
 
                                   await _packageServices.deletePackage(
-                                    pkg.id,
+                                    pkg.id!,
                                     user.id.toInt(),
                                   );
 

@@ -35,7 +35,7 @@ class DeviseServices {
     final response = await http.get(Uri.parse('$baseUrl/devises?page=$page'));
 
     if (response.statusCode == 200) {
-      final jsonBody = json.decode(response.body);
+      final jsonBody = json.decode(utf8.decode(response.bodyBytes));
       final List<dynamic> content = jsonBody['content'];
       return content.map((e) => Devise.fromJson(e)).toList();
     } else {

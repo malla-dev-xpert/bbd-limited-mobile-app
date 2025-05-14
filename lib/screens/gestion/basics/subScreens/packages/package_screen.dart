@@ -72,7 +72,7 @@ class _PackageScreen extends State<PackageScreen> {
         }
       });
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de chargement des colis.");
+      showErrorTopSnackBar(context, "Erreur de récupération des colis.");
       print("Erreur de récupération des colis : $e");
     } finally {
       setState(() => _isLoading = false);
@@ -182,7 +182,7 @@ class _PackageScreen extends State<PackageScreen> {
         return;
       }
 
-      await _packageServices.deletePackage(pkg.id, user.id.toInt());
+      await _packageServices.deletePackage(pkg.id!, user.id.toInt());
 
       setState(() {
         _allPackages.removeWhere((d) => d.id == pkg.id);
@@ -320,7 +320,7 @@ class _PackageScreen extends State<PackageScreen> {
                                   final pkg = _filteredPackages[index];
 
                                   return PackageListItem(
-                                    package: pkg,
+                                    packages: pkg,
                                     onTap:
                                         () => showPackageDetailsBottomSheet(
                                           context,

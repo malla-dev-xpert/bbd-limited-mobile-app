@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/package.dart';
@@ -10,9 +11,7 @@ import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/client_dropdown.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/package_info_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/warehouse_dropdown.dart';
 
 class EditPackageModal extends StatefulWidget {
   final Packages package;
@@ -129,7 +128,7 @@ class _EditPackageModalState extends State<EditPackageModal> {
       );
 
       final success = await _packageServices.updatePackage(
-        widget.package.id,
+        widget.package.id!,
         user.id,
         updatedPackage,
       );
@@ -190,21 +189,29 @@ class _EditPackageModalState extends State<EditPackageModal> {
                 refController: _refController,
                 weightController: _weightController,
                 dimensionController: _dimensionController,
-                // nameController: _nameController,
               ),
               const SizedBox(height: 16),
-              ClientDropdown(
-                clients: _clients,
-                selectedClient: _selectedClient,
+              DropDownCustom<Partner>(
+                items: _clients,
+                selectedItem: _selectedClient,
                 onChanged: (client) => setState(() => _selectedClient = client),
+                itemToString:
+                    (client) =>
+                        '${client.firstName + ' ' + client.lastName} | ${client.phoneNumber}',
+                hintText: 'Choisir un client...',
+                prefixIcon: Icons.person_3,
               ),
               const SizedBox(height: 16),
-              WarehouseDropdown(
-                warehouses: _warehouses,
-                selectedWarehouse: _selectedWarehouse,
+              DropDownCustom<Warehouses>(
+                items: _warehouses,
+                selectedItem: _selectedWarehouse,
                 onChanged:
                     (warehouse) =>
                         setState(() => _selectedWarehouse = warehouse),
+                itemToString:
+                    (warehouse) => '${warehouse.name} | ${warehouse.adresse}',
+                hintText: 'Choisir un magasin...',
+                prefixIcon: Icons.warehouse,
               ),
               const SizedBox(height: 24),
               SizedBox(

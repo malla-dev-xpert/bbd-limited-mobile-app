@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/models/package.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,6 +25,19 @@ class PackageServices {
 
   Future<List<Packages>> findAll({int page = 0}) async {
     final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(response.body);
+      return jsonBody.map((e) => Packages.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des colis");
+    }
+  }
+
+  Future<List<Packages>> findAllPackageReceived({int page = 0}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/packages/received?page=$page'),
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(response.body);
@@ -80,6 +96,31 @@ class PackageServices {
     }
   }
 
+  Future<String?> deletePackageOnContainer(
+    int id,
+    int? userId,
+    int? containerId,
+  ) async {
+    final url = Uri.parse(
+      "$baseUrl/packages/$id/container/$containerId/delete?userId=$userId",
+    );
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.body == "Le colis n'appartient pas à ce conteneur") {
+        return "PACKAGE_NOT_IN_SPECIFIED_CONTAINER";
+      } else if (response.body ==
+          "Impossible de retirer un colis d'un conteneur en cours de livraison") {
+        return "CONTAINER_NOT_EDITABLE";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
+
   Future<void> receivePackage(int id, int? userId, int? warehouseId) async {
     final url = Uri.parse(
       "$baseUrl/packages/receive/$id?userId=$userId&warehouseId=$warehouseId",
@@ -93,6 +134,35 @@ class PackageServices {
       }
     } catch (e) {
       throw Exception("Erreur lors de la réception du colis : $e");
+    }
+  }
+
+  Future<String?> embarquerColis(EmbarquementRequest request) async {
+    try {
+      final url = Uri.parse('$baseUrl/containers/embarquer');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else if (response.body ==
+          "Le conteneur n'est pas disponible pour l'embarquement.") {
+        return "CONTAINER_NOT_AVAILABLE";
+      } else if (response.body ==
+          "Le conteneur n'est pas dans le bon statut pour l'embarquement.") {
+        return "CONTAINER_NOT_IN_PENDING";
+      }
+    } on SocketException {
+      return "NETWORK_ERROR";
+    } on TimeoutException {
+      return "TIMEOUT_ERROR";
+    } on FormatException {
+      return "FORMAT_ERROR";
+    } catch (e) {
+      return "Une erreur inattendue s'est produite: ${e.toString()}";
     }
   }
 

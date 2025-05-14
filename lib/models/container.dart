@@ -4,6 +4,7 @@ import 'package:bbd_limited/models/package.dart';
 class Containers {
   final int? id;
   final String? reference;
+  final String? size;
   final DateTime? createdAt;
   final DateTime? editedAt;
   final bool? isAvailable;
@@ -17,6 +18,7 @@ class Containers {
   Containers copyWith({
     int? id,
     String? reference,
+    String? size,
     DateTime? createdAt,
     DateTime? editedAt,
     bool? isAvailable,
@@ -30,6 +32,7 @@ class Containers {
     return Containers(
       id: id ?? this.id,
       reference: reference ?? this.reference,
+      size: size ?? this.size,
       createdAt: createdAt ?? this.createdAt,
       editedAt: editedAt ?? this.editedAt,
       isAvailable: isAvailable ?? this.isAvailable,
@@ -46,6 +49,7 @@ class Containers {
     return {
       'id': id,
       'reference': reference,
+      'size': size,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
       'isAvailable': isAvailable,
@@ -61,6 +65,7 @@ class Containers {
   Containers({
     this.id,
     this.reference,
+    this.size,
     this.createdAt,
     this.editedAt,
     this.isAvailable,
@@ -96,6 +101,7 @@ class Containers {
     return Containers(
       id: json['id'] as int?,
       reference: json['reference'] as String?,
+      size: json['size'] as String?,
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       editedAt:

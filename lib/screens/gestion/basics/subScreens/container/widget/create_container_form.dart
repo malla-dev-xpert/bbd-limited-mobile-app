@@ -17,6 +17,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
 
   final TextEditingController refController = TextEditingController();
+  final TextEditingController sizeController = TextEditingController();
   bool isLoading = false;
 
   final AuthService authService = AuthService();
@@ -34,10 +35,12 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       }
 
       final reference = refController.text.trim();
+      final size = sizeController.text.trim();
       final isAvailable = _containerInfoKey.currentState?.isAvailable ?? false;
 
       final response = await containerService.create(
         reference,
+        size,
         isAvailable,
         user.id.toInt(),
       );
@@ -84,6 +87,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
             ContainerInfoForm(
               key: _containerInfoKey,
               refController: refController,
+              size: sizeController,
               initialAvailability: false,
             ),
             const SizedBox(height: 24),
