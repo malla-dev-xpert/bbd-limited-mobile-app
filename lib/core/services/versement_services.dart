@@ -53,4 +53,33 @@ class VersementServices {
       throw Exception("Erreur de connexion: $e");
     }
   }
+
+  Future<bool> updatePaiement(
+    int id,
+    int? userId,
+    int clientId,
+    Versement dto,
+  ) async {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/versements/update/$id?userId=$userId&clientId=$clientId',
+      );
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

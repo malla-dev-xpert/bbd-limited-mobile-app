@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiment_detail_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
@@ -125,6 +126,23 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     if (result == true) {
       fetchPaiements(reset: true);
     }
+  }
+
+  void _showEditPaiementModal(BuildContext context, Versement versement) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return EditPaiementModal(
+          versement: versement,
+          onPaiementUpdated: () => fetchPaiements(reset: true),
+        );
+      },
+    );
   }
 
   @override
@@ -320,7 +338,11 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                           context,
                                           paiement,
                                         ),
-                                    onEdit: () {},
+                                    onEdit:
+                                        () => _showEditPaiementModal(
+                                          context,
+                                          paiement,
+                                        ),
                                     onDelete: () {},
                                   );
                                 },

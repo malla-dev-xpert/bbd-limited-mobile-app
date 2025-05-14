@@ -24,26 +24,7 @@ class PaiementListItem extends StatelessWidget {
       symbol: 'FCFA',
     );
 
-    // Calculer le montant restant en fonction des achats
-    double calculateMontantRestant() {
-      if (versement.achats == null || versement.achats!.isEmpty) {
-        return versement.montantVerser ?? 0.0;
-      }
-
-      double totalAchats = versement.achats!.fold(0.0, (sum, achat) {
-        double prixTotal =
-            achat.lignes?.fold(
-              0.0,
-              (sum, ligne) => sum! + (ligne.prixTotal ?? 0.0),
-            ) ??
-            0.0;
-        return sum + prixTotal;
-      });
-
-      return (versement.montantVerser ?? 0.0) - totalAchats;
-    }
-
-    final montantRestant = calculateMontantRestant();
+    final montantRestant = versement.montantRestant ?? 0.0;
     final isNegative = montantRestant < 0;
     final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
 
@@ -109,7 +90,7 @@ class PaiementListItem extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  currencyFormat.format(montantRestant),
+                  currencyFormat.format(versement.montantRestant),
                   style: TextStyle(
                     color: statusColor,
                     fontWeight: FontWeight.w600,
