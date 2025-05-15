@@ -16,7 +16,9 @@ class PackageServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Packages.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des colis");
@@ -27,7 +29,9 @@ class PackageServices {
     final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Packages.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des colis");
@@ -40,7 +44,9 @@ class PackageServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Packages.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des colis");

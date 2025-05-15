@@ -62,7 +62,7 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        final userData = json.decode(response.body);
+        final userData = json.decode(utf8.decode(response.bodyBytes));
         // print('Données utilisateur reçues: $userData');
         return User.fromJson(userData);
       }

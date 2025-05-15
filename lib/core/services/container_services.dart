@@ -14,7 +14,9 @@ class ContainerServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Containers.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des conteneurs");
@@ -27,7 +29,7 @@ class ContainerServices {
     );
 
     if (response.statusCode == 200) {
-      return Containers.fromJson(jsonDecode(response.body));
+      return Containers.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
     } else {
       throw Exception('Erreur lors du chargement du conteneur');
     }

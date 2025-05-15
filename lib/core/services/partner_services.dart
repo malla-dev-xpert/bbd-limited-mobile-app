@@ -15,7 +15,7 @@ class PartnerServices {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final jsonData = json.decode(utf8.decode(response.bodyBytes));
       final List content = jsonData['content'];
 
       return content.map((e) => Partner.fromJson(e)).toList();
@@ -30,7 +30,9 @@ class PartnerServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Partner.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des partenaires");

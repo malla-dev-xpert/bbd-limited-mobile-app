@@ -14,7 +14,9 @@ class VersementServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Versement.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des versements");
@@ -27,7 +29,9 @@ class VersementServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Versement.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des colis");
