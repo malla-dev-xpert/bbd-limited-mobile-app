@@ -7,6 +7,7 @@ import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class DevicesScreen extends StatefulWidget {
   const DevicesScreen({super.key});
@@ -552,43 +553,98 @@ class _DeviseState extends State<DevicesScreen> {
 
   // Les donnees de la liste
   Widget _buildDeviseItem(Devise devise) {
-    return Dismissible(
+    return Slidable(
       key: Key(devise.id.toString()),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        padding: const EdgeInsets.only(right: 16),
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        child: Icon(Icons.delete, color: Colors.white, size: 30),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              final result = await _showEditDeviseModal(context, devise);
+              if (result == true) {
+                setState(() {
+                  loadDevises(reset: true);
+                });
+              }
+            },
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: 'Modifier',
+          ),
+          SlidableAction(
+            onPressed: (context) async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text("Confirmer la suppression"),
+                      content: Text(
+                        "Voulez-vous vraiment supprimer la devise ${devise.name} (${devise.code})?",
+                      ),
+                      backgroundColor: Colors.white,
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("Annuler"),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => Navigator.pop(context, true),
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          label: const Text(
+                            "Supprimer",
+                            style: TextStyle(color: Colors.red, fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+              );
+
+              if (confirmed == true) {
+                try {
+                  await deviseServices.deleteDevise(devise.id!);
+                  setState(() {
+                    _allDevises!.removeWhere((d) => d.id == devise.id);
+                    _filteredDevises = List.from(_allDevises!);
+                  });
+                  showSuccessTopSnackBar(context, "Devise supprimée");
+                } catch (e) {
+                  showErrorTopSnackBar(
+                    context,
+                    "Erreur lors de la suppression",
+                  );
+                }
+              }
+            },
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Supprimer',
+          ),
+        ],
       ),
-      confirmDismiss: (direction) async {
-        try {
-          await deviseServices.deleteDevise(devise.id!);
-          setState(() {
-            _allDevises!.removeWhere((d) => d.id == devise.id);
-            _filteredDevises = List.from(_allDevises!);
-          });
-          showSuccessTopSnackBar(context, "Devise supprimée");
-          return true;
-        } catch (e) {
-          showErrorTopSnackBar(context, "Erreur lors de la suppression");
-          return false;
-        }
-      },
       child: ListTile(
-        onTap: () async {
-          final result = await _showEditDeviseModal(context, devise);
-          if (result == true) {
-            setState(() {
-              loadDevises(reset: true);
-            });
-          }
-        },
-        title: Text(devise.name, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(devise.code),
-        trailing: Text(
-          devise.rate.toString(),
-          style: TextStyle(color: const Color(0xFF7F78AF)),
+        title: Text(
+          devise.name,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(
+          devise.code,
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF7F78AF).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(2),
+          ),
+          child: Text(
+            devise.rate.toString(),
+            style: const TextStyle(
+              color: Color(0xFF7F78AF),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
