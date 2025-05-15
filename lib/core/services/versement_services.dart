@@ -82,4 +82,21 @@ class VersementServices {
       rethrow;
     }
   }
+
+  Future<String?> delete(int id, int userId) async {
+    final url = Uri.parse("$baseUrl/versements/delete/$id?userId=$userId");
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.body ==
+          "Impossible de supprimer: des achats sont déjà associés à ce versement") {
+        return "ACHATS_NOT_DELETED";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
 }
