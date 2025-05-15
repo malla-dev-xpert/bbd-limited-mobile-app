@@ -143,7 +143,7 @@ class PackageServices {
     }
   }
 
-  Future<String?> embarquerColis(EmbarquementRequest request) async {
+  Future<String> embarquerColis(EmbarquementRequest request) async {
     try {
       final url = Uri.parse('$baseUrl/containers/embarquer');
       final response = await http.post(
@@ -152,14 +152,27 @@ class PackageServices {
         body: jsonEncode(request.toJson()),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == HttpStatus.created) {
         return "SUCCESS";
-      } else if (response.body ==
-          "Le conteneur n'est pas disponible pour l'embarquement.") {
-        return "CONTAINER_NOT_AVAILABLE";
-      } else if (response.body ==
-          "Le conteneur n'est pas dans le bon statut pour l'embarquement.") {
-        return "CONTAINER_NOT_IN_PENDING";
+      } else if (response.statusCode == HttpStatus.conflict) {
+        final errorMessage = response.body;
+
+        if (errorMessage.contains("Le conteneur n'est pas disponible")) {
+          return "CONTAINER_NOT_AVAILABLE";
+        } else if (errorMessage.contains(
+          "Le conteneur n'est pas dans le bon statut",
+        )) {
+          return "CONTAINER_NOT_IN_PENDING";
+        } else if (errorMessage.contains("est déjà dans le conteneur")) {
+          return "PACKAGE_ALREADY_IN_ANOTHER_CONTAINER";
+        } else if (errorMessage.contains("n'est pas en statut RECEIVED")) {
+          return "PACKAGE_NOT_IN_RECEIVED_STATUS";
+        }
+        return "CONFLICT_ERROR";
+      } else if (response.statusCode == HttpStatus.notFound) {
+        return "CONTAINER_NOT_FOUND";
+      } else {
+        return "SERVER_ERROR: ${response.statusCode}";
       }
     } on SocketException {
       return "NETWORK_ERROR";
@@ -168,7 +181,7 @@ class PackageServices {
     } on FormatException {
       return "FORMAT_ERROR";
     } catch (e) {
-      return "Une erreur inattendue s'est produite: ${e.toString()}";
+      return "UNEXPECTED_ERROR: ${e.toString()}";
     }
   }
 

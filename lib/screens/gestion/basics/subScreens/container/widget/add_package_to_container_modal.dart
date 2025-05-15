@@ -1,6 +1,3 @@
-// add_packages_dialog.dart
-import 'dart:developer';
-
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -85,12 +82,31 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
         showSuccessTopSnackBar(context, "Colis embarqués avec succès");
 
         Navigator.of(context).pop(_selectedPackages);
-      } else if (result == "NETWORK_ERROR") {
-        showErrorTopSnackBar(context, "Erreur de connexion");
-      } else if (result == "TIMEOUT_ERROR") {
-        showErrorTopSnackBar(context, "Temps d'execution trop long");
       } else {
-        showErrorTopSnackBar(context, "Erreur lors de l'embarquement");
+        String errorMessage;
+        switch (result) {
+          case "PACKAGE_ALREADY_IN_ANOTHER_CONTAINER":
+            errorMessage =
+                "Un ou plusieurs colis sont déjà dans un autre conteneur";
+            break;
+          case "PACKAGE_NOT_IN_RECEIVED_STATUS":
+            errorMessage =
+                "Un ou plusieurs colis ne sont pas en statut RECEIVED";
+            break;
+          case "CONTAINER_NOT_AVAILABLE":
+            errorMessage = "Le conteneur n'est pas disponible";
+            break;
+          case "CONTAINER_NOT_IN_PENDING":
+            errorMessage =
+                "Le conteneur n'est pas dans le bon statut pour l'embarquement";
+            break;
+          case "NETWORK_ERROR":
+            errorMessage = "Problème de connexion internet";
+            break;
+          default:
+            errorMessage = "Erreur lors de l'embarquement: $result";
+        }
+        showErrorTopSnackBar(context, errorMessage);
       }
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
