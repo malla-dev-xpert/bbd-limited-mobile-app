@@ -43,6 +43,16 @@ class HarborServices {
     }
   }
 
+  Future<Harbor> getHarborDetails(int harborId) async {
+    final response = await http.get(Uri.parse('$baseUrl/harbors/$harborId'));
+
+    if (response.statusCode == 200) {
+      return Harbor.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
+      throw Exception('Erreur lors du chargement du port');
+    }
+  }
+
   Future<void> retrieveContainerToHarbor(
     int id,
     int? userId,

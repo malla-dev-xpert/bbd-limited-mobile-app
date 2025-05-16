@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:io';
 import 'package:bbd_limited/models/container.dart';
+import 'package:bbd_limited/models/embarquement.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -95,9 +96,6 @@ class ContainerServices {
     try {
       final response = await http.get(url);
 
-      log(response.body);
-      log(response.statusCode.toString());
-
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "SUCCESS";
       } else if (response.statusCode == 409 &&
@@ -134,6 +132,38 @@ class ContainerServices {
       }
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<String> embarquerContainerToHarbor(
+    HarborEmbarquementRequest request,
+  ) async {
+    try {
+      final url = Uri.parse('$baseUrl/containers/embarquer/in-harbor');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == HttpStatus.created) {
+        return "SUCCESS";
+      } else if (response.statusCode == HttpStatus.conflict) {
+        final errorMessage = response.body;
+
+        if (errorMessage.contains("Le port n'est pas disponible")) {
+          return "HARBOR_NOT_AVAILABLE";
+        } else if (errorMessage.contains("est déjà dans le port")) {
+          return "CONTAINER_ALREADY_IN_ANOTHER_HARBOR";
+        }
+        return "CONFLICT_ERROR";
+      } else if (response.statusCode == HttpStatus.notFound) {
+        return "HARBOR_NOT_FOUND";
+      } else {
+        return "SERVER_ERROR: ${response.statusCode}";
+      }
+    } catch (e) {
+      return "UNEXPECTED_ERROR: ${e.toString()}";
     }
   }
 }

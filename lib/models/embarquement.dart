@@ -9,3 +9,18 @@ class EmbarquementRequest {
     'packageId': packageId,
   };
 }
+
+class HarborEmbarquementRequest {
+  final int harborId;
+  final List<int> containerId;
+
+  HarborEmbarquementRequest({
+    required this.harborId,
+    required this.containerId,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'harborId': harborId,
+    'containerId': containerId,
+  };
+}
