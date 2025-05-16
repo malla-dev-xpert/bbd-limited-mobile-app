@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/models/package.dart';

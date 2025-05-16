@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:bbd_limited/models/harbor.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -53,23 +54,31 @@ class HarborServices {
     }
   }
 
-  Future<void> retrieveContainerToHarbor(
-    int id,
+  Future<String?> retrieveContainerToHarbor(
+    int containerId,
     int? userId,
     int harborId,
   ) async {
     final url = Uri.parse(
-      "$baseUrl/harbors/retrieve/$id/harbor/$harborId?userId=$userId",
+      "$baseUrl/containers/retrieve/harbor?containerId=$containerId&userId=$userId&harborId=$harborId",
     );
 
     try {
       final response = await http.delete(url);
 
-      if (response.statusCode == 201) {
-        return;
+      if (response.statusCode == HttpStatus.created) {
+        return "SUCCESS";
+      } else if (response.statusCode == HttpStatus.conflict) {
+        final errorMessage = response.body;
+
+        if (errorMessage.contains("Impossible de retirer le conteneur")) {
+          return "IMPOSSIBLE";
+        } else if (errorMessage.contains("Le conteneur a déjà été retiré")) {
+          return "CONTAINER_ALREADY_RETREIVED";
+        }
       }
     } catch (e) {
-      throw Exception("Erreur lors de la suppression du colis : $e");
+      throw Exception("Erreur lors du retrait : $e");
     }
   }
 }
