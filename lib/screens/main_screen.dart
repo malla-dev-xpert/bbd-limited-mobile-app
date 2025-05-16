@@ -42,7 +42,7 @@ class MainScreenState extends State<MainScreen> {
         if (isAdmin) const ManageUsersScreen(),
         const ReportHomeScreen(),
         AccountHomeScreen(),
-        const ExportHomeScreen(),
+        ProfilePage(),
       ];
     });
   }
