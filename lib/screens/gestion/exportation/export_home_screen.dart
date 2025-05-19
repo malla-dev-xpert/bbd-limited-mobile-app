@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
   User? _user;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -55,6 +58,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
+    if (_user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       children: [
         Container(
@@ -73,14 +80,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 20),
         Text(
-          _user!.firstName! + " " + _user!.lastName!,
+          "${_user?.firstName ?? ''} ${_user?.lastName ?? ''}",
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(
-          _user!.email!,
+          _user?.email ?? '',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
@@ -238,22 +245,39 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
+
       builder:
           (context) => AlertDialog(
             title: const Text('Déconnexion'),
             content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+            backgroundColor: Colors.white,
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Annuler'),
               ),
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // Implémenter la déconnexion
+                onPressed: () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  try {
+                    final user = await _authService.logout();
+                    if (user == null) {
+                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/login');
+                      return;
+                    }
+                  } catch (e) {
+                    log('Erreur lors de la déconnexion: $e');
+                  } finally {
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
                 },
-                child: const Text(
-                  'Déconnexion',
+                child: Text(
+                  isLoading == true ? 'Déconnexion en cours...' : 'Déconnexion',
                   style: TextStyle(color: Colors.red),
                 ),
               ),

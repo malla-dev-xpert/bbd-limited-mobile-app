@@ -36,9 +36,10 @@ class AuthService {
     return await storage.read(key: "jwt");
   }
 
-  Future<void> logout() async {
+  Future<String?> logout() async {
     await storage.delete(key: "jwt");
     await storage.delete(key: _usernameKey);
+    return null;
   }
 
   Future<String?> getUsername() async {
