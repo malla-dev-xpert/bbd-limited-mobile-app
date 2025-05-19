@@ -5,6 +5,8 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/harbor_scre
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/package_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/expedition_home_screen.dart';
+
 import 'package:bbd_limited/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/auth/login_screen.dart';
@@ -21,6 +23,7 @@ class Routes {
   static const String harbor = '/harbor';
   static const String partners = '/partners';
   static const String containers = '/container';
+  static const String expedition = '/expedition';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -44,6 +47,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => PartnerScreen());
       case containers:
         return MaterialPageRoute(builder: (_) => ContainerScreen());
+      case expedition:
+        return MaterialPageRoute(builder: (_) => ExpeditionHomeScreen());
       default:
         return MaterialPageRoute(
           builder:

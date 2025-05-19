@@ -1,0 +1,94 @@
+import 'package:bbd_limited/core/enums/status.dart';
+
+class Expedition {
+  final int id;
+  final String? ref;
+  final String? expeditionType;
+  final String? startCountry;
+  final String? destinationCountry;
+  final double? weight;
+  final double? cbn;
+  final int? clientId;
+  final String? clientName;
+  final DateTime? arrivalDate;
+  final DateTime? startDate;
+  Status? status;
+
+  Expedition copyWith({
+    int? id,
+    String? ref,
+    String? expeditionType,
+    String? startCountry,
+    String? destinationCountry,
+    double? weight,
+    double? cbn,
+    int? clientId,
+    String? clientName,
+    DateTime? arrivalDate,
+    DateTime? startDate,
+    Status? status,
+  }) {
+    return Expedition(
+      id: id ?? this.id,
+      ref: ref ?? this.ref,
+      expeditionType: expeditionType ?? this.expeditionType,
+      startCountry: startCountry ?? this.startCountry,
+      destinationCountry: destinationCountry ?? this.destinationCountry,
+      weight: weight ?? this.weight,
+      cbn: cbn ?? this.cbn,
+      clientId: clientId ?? this.clientId,
+      clientName: clientName ?? this.clientName,
+      arrivalDate: arrivalDate ?? this.arrivalDate,
+      startDate: startDate ?? this.startDate,
+      status: status ?? this.status,
+    );
+  }
+
+  Expedition({
+    required this.id,
+    this.ref,
+    this.expeditionType,
+    this.startCountry,
+    this.destinationCountry,
+    this.weight,
+    this.cbn,
+    this.clientId,
+    this.clientName,
+    this.arrivalDate,
+    this.startDate,
+    this.status,
+  });
+
+  factory Expedition.fromJson(Map<String, dynamic> json) {
+    String? statusString = json['status'];
+    Status status;
+
+    if (statusString != null) {
+      status = Status.values.firstWhere(
+        (e) => e.name.toUpperCase() == statusString.toUpperCase(),
+        orElse: () => Status.CREATE,
+      );
+    } else {
+      status = Status.CREATE;
+    }
+
+    return Expedition(
+      id: json['id'] as int,
+      ref: json['ref'] as String?,
+      expeditionType: json['expeditionType'] as String?,
+      startCountry: json['startCountry'] as String?,
+      destinationCountry: json['destinationCountry'] as String?,
+      weight: json['weight'] as double?,
+      cbn: json['cbn'] as double?,
+      clientId: json['clientId'] as int?,
+      clientName: json['clientName'] as String?,
+      arrivalDate:
+          json['arrivalDate'] != null
+              ? DateTime.parse(json['arrivalDate'])
+              : null,
+      startDate:
+          json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
+      status: status,
+    );
+  }
+}
