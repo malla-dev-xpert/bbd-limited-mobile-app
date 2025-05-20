@@ -1,9 +1,11 @@
+import 'package:bbd_limited/core/services/expedition_services.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/expedition.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
 
-class ExpeditionDetailsBottomSheet extends StatelessWidget {
+class ExpeditionDetailsBottomSheet extends StatefulWidget {
   final Expedition expedition;
   final Function(Expedition)? onDelete;
   final Function(Expedition)? onStart;
@@ -15,14 +17,23 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
     this.onStart,
   }) : super(key: key);
 
+  @override
+  State<ExpeditionDetailsBottomSheet> createState() =>
+      _ExpeditionDetailsBottomSheetState();
+}
+
+class _ExpeditionDetailsBottomSheetState
+    extends State<ExpeditionDetailsBottomSheet> {
+  bool _isLoading = false;
+
   Color _getStatusColor(Status? status) {
     switch (status) {
       case Status.DELIVERED:
         return Colors.green;
       case Status.INPROGRESS:
-        return Colors.orange;
+        return Colors.purple;
       case Status.PENDING:
-        return Colors.red;
+        return Colors.orange;
       default:
         return Colors.grey;
     }
@@ -64,18 +75,20 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   spacing: 10,
                   children: [
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.edit,
-                        color: Colors.grey[500],
-                        size: 20,
-                      ),
-                    ),
+                    widget.expedition.status == Status.PENDING
+                        ? Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.grey[500],
+                            size: 20,
+                          ),
+                        )
+                        : Container(),
                     Text(
                       'Détails de l\'expédition',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -112,7 +125,7 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                     Text(
-                      expedition.ref ?? 'N/A',
+                      widget.expedition.ref ?? 'N/A',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -135,7 +148,8 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            expedition.expeditionType?.toLowerCase() == 'avion'
+                            widget.expedition.expeditionType?.toLowerCase() ==
+                                    'avion'
                                 ? Colors.amber[50]
                                 : Colors.deepPurple[50],
                         borderRadius: BorderRadius.circular(20),
@@ -144,22 +158,25 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            expedition.expeditionType?.toLowerCase() == 'avion'
+                            widget.expedition.expeditionType?.toLowerCase() ==
+                                    'avion'
                                 ? Icons.airplanemode_active
                                 : Icons.directions_boat,
                             size: 16,
                             color:
-                                expedition.expeditionType?.toLowerCase() ==
+                                widget.expedition.expeditionType
+                                            ?.toLowerCase() ==
                                         'avion'
                                     ? Colors.amber[800]
                                     : Colors.deepPurple,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            expedition.expeditionType ?? 'N/A',
+                            widget.expedition.expeditionType ?? 'N/A',
                             style: TextStyle(
                               color:
-                                  expedition.expeditionType?.toLowerCase() ==
+                                  widget.expedition.expeditionType
+                                              ?.toLowerCase() ==
                                           'avion'
                                       ? Colors.amber[800]
                                       : Colors.deepPurple,
@@ -186,7 +203,7 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: _getStatusColor(
-                          expedition.status,
+                          widget.expedition.status,
                         ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -194,19 +211,19 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            expedition.status == Status.DELIVERED
+                            widget.expedition.status == Status.DELIVERED
                                 ? Icons.check_circle
-                                : expedition.status == Status.INPROGRESS
+                                : widget.expedition.status == Status.INPROGRESS
                                 ? Icons.local_shipping
                                 : Icons.hourglass_empty,
                             size: 16,
-                            color: _getStatusColor(expedition.status),
+                            color: _getStatusColor(widget.expedition.status),
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            _getStatusText(expedition.status),
+                            _getStatusText(widget.expedition.status),
                             style: TextStyle(
-                              color: _getStatusColor(expedition.status),
+                              color: _getStatusColor(widget.expedition.status),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -238,35 +255,46 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
               children: [
                 _buildInfoRow(
                   'Pays de départ',
-                  expedition.startCountry ?? 'N/A',
+                  widget.expedition.startCountry ?? 'N/A',
                 ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Pays de destination',
-                  expedition.destinationCountry ?? 'N/A',
+                  widget.expedition.destinationCountry ?? 'N/A',
                 ),
                 const SizedBox(height: 12),
-                expedition.expeditionType == "avion"
-                    ? _buildInfoRow('Poids', '${expedition.weight ?? 'N/A'} kg')
-                    : _buildInfoRow('CBN', '${expedition.cbn ?? 'N/A'} m³'),
+                widget.expedition.expeditionType == "avion"
+                    ? _buildInfoRow(
+                      'Poids',
+                      '${widget.expedition.weight ?? 'N/A'} kg',
+                    )
+                    : _buildInfoRow(
+                      'CBN',
+                      '${widget.expedition.cbn ?? 'N/A'} m³',
+                    ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Quantité',
-                  '${expedition.itemQuantity ?? 'N/A'}',
+                  '${widget.expedition.itemQuantity ?? 'N/A'}',
                 ),
                 const SizedBox(height: 12),
-                _buildInfoRow('Client', expedition.clientName ?? 'N/A'),
+                _buildInfoRow('Client', widget.expedition.clientName ?? 'N/A'),
                 const SizedBox(height: 12),
-                _buildInfoRow('Téléphone', expedition.clientPhone ?? 'N/A'),
+                _buildInfoRow(
+                  'Téléphone',
+                  widget.expedition.clientPhone ?? 'N/A',
+                ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Date de départ',
-                  DateFormat('dd/MM/yyyy').format(expedition.startDate!),
+                  DateFormat('dd/MM/yyyy').format(widget.expedition.startDate!),
                 ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Date d\'arrivée estimée',
-                  DateFormat('dd/MM/yyyy').format(expedition.arrivalDate!),
+                  DateFormat(
+                    'dd/MM/yyyy',
+                  ).format(widget.expedition.arrivalDate!),
                 ),
               ],
             ),
@@ -274,52 +302,76 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _showDeleteConfirmationDialog(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[400],
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              if (widget.expedition.status == Status.PENDING) ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showDeleteConfirmationDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[400],
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    label: const Text(
+                      'Supprimer',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    icon: Icon(Icons.delete, color: Colors.white),
                   ),
-                  label: const Text(
-                    'Supprimer',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showStartConfirmationDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    label: Text(
+                      'Démarer l\'expédition',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.check_circle_outline_outlined,
                       color: Colors.white,
                     ),
                   ),
-                  icon: Icon(Icons.delete, color: Colors.white),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _showStartConfirmationDialog(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              ] else if (widget.expedition.status == Status.INPROGRESS) ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showDeliveryConfirmationDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  label: Text(
-                    'Démarer l\'expédition',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    label: Text(
+                      'Arrivée à destination',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  icon: Icon(
-                    Icons.check_circle_outline_outlined,
-                    color: Colors.white,
+                    icon: Icon(Icons.local_shipping, color: Colors.white),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ],
@@ -382,8 +434,8 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (onDelete != null) {
-                  onDelete!(expedition);
+                if (widget.onDelete != null) {
+                  widget.onDelete!(widget.expedition);
                 }
                 Navigator.pop(context);
                 Navigator.pop(context);
@@ -409,50 +461,199 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.check_circle_outline, color: Colors.green[400]),
-              const SizedBox(width: 8),
-              const Text('Confirmation'),
-            ],
-          ),
-          content: const Text(
-            'Êtes-vous sûr de vouloir démarrer cette expédition ?',
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Annuler',
-                style: TextStyle(color: Colors.grey),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (onStart != null) {
-                  onStart!(expedition);
-                }
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              title: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green[400]),
+                  const SizedBox(width: 8),
+                  const Text('Confirmation'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Êtes-vous sûr de vouloir démarrer cette expédition ?',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
+                  child: const Text(
+                    'Annuler',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
+                ElevatedButton(
+                  onPressed:
+                      _isLoading
+                          ? null
+                          : () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              final expeditionServices = ExpeditionServices();
+                              final result = await expeditionServices
+                                  .startExpedition(widget.expedition.id!);
+
+                              if (result == "SUCCESS") {
+                                widget.expedition.status = Status.INPROGRESS;
+
+                                if (widget.onStart != null) {
+                                  widget.onStart!(widget.expedition);
+                                }
+
+                                if (context.mounted) {
+                                  Navigator.pop(
+                                    context,
+                                  ); // Fermer la boîte de dialogue
+                                  Navigator.pop(
+                                    context,
+                                  ); // Fermer le bottom sheet
+                                  showSuccessTopSnackBar(
+                                    context,
+                                    "Expédition ${widget.expedition.ref} démarrée avec succès.",
+                                  );
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  showErrorTopSnackBar(
+                                    context,
+                                    "Erreur de démarrage, veuillez réessayer",
+                                  );
+                                  setState(() => _isLoading = false);
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Erreur de démarrage",
+                                );
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _isLoading ? 'Démarrage...' : 'Démarrer',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showDeliveryConfirmationDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: const Text(
-                'Démarrer',
-                style: TextStyle(color: Colors.white),
+              title: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green[400]),
+                  const SizedBox(width: 8),
+                  const Text('Confirmation'),
+                ],
               ),
-            ),
-          ],
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Êtes-vous sûr de vouloir confirmer l\'arrivée de cette expédition ?',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
+                  child: const Text(
+                    'Annuler',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed:
+                      _isLoading
+                          ? null
+                          : () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              final expeditionServices = ExpeditionServices();
+                              final result = await expeditionServices
+                                  .deliverExpedition(widget.expedition.id!);
+
+                              if (result == "SUCCESS") {
+                                widget.expedition.status = Status.DELIVERED;
+
+                                if (widget.onStart != null) {
+                                  widget.onStart!(widget.expedition);
+                                }
+
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  showSuccessTopSnackBar(
+                                    context,
+                                    "Expédition ${widget.expedition.ref} livrée avec succès.",
+                                  );
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  showErrorTopSnackBar(
+                                    context,
+                                    "Erreur de confirmation, veuillez réessayer",
+                                  );
+                                  setState(() => _isLoading = false);
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Erreur de confirmation",
+                                );
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _isLoading ? 'Confirmation...' : 'Confirmer',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

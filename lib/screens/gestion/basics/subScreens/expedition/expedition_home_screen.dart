@@ -269,7 +269,12 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return ExpeditionDetailsBottomSheet(expedition: expedition);
+        return ExpeditionDetailsBottomSheet(
+          expedition: expedition,
+          onStart: (updatedExpedition) {
+            fetchExpeditions(reset: true);
+          },
+        );
       },
     );
 
@@ -388,6 +393,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                       underline: const SizedBox(),
                       icon: const Icon(Icons.arrow_drop_down),
                       dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                       items: [
                         DropdownMenuItem(
                           value: ExpeditionStatus.all,

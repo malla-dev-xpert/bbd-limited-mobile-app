@@ -46,4 +46,46 @@ class ExpeditionServices {
       throw Exception('Erreur inattendue: ${e.toString()}');
     }
   }
+
+  Future<String?> startExpedition(int id) async {
+    final url = Uri.parse(
+      "$baseUrl/expeditions/start-expedition?expeditionId=$id",
+    );
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else {
+        return "Erreur : ${response.body}";
+      }
+    } catch (e) {
+      return "Erreur lors du démarrage de l'expédition : $e";
+    }
+  }
+
+  Future<String?> deliverExpedition(int id) async {
+    final url = Uri.parse(
+      "$baseUrl/expeditions/deliver-expedition?expeditionId=$id",
+    );
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else {
+        return "Erreur : ${response.body}";
+      }
+    } catch (e) {
+      return "Erreur lors de la livraison de l'expédition : $e";
+    }
+  }
 }
