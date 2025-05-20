@@ -7,8 +7,11 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 enum ExpeditionType { all, plane, boat }
+
+enum ExpeditionStatus { all, delivered, inTransit, pending }
 
 class ExpeditionHomeScreen extends StatefulWidget {
   const ExpeditionHomeScreen({Key? key}) : super(key: key);
@@ -26,6 +29,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
   List<Expedition> filteredExpeditions = [];
   String? currentFilter;
   ExpeditionType selectedType = ExpeditionType.all;
+  ExpeditionStatus selectedStatus = ExpeditionStatus.all;
 
   bool isLoading = false;
   bool hasMoreData = true;
@@ -107,7 +111,16 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
               (selectedType == ExpeditionType.boat &&
                   exp.expeditionType?.toLowerCase() == 'bateau');
 
-          return matchesSearch && matchesType;
+          final matchesStatus =
+              selectedStatus == ExpeditionStatus.all ||
+              (selectedStatus == ExpeditionStatus.delivered &&
+                  exp.status == Status.DELIVERED) ||
+              (selectedStatus == ExpeditionStatus.inTransit &&
+                  exp.status == Status.INPROGRESS) ||
+              (selectedStatus == ExpeditionStatus.pending &&
+                  exp.status == Status.PENDING);
+
+          return matchesSearch && matchesType && matchesStatus;
         }).toList();
   }
 
@@ -126,6 +139,13 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     });
   }
 
+  void _onStatusSelected(ExpeditionStatus status) {
+    setState(() {
+      selectedStatus = status;
+      _applyFilters(searchController.text);
+    });
+  }
+
   Widget _buildTypeFilter(
     ExpeditionType type,
     IconData icon,
@@ -135,6 +155,52 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     final isSelected = selectedType == type;
     return GestureDetector(
       onTap: () => _onTypeSelected(type),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: isSelected ? Border.all(color: color, width: 2) : null,
+              boxShadow:
+                  isSelected
+                      ? [
+                        BoxShadow(
+                          color: color.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                      : null,
+            ),
+            width: 60,
+            height: 60,
+            padding: const EdgeInsets.all(10),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? color : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusFilter(
+    ExpeditionStatus status,
+    IconData icon,
+    Color color,
+    String label,
+  ) {
+    final isSelected = selectedStatus == status;
+    return GestureDetector(
+      onTap: () => _onStatusSelected(status),
       child: Column(
         children: [
           Container(
@@ -283,6 +349,70 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DropdownButton<ExpeditionStatus>(
+                      value: selectedStatus,
+                      underline: const SizedBox(),
+                      icon: const Icon(Icons.arrow_drop_down),
+                      dropdownColor: Colors.white,
+                      items: [
+                        DropdownMenuItem(
+                          value: ExpeditionStatus.all,
+                          child: Row(
+                            children: [
+                              Icon(Icons.filter_list, color: Colors.blue),
+                              const SizedBox(width: 8),
+                              const Text("Tous"),
+                            ],
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: ExpeditionStatus.delivered,
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green),
+                              const SizedBox(width: 8),
+                              const Text("Livrée"),
+                            ],
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: ExpeditionStatus.inTransit,
+                          child: Row(
+                            children: [
+                              Icon(Icons.local_shipping, color: Colors.orange),
+                              const SizedBox(width: 8),
+                              const Text("En transit"),
+                            ],
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: ExpeditionStatus.pending,
+                          child: Row(
+                            children: [
+                              Icon(Icons.hourglass_empty, color: Colors.red),
+                              const SizedBox(width: 8),
+                              const Text("En attente"),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onChanged: (ExpeditionStatus? newValue) {
+                        if (newValue != null) {
+                          _onStatusSelected(newValue);
+                        }
+                      },
                     ),
                   ),
                 ],

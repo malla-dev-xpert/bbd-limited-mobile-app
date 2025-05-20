@@ -10,6 +10,7 @@ class Expedition {
   final double? cbn;
   final int? clientId;
   final String? clientName;
+  final String? clientPhone;
   final DateTime? arrivalDate;
   final DateTime? startDate;
   Status? status;
@@ -24,6 +25,7 @@ class Expedition {
     double? cbn,
     int? clientId,
     String? clientName,
+    String? clientPhone,
     DateTime? arrivalDate,
     DateTime? startDate,
     Status? status,
@@ -38,6 +40,7 @@ class Expedition {
       cbn: cbn ?? this.cbn,
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
+      clientPhone: clientPhone ?? this.clientPhone,
       arrivalDate: arrivalDate ?? this.arrivalDate,
       startDate: startDate ?? this.startDate,
       status: status ?? this.status,
@@ -54,6 +57,7 @@ class Expedition {
     'cbn': cbn,
     'clientId': clientId,
     'clientName': clientName,
+    'clientPhone': clientPhone,
     'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
     'startDate': startDate?.toUtc().toIso8601String(),
     'status': status?.name,
@@ -69,6 +73,7 @@ class Expedition {
     this.cbn,
     this.clientId,
     this.clientName,
+    this.clientPhone,
     this.arrivalDate,
     this.startDate,
     this.status,
@@ -97,6 +102,7 @@ class Expedition {
       cbn: json['cbn'] as double?,
       clientId: json['clientId'] as int?,
       clientName: json['clientName'] as String?,
+      clientPhone: json['clientPhone'] as String?,
       arrivalDate:
           json['arrivalDate'] != null
               ? DateTime.parse(json['arrivalDate'])
