@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/expedition_services.dart';
 import 'package:bbd_limited/models/expedition.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -256,6 +257,27 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     }
   }
 
+  Future<void> _openExpeditionDetailsBottomSheet(
+    BuildContext context,
+    Expedition expedition,
+  ) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return ExpeditionDetailsBottomSheet(expedition: expedition);
+      },
+    );
+
+    if (result == true) {
+      fetchExpeditions(reset: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -464,7 +486,11 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                                   ),
                                   child: ExpeditionListItem(
                                     expedition: expedition,
-                                    onTap: () {},
+                                    onTap:
+                                        () => _openExpeditionDetailsBottomSheet(
+                                          context,
+                                          expedition,
+                                        ),
                                   ),
                                 );
                               },
