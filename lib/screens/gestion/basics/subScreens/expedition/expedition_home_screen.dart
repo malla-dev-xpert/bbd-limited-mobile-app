@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/expedition_services.dart';
 import 'package:bbd_limited/models/expedition.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -171,23 +172,23 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     );
   }
 
-  // Future<void> _openCreateExpeditionBottomSheet(BuildContext context) async {
-  //   final result = await showModalBottomSheet<bool>(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     backgroundColor: Colors.white,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-  //     ),
-  //     builder: (context) {
-  //       return CreateExpeditionForm();
-  //     },
-  //   );
+  Future<void> _openCreateExpeditionBottomSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return CreateExpeditionForm();
+      },
+    );
 
-  //   if (result == true) {
-  //     fetchExpeditions(reset: true);
-  //   }
-  // }
+    if (result == true) {
+      fetchExpeditions(reset: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -325,12 +326,16 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                                     ),
                                   );
                                 }
+
                                 final expedition = filteredExpeditions[index];
-                                return ExpeditionListItem(
-                                  expedition: expedition,
-                                  onTap: () {},
-                                  onEdit: () {},
-                                  onDelete: () {},
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                  ),
+                                  child: ExpeditionListItem(
+                                    expedition: expedition,
+                                    onTap: () {},
+                                  ),
                                 );
                               },
                             ),
@@ -345,7 +350,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {},
+        onPressed: () => _openCreateExpeditionBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),

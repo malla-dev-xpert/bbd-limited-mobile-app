@@ -1,7 +1,7 @@
 import 'package:bbd_limited/core/enums/status.dart';
 
 class Expedition {
-  final int id;
+  final int? id;
   final String? ref;
   final String? expeditionType;
   final String? startCountry;
@@ -44,8 +44,23 @@ class Expedition {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'ref': ref,
+    'expeditionType': expeditionType,
+    'startCountry': startCountry,
+    'destinationCountry': destinationCountry,
+    'weight': weight,
+    'cbn': cbn,
+    'clientId': clientId,
+    'clientName': clientName,
+    'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
+    'startDate': startDate?.toUtc().toIso8601String(),
+    'status': status?.name,
+  };
+
   Expedition({
-    required this.id,
+    this.id,
     this.ref,
     this.expeditionType,
     this.startCountry,
@@ -73,7 +88,7 @@ class Expedition {
     }
 
     return Expedition(
-      id: json['id'] as int,
+      id: json['id'] as int?,
       ref: json['ref'] as String?,
       expeditionType: json['expeditionType'] as String?,
       startCountry: json['startCountry'] as String?,

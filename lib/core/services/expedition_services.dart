@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/expedition.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,8 +11,6 @@ class ExpeditionServices {
       Uri.parse('$baseUrl/expeditions?page=$page&query=${query ?? ''}'),
     );
 
-    log(response.body);
-
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
@@ -21,6 +18,32 @@ class ExpeditionServices {
       return jsonBody.map((e) => Expedition.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des expeditions");
+    }
+  }
+
+  Future<String?> create({
+    required Expedition dto,
+    required int clientId,
+    required int userId,
+  }) async {
+    final url = Uri.parse(
+      '$baseUrl/expeditions/create?clientId=$clientId&userId=$userId',
+    );
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      }
+    } on http.ClientException catch (e) {
+      return 'NETWORK_ERROR';
+    } catch (e) {
+      throw Exception('Erreur inattendue: ${e.toString()}');
     }
   }
 }
