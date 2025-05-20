@@ -5,9 +5,15 @@ import 'package:intl/intl.dart';
 
 class ExpeditionDetailsBottomSheet extends StatelessWidget {
   final Expedition expedition;
+  final Function(Expedition)? onDelete;
+  final Function(Expedition)? onStart;
 
-  const ExpeditionDetailsBottomSheet({Key? key, required this.expedition})
-    : super(key: key);
+  const ExpeditionDetailsBottomSheet({
+    Key? key,
+    required this.expedition,
+    this.onDelete,
+    this.onStart,
+  }) : super(key: key);
 
   Color _getStatusColor(Status? status) {
     switch (status) {
@@ -270,10 +276,7 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Implement edit functionality
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => _showDeleteConfirmationDialog(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[400],
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -295,9 +298,7 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => _showStartConfirmationDialog(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -348,6 +349,112 @@ class ExpeditionDetailsBottomSheet extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red[400]),
+              const SizedBox(width: 8),
+              const Text('Confirmation'),
+            ],
+          ),
+          content: const Text(
+            'Êtes-vous sûr de vouloir supprimer cette expédition ? Cette action est irréversible.',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Annuler',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (onDelete != null) {
+                  onDelete!(expedition);
+                }
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[400],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Supprimer',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showStartConfirmationDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: Colors.green[400]),
+              const SizedBox(width: 8),
+              const Text('Confirmation'),
+            ],
+          ),
+          content: const Text(
+            'Êtes-vous sûr de vouloir démarrer cette expédition ?',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Annuler',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (onStart != null) {
+                  onStart!(expedition);
+                }
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Démarrer',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
