@@ -88,4 +88,25 @@ class ExpeditionServices {
       return "Erreur lors de la livraison de l'expédition : $e";
     }
   }
+
+  Future<String?> updateExpedition(Expedition expedition) async {
+    final url = Uri.parse('$baseUrl/expeditions/update/${expedition.id}');
+    final headers = {'Content-Type': 'application/json'};
+
+    try {
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(expedition.toJson()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else {
+        return "Erreur : ${response.body}";
+      }
+    } catch (e) {
+      return "Erreur lors de la mise à jour de l'expédition : $e";
+    }
+  }
 }

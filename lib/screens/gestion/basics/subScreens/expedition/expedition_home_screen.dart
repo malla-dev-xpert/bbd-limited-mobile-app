@@ -274,6 +274,37 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
           onStart: (updatedExpedition) {
             fetchExpeditions(reset: true);
           },
+          onEdit: (updatedExpedition) async {
+            try {
+              final expeditionServices = ExpeditionServices();
+              final result = await expeditionServices.updateExpedition(
+                updatedExpedition,
+              );
+              if (result == "SUCCESS") {
+                if (context.mounted) {
+                  showSuccessTopSnackBar(
+                    context,
+                    "Expédition ${updatedExpedition.ref} modifiée avec succès.",
+                  );
+                  fetchExpeditions(reset: true);
+                }
+              } else {
+                if (context.mounted) {
+                  showErrorTopSnackBar(
+                    context,
+                    "Erreur lors de la modification de l'expédition",
+                  );
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                showErrorTopSnackBar(
+                  context,
+                  "Erreur lors de la modification de l'expédition",
+                );
+              }
+            }
+          },
         );
       },
     );

@@ -4,17 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/expedition.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/edit_expedition_bottom_sheet.dart';
 
 class ExpeditionDetailsBottomSheet extends StatefulWidget {
   final Expedition expedition;
   final Function(Expedition)? onDelete;
   final Function(Expedition)? onStart;
+  final Function(Expedition)? onEdit;
 
   const ExpeditionDetailsBottomSheet({
     Key? key,
     required this.expedition,
     this.onDelete,
     this.onStart,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -82,10 +85,13 @@ class _ExpeditionDetailsBottomSheetState
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.grey[500],
-                            size: 20,
+                          child: GestureDetector(
+                            onTap: () => _showEditExpeditionDialog(context),
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.grey[500],
+                              size: 20,
+                            ),
                           ),
                         )
                         : Container(),
@@ -657,5 +663,31 @@ class _ExpeditionDetailsBottomSheetState
         );
       },
     );
+  }
+
+  Future<void> _showEditExpeditionDialog(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return EditExpeditionBottomSheet(
+          expedition: widget.expedition,
+          onSave: (updatedExpedition) {
+            if (widget.onEdit != null) {
+              widget.onEdit!(updatedExpedition);
+            }
+            Navigator.pop(context, true);
+          },
+        );
+      },
+    );
+
+    if (result == true) {
+      Navigator.pop(context, true);
+    }
   }
 }
