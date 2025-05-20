@@ -28,6 +28,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   final TextEditingController _refController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _cbnController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
 
   String _expeditionType = 'Bateau';
   Country? _departureCountry;
@@ -157,30 +158,68 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             const SizedBox(height: 20),
 
                             // Champ Poids ou CBN selon le type
-                            if (_expeditionType == 'Avion')
-                              buildTextField(
-                                controller: _weightController,
-                                label: "Poids (kg)",
-                                icon: Icons.scale,
-                                keyboardType: TextInputType.number,
-                                validator:
-                                    (value) =>
-                                        value?.isEmpty ?? true
-                                            ? 'Ce champ est requis'
-                                            : null,
-                              )
-                            else
-                              buildTextField(
-                                controller: _cbnController,
-                                label: "CBN",
-                                icon: Icons.monitor_weight,
-                                keyboardType: TextInputType.number,
-                                validator:
-                                    (value) =>
-                                        value?.isEmpty ?? true
-                                            ? 'Ce champ est requis'
-                                            : null,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child:
+                                      _expeditionType == 'Avion'
+                                          ? buildTextField(
+                                            controller: _weightController,
+                                            label: "Poids (kg)",
+                                            icon: Icons.scale,
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value?.isEmpty ?? true) {
+                                                return 'Ce champ est requis';
+                                              }
+                                              if (double.tryParse(value!) ==
+                                                  null) {
+                                                return 'Veuillez entrer un nombre valide';
+                                              }
+                                              return null;
+                                            },
+                                          )
+                                          : buildTextField(
+                                            controller: _cbnController,
+                                            label: "CBN",
+                                            icon: Icons.monitor_weight,
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value?.isEmpty ?? true) {
+                                                return 'Ce champ est requis';
+                                              }
+                                              if (double.tryParse(value!) ==
+                                                  null) {
+                                                return 'Veuillez entrer un nombre valide';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: buildTextField(
+                                    controller: _quantityController,
+                                    label: "Nombre de carton",
+                                    icon:
+                                        Icons
+                                            .production_quantity_limits_outlined,
+                                    keyboardType: TextInputType.number,
+                                    validator: (value) {
+                                      if (value?.isEmpty ?? true) {
+                                        return 'Ce champ est requis';
+                                      }
+                                      if (double.tryParse(value!) == null) {
+                                        return 'Veuillez entrer un nombre valide';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 20),
 
                             DropDownCustom<Partner>(
@@ -399,10 +438,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         return;
       }
 
-      // Conversion du poids
+      // Conversion des champs
       final weight = double.tryParse(_weightController.text);
-      // Conversion du cbn
       final cbn = double.tryParse(_cbnController.text);
+      final quantity = double.tryParse(_quantityController.text);
 
       if (_expeditionType == "Avion") {
         if (weight == null) {
@@ -418,6 +457,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       final dto = Expedition.fromJson({
         "ref": _refController.text.trim(),
         "weight": weight,
+        "itemQuantity": quantity,
         "cbn": cbn,
         "startDate": _startDate?.toUtc().toIso8601String(),
         "arrivalDate": _estimatedArrivalDate?.toUtc().toIso8601String(),

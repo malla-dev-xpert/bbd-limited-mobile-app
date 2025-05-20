@@ -7,6 +7,7 @@ class Expedition {
   final String? startCountry;
   final String? destinationCountry;
   final double? weight;
+  final double? itemQuantity;
   final double? cbn;
   final int? clientId;
   final String? clientName;
@@ -22,6 +23,7 @@ class Expedition {
     String? startCountry,
     String? destinationCountry,
     double? weight,
+    double? itemQuantity,
     double? cbn,
     int? clientId,
     String? clientName,
@@ -37,6 +39,7 @@ class Expedition {
       startCountry: startCountry ?? this.startCountry,
       destinationCountry: destinationCountry ?? this.destinationCountry,
       weight: weight ?? this.weight,
+      itemQuantity: itemQuantity ?? this.itemQuantity,
       cbn: cbn ?? this.cbn,
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
@@ -54,6 +57,7 @@ class Expedition {
     'startCountry': startCountry,
     'destinationCountry': destinationCountry,
     'weight': weight,
+    'itemQuantity': itemQuantity,
     'cbn': cbn,
     'clientId': clientId,
     'clientName': clientName,
@@ -70,6 +74,7 @@ class Expedition {
     this.startCountry,
     this.destinationCountry,
     this.weight,
+    this.itemQuantity,
     this.cbn,
     this.clientId,
     this.clientName,
@@ -99,6 +104,7 @@ class Expedition {
       startCountry: json['startCountry'] as String?,
       destinationCountry: json['destinationCountry'] as String?,
       weight: json['weight'] as double?,
+      itemQuantity: json['itemQuantity'] as double?,
       cbn: json['cbn'] as double?,
       clientId: json['clientId'] as int?,
       clientName: json['clientName'] as String?,

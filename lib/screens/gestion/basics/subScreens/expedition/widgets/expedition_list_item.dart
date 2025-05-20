@@ -119,7 +119,9 @@ class ExpeditionListItem extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 2,
       children: [
+        const SizedBox(height: 5),
         _buildInfoText(
           "Client : ${expedition.clientName ?? 'Non spécifié'} | ${expedition.clientPhone ?? 'Non spécifié'}",
           maxLines: 1,
@@ -132,19 +134,49 @@ class ExpeditionListItem extends StatelessWidget {
         _buildInfoText(
           "Destination : ${expedition.destinationCountry ?? 'Non spécifiée'}",
         ),
+        _buildInfoText("Nombre de carton : ${expedition.itemQuantity ?? 0}"),
       ],
     );
   }
 
   Widget _buildInfoText(String text, {int maxLines = 2}) {
-    return Text(
-      text,
+    // Diviser le texte en deux points pour séparer l’étiquette et la valeur
+    final parts = text.split(':');
+    if (parts.length != 2) {
+      return Text(
+        text,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[600],
+          fontSize: _infoTextSize,
+        ),
+      );
+    }
+
+    return RichText(
       maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[600],
-        fontSize: _infoTextSize,
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '${parts[0]}: ',
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: Colors.grey[600],
+              fontSize: _infoTextSize,
+            ),
+          ),
+          TextSpan(
+            text: parts[1],
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+              fontSize: _infoTextSize,
+            ),
+          ),
+        ],
       ),
     );
   }
