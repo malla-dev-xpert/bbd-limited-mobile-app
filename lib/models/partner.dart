@@ -1,3 +1,5 @@
+import 'package:bbd_limited/models/versement.dart';
+
 class Partner {
   final int id;
   final String firstName;
@@ -8,6 +10,7 @@ class Partner {
   final String adresse;
   final String accountType;
   final double? balance;
+  List<Versement>? versements;
 
   Partner({
     required this.id,
@@ -19,6 +22,7 @@ class Partner {
     required this.adresse,
     required this.accountType,
     this.balance,
+    this.versements,
   });
 
   // Convertir Partner en Map (pour JSON)
@@ -33,10 +37,18 @@ class Partner {
       'adresse': adresse,
       'country': country,
       'balance': balance,
+      'versements': versements,
     };
   }
 
   factory Partner.fromJson(Map<String, dynamic> json) {
+    List<Versement> versementList = [];
+    if (json['versements'] != null) {
+      versementList =
+          (json['versements'] as List)
+              .map((v) => Versement.fromJson(v))
+              .toList();
+    }
     return Partner(
       id: json['id'],
       firstName: json['firstName'] ?? '',
@@ -48,6 +60,7 @@ class Partner {
       accountType: json['accountType'] ?? '',
       balance:
           json['balance'] != null ? (json['balance'] as num).toDouble() : null,
+      versements: versementList,
     );
   }
 }

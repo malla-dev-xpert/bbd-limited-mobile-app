@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_detail_screen.dart';
 
 class PartnerListItem extends StatelessWidget {
   final Partner partner;
@@ -47,30 +48,43 @@ class PartnerListItem extends StatelessWidget {
           ),
         ],
       ),
-      child: ListTile(
-        title: Text("${partner.firstName} ${partner.lastName}"),
-        subtitle: Text(partner.phoneNumber),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(partner.accountType, style: TextStyle(color: Colors.blue)),
-                Text(
-                  currencyFormat.format(balance),
-                  style: TextStyle(color: statusColor),
-                ),
-              ],
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PartnerDetailScreen(partner: partner),
             ),
-            const SizedBox(width: 8),
-            Icon(
-              isNegative ? Icons.arrow_downward : Icons.arrow_upward,
-              color: statusColor,
-              size: 20,
-            ),
-          ],
+          );
+        },
+        child: ListTile(
+          title: Text("${partner.firstName} ${partner.lastName}"),
+          subtitle: Text(partner.phoneNumber),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    partner.accountType,
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  Text(
+                    currencyFormat.format(balance),
+                    style: TextStyle(color: statusColor),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                isNegative ? Icons.arrow_downward : Icons.arrow_upward,
+                color: statusColor,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );
