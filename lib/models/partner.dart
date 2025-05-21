@@ -7,6 +7,7 @@ class Partner {
   final String country;
   final String adresse;
   final String accountType;
+  final double? balance;
 
   Partner({
     required this.id,
@@ -17,6 +18,7 @@ class Partner {
     required this.country,
     required this.adresse,
     required this.accountType,
+    this.balance,
   });
 
   // Convertir Partner en Map (pour JSON)
@@ -30,6 +32,7 @@ class Partner {
       'accountType': accountType,
       'adresse': adresse,
       'country': country,
+      'balance': balance,
     };
   }
 
@@ -43,6 +46,8 @@ class Partner {
       country: json['country'] ?? '',
       adresse: json['adresse'] ?? '',
       accountType: json['accountType'] ?? '',
+      balance:
+          json['balance'] != null ? (json['balance'] as num).toDouble() : null,
     );
   }
 }

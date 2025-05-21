@@ -241,7 +241,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
           children: [
             const SizedBox(height: 30),
             Text(
-              "Gestion des paiements",
+              "Gestion des versements",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -336,7 +336,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "La liste des paiements${_currentFilter == null
+                  "La liste des versements${_currentFilter == null
                       ? ''
                       : _currentFilter == 'client'
                       ? ' clients'

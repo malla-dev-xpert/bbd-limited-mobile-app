@@ -66,7 +66,7 @@ class PaiementListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              DateFormat('dd/MM/yyyy HH:mm').format(versement.createdAt!),
+              DateFormat('dd/MM/yyyy').format(versement.createdAt!),
               style: TextStyle(fontSize: 12),
             ),
             Text(
