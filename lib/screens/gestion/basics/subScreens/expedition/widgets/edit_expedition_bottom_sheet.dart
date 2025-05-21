@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/expedition.dart';
-import 'package:bbd_limited/core/enums/status.dart';
-import 'package:intl/intl.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/date_picker.dart';
@@ -100,37 +98,6 @@ class _EditExpeditionBottomSheetState extends State<EditExpeditionBottomSheet> {
     _cbnController.dispose();
     _itemQuantityController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: isStartDate ? _startDate : _arrivalDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.blue,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      setState(() {
-        if (isStartDate) {
-          _startDate = picked;
-        } else {
-          _arrivalDate = picked;
-        }
-      });
-    }
   }
 
   void _saveExpedition() {

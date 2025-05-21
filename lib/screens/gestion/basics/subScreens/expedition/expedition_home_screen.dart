@@ -277,8 +277,11 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
           onEdit: (updatedExpedition) async {
             try {
               final expeditionServices = ExpeditionServices();
+              final user = await authService.getUserInfo();
               final result = await expeditionServices.updateExpedition(
+                updatedExpedition.id!,
                 updatedExpedition,
+                user!.id,
               );
               if (result == "SUCCESS") {
                 if (context.mounted) {

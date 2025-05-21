@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/expedition_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -715,11 +716,45 @@ class _ExpeditionDetailsBottomSheetState
       builder: (context) {
         return EditExpeditionBottomSheet(
           expedition: widget.expedition,
-          onSave: (updatedExpedition) {
-            if (widget.onEdit != null) {
-              widget.onEdit!(updatedExpedition);
+          onSave: (updatedExpedition) async {
+            setState(() => _isLoading = true);
+            try {
+              final expeditionServices = ExpeditionServices();
+              final authService = AuthService();
+              final user = await authService.getUserInfo();
+              final result = await expeditionServices.updateExpedition(
+                widget.expedition.id!,
+                updatedExpedition,
+                user!.id,
+              );
+
+              if (result == "SUCCESS") {
+                if (widget.onEdit != null) {
+                  widget.onEdit!(updatedExpedition);
+                }
+
+                if (context.mounted) {
+                  Navigator.pop(context, true);
+                  showSuccessTopSnackBar(
+                    context,
+                    "Expédition ${updatedExpedition.ref} mise à jour avec succès.",
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  showErrorTopSnackBar(
+                    context,
+                    "Erreur de mise à jour, veuillez réessayer",
+                  );
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                showErrorTopSnackBar(context, "Erreur de mise à jour");
+              }
+            } finally {
+              setState(() => _isLoading = false);
             }
-            Navigator.pop(context, true);
           },
         );
       },

@@ -108,15 +108,19 @@ class ExpeditionServices {
     }
   }
 
-  Future<String?> updateExpedition(Expedition expedition) async {
-    final url = Uri.parse('$baseUrl/expeditions/update/${expedition.id}');
+  Future<String?> updateExpedition(
+    int id,
+    Expedition expeditionDto,
+    int userId,
+  ) async {
+    final url = Uri.parse('$baseUrl/expeditions/update/$id?userId=$userId');
     final headers = {'Content-Type': 'application/json'};
 
     try {
       final response = await http.put(
         url,
         headers: headers,
-        body: jsonEncode(expedition.toJson()),
+        body: jsonEncode(expeditionDto.toJson()),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
