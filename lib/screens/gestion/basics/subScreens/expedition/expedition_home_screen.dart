@@ -305,6 +305,9 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
               }
             }
           },
+          onDelete: (updatedExpedition) {
+            fetchExpeditions(reset: true);
+          },
         );
       },
     );

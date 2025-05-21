@@ -439,13 +439,52 @@ class _ExpeditionDetailsBottomSheetState
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (widget.onDelete != null) {
-                  widget.onDelete!(widget.expedition);
-                }
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
+              onPressed:
+                  _isLoading
+                      ? null
+                      : () async {
+                        setState(() => _isLoading = true);
+                        try {
+                          final expeditionServices = ExpeditionServices();
+                          final result = await expeditionServices
+                              .deleteExpedition(widget.expedition.id!);
+
+                          if (result == "SUCCESS") {
+                            widget.expedition.status = Status.DELETE;
+
+                            if (widget.onStart != null) {
+                              widget.onStart!(widget.expedition);
+                            }
+
+                            if (context.mounted) {
+                              Navigator.pop(
+                                context,
+                              ); // Fermer la boîte de dialogue
+                              Navigator.pop(context); // Fermer le bottom sheet
+                              showSuccessTopSnackBar(
+                                context,
+                                "Expédition ${widget.expedition.ref} a été supprimer avec succès.",
+                              );
+                            }
+                          } else {
+                            if (context.mounted) {
+                              showErrorTopSnackBar(
+                                context,
+                                "Erreur de suppression, veuillez réessayer",
+                              );
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            showErrorTopSnackBar(
+                              context,
+                              "Erreur de suppression",
+                            );
+                            setState(() => _isLoading = false);
+                          }
+                        }
+                      },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[400],
                 shape: RoundedRectangleBorder(

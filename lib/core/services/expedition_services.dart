@@ -89,6 +89,25 @@ class ExpeditionServices {
     }
   }
 
+  Future<String?> deleteExpedition(int id) async {
+    final url = Uri.parse("$baseUrl/expeditions/delete?expeditionId=$id");
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else {
+        return "Erreur : ${response.body}";
+      }
+    } catch (e) {
+      return "Erreur lors de la suppression de l'expédition : $e";
+    }
+  }
+
   Future<String?> updateExpedition(Expedition expedition) async {
     final url = Uri.parse('$baseUrl/expeditions/update/${expedition.id}');
     final headers = {'Content-Type': 'application/json'};
