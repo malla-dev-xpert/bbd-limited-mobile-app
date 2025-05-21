@@ -15,9 +15,18 @@ class PartnerDetailScreen extends StatelessWidget {
       symbol: 'FCFA',
     );
 
+    final partnerName =
+        "${partner.firstName} ${partner.lastName} | ${partner.phoneNumber}";
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Détails du Partenaire', textAlign: TextAlign.left),
+        title: Text(
+          partnerName,
+          textAlign: TextAlign.left,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
       ),
@@ -39,9 +48,9 @@ class PartnerDetailScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildContactInfoCard(),
-            const SizedBox(height: 16),
             _buildBalanceCard(currencyFormat),
+            const SizedBox(height: 16),
+            _buildVersementsList(currencyFormat),
           ],
         ),
       ),
@@ -63,7 +72,7 @@ class PartnerDetailScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[300]!),
         boxShadow: [
@@ -149,38 +158,6 @@ class PartnerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactInfoCard() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow(
-              Icons.person_3,
-              'Client',
-              '${partner.firstName} ${partner.lastName} | ${partner.phoneNumber}',
-            ),
-            const SizedBox(height: 12),
-            _buildInfoRow(Icons.location_on, 'Pays', partner.country),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
@@ -207,6 +184,97 @@ class PartnerDetailScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVersementsList(NumberFormat currencyFormat) {
+    if (partner.versements == null || partner.versements!.isEmpty) {
+      return Center(
+        child: Text(
+          'Aucun versement trouvé',
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Text(
+              'Historique des versements',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[500],
+              ),
+            ),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: partner.versements!.length,
+            itemBuilder: (context, index) {
+              final versement = partner.versements![index];
+              final montantRestant = versement.montantRestant ?? 0.0;
+              final isNegative = montantRestant < 0;
+              final statusColor =
+                  isNegative ? Colors.red[400] : Colors.green[400];
+
+              return Container(
+                padding: EdgeInsets.all(0),
+                child: ListTile(
+                  title: Text(
+                    versement.reference ?? 'Sans référence',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    versement.createdAt != null
+                        ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
+                        : 'Date inconnue',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 5,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            currencyFormat.format(versement.montantVerser),
+                            style: TextStyle(fontSize: 13, color: Colors.blue),
+                          ),
+                          Text(
+                            currencyFormat.format(versement.montantRestant),
+                            style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Icon(
+                        isNegative ? Icons.arrow_downward : Icons.arrow_upward,
+                        color: statusColor,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
