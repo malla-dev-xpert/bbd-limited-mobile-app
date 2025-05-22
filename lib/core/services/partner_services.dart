@@ -8,9 +8,15 @@ class PartnerServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<List<Partner>> fetchPartnersByType(String type, {int page = 0}) async {
+  Future<List<Partner>> fetchPartnersByType(
+    String type, {
+    int page = 0,
+    String? query,
+  }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/partners/account-type?type=$type&page=$page'),
+      Uri.parse(
+        '$baseUrl/partners/account-type?type=$type&page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
+      ),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -26,7 +32,9 @@ class PartnerServices {
 
   Future<List<Partner>> findAll({int page = 0, String? query}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/partners?page=$page&query=${query ?? ''}'),
+      Uri.parse(
+        '$baseUrl/partners?page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
+      ),
     );
 
     if (response.statusCode == 200) {

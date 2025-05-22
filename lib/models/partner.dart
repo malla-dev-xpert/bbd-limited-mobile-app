@@ -1,3 +1,4 @@
+import 'package:bbd_limited/models/expedition.dart';
 import 'package:bbd_limited/models/versement.dart';
 
 class Partner {
@@ -11,6 +12,7 @@ class Partner {
   final String accountType;
   final double? balance;
   List<Versement>? versements;
+  List<Expedition>? expeditions;
 
   Partner({
     required this.id,
@@ -23,6 +25,7 @@ class Partner {
     required this.accountType,
     this.balance,
     this.versements,
+    this.expeditions,
   });
 
   // Convertir Partner en Map (pour JSON)
@@ -38,15 +41,25 @@ class Partner {
       'country': country,
       'balance': balance,
       'versements': versements,
+      'expeditions': expeditions,
     };
   }
 
   factory Partner.fromJson(Map<String, dynamic> json) {
     List<Versement> versementList = [];
+    List<Expedition> expeditionList = [];
+
     if (json['versements'] != null) {
       versementList =
           (json['versements'] as List)
               .map((v) => Versement.fromJson(v))
+              .toList();
+    }
+
+    if (json['expeditions'] != null) {
+      expeditionList =
+          (json['expeditions'] as List)
+              .map((v) => Expedition.fromJson(v))
               .toList();
     }
     return Partner(
@@ -61,6 +74,7 @@ class Partner {
       balance:
           json['balance'] != null ? (json['balance'] as num).toDouble() : null,
       versements: versementList,
+      expeditions: expeditionList,
     );
   }
 }

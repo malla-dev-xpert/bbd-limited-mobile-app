@@ -132,7 +132,7 @@ void showVersementDetailsBottomSheet(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        "Pas d'articles achetés pour ce paiement.",
+                                        "Pas d'articles achetés pour ce versement.",
                                       ),
                                     ],
                                   ),

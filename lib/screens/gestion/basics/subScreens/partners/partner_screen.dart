@@ -163,7 +163,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text(
-          "Gestion des partenaires",
+          "Gestion des comptes clients",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
