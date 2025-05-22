@@ -6,7 +6,7 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/paiment_detail_modal.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -414,7 +414,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                         versement: paiement,
                                         onTap:
                                             () =>
-                                                showPaiementDetailsBottomSheet(
+                                                showVersementDetailsBottomSheet(
                                                   context,
                                                   paiement,
                                                 ),

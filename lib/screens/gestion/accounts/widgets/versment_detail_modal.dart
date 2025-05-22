@@ -26,7 +26,7 @@ Widget _detailRow(String label, String? value) {
   );
 }
 
-void showPaiementDetailsBottomSheet(
+void showVersementDetailsBottomSheet(
   BuildContext context,
   Versement versement,
 ) async {
@@ -55,7 +55,7 @@ void showPaiementDetailsBottomSheet(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Détails du paiement",
+                        "Détails du versement",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ void showPaiementDetailsBottomSheet(
                     currencyFormat.format(versement.montantRestant),
                   ),
                   _detailRow(
-                    "Date de paiement",
+                    "Date de versement",
                     DateFormat('dd/MM/yyyy HH:mm').format(versement.createdAt!),
                   ),
                   _detailRow(
