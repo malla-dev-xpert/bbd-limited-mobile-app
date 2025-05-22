@@ -48,7 +48,6 @@ class _PartnerScreenState extends State<PartnerScreen> {
         currentPage = 0;
         _hasMoreData = true;
         _allPartners.clear();
-        // _filteredHarbor.clear();
       }
     });
 
@@ -64,20 +63,18 @@ class _PartnerScreenState extends State<PartnerScreen> {
         }
         _allPartners.addAll(result);
 
-        _filteredPartners =
-            _allPartners
-                .where(
-                  (partner) =>
-                      searchQuery == null ||
-                              searchQuery.isEmpty ||
-                              searchQuery == ""
-                          ? true
-                          : (partner.firstName.toLowerCase().contains(
-                                searchQuery.toLowerCase(),
-                              ) ??
-                              false),
-                )
-                .toList();
+        if (searchQuery == null || searchQuery.isEmpty) {
+          _filteredPartners = List.from(_allPartners);
+        } else {
+          _filteredPartners =
+              _allPartners
+                  .where(
+                    (partner) => partner.firstName.toLowerCase().contains(
+                      searchQuery.toLowerCase(),
+                    ),
+                  )
+                  .toList();
+        }
 
         if (result.isEmpty || result.length < 30) {
           _hasMoreData = false;
@@ -86,7 +83,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
         }
       });
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de chargement des ports.");
+      showErrorTopSnackBar(context, "Erreur de chargement des partenaires.");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -94,66 +91,26 @@ class _PartnerScreenState extends State<PartnerScreen> {
 
   void searchPartner(String query) async {
     if (query.isEmpty) {
-      await loadPartners(reset: true, searchQuery: null);
+      await loadPartners(reset: true);
+      return;
+    }
+
+    // recherche locale
+    final localResults =
+        _allPartners.where((partner) {
+          return partner.firstName.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+
+    if (localResults.isNotEmpty) {
+      setState(() => _filteredPartners = localResults);
     } else {
-      // recherche locale
-      final localResults =
-          _allPartners.where((port) {
-            return port.firstName.toLowerCase().contains(query.toLowerCase()) ??
-                false;
-          }).toList();
-
-      if (localResults.isNotEmpty) {
-        setState(() => _filteredPartners = localResults);
-      } else {
-        // recherche dans la base de donnee
-        try {
-          await loadPartners(reset: true, searchQuery: query);
-
-          final newResults =
-              _allPartners.where((port) {
-                return port.firstName.toLowerCase().contains(
-                      query.toLowerCase(),
-                    ) ??
-                    false;
-              }).toList();
-
-          setState(() => _filteredPartners = newResults);
-        } catch (e) {
-          showErrorTopSnackBar(context, "Erreur lors de la recherche");
-        }
+      // recherche dans la base de donnee
+      try {
+        await loadPartners(reset: true, searchQuery: query);
+      } catch (e) {
+        showErrorTopSnackBar(context, "Erreur lors de la recherche");
       }
     }
-  }
-
-  void filterPartners(String query) {
-    setState(() {
-      _filteredPartners =
-          _allPartners.where((parter) {
-            final searchPackage = parter.firstName.toLowerCase().contains(
-              query.toLowerCase(),
-            );
-
-            bool allStatus = true;
-            if (_currentFilter == 'clients') {
-              allStatus = parter.accountType == 'CLIENT';
-            } else if (_currentFilter == 'fournisseurs') {
-              allStatus = parter.accountType == 'FOURNISSEUR';
-            } else if (_currentFilter == 'all') {
-              allStatus;
-            }
-
-            return searchPackage && allStatus;
-          }).toList();
-    });
-  }
-
-  void handleStatusFilter(String value) {
-    setState(() {
-      _currentFilter = value;
-    });
-
-    filterPartners(searchController.text);
   }
 
   @override
@@ -209,7 +166,6 @@ class _PartnerScreenState extends State<PartnerScreen> {
                     ),
                   ),
                 ),
-                FiltreDropdown(onSelected: handleStatusFilter),
               ],
             ),
             const SizedBox(height: 16),
@@ -382,48 +338,5 @@ class _PartnerScreenState extends State<PartnerScreen> {
       default:
         showErrorTopSnackBar(context, "Erreur inconnue");
     }
-  }
-}
-
-class FiltreDropdown extends StatelessWidget {
-  final Function(String) onSelected;
-
-  const FiltreDropdown({super.key, required this.onSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7F78AF),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: PopupMenuButton<String>(
-        icon: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.filter_list, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Filtrer', style: TextStyle(color: Colors.white)),
-            SizedBox(width: 8),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        onSelected: onSelected,
-        color: Colors.white,
-        itemBuilder:
-            (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'clients',
-                child: Text('Par clients'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'fournisseurs',
-                child: Text('Par fournisseurs'),
-              ),
-
-              const PopupMenuItem<String>(value: 'all', child: Text('Tous')),
-            ],
-      ),
-    );
   }
 }
