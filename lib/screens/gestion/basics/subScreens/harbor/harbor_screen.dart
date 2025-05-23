@@ -148,6 +148,7 @@ class _HarborScreen extends State<HarborScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddHarborModal,
         backgroundColor: const Color(0xFF1A1E49),
+        heroTag: 'harbor_fab',
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       body: Padding(

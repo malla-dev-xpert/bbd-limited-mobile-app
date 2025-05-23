@@ -19,7 +19,15 @@ void showSuccessTopSnackBar(BuildContext context, String message) {
                 children: [
                   Icon(Icons.check_circle, color: Colors.white),
                   SizedBox(width: 8),
-                  Text(message, style: TextStyle(color: Colors.white)),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: TextStyle(color: Colors.white),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
+                    ),
+                  ),
                 ],
               ),
             ),

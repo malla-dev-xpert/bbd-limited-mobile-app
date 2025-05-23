@@ -14,7 +14,9 @@ class VersementServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Versement.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des versements");
@@ -27,7 +29,9 @@ class VersementServices {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonBody = json.decode(response.body);
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       return jsonBody.map((e) => Versement.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des colis");
@@ -51,6 +55,52 @@ class VersementServices {
       }
     } catch (e) {
       throw Exception("Erreur de connexion: $e");
+    }
+  }
+
+  Future<bool> updatePaiement(
+    int id,
+    int? userId,
+    int clientId,
+    Versement dto,
+  ) async {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/versements/update/$id?userId=$userId&clientId=$clientId',
+      );
+      final headers = {'Content-Type': 'application/json'};
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<String?> delete(int id, int userId) async {
+    final url = Uri.parse("$baseUrl/versements/delete/$id?userId=$userId");
+
+    try {
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "DELETED";
+      } else if (response.body ==
+          "Impossible de supprimer: des achats sont déjà associés à ce versement") {
+        return "ACHATS_NOT_DELETED";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du colis : $e");
     }
   }
 }

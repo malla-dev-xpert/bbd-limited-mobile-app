@@ -3,7 +3,6 @@ import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
-import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/harbor.dart';
@@ -244,11 +243,10 @@ class _CreatePackageFormState extends State<CreatePackageForm>
         lignes:
             localItems
                 .map(
-                  (item) => LigneAchat(
-                    descriptionItem: item['description']?.toString() ?? '',
-                    quantityItem: (item['quantity'] as num?)?.toDouble() ?? 0.0,
-                    unitPriceItem:
-                        (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
+                  (item) => CreateLigneDto(
+                    descriptionItem: item['description']?.toString(),
+                    quantityItem: (item['quantity'] as num?)?.toDouble(),
+                    prixUnitaire: (item['unitPrice'] as num?)?.toDouble(),
                   ),
                 )
                 .toList(),

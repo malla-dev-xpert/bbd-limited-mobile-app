@@ -173,6 +173,8 @@ void showPackageDetailsBottomSheet(
   final ItemServices itemServices = ItemServices();
   bool isLoading = false;
 
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+
   return showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -446,7 +448,24 @@ void showPackageDetailsBottomSheet(
 
                                         leading: Icon(Icons.label),
                                         title: Text(item.description),
-                                        trailing: Text("x${item.quantity}"),
+                                        subtitle: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text("P.U : ${item.unitPrice}"),
+                                            Text(
+                                              "Prix HT : ${currencyFormat.format(item.unitPrice * item.quantity)}",
+                                            ),
+                                          ],
+                                        ),
+                                        trailing: Text(
+                                          "x${item.quantity}",
+                                          style: TextStyle(
+                                            color: Colors.blue[400],
+                                          ),
+                                        ),
                                       ),
                                     );
                                   },

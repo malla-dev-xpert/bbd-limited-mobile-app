@@ -66,7 +66,7 @@ class PackageListItem extends StatelessWidget {
     switch (status) {
       case Status.PENDING:
         return Colors.orange;
-      case Status.RECEIVED:
+      case Status.RECEIVED || Status.IN_CONTAINER:
         return Colors.green;
       case Status.DELIVERED:
         return Colors.blue;

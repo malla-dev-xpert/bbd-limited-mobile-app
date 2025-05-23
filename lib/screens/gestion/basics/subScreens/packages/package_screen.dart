@@ -211,6 +211,7 @@ class _PackageScreen extends State<PackageScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCreatePackageBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
+        heroTag: 'package_fab',
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Padding(

@@ -1,15 +1,15 @@
+import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/models/package.dart';
-import 'package:bbd_limited/core/services/package_services.dart';
 
-Future<List<Packages>?> showAddPackagesToContainerDialog(
+Future<List<Containers>?> showAddContainerToHarborDialog(
   BuildContext context,
-  int containerId,
-  PackageServices packageServices,
+  int harborID,
+  ContainerServices containerServices,
 ) async {
-  return showDialog<List<Packages>>(
+  return showDialog<List<Containers>>(
     context: context,
     barrierDismissible: false,
     builder: (context) {
@@ -21,9 +21,9 @@ Future<List<Packages>?> showAddPackagesToContainerDialog(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.6,
           ),
-          child: _AddPackagesDialogContent(
-            containerId: containerId,
-            packageServices: packageServices,
+          child: _AddContainerToHarborDialogContent(
+            harborId: harborID,
+            containerServices: containerServices,
           ),
         ),
       );
@@ -31,77 +31,69 @@ Future<List<Packages>?> showAddPackagesToContainerDialog(
   );
 }
 
-class _AddPackagesDialogContent extends StatefulWidget {
-  final int containerId;
-  final PackageServices packageServices;
+class _AddContainerToHarborDialogContent extends StatefulWidget {
+  final int harborId;
+  final ContainerServices containerServices;
 
-  const _AddPackagesDialogContent({
-    required this.containerId,
-    required this.packageServices,
+  const _AddContainerToHarborDialogContent({
+    required this.harborId,
+    required this.containerServices,
   });
 
   @override
-  __AddPackagesDialogContentState createState() =>
-      __AddPackagesDialogContentState();
+  _AddContainerToHarborDialogContentState createState() =>
+      _AddContainerToHarborDialogContentState();
 }
 
-class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
-  late Future<List<Packages>> _availablePackages;
-  final List<Packages> _selectedPackages = [];
+class _AddContainerToHarborDialogContentState
+    extends State<_AddContainerToHarborDialogContent> {
+  late Future<List<Containers>> _availableContainers;
+  final List<Containers> _selectedContainers = [];
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _availablePackages = widget.packageServices.findAllPackageReceived();
+    _availableContainers = widget.containerServices.findAll();
   }
 
-  void _togglePackageSelection(Packages package) {
+  void _toggleContainerSelection(Containers container) {
     setState(() {
-      if (_selectedPackages.contains(package)) {
-        _selectedPackages.remove(package);
+      if (_selectedContainers.contains(container)) {
+        _selectedContainers.remove(container);
       } else {
-        _selectedPackages.add(package);
+        _selectedContainers.add(container);
       }
     });
   }
 
-  Future<void> _addPackagesToContainer() async {
-    if (_selectedPackages.isEmpty) return;
+  Future<void> _addContainerToHarbor() async {
+    if (_selectedContainers.isEmpty) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final request = EmbarquementRequest(
-        containerId: widget.containerId.toInt(),
-        packageId: _selectedPackages.map((p) => p.id!).toList(),
+      final request = HarborEmbarquementRequest(
+        harborId: widget.harborId.toInt(),
+        containerId: _selectedContainers.map((p) => p.id!).toList(),
       );
-      final result = await widget.packageServices.embarquerColis(request);
+      final result = await widget.containerServices.embarquerContainerToHarbor(
+        request,
+      );
 
       if (result == "SUCCESS") {
-        showSuccessTopSnackBar(context, "Colis embarqués avec succès");
+        showSuccessTopSnackBar(context, "Conteneurs embarqués avec succès");
 
-        Navigator.of(context).pop(_selectedPackages);
+        Navigator.of(context).pop(_selectedContainers);
       } else {
         String errorMessage;
         switch (result) {
-          case "PACKAGE_ALREADY_IN_ANOTHER_CONTAINER":
+          case "CONTAINER_ALREADY_IN_ANOTHER_HARBOR":
             errorMessage =
-                "Un ou plusieurs colis sont déjà dans un autre conteneur";
+                "Un ou plusieurs conteneur sont déjà dans un autre port";
             break;
-          case "PACKAGE_NOT_IN_RECEIVED_STATUS":
-            errorMessage =
-                "Un ou plusieurs colis ne sont pas en statut RECEIVED";
-            break;
-          case "CONTAINER_NOT_AVAILABLE":
-            errorMessage = "Le conteneur n'est pas disponible";
-            break;
-          case "CONTAINER_NOT_IN_PENDING":
-            errorMessage =
-                "Le conteneur n'est pas dans le bon statut pour l'embarquement";
-            break;
-          case "NETWORK_ERROR":
-            errorMessage = "Problème de connexion internet";
+          case "HARBOR_NOT_AVAILABLE":
+            errorMessage = "Le port n'est pas disponible";
             break;
           default:
             errorMessage = "Erreur lors de l'embarquement: $result";
@@ -126,7 +118,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Ajouter des colis',
+                'Ajouter des conteneurs',
                 style: TextStyle(
                   fontSize: 20,
                   letterSpacing: -1,
@@ -142,8 +134,8 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
         ),
         Divider(height: 1),
         Expanded(
-          child: FutureBuilder<List<Packages>>(
-            future: _availablePackages,
+          child: FutureBuilder<List<Containers>>(
+            future: _availableContainers,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -161,14 +153,14 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                 padding: EdgeInsets.zero,
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  final package = snapshot.data![index];
-                  final isSelected = _selectedPackages.contains(package);
+                  final container = snapshot.data![index];
+                  final isSelected = _selectedContainers.contains(container);
 
                   return CheckboxListTile(
                     value: isSelected,
-                    onChanged: (_) => _togglePackageSelection(package),
-                    title: Text(package.reference ?? ''),
-                    subtitle: Text('${package.items?.length ?? 0} articles'),
+                    onChanged: (_) => _toggleContainerSelection(container),
+                    title: Text(container.reference ?? ''),
+                    subtitle: Text('${container.packages?.length ?? 0} colis'),
                     secondary: Icon(
                       Icons.inventory_2,
                       color: Colors.green[400],
@@ -194,9 +186,9 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
               SizedBox(width: 8),
               ElevatedButton(
                 onPressed:
-                    _isLoading || _selectedPackages.isEmpty
+                    _isLoading || _selectedContainers.isEmpty
                         ? null
-                        : _addPackagesToContainer,
+                        : _addContainerToHarbor,
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith<Color>((
                     states,
@@ -204,7 +196,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                     if (states.contains(MaterialState.disabled)) {
                       return Colors.grey.shade300;
                     }
-                    return _selectedPackages.isNotEmpty
+                    return _selectedContainers.isNotEmpty
                         ? Colors.green
                         : Colors.grey;
                   }),
@@ -237,7 +229,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                               Icon(Icons.add, size: 20),
                               SizedBox(width: 8),
                               Text(
-                                'Ajouter (${_selectedPackages.length})',
+                                'Ajouter (${_selectedContainers.length})',
                                 style: TextStyle(fontSize: 14),
                               ),
                             ],

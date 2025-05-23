@@ -46,7 +46,7 @@ class WarehouseServices {
     );
 
     if (response.statusCode == 200) {
-      final jsonBody = json.decode(response.body);
+      final jsonBody = json.decode(utf8.decode(response.bodyBytes));
       final List<dynamic> content = jsonBody['content'];
       return content.map((e) => Warehouses?.fromJson(e)).toList();
     } else {
@@ -103,7 +103,7 @@ class WarehouseServices {
     final response = await http.get(Uri.parse('$baseUrl/warehouses/$id'));
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final jsonData = json.decode(utf8.decode(response.bodyBytes));
       return Warehouses.fromJson(jsonData);
     } else if (response.statusCode == 404) {
       throw Exception('Entrepôt non trouvé avec l\'ID : $id');

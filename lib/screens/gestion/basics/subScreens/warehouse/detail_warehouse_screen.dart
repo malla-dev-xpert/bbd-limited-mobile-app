@@ -409,6 +409,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddPackageModal,
         backgroundColor: const Color(0xFF1A1E49),
+        heroTag: 'warehouse_detail_fab',
         child: Icon(Icons.add, color: Colors.white, size: 28),
       ),
       body: Padding(

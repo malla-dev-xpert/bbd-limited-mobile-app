@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -27,8 +25,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _adresseController = TextEditingController();
 
-  final List<String> _accountTypeList = ['CLIENT', 'FOURNISSEUR'];
-  String? _acccountType = '';
+  // final List<String> _accountTypeList = ['CLIENT', 'FOURNISSEUR'];
+  // String? _acccountType = '';
 
   Country? _selectedCountry;
 
@@ -54,15 +52,25 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Ajouter un nouveau partenaire',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -1,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Ajouter un nouveau client',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => {Navigator.pop(context)},
+                    icon: Icon(Icons.close),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               Form(
                 key: _formKey,
                 child: Column(
@@ -164,21 +172,21 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                      child: CustomDropdown<String>(
-                        hintText: 'Type de partenaire',
-                        items: _accountTypeList,
-                        onChanged: (value) {
-                          setState(() {
-                            _acccountType = value;
-                          });
-                        },
-                      ),
-                    ),
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     border: Border.all(color: Colors.grey[300]!),
+                    //     borderRadius: BorderRadius.all(Radius.circular(12)),
+                    //   ),
+                    //   child: CustomDropdown<String>(
+                    //     hintText: 'Type de partenaire',
+                    //     items: _accountTypeList,
+                    //     onChanged: (value) {
+                    //       setState(() {
+                    //         _acccountType = value;
+                    //       });
+                    //     },
+                    //   ),
+                    // ),
                     const SizedBox(height: 24),
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
@@ -231,13 +239,13 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         return;
       }
 
-      if (_acccountType!.toString().isEmpty) {
-        showErrorTopSnackBar(
-          context,
-          "Veuillez sélectionner un type de partenaire",
-        );
-        return;
-      }
+      // if (_acccountType!.toString().isEmpty) {
+      //   showErrorTopSnackBar(
+      //     context,
+      //     "Veuillez sélectionner un type de partenaire",
+      //   );
+      //   return;
+      // }
 
       final success = await _partnerServices.create(
         _firstNameController.text.trim(),
@@ -246,7 +254,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         _emailController.text.trim(),
         _selectedCountry!.name,
         _adresseController.text.trim(),
-        _acccountType.toString(),
+        'CLIENT',
         user.id,
       );
 
@@ -271,7 +279,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
           _emailController.clear();
           _phoneController.clear();
           _adresseController.clear();
-          _acccountType = '';
+          // _acccountType = '';
           _selectedCountry = null;
           showSuccessTopSnackBar(context, "Partenaire créé avec succès !");
         });

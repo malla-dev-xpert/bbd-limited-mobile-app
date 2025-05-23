@@ -23,7 +23,9 @@ class PaiementListItem extends StatelessWidget {
       locale: 'fr_FR',
       symbol: 'FCFA',
     );
-    final isNegative = versement.montantRestant! < 0;
+
+    final montantRestant = versement.montantRestant ?? 0.0;
+    final isNegative = montantRestant < 0;
     final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
 
     // Déterminer l'icône en fonction du type de compte
@@ -64,7 +66,7 @@ class PaiementListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              DateFormat('dd/MM/yyyy HH:mm').format(versement.createdAt!),
+              DateFormat('dd/MM/yyyy').format(versement.createdAt!),
               style: TextStyle(fontSize: 12),
             ),
             Text(

@@ -26,7 +26,7 @@ Widget _detailRow(String label, String? value) {
   );
 }
 
-void showPaiementDetailsBottomSheet(
+void showVersementDetailsBottomSheet(
   BuildContext context,
   Versement versement,
 ) async {
@@ -55,7 +55,7 @@ void showPaiementDetailsBottomSheet(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Détails du paiement",
+                        "Détails du versement",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ void showPaiementDetailsBottomSheet(
                     currencyFormat.format(versement.montantRestant),
                   ),
                   _detailRow(
-                    "Date de paiement",
+                    "Date de versement",
                     DateFormat('dd/MM/yyyy HH:mm').format(versement.createdAt!),
                   ),
                   _detailRow(
@@ -132,7 +132,7 @@ void showPaiementDetailsBottomSheet(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        "Pas d'articles achetés pour ce paiement.",
+                                        "Pas d'articles achetés pour ce versement.",
                                       ),
                                     ],
                                   ),
@@ -150,11 +150,17 @@ void showPaiementDetailsBottomSheet(
                                             .toList();
                                     final ligne = allLignes[index];
 
-                                    return Card(
-                                      margin: EdgeInsets.symmetric(vertical: 4),
-                                      color: Colors.white,
+                                    return Container(
+                                      margin: EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.grey[50],
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                        ),
+                                      ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(8),
+                                        padding: EdgeInsets.all(10),
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,

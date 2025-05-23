@@ -8,4 +8,5 @@ enum Status {
   DELIVERED,
   RETRIEVE,
   DELETE_ON_CONTAINER,
+  IN_CONTAINER,
 }

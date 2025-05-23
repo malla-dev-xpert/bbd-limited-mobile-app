@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/versement.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/paiment_detail_modal.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -109,7 +110,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     filterPackages(searchController.text);
   }
 
-  Future<void> _openNewPaiementBottomSheet(BuildContext context) async {
+  Future<void> _openNewVersementBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -118,12 +119,106 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreatePaiementModal();
+        return NewVersementModal(isVersementScreen: true);
       },
     );
 
     if (result == true) {
       fetchPaiements(reset: true);
+    }
+  }
+
+  void _showEditPaiementModal(BuildContext context, Versement versement) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return EditPaiementModal(
+          versement: versement,
+          onPaiementUpdated: () => fetchPaiements(reset: true),
+        );
+      },
+    );
+  }
+
+  Future<void> _delete(Versement versement) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Confirmer la suppression"),
+            content: Text(
+              "Voulez-vous vraiment supprimer le paiement ${versement.reference}?",
+            ),
+            backgroundColor: Colors.white,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Annuler"),
+              ),
+              TextButton.icon(
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.delete, color: Colors.red),
+                label: const Text(
+                  "Supprimer",
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final user = await _authService.getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        return;
+      }
+
+      if (versement.id == null) {
+        showErrorTopSnackBar(context, "Erreur: Le paiement n'existe pas");
+        return;
+      }
+
+      // Afficher un indicateur de chargement
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final result = await _versementServices.delete(versement.id!, user.id);
+
+      Navigator.of(context).pop();
+
+      if (result == "ACHATS_NOT_DELETED") {
+        showErrorTopSnackBar(
+          context,
+          "Impossible de supprimer le paiement, il y a des achats associés à ce paiement",
+        );
+      } else if (result == "DELETED") {
+        setState(() {
+          _allPaiements.removeWhere((d) => d.id == versement.id);
+          _filteredPaiements.removeWhere((d) => d.id == versement.id);
+        });
+
+        showSuccessTopSnackBar(context, "Paiement supprimé avec succès");
+      } else {
+        showErrorTopSnackBar(context, "Erreur inconnue lors de la suppression");
+      }
+    } catch (e) {
+      // Fermer l'indicateur de chargement en cas d'erreur
+      Navigator.of(context).pop();
+      showErrorTopSnackBar(
+        context,
+        "Erreur lors de la suppression: ${e.toString()}",
+      );
     }
   }
 
@@ -135,7 +230,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         onPressed: () {
-          _openNewPaiementBottomSheet(context);
+          _openNewVersementBottomSheet(context);
         },
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
@@ -146,7 +241,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
           children: [
             const SizedBox(height: 30),
             Text(
-              "Gestion des paiements",
+              "Gestion des versements",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -192,12 +287,15 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                           value: currencyFormat.format(
                             _allPaiements.fold<double>(
                               0,
-                              (sum, item) => sum + (item.montantRestant ?? 0),
+                              (sum, item) =>
+                                  sum +
+                                  (item.status != Status.DELETE
+                                      ? (item.montantRestant ?? 0)
+                                      : 0),
                             ),
-                          ), // Utilisez votre formatage
+                          ),
                           valueStyle: TextStyle(
-                            fontSize:
-                                18, // Un peu plus petit pour les grands nombres
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
                           ),
@@ -208,11 +306,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                 ],
               ),
             ),
-
-            // Widget réutilisable
             const SizedBox(height: 16),
-
-            // Barre de recherche
+            // Search and Filter Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -231,24 +326,23 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 8),
                 FiltreDropdown(onSelected: handleStatusFilter),
               ],
             ),
             const SizedBox(height: 12),
-            // Liste des colis
+            // List Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "La liste des paimemts${_currentFilter == null
+                  "La liste des versements${_currentFilter == null
                       ? ''
                       : _currentFilter == 'client'
                       ? ' clients'
-                      : _currentFilter == 'delivered'
-                      ? 'supplier'
-                      : ' fournisseurs'}",
+                      : _currentFilter == 'supplier'
+                      ? ' fournisseurs'
+                      : ''}",
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -269,65 +363,73 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                   ),
               ],
             ),
-            _isLoading
-                ? const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF1A1E49),
-                    strokeWidth: 3,
-                  ),
-                )
-                : Expanded(
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (scrollInfo) {
-                      if (scrollInfo.metrics.pixels ==
-                              scrollInfo.metrics.maxScrollExtent &&
-                          !_isLoading &&
-                          _hasMoreData) {
-                        fetchPaiements();
-                      }
-                      return false;
-                    },
-                    child:
-                        _filteredPaiements.isEmpty
-                            ? Center(child: Text("Aucun paiment trouvé."))
-                            : RefreshIndicator(
-                              onRefresh: () async {
-                                await fetchPaiements(reset: true);
-                              },
-                              displacement: 20,
-                              color: Theme.of(context).primaryColor,
-                              backgroundColor: Colors.white,
-                              child: ListView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount:
-                                    _filteredPaiements.length +
-                                    (_hasMoreData && _isLoading ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index >= _filteredPaiements.length) {
-                                    return const Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    );
-                                  }
-                                  final paiement = _filteredPaiements[index];
-
-                                  return PaiementListItem(
-                                    versement: paiement,
-                                    onTap:
-                                        () => showPaiementDetailsBottomSheet(
-                                          context,
-                                          paiement,
-                                        ),
-                                    onEdit: () {},
-                                    onDelete: () {},
-                                  );
-                                },
-                              ),
-                            ),
-                  ),
-                ),
+            // List of Payments
+            Expanded(
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF1A1E49),
+                          strokeWidth: 3,
+                        ),
+                      )
+                      : NotificationListener<ScrollNotification>(
+                        onNotification: (scrollInfo) {
+                          if (scrollInfo.metrics.pixels ==
+                                  scrollInfo.metrics.maxScrollExtent &&
+                              !_isLoading &&
+                              _hasMoreData) {
+                            fetchPaiements();
+                          }
+                          return false;
+                        },
+                        child:
+                            _filteredPaiements.isEmpty
+                                ? Center(child: Text("Aucun paiement trouvé."))
+                                : RefreshIndicator(
+                                  onRefresh: () async {
+                                    await fetchPaiements(reset: true);
+                                  },
+                                  displacement: 20,
+                                  color: Theme.of(context).primaryColor,
+                                  backgroundColor: Colors.white,
+                                  child: ListView.builder(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    itemCount:
+                                        _filteredPaiements.length +
+                                        (_hasMoreData && _isLoading ? 1 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index >= _filteredPaiements.length) {
+                                        return const Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      }
+                                      final paiement =
+                                          _filteredPaiements[index];
+                                      return PaiementListItem(
+                                        versement: paiement,
+                                        onTap:
+                                            () =>
+                                                showVersementDetailsBottomSheet(
+                                                  context,
+                                                  paiement,
+                                                ),
+                                        onEdit:
+                                            () => _showEditPaiementModal(
+                                              context,
+                                              paiement,
+                                            ),
+                                        onDelete: () => _delete(paiement),
+                                      );
+                                    },
+                                  ),
+                                ),
+                      ),
+            ),
           ],
         ),
       ),
