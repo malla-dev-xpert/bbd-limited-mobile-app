@@ -222,6 +222,7 @@ class _WarehouseState extends State<WarehouseScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         tooltip: 'Add New warehouse',
+        heroTag: 'warehouse_fab',
         onPressed: () {
           showModalBottomSheet(
             context: context,

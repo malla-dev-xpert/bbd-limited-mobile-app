@@ -551,6 +551,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCreateExpeditionBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
+        heroTag: 'expedition_fab',
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );

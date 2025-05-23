@@ -129,6 +129,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         tooltip: 'Add New partner',
+        heroTag: 'partner_fab',
         onPressed: () async {
           final shouldRefresh = await showModalBottomSheet<bool>(
             context: context,

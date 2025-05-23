@@ -204,6 +204,7 @@ class _ContainerScreen extends State<ContainerScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCreateConatinerBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
+        heroTag: 'container_fab',
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Padding(
