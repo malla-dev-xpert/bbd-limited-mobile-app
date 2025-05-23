@@ -6,7 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
 
 class PackageItemForm extends StatefulWidget {
-  final Function(String description, double quantity, double unitPrice)
+  final Function(
+    String description,
+    double quantity,
+    double unitPrice,
+    int supplierId,
+    String supplierName,
+  )
   onAddItem;
 
   const PackageItemForm({Key? key, required this.onAddItem}) : super(key: key);
@@ -20,6 +26,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController unitPriceController = TextEditingController();
   final PartnerServices partnerServices = PartnerServices();
+  final ValueKey _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
 
   List<Partner> suppliers = [];
   Partner? selectedSupplier;
@@ -51,6 +58,18 @@ class _PackageItemFormState extends State<PackageItemForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        DropDownCustom<Partner>(
+          key: _dropdownKey,
+          items: suppliers,
+          selectedItem: selectedSupplier,
+          onChanged: (supplier) => setState(() => selectedSupplier = supplier),
+          itemToString:
+              (supplier) =>
+                  '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
+          hintText: 'Choisir un fournisseur...',
+          prefixIcon: Icons.person_add,
+        ),
+        const SizedBox(height: 10),
         buildTextField(
           controller: descriptionController,
           label: "Description de l'article",
@@ -63,17 +82,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
           keyboardType: TextInputType.number,
           icon: Icons.attach_money,
         ),
-        const SizedBox(height: 10),
-        DropDownCustom<Partner>(
-          items: suppliers,
-          selectedItem: selectedSupplier,
-          onChanged: (supplier) => setState(() => selectedSupplier = supplier),
-          itemToString:
-              (supplier) =>
-                  '${supplier.firstName + " " + supplier.lastName} | ${supplier.phoneNumber}',
-          hintText: 'Choisir un fournisseur...',
-          prefixIcon: Icons.person_add,
-        ),
+
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -112,6 +121,11 @@ class _PackageItemFormState extends State<PackageItemForm> {
     final quantity = double.tryParse(quantityController.text.trim());
     final unitPrice = double.tryParse(unitPriceController.text.trim());
 
+    if (selectedSupplier == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur");
+      return;
+    }
+
     if (description.isEmpty) {
       showErrorTopSnackBar(context, "Veuillez entrer une description");
       return;
@@ -127,10 +141,25 @@ class _PackageItemFormState extends State<PackageItemForm> {
       return;
     }
 
-    widget.onAddItem(description, quantity, unitPrice);
-    descriptionController.clear();
-    quantityController.clear();
-    unitPriceController.clear();
+    final supplierId = int.tryParse(selectedSupplier!.id.toString());
+    final supplierName =
+        '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}';
+
+    widget.onAddItem(
+      description,
+      quantity,
+      unitPrice,
+      supplierId!,
+      supplierName,
+    );
+
+    // Reset form
+    setState(() {
+      descriptionController.clear();
+      quantityController.clear();
+      unitPriceController.clear();
+      selectedSupplier = null;
+    });
   }
 
   @override

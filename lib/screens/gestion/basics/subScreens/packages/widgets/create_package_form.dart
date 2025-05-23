@@ -160,12 +160,25 @@ class _CreatePackageFormState extends State<CreatePackageForm>
     setState(() => currentStep--);
   }
 
-  void _addItem(String description, double quantity, double unitPrice) {
+  void _addItem(
+    String description,
+    double quantity,
+    double unitPrice,
+    int supplierId,
+    String supplierName,
+  ) {
+    if (selectedSupplier == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur");
+      return;
+    }
+
     setState(
       () => localItems.add({
         'description': description,
         'quantity': quantity,
         'unitPrice': unitPrice,
+        'supplier': supplierName,
+        'supplierId': supplierId,
       }),
     );
   }

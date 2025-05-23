@@ -33,12 +33,20 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     super.initState();
   }
 
-  void _addItem(String description, double quantity, double unitPrice) {
+  void _addItem(
+    String description,
+    double quantity,
+    double unitPrice,
+    int supplierId,
+    String supplierName,
+  ) {
     setState(
       () => localItems.add({
         'description': description,
         'quantity': quantity,
         'unitPrice': unitPrice,
+        'supplierId': supplierId,
+        'supplier': supplierName,
       }),
     );
   }
@@ -51,15 +59,11 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+
       backgroundColor: Colors.white,
+      insetPadding: EdgeInsets.zero,
       child: Container(
-        // constraints: BoxConstraints(
-        //   minWidth: MediaQuery.of(context).size.width * 0.95,
-        //   maxWidth: MediaQuery.of(context).size.width * 0.95,
-        //   minHeight: MediaQuery.of(context).size.height * 0.9,
-        //   maxHeight: MediaQuery.of(context).size.height * 0.9,
-        // ),
-        width: MediaQuery.of(context).size.width * 1,
+        width: MediaQuery.of(context).size.width * 0.9,
         height: MediaQuery.of(context).size.height * 0.9,
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -72,7 +76,11 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 children: [
                   const Text(
                     'Nouvel Achat',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

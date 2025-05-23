@@ -40,7 +40,8 @@ class DropDownCustom<T> extends StatelessWidget {
               ),
             ),
           CustomDropdown<String>.search(
-            hintText: hintText,
+            hintText:
+                selectedItem != null ? itemToString(selectedItem!) : hintText,
             decoration: CustomDropdownDecoration(
               prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
             ),

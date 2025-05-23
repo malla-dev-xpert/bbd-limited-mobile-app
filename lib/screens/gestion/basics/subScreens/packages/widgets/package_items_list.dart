@@ -42,6 +42,7 @@ class PackageItemsList extends StatelessWidget {
                             Text("P.U : ${item['unitPrice']}"),
                           ],
                         ),
+                        Text("Fournisseur : ${item['supplier']}"),
                         Text(
                           "Total : ${(item['unitPrice'] * item['quantity']).toStringAsFixed(2)}",
                           style: TextStyle(
