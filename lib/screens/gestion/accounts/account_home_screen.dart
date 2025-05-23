@@ -417,6 +417,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                                 showVersementDetailsBottomSheet(
                                                   context,
                                                   paiement,
+                                                  true,
                                                 ),
                                         onEdit:
                                             () => _showEditPaiementModal(

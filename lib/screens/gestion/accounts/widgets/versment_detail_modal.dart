@@ -1,6 +1,8 @@
 import 'package:bbd_limited/models/versement.dart';
 import 'package:flutter/material.dart';
+import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:iconify_flutter/icons/majesticons.dart';
 
 Widget _detailRow(String label, String? value) {
   return Padding(
@@ -29,6 +31,7 @@ Widget _detailRow(String label, String? value) {
 void showVersementDetailsBottomSheet(
   BuildContext context,
   Versement versement,
+  final bool isVersementScreen,
 ) async {
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
@@ -207,6 +210,37 @@ void showVersementDetailsBottomSheet(
                                   },
                                 ),
                       ),
+                      if (isVersementScreen == false)
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(
+                            top: MediaQuery.of(context).padding.bottom,
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Implémenter la logique d'achat
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1A1E49),
+                              padding: EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            label: Text(
+                              'Effectuer un achat',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            icon: Iconify(
+                              Majesticons.money_hand_line,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ],

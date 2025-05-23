@@ -33,6 +33,8 @@ class _ExpeditionDetailsBottomSheetState
   Color _getStatusColor(Status? status) {
     switch (status) {
       case Status.DELIVERED:
+        return Colors.lightGreen;
+      case Status.RECEIVED:
         return Colors.green;
       case Status.INPROGRESS:
         return Colors.purple;
@@ -46,6 +48,8 @@ class _ExpeditionDetailsBottomSheetState
   String _getStatusText(Status? status) {
     switch (status) {
       case Status.DELIVERED:
+        return 'Arrivée à destination';
+      case Status.RECEIVED:
         return 'Livrée';
       case Status.INPROGRESS:
         return 'En transit';
@@ -218,7 +222,8 @@ class _ExpeditionDetailsBottomSheetState
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            widget.expedition.status == Status.DELIVERED
+                            widget.expedition.status == Status.RECEIVED ||
+                                    widget.expedition.status == Status.DELIVERED
                                 ? Icons.check_circle
                                 : widget.expedition.status == Status.INPROGRESS
                                 ? Icons.local_shipping
@@ -376,6 +381,28 @@ class _ExpeditionDetailsBottomSheetState
                       ),
                     ),
                     icon: Icon(Icons.local_shipping, color: Colors.white),
+                  ),
+                ),
+              ] else if (widget.expedition.status == Status.DELIVERED) ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showReceivedConfirmationDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    label: Text(
+                      'Confirmer la livraison',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    icon: Icon(Icons.verified, color: Colors.white),
                   ),
                 ),
               ],
@@ -651,6 +678,105 @@ class _ExpeditionDetailsBottomSheetState
                               final expeditionServices = ExpeditionServices();
                               final result = await expeditionServices
                                   .deliverExpedition(widget.expedition.id!);
+
+                              if (result == "SUCCESS") {
+                                widget.expedition.status = Status.DELIVERED;
+
+                                if (widget.onStart != null) {
+                                  widget.onStart!(widget.expedition);
+                                }
+
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  showSuccessTopSnackBar(
+                                    context,
+                                    "Expédition ${widget.expedition.ref} arrivée avec succès.",
+                                  );
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  showErrorTopSnackBar(
+                                    context,
+                                    "Erreur de confirmation, veuillez réessayer",
+                                  );
+                                  setState(() => _isLoading = false);
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Erreur de confirmation",
+                                );
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _isLoading ? 'Confirmation...' : 'Confirmer',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showReceivedConfirmationDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.green[400]),
+                  const SizedBox(width: 8),
+                  const Text('Confirmation'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Êtes-vous sûr de vouloir confirmer la livraison de cette expédition ?',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
+                  child: const Text(
+                    'Annuler',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed:
+                      _isLoading
+                          ? null
+                          : () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              final expeditionServices = ExpeditionServices();
+                              final result = await expeditionServices
+                                  .receivedExpedition(widget.expedition.id!);
 
                               if (result == "SUCCESS") {
                                 widget.expedition.status = Status.DELIVERED;

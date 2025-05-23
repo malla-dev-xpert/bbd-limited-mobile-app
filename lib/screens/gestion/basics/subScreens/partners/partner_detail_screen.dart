@@ -35,6 +35,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _filteredVersements = _partner.versements;
     _filteredExpeditions = _partner.expeditions;
     _sortVersementsByDate();
+    _sortExpeditionsByDate();
   }
 
   void _sortVersementsByDate() {
@@ -47,9 +48,19 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     }
   }
 
+  void _sortExpeditionsByDate() {
+    if (_filteredExpeditions != null) {
+      _filteredExpeditions!.sort((a, b) {
+        final dateA = a.startDate ?? DateTime(1900);
+        final dateB = b.startDate ?? DateTime(1900);
+        return dateB.compareTo(dateA);
+      });
+    }
+  }
+
   Future<void> _refreshData() async {
     try {
-      // Fetch fresh partner data
+      // Obtenir de nouvelles données des clients
       final partnerServices = PartnerServices();
       final partners = await partnerServices.findAll(page: 0);
       final freshPartner = partners.firstWhere(
@@ -62,6 +73,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         _filteredVersements = _partner.versements;
         _filteredExpeditions = _partner.expeditions;
         _sortVersementsByDate();
+        _sortExpeditionsByDate();
       });
     } catch (e) {
       print('Error refreshing data: $e');
@@ -89,6 +101,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             }).toList();
       }
       _sortVersementsByDate();
+      _sortExpeditionsByDate();
     });
   }
 
@@ -137,18 +150,16 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           icon: Icon(Icons.add, color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildBalanceCard(currencyFormat, context),
-            const SizedBox(height: 30),
-            _buildOperationTypeSelector(),
-            const SizedBox(height: 16),
-            _buildSearchBar(),
-            const SizedBox(height: 8),
-            _buildOperationsList(currencyFormat, context),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildBalanceCard(currencyFormat, context),
+          const SizedBox(height: 30),
+          _buildOperationTypeSelector(),
+          const SizedBox(height: 16),
+          _buildSearchBar(),
+          const SizedBox(height: 8),
+          Expanded(child: _buildOperationsList(currencyFormat, context)),
+        ],
       ),
     );
   }
@@ -265,41 +276,23 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Text(
-              'Historique des expéditions',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
-              ),
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
+        itemCount: _filteredExpeditions?.length ?? 0,
+        itemBuilder: (context, index) {
+          final expedition = _filteredExpeditions![index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ExpeditionListItem(
+              expedition: expedition,
+              onTap: () => _showExpeditionDetails(context, expedition),
             ),
-          ),
-          RefreshIndicator(
-            onRefresh: _refreshData,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: _filteredExpeditions?.length ?? 0,
-              itemBuilder: (context, index) {
-                final expedition = _filteredExpeditions![index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: ExpeditionListItem(
-                    expedition: expedition,
-                    onTap: () => _showExpeditionDetails(context, expedition),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -459,96 +452,73 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Text(
-              'Historique des versements',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100, left: 10, right: 10),
+        itemCount: _filteredVersements?.length ?? 0,
+        itemBuilder: (context, index) {
+          final versement = _filteredVersements![index];
+          final montantRestant = versement.montantRestant ?? 0.0;
+          final isNegative = montantRestant < 0;
+          final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
+
+          return Container(
+            padding: EdgeInsets.all(0),
+            child: ListTile(
+              onTap:
+                  () => showVersementDetailsBottomSheet(
+                    context,
+                    versement,
+                    false,
+                  ),
+              title: Text(
+                versement.reference ?? 'Sans référence',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                versement.createdAt != null
+                    ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
+                    : 'Date inconnue',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 5,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        currencyFormat.format(versement.montantVerser),
+                        style: TextStyle(fontSize: 13, color: Colors.blue),
+                      ),
+                      Text(
+                        currencyFormat.format(versement.montantRestant),
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(
+                    isNegative ? Icons.arrow_downward : Icons.arrow_upward,
+                    color: statusColor,
+                    size: 20,
+                  ),
+                ],
               ),
             ),
-          ),
-          RefreshIndicator(
-            onRefresh: _refreshData,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: _filteredVersements?.length ?? 0,
-              itemBuilder: (context, index) {
-                final versement = _filteredVersements![index];
-                final montantRestant = versement.montantRestant ?? 0.0;
-                final isNegative = montantRestant < 0;
-                final statusColor =
-                    isNegative ? Colors.red[400] : Colors.green[400];
-
-                return Container(
-                  padding: EdgeInsets.all(0),
-                  child: ListTile(
-                    onTap:
-                        () =>
-                            showVersementDetailsBottomSheet(context, versement),
-                    title: Text(
-                      versement.reference ?? 'Sans référence',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      versement.createdAt != null
-                          ? DateFormat(
-                            'dd/MM/yyyy',
-                          ).format(versement.createdAt!)
-                          : 'Date inconnue',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 5,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              currencyFormat.format(versement.montantVerser),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(versement.montantRestant),
-                              style: TextStyle(
-                                color: statusColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Icon(
-                          isNegative
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward,
-                          color: statusColor,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

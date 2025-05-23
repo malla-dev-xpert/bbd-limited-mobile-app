@@ -211,7 +211,13 @@ class ExpeditionListItem extends StatelessWidget {
     switch (expedition.status) {
       case Status.DELIVERED:
         return _StatusInfo(
-          displayText: 'Livré',
+          displayText: 'Arrivée à destination',
+          backgroundColor: Colors.lightGreen[50]!,
+          textColor: Colors.lightGreen[700]!,
+        );
+      case Status.RECEIVED:
+        return _StatusInfo(
+          displayText: 'Livrée',
           backgroundColor: Colors.green[50]!,
           textColor: Colors.green[700]!,
         );

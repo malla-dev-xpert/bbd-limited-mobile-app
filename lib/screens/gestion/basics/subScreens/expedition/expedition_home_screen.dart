@@ -193,52 +193,6 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     );
   }
 
-  Widget _buildStatusFilter(
-    ExpeditionStatus status,
-    IconData icon,
-    Color color,
-    String label,
-  ) {
-    final isSelected = selectedStatus == status;
-    return GestureDetector(
-      onTap: () => _onStatusSelected(status),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: isSelected ? Border.all(color: color, width: 2) : null,
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : null,
-            ),
-            width: 60,
-            height: 60,
-            padding: const EdgeInsets.all(10),
-            child: Icon(icon, color: color),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? color : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _openCreateExpeditionBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
