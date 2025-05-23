@@ -73,14 +73,8 @@ class _CreatePackageFormState extends State<CreatePackageForm>
   Future<void> _loadData() async {
     setState(() => isLoading = true);
     try {
-      final clientData = await partnerServices.fetchPartnersByType(
-        'CLIENT',
-        page: 0,
-      );
-      final supplierData = await partnerServices.fetchPartnersByType(
-        'FOURNISSEUR',
-        page: 0,
-      );
+      final clientData = await partnerServices.findCustomers(page: 0);
+      final supplierData = await partnerServices.findSuppliers(page: 0);
       final warehousesData = await warehouseServices.findAllWarehouses(page: 0);
       final harborData = await harborServices.findAll(page: 0);
       final containerData = await containerServices.findAll(page: 0);

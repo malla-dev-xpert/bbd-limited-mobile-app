@@ -55,10 +55,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   }
 
   Future<void> _loadClients() async {
-    final clients = await _partnerServices.fetchPartnersByType(
-      'CLIENT',
-      page: 0,
-    );
+    final clients = await _partnerServices.findCustomers(page: 0);
     setState(() {
       _clients = clients;
     });

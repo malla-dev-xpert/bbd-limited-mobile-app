@@ -1,4 +1,5 @@
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:intl/intl.dart';
@@ -217,10 +218,11 @@ void showVersementDetailsBottomSheet(
                             top: MediaQuery.of(context).padding.bottom,
                           ),
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Implémenter la logique d'achat
-                              Navigator.pop(context);
-                            },
+                            onPressed:
+                                () => PurchaseDialog.show(context, (achat) {
+                                  // TODO: Handle the purchase completion
+                                  Navigator.pop(context);
+                                }),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF1A1E49),
                               padding: EdgeInsets.symmetric(vertical: 15),

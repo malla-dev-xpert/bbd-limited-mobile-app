@@ -35,8 +35,13 @@ class PackageItemsList extends StatelessWidget {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Quantité : ${item['quantity']}"),
-                        Text("P.U : ${item['unitPrice']}"),
+                        Row(
+                          children: [
+                            Text("Qté : ${item['quantity']}"),
+                            const SizedBox(width: 10),
+                            Text("P.U : ${item['unitPrice']}"),
+                          ],
+                        ),
                         Text(
                           "Total : ${(item['unitPrice'] * item['quantity']).toStringAsFixed(2)}",
                           style: TextStyle(
@@ -63,29 +68,6 @@ class PackageItemsList extends StatelessWidget {
                 ),
               ),
             ),
-
-        // Affichage du total général
-        if (items.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  "Total général : ",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  currencyFormat.format(_calculateTotal()),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
       ],
     );
   }

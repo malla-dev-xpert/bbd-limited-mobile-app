@@ -35,10 +35,7 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
           builder: (context, setState) {
             Future<void> loadClients() async {
               try {
-                final data = await partnerServices.fetchPartnersByType(
-                  'CLIENT',
-                  page: 0,
-                );
+                final data = await partnerServices.findCustomers(page: 0);
 
                 setState(() {
                   clients = data;

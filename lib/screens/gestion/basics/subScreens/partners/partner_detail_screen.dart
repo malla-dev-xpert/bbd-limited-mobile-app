@@ -62,7 +62,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     try {
       // Obtenir de nouvelles données des clients
       final partnerServices = PartnerServices();
-      final partners = await partnerServices.findAll(page: 0);
+      final partners = await partnerServices.findCustomers(page: 0);
       final freshPartner = partners.firstWhere(
         (p) => p.id == widget.partner.id,
         orElse: () => widget.partner,

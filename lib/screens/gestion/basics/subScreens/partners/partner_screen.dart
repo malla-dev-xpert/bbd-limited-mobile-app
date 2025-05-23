@@ -52,7 +52,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
     });
 
     try {
-      final result = await _partnerServices.findAll(
+      final result = await _partnerServices.findCustomers(
         page: currentPage,
         query: searchQuery,
       );

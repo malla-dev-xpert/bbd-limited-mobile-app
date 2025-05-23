@@ -62,10 +62,7 @@ class _EditPackageModalState extends State<EditPackageModal> {
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
     try {
-      final clients = await _partnerServices.fetchPartnersByType(
-        'CLIENT',
-        page: 0,
-      );
+      final clients = await _partnerServices.findCustomers(page: 0);
       final warehouses = await _warehouseServices.findAllWarehouses(page: 0);
 
       // Trouver le client actuellement sélectionné (si disponible)

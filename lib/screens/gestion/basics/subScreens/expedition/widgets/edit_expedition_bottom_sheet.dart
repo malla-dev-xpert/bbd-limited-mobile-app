@@ -76,10 +76,7 @@ class _EditExpeditionBottomSheetState extends State<EditExpeditionBottomSheet> {
   }
 
   Future<void> _loadClients() async {
-    final clients = await _partnerServices.fetchPartnersByType(
-      'CLIENT',
-      page: 0,
-    );
+    final clients = await _partnerServices.findCustomers(page: 0);
     setState(() {
       _clients = clients;
       _selectedClient = clients.firstWhere(

@@ -8,32 +8,27 @@ class PartnerServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<List<Partner>> fetchPartnersByType(
-    String type, {
-    int page = 0,
-    String? query,
-  }) async {
+  Future<List<Partner>> findCustomers({int page = 0, String? query}) async {
     final response = await http.get(
       Uri.parse(
-        '$baseUrl/partners/account-type?type=$type&page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
+        '$baseUrl/partners/customer?page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
       ),
-      headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(utf8.decode(response.bodyBytes));
-      final List content = jsonData['content'];
-
-      return content.map((e) => Partner.fromJson(e)).toList();
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      return jsonBody.map((e) => Partner.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des partenaires");
     }
   }
 
-  Future<List<Partner>> findAll({int page = 0, String? query}) async {
+  Future<List<Partner>> findSuppliers({int page = 0, String? query}) async {
     final response = await http.get(
       Uri.parse(
-        '$baseUrl/partners?page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
+        '$baseUrl/partners/supplier?page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
       ),
     );
 
