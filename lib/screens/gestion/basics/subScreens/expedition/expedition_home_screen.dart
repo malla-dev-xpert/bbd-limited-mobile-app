@@ -248,7 +248,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreateExpeditionForm();
+        return CreateExpeditionForm(isExpeditionScreen: true);
       },
     );
 

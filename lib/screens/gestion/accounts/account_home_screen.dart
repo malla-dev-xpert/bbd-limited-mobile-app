@@ -3,7 +3,7 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/versement.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
@@ -110,7 +110,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     filterPackages(searchController.text);
   }
 
-  Future<void> _openNewPaiementBottomSheet(BuildContext context) async {
+  Future<void> _openNewVersementBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -119,7 +119,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreatePaiementModal();
+        return NewVersementModal(isVersementScreen: true);
       },
     );
 
@@ -230,7 +230,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         onPressed: () {
-          _openNewPaiementBottomSheet(context);
+          _openNewVersementBottomSheet(context);
         },
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),

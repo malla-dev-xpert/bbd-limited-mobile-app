@@ -1,11 +1,12 @@
 import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/expedition.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
+import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:intl/intl.dart';
 
 enum OperationType { versements, expeditions }
@@ -33,14 +34,38 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _partner = widget.partner;
     _filteredVersements = _partner.versements;
     _filteredExpeditions = _partner.expeditions;
+    _sortVersementsByDate();
+  }
+
+  void _sortVersementsByDate() {
+    if (_filteredVersements != null) {
+      _filteredVersements!.sort((a, b) {
+        final dateA = a.createdAt ?? DateTime(1900);
+        final dateB = b.createdAt ?? DateTime(1900);
+        return dateB.compareTo(dateA);
+      });
+    }
   }
 
   Future<void> _refreshData() async {
-    setState(() {
-      _partner = widget.partner;
-      _filteredVersements = _partner.versements;
-      _filteredExpeditions = _partner.expeditions;
-    });
+    try {
+      // Fetch fresh partner data
+      final partnerServices = PartnerServices();
+      final partners = await partnerServices.findAll(page: 0);
+      final freshPartner = partners.firstWhere(
+        (p) => p.id == widget.partner.id,
+        orElse: () => widget.partner,
+      );
+
+      setState(() {
+        _partner = freshPartner;
+        _filteredVersements = _partner.versements;
+        _filteredExpeditions = _partner.expeditions;
+        _sortVersementsByDate();
+      });
+    } catch (e) {
+      print('Error refreshing data: $e');
+    }
   }
 
   void _filterOperations(String query) {
@@ -63,6 +88,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               return reference.contains(searchLower);
             }).toList();
       }
+      _sortVersementsByDate();
     });
   }
 
@@ -378,7 +404,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: Colors.blueGrey[50],
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.blue[300]!),
                       ),
@@ -536,7 +562,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return CreateExpeditionForm();
+        return CreateExpeditionForm(
+          clientId: widget.partner.id.toString(),
+          onExpeditionCreated: () async {
+            await _refreshData();
+          },
+        );
       },
     );
 
@@ -554,12 +585,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return CreatePaiementModal();
+        return NewVersementModal(
+          isVersementScreen: false,
+          clientId: widget.partner.id.toString(),
+          onVersementCreated: () async {
+            await _refreshData();
+          },
+        );
       },
     );
 
     if (result == true) {
-      _refreshData();
+      await _refreshData();
     }
   }
 

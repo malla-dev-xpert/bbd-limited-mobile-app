@@ -12,7 +12,15 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 
 class CreateExpeditionForm extends StatefulWidget {
-  const CreateExpeditionForm({Key? key}) : super(key: key);
+  final bool isExpeditionScreen;
+  final String? clientId;
+  final Function()? onExpeditionCreated;
+  const CreateExpeditionForm({
+    super.key,
+    this.isExpeditionScreen = false,
+    this.clientId,
+    this.onExpeditionCreated,
+  });
 
   @override
   _CreateExpeditionFormState createState() => _CreateExpeditionFormState();
@@ -62,7 +70,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       key: _formKey,
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.7,
+          maxHeight:
+              widget.isExpeditionScreen == true
+                  ? MediaQuery.of(context).size.height * 0.7
+                  : MediaQuery.of(context).size.height * 0.6,
         ),
         padding: const EdgeInsets.all(20),
         child: Stack(
@@ -79,6 +90,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ),
@@ -222,20 +234,21 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             ),
                             const SizedBox(height: 20),
 
-                            DropDownCustom<Partner>(
-                              items: _clients,
-                              selectedItem: _selectedClient,
-                              onChanged: (client) {
-                                setState(() {
-                                  _selectedClient = client;
-                                });
-                              },
-                              itemToString:
-                                  (client) =>
-                                      '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
-                              hintText: 'Choisir un client...',
-                              prefixIcon: Icons.person,
-                            ),
+                            if (widget.isExpeditionScreen)
+                              DropDownCustom<Partner>(
+                                items: _clients,
+                                selectedItem: _selectedClient,
+                                onChanged: (client) {
+                                  setState(() {
+                                    _selectedClient = client;
+                                  });
+                                },
+                                itemToString:
+                                    (client) =>
+                                        '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                hintText: 'Choisir un client...',
+                                prefixIcon: Icons.person,
+                              ),
                           ],
                         ),
                         // Step 2
@@ -469,7 +482,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       // Appel au service avec les IDs corrects
       final result = await expeditionServices.create(
         dto: dto,
-        clientId: _selectedClient!.id,
+        clientId:
+            widget.isExpeditionScreen
+                ? _selectedClient!.id
+                : int.parse(widget.clientId!),
         userId: user.id,
       );
 
@@ -477,6 +493,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
 
       switch (result) {
         case "SUCCESS":
+          widget.onExpeditionCreated?.call();
           Navigator.pop(context, true);
           showSuccessTopSnackBar(context, "Expédition créée avec succès !");
           break;

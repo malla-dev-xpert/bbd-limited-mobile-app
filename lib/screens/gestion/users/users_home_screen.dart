@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/versement.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/create_paiement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -116,7 +116,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreatePaiementModal();
+        return NewVersementModal();
       },
     );
 
