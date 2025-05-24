@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +33,6 @@ Widget _detailRow(String label, String? value) {
 void showVersementDetailsBottomSheet(
   BuildContext context,
   Versement versement,
-  final bool isVersementScreen,
   VoidCallback? onVersementUpdated,
 ) async {
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
@@ -215,53 +212,54 @@ void showVersementDetailsBottomSheet(
                                   },
                                 ),
                       ),
-                      if (isVersementScreen == false)
-                        Container(
-                          width: double.infinity,
-                          margin: EdgeInsets.only(
-                            top: MediaQuery.of(context).padding.bottom,
-                          ),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              if (versement.clientId == null ||
-                                  versement.id == null) {
-                                showErrorTopSnackBar(
-                                  context,
-                                  "Informations du versement incomplètes",
-                                );
+                      Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.bottom,
+                        ),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (versement.partnerId == null ||
+                                versement.id == null) {
+                              showErrorTopSnackBar(
+                                context,
+                                "Informations du versement incomplètes",
+                              );
+                              return;
+                            }
 
-                                return;
-                              }
+                            // Fermer d'abord le bottom sheet
+                            Navigator.of(context).pop();
+
+                            // Attendre un court instant avant d'ouvrir le dialogue
+                            Future.delayed(Duration(milliseconds: 100), () {
                               PurchaseDialog.show(
                                 context,
                                 (achat) {
-                                  Navigator.pop(context);
                                   onVersementUpdated?.call();
                                 },
-                                versement.clientId!,
+                                versement.partnerId!,
                                 versement.id!,
                               );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A1E49),
-                              padding: EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            label: Text(
-                              'Effectuer un achat',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                            icon: Iconify(
-                              Majesticons.money_hand_line,
-                              color: Colors.white,
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A1E49),
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
+                          label: Text(
+                            'Effectuer un achat',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          icon: Iconify(
+                            Majesticons.money_hand_line,
+                            color: Colors.white,
+                          ),
                         ),
+                      ),
                     ],
                   ),
                 ],

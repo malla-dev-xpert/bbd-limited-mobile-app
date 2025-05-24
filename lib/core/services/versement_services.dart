@@ -14,6 +14,8 @@ class VersementServices {
       Uri.parse('$baseUrl/versements?cliendId=$cliendId&page=$page'),
     );
 
+    log(response.body);
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
@@ -29,6 +31,8 @@ class VersementServices {
       Uri.parse('$baseUrl/versements?page=$page'),
     );
 
+    log(response.body);
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
@@ -39,10 +43,12 @@ class VersementServices {
     }
   }
 
-  Future<String?> create(int userId, int clientId, Versement versement) async {
+  Future<String?> create(int userId, int partnerId, Versement versement) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/versements/new?userId=$userId&clientId=$clientId'),
+        Uri.parse(
+          '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId',
+        ),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(versement.toJson()),
       );

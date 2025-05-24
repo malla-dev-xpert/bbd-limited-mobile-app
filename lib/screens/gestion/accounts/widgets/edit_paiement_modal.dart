@@ -53,9 +53,9 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
       final clientData = await partnerServices.findCustomers(page: 0);
 
       if (clientData.isNotEmpty) {
-        if (widget.versement.clientId != null) {
+        if (widget.versement.partnerId != null) {
           selectedClient = clientData.firstWhere(
-            (c) => c.id == widget.versement.clientId,
+            (c) => c.id == widget.versement.partnerId,
             orElse: () => clientData.first,
           );
         } else if (widget.versement.partnerName != null) {

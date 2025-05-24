@@ -472,7 +472,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                   () => showVersementDetailsBottomSheet(
                     context,
                     versement,
-                    false,
                     _refreshData,
                   ),
               title: Text(

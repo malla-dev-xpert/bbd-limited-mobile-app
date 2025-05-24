@@ -88,10 +88,17 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     int supplierId,
     String supplierName,
   ) {
+    // Conversion explicite et validation
+    final qty = quantity.toInt();
+    if (qty <= 0) {
+      showErrorTopSnackBar(context, "Quantité invalide");
+      return;
+    }
+
     setState(
       () => localItems.add({
         'description': description,
-        'quantity': quantity,
+        'quantity': qty, // Stocké comme int
         'unitPrice': unitPrice,
         'supplierId': supplierId,
         'supplier': supplierName,
@@ -129,9 +136,10 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
             localItems
                 .map(
                   (item) => CreateLigneDto(
-                    descriptionItem: item['description']?.toString(),
-                    quantityItem: (item['quantity'] as num?)?.toDouble(),
-                    prixUnitaire: (item['unitPrice'] as num?)?.toDouble(),
+                    descriptionItem: item['description']?.toString() ?? '',
+                    quantityItem: (item['quantity'] as num?)?.toInt() ?? 0,
+                    prixUnitaire:
+                        (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
                     supplierId: selectedSupplier!.id,
                   ),
                 )
@@ -149,6 +157,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       switch (result) {
         case "ACHAT_CREATED":
+          // Récupérer l'achat créé
           Navigator.pop(context, true);
           showSuccessTopSnackBar(context, "Achat créé avec succès !");
           break;
@@ -212,29 +221,6 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                     Expanded(
                       child: ListView(
                         children: [
-                          if (suppliers.isNotEmpty)
-                            DropdownButtonFormField<Partner>(
-                              value: selectedSupplier,
-                              decoration: const InputDecoration(
-                                labelText: 'Fournisseur',
-                                border: OutlineInputBorder(),
-                              ),
-                              items:
-                                  suppliers.map((supplier) {
-                                    return DropdownMenuItem(
-                                      value: supplier,
-                                      child: Text(
-                                        '${supplier.firstName} ${supplier.lastName} | ${supplier.phoneNumber}',
-                                      ),
-                                    );
-                                  }).toList(),
-                              onChanged: (Partner? value) {
-                                setState(() {
-                                  selectedSupplier = value;
-                                });
-                              },
-                            ),
-                          const SizedBox(height: 20),
                           PackageItemForm(
                             onAddItem: (
                               description,

@@ -417,7 +417,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                                 showVersementDetailsBottomSheet(
                                                   context,
                                                   paiement,
-                                                  true,
                                                   () => fetchPaiements(
                                                     reset: true,
                                                   ),
