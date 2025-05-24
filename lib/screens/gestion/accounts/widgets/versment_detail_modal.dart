@@ -220,7 +220,6 @@ void showVersementDetailsBottomSheet(
                           child: ElevatedButton.icon(
                             onPressed:
                                 () => PurchaseDialog.show(context, (achat) {
-                                  // TODO: Handle the purchase completion
                                   Navigator.pop(context);
                                 }),
                             style: ElevatedButton.styleFrom(

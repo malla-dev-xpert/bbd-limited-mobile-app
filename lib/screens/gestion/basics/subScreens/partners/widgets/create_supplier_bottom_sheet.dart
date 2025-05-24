@@ -6,15 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:country_picker/country_picker.dart';
 
-class CreatePartnerBottomSheet extends StatefulWidget {
-  const CreatePartnerBottomSheet({Key? key}) : super(key: key);
+class CreateSupplierBottomSheet extends StatefulWidget {
+  final Function()? onSupplierCreated;
+
+  const CreateSupplierBottomSheet({Key? key, this.onSupplierCreated})
+    : super(key: key);
 
   @override
-  State<CreatePartnerBottomSheet> createState() =>
-      _CreatePartnerBottomSheetState();
+  State<CreateSupplierBottomSheet> createState() =>
+      _CreateSupplierBottomSheetState();
 }
 
-class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
+class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final PartnerServices _partnerServices = PartnerServices();
 
@@ -24,11 +27,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _adresseController = TextEditingController();
 
-  // final List<String> _accountTypeList = ['CLIENT', 'FOURNISSEUR'];
-  // String? _acccountType = '';
-
   Country? _selectedCountry;
-
   bool _isLoading = false;
   bool isFormLoading = false;
 
@@ -56,7 +55,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
-                    'Ajouter un nouveau client',
+                    'Ajouter un nouveau fournisseur',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -170,28 +169,12 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // Container(
-                    //   decoration: BoxDecoration(
-                    //     border: Border.all(color: Colors.grey[300]!),
-                    //     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    //   ),
-                    //   child: CustomDropdown<String>(
-                    //     hintText: 'Type de partenaire',
-                    //     items: _accountTypeList,
-                    //     onChanged: (value) {
-                    //       setState(() {
-                    //         _acccountType = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
                     const SizedBox(height: 24),
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : confirmationButton(
                           isLoading: isFormLoading,
-                          onPressed: _savePartner,
+                          onPressed: _saveSupplier,
                           label: "Enregistrer",
                           icon: Icons.check_circle_rounded,
                           subLabel: "Enregistrement...",
@@ -206,7 +189,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
     );
   }
 
-  Future<void> _savePartner() async {
+  Future<void> _saveSupplier() async {
     setState(() => isFormLoading = true);
     final AuthService authService = AuthService();
 
@@ -233,18 +216,10 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         return;
       }
 
-      if (_selectedCountry!.name.isEmpty) {
+      if (_selectedCountry == null) {
         showErrorTopSnackBar(context, "Veuillez sélectionner un pays");
         return;
       }
-
-      // if (_acccountType!.toString().isEmpty) {
-      //   showErrorTopSnackBar(
-      //     context,
-      //     "Veuillez sélectionner un type de partenaire",
-      //   );
-      //   return;
-      // }
 
       final success = await _partnerServices.create(
         _firstNameController.text.trim(),
@@ -253,7 +228,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         _emailController.text.trim(),
         _selectedCountry!.name,
         _adresseController.text.trim(),
-        'CLIENT',
+        'FOURNISSEUR',
         user.id,
       );
 
@@ -278,10 +253,13 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
           _emailController.clear();
           _phoneController.clear();
           _adresseController.clear();
-          // _acccountType = '';
           _selectedCountry = null;
-          showSuccessTopSnackBar(context, "Partenaire créé avec succès !");
+          showSuccessTopSnackBar(context, "Fournisseur créé avec succès !");
         });
+
+        if (widget.onSupplierCreated != null) {
+          widget.onSupplierCreated!();
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
