@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:iconify_flutter/icons/majesticons.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 
 Widget _detailRow(String label, String? value) {
   return Padding(
@@ -33,6 +36,7 @@ void showVersementDetailsBottomSheet(
   BuildContext context,
   Versement versement,
   final bool isVersementScreen,
+  VoidCallback? onVersementUpdated,
 ) async {
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
@@ -218,10 +222,26 @@ void showVersementDetailsBottomSheet(
                             top: MediaQuery.of(context).padding.bottom,
                           ),
                           child: ElevatedButton.icon(
-                            onPressed:
-                                () => PurchaseDialog.show(context, (achat) {
+                            onPressed: () {
+                              if (versement.clientId == null ||
+                                  versement.id == null) {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Informations du versement incomplètes",
+                                );
+
+                                return;
+                              }
+                              PurchaseDialog.show(
+                                context,
+                                (achat) {
                                   Navigator.pop(context);
-                                }),
+                                  onVersementUpdated?.call();
+                                },
+                                versement.clientId!,
+                                versement.id!,
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF1A1E49),
                               padding: EdgeInsets.symmetric(vertical: 15),

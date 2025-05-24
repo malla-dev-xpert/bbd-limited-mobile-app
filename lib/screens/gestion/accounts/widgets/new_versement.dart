@@ -105,6 +105,10 @@ class _NewVersementModalState extends State<NewVersementModal>
       final versementDto = Versement.fromJson({
         "montantVerser": double.tryParse(montantVerserController.text),
         "createdAt": myDate!.toIso8601String(),
+        "clientId":
+            widget.isVersementScreen
+                ? selectedCLients!.id
+                : int.parse(widget.clientId!),
       });
 
       final result = await versementServices.create(
@@ -115,7 +119,7 @@ class _NewVersementModalState extends State<NewVersementModal>
         versementDto,
       );
 
-      if (result == "CREATED") {
+      if (result != null) {
         widget.onVersementCreated?.call();
         Navigator.pop(context, true);
         showSuccessTopSnackBar(

@@ -4,7 +4,6 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/package.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/edit_package_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/packages_list.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
@@ -126,23 +125,23 @@ class _PackageScreen extends State<PackageScreen> {
     filterPackages(searchController.text);
   }
 
-  Future<void> _openCreatePackageBottomSheet(BuildContext context) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return CreatePackageForm();
-      },
-    );
+  // Future<void> _openCreatePackageBottomSheet(BuildContext context) async {
+  //   final result = await showModalBottomSheet<bool>(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.white,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  //     ),
+  //     builder: (context) {
+  //       return CreatePackageForm();
+  //     },
+  //   );
 
-    if (result == true) {
-      fetchPackages(reset: true);
-    }
-  }
+  //   if (result == true) {
+  //     fetchPackages(reset: true);
+  //   }
+  // }
 
   Future<void> _deletePackage(Packages pkg) async {
     final confirmed = await showDialog<bool>(
@@ -209,7 +208,7 @@ class _PackageScreen extends State<PackageScreen> {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCreatePackageBottomSheet(context),
+        onPressed: () => {},
         backgroundColor: const Color(0xFF1A1E49),
         heroTag: 'package_fab',
         child: const Icon(Icons.add, color: Colors.white),

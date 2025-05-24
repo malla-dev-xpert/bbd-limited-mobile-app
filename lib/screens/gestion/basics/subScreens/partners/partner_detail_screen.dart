@@ -473,6 +473,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                     context,
                     versement,
                     false,
+                    _refreshData,
                   ),
               title: Text(
                 versement.reference ?? 'Sans référence',

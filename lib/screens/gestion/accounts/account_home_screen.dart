@@ -418,6 +418,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                                   context,
                                                   paiement,
                                                   true,
+                                                  () => fetchPaiements(
+                                                    reset: true,
+                                                  ),
                                                 ),
                                         onEdit:
                                             () => _showEditPaiementModal(

@@ -1,21 +1,42 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/models/achats/create_achat_dto.dart';
+import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/package_items_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/package_items_list.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class PurchaseDialog extends StatefulWidget {
   final Function(Achat) onPurchaseComplete;
+  final int clientId;
+  final int versementId;
 
-  const PurchaseDialog({Key? key, required this.onPurchaseComplete})
-    : super(key: key);
+  const PurchaseDialog({
+    Key? key,
+    required this.onPurchaseComplete,
+    required this.clientId,
+    required this.versementId,
+  }) : super(key: key);
 
-  static void show(BuildContext context, Function(Achat) onPurchaseComplete) {
+  static void show(
+    BuildContext context,
+    Function(Achat) onPurchaseComplete,
+    int clientId,
+    int versementId,
+  ) {
     showDialog(
       context: context,
       builder:
-          (context) => PurchaseDialog(onPurchaseComplete: onPurchaseComplete),
+          (context) => PurchaseDialog(
+            onPurchaseComplete: onPurchaseComplete,
+            clientId: clientId,
+            versementId: versementId,
+          ),
     );
   }
 
@@ -27,10 +48,37 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
   final _formKey = GlobalKey<FormState>();
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
   final List<Map<String, dynamic>> localItems = [];
+  bool isLoading = false;
+  final AuthService authService = AuthService();
+  final AchatServices achatServices = AchatServices();
+  final PartnerServices partnerServices = PartnerServices();
+
+  List<Partner> suppliers = [];
+  Partner? selectedSupplier;
 
   @override
   void initState() {
     super.initState();
+    _loadSuppliers();
+  }
+
+  Future<void> _loadSuppliers() async {
+    try {
+      final suppliersData = await partnerServices.findSuppliers(page: 0);
+      setState(() {
+        suppliers = suppliersData;
+        if (suppliers.isNotEmpty) {
+          selectedSupplier = suppliers.first;
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(
+          context,
+          "Erreur lors du chargement des fournisseurs",
+        );
+      }
+    }
   }
 
   void _addItem(
@@ -55,15 +103,84 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     setState(() => localItems.removeAt(index));
   }
 
+  Future<void> _submitForm() async {
+    if (selectedSupplier == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur.");
+      return;
+    }
+
+    if (localItems.isEmpty) {
+      showErrorTopSnackBar(context, "Ajoutez au moins un article.");
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final user = await authService.getUserInfo();
+      if (user?.id == null) {
+        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        return;
+      }
+
+      final createAchatDto = CreateAchatDto(
+        versementId: widget.versementId,
+        lignes:
+            localItems
+                .map(
+                  (item) => CreateLigneDto(
+                    descriptionItem: item['description']?.toString(),
+                    quantityItem: (item['quantity'] as num?)?.toDouble(),
+                    prixUnitaire: (item['unitPrice'] as num?)?.toDouble(),
+                    supplierId: selectedSupplier!.id,
+                  ),
+                )
+                .toList(),
+      );
+
+      final result = await achatServices.createAchatForClient(
+        clientId: widget.clientId,
+        supplierId: selectedSupplier!.id,
+        userId: user!.id,
+        dto: createAchatDto,
+      );
+
+      if (!mounted) return;
+
+      switch (result) {
+        case "ACHAT_CREATED":
+          Navigator.pop(context, true);
+          showSuccessTopSnackBar(context, "Achat créé avec succès !");
+          break;
+        case "INVALID_VERSEMENT":
+          showErrorTopSnackBar(
+            context,
+            "Le versement ne correspond pas au client",
+          );
+          break;
+        case "INACTIVE_VERSEMENT":
+          showErrorTopSnackBar(context, "Le versement n'est pas actif");
+          break;
+        default:
+          showErrorTopSnackBar(context, "Erreur: $result");
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-
       backgroundColor: Colors.white,
       insetPadding: EdgeInsets.zero,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
+        width: MediaQuery.of(context).size.width * 0.95,
         height: MediaQuery.of(context).size.height * 0.9,
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -95,7 +212,48 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                     Expanded(
                       child: ListView(
                         children: [
-                          PackageItemForm(onAddItem: _addItem),
+                          if (suppliers.isNotEmpty)
+                            DropdownButtonFormField<Partner>(
+                              value: selectedSupplier,
+                              decoration: const InputDecoration(
+                                labelText: 'Fournisseur',
+                                border: OutlineInputBorder(),
+                              ),
+                              items:
+                                  suppliers.map((supplier) {
+                                    return DropdownMenuItem(
+                                      value: supplier,
+                                      child: Text(
+                                        '${supplier.firstName} ${supplier.lastName} | ${supplier.phoneNumber}',
+                                      ),
+                                    );
+                                  }).toList(),
+                              onChanged: (Partner? value) {
+                                setState(() {
+                                  selectedSupplier = value;
+                                });
+                              },
+                            ),
+                          const SizedBox(height: 20),
+                          PackageItemForm(
+                            onAddItem: (
+                              description,
+                              quantity,
+                              unitPrice,
+                              _,
+                              __,
+                            ) {
+                              if (selectedSupplier != null) {
+                                _addItem(
+                                  description,
+                                  quantity,
+                                  unitPrice,
+                                  selectedSupplier!.id,
+                                  '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
+                                );
+                              }
+                            },
+                          ),
                           const SizedBox(height: 10),
                           PackageItemsList(
                             items: localItems,
@@ -136,7 +294,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A1E49),
+                              color: Color(0xFF1A1E49),
                             ),
                           ),
                         ],
@@ -144,11 +302,8 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                     ),
                     const SizedBox(height: 10),
                     confirmationButton(
-                      isLoading: false,
-                      onPressed: () {
-                        // TODO: Implement save functionality
-                        Navigator.pop(context);
-                      },
+                      isLoading: isLoading,
+                      onPressed: _submitForm,
                       label: 'Valider',
                       icon: Icons.verified_outlined,
                       subLabel: 'Enregistrement...',

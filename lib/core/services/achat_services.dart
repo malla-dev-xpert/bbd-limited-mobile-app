@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -23,12 +25,10 @@ class AchatServices {
     required int clientId,
     required int supplierId,
     required int userId,
-    required int warehouseId,
-    required int containerId,
     required CreateAchatDto dto,
   }) async {
     final url = Uri.parse(
-      '$baseUrl/achats/create?clientId=$clientId&supplierId=$supplierId&userId=$userId&warehouseId=$warehouseId&containerId=$containerId',
+      '$baseUrl/achats/create?clientId=$clientId&supplierId=$supplierId&userId=$userId',
     );
 
     try {
@@ -38,19 +38,40 @@ class AchatServices {
         body: jsonEncode(dto.toJson()),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return "SUCCESS";
-      } else if (response.statusCode == 409 &&
-          response.body == 'Invalid versement.') {
-        return "INVALID_ACHAT";
-      } else if (response.statusCode == 409 &&
-          response.body == "Inactif versement.") {
-        return "INACTIVE_ACHAT";
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return "ACHAT_CREATED";
+      } else if (response.statusCode == 400) {
+        return response.body;
+      } else {
+        return 'SERVER_ERROR';
       }
     } on http.ClientException catch (e) {
+      log('Network error: $e');
       return 'NETWORK_ERROR';
     } catch (e) {
-      throw Exception('Erreur inattendue: ${e.toString()}');
+      log('Unexpected error: $e');
+      return 'UNEXPECTED_ERROR';
+    }
+  }
+
+  Future<Achat?> getLastAchatForClient(int clientId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/achats/client/$clientId/last'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
+        return Achat.fromJson(jsonBody);
+      }
+      return null;
+    } catch (e) {
+      throw Exception(
+        'Erreur lors de la récupération du dernier achat: ${e.toString()}',
+      );
     }
   }
 }

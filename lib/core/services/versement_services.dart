@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -38,15 +39,15 @@ class VersementServices {
     }
   }
 
-  Future<String?> create(int userId, int partnerId, Versement versement) async {
+  Future<String?> create(int userId, int clientId, Versement versement) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId',
-        ),
+        Uri.parse('$baseUrl/versements/new?userId=$userId&clientId=$clientId'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(versement.toJson()),
       );
+
+      log(response.body);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "CREATED";
