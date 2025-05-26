@@ -19,12 +19,12 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 
 class CreateExpeditionForm extends StatefulWidget {
-  final bool isExpeditionScreen;
+  final bool isPackageScreen;
   final String? clientId;
   final Function()? onExpeditionCreated;
   const CreateExpeditionForm({
     super.key,
-    this.isExpeditionScreen = false,
+    this.isPackageScreen = false,
     this.clientId,
     this.onExpeditionCreated,
   });
@@ -98,7 +98,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       child: Container(
         constraints: BoxConstraints(
           maxHeight:
-              widget.isExpeditionScreen == true
+              widget.isPackageScreen == true
                   ? MediaQuery.of(context).size.height * 0.7
                   : MediaQuery.of(context).size.height * 0.6,
         ),
@@ -261,7 +261,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             ),
                             const SizedBox(height: 20),
 
-                            if (widget.isExpeditionScreen)
+                            if (widget.isPackageScreen)
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -666,7 +666,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       final result = await packageServices.create(
         dto: dto,
         clientId:
-            widget.isExpeditionScreen
+            widget.isPackageScreen
                 ? _selectedClient!.id
                 : int.parse(widget.clientId!),
         userId: user.id,
