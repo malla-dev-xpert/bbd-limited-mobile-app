@@ -73,7 +73,7 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector(
                 onTap: () {},
@@ -100,7 +100,7 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                         )
                         : Container(),
                     Text(
-                      'Détails de l\'expédition',
+                      'Détails du colis',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1A1E49),
@@ -271,6 +271,12 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                 _buildInfoRow(
                   'Pays de destination',
                   widget.packages.destinationCountry ?? 'N/A',
+                ),
+                const SizedBox(height: 12),
+                _buildInfoRow(
+                  'Entrepôt',
+                  '${widget.packages.warehouseName ?? ''} | ${widget.packages.warehouseAddress ?? ''}'
+                      .trim(),
                 ),
                 const SizedBox(height: 12),
                 widget.packages.expeditionType == "avion"

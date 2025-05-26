@@ -5,6 +5,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:intl/intl.dart';
 
@@ -286,9 +287,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           final package = _filteredPackages![index];
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: GestureDetector(
+            child: PackageListItem(
+              packages: package,
               onTap: () => _showPackageDetails(context, package),
-              child: PackageDetailsBottomSheet(packages: package),
             ),
           );
         },

@@ -42,9 +42,9 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchExpeditions();
+    fetchPackages();
     _refreshController.stream.listen((_) {
-      fetchExpeditions(reset: true);
+      fetchPackages(reset: true);
     });
   }
 
@@ -55,10 +55,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
     super.dispose();
   }
 
-  Future<void> fetchExpeditions({
-    bool reset = false,
-    String? searchQuery,
-  }) async {
+  Future<void> fetchPackages({bool reset = false, String? searchQuery}) async {
     if (isLoading || (!reset && !hasMoreData)) return;
 
     setState(() {
@@ -125,9 +122,9 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
         }).toList();
   }
 
-  void searchExpedition(String query) async {
+  void searchPackage(String query) async {
     if (query.isEmpty) {
-      await fetchExpeditions(reset: true, searchQuery: null);
+      await fetchPackages(reset: true, searchQuery: null);
     } else {
       _applyFilters(query);
     }
@@ -193,7 +190,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
     );
   }
 
-  Future<void> _openCreateExpeditionBottomSheet(BuildContext context) async {
+  Future<void> _openCreatePackageBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -207,11 +204,11 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
     );
 
     if (result == true) {
-      fetchExpeditions(reset: true);
+      fetchPackages(reset: true);
     }
   }
 
-  Future<void> _openExpeditionDetailsBottomSheet(
+  Future<void> _openPackageDetailsBottomSheet(
     BuildContext context,
     Packages package,
   ) async {
@@ -226,7 +223,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
         return PackageDetailsBottomSheet(
           packages: package,
           onStart: (updatedExpedition) {
-            fetchExpeditions(reset: true);
+            fetchPackages(reset: true);
           },
           onEdit: (updatedExpedition) async {
             try {
@@ -243,7 +240,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                     context,
                     "Colis ${updatedExpedition.ref} modifiée avec succès.",
                   );
-                  fetchExpeditions(reset: true);
+                  fetchPackages(reset: true);
                 }
               } else {
                 if (context.mounted) {
@@ -263,14 +260,14 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
             }
           },
           onDelete: (updatedExpedition) {
-            fetchExpeditions(reset: true);
+            fetchPackages(reset: true);
           },
         );
       },
     );
 
     if (result == true) {
-      fetchExpeditions(reset: true);
+      fetchPackages(reset: true);
     }
   }
 
@@ -302,7 +299,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Gestion des expéditions',
+                          'Gestion des colis',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
@@ -312,7 +309,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                           ),
                         ),
                         Text(
-                          '${filteredPackages.length} expéditions trouvées',
+                          '${filteredPackages.length} colis trouvées',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -357,11 +354,11 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                 children: [
                   Expanded(
                     child: TextField(
-                      onChanged: searchExpedition,
+                      onChanged: searchPackage,
                       controller: searchController,
                       autocorrect: false,
                       decoration: InputDecoration(
-                        labelText: 'Rechercher une expédition...',
+                        labelText: 'Rechercher un colis...',
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -448,15 +445,13 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                                     scrollInfo.metrics.maxScrollExtent &&
                                 !isLoading &&
                                 hasMoreData) {
-                              fetchExpeditions(
-                                searchQuery: searchController.text,
-                              );
+                              fetchPackages(searchQuery: searchController.text);
                             }
                             return false;
                           },
                           child: RefreshIndicator(
                             onRefresh: () async {
-                              await fetchExpeditions(reset: true);
+                              await fetchPackages(reset: true);
                             },
                             displacement: 40,
                             color: Theme.of(context).primaryColor,
@@ -484,7 +479,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                                   child: PackageListItem(
                                     packages: package,
                                     onTap:
-                                        () => _openExpeditionDetailsBottomSheet(
+                                        () => _openPackageDetailsBottomSheet(
                                           context,
                                           package,
                                         ),
@@ -503,7 +498,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCreateExpeditionBottomSheet(context),
+        onPressed: () => _openCreatePackageBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
         heroTag: 'expedition_fab',
         child: const Icon(Icons.add, color: Colors.white, size: 28),
