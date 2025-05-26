@@ -1,7 +1,7 @@
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 
 Future<List<Packages>?> showAddPackagesToContainerDialog(
@@ -167,8 +167,8 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                   return CheckboxListTile(
                     value: isSelected,
                     onChanged: (_) => _togglePackageSelection(package),
-                    title: Text(package.reference ?? ''),
-                    subtitle: Text('${package.items?.length ?? 0} articles'),
+                    title: Text(package.ref ?? ''),
+                    subtitle: Text('${package.itemQuantity ?? 0} cartons'),
                     secondary: Icon(
                       Icons.inventory_2,
                       color: Colors.green[400],

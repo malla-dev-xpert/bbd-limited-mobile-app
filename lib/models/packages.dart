@@ -1,6 +1,6 @@
 import 'package:bbd_limited/core/enums/status.dart';
 
-class Expedition {
+class Packages {
   final int? id;
   final String? ref;
   final String? expeditionType;
@@ -15,8 +15,12 @@ class Expedition {
   final DateTime? arrivalDate;
   final DateTime? startDate;
   Status? status;
+  final String? warehouseName;
+  final String? warehouseAddress;
+  final int? warehouseId;
+  final int? containerId;
 
-  Expedition copyWith({
+  Packages copyWith({
     int? id,
     String? ref,
     String? expeditionType,
@@ -31,8 +35,12 @@ class Expedition {
     DateTime? arrivalDate,
     DateTime? startDate,
     Status? status,
+    String? warehouseName,
+    String? warehouseAddress,
+    int? warehouseId,
+    int? containerId,
   }) {
-    return Expedition(
+    return Packages(
       id: id ?? this.id,
       ref: ref ?? this.ref,
       expeditionType: expeditionType ?? this.expeditionType,
@@ -47,6 +55,10 @@ class Expedition {
       arrivalDate: arrivalDate ?? this.arrivalDate,
       startDate: startDate ?? this.startDate,
       status: status ?? this.status,
+      warehouseName: warehouseName ?? this.warehouseName,
+      warehouseAddress: warehouseAddress ?? this.warehouseAddress,
+      warehouseId: warehouseId ?? this.warehouseId,
+      containerId: containerId ?? this.containerId,
     );
   }
 
@@ -65,9 +77,13 @@ class Expedition {
     'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
     'startDate': startDate?.toUtc().toIso8601String(),
     'status': status?.name,
+    'warehouseName': warehouseName,
+    'warehouseAddress': warehouseAddress,
+    'warehouseId': warehouseId,
+    'containerId': containerId,
   };
 
-  Expedition({
+  Packages({
     this.id,
     this.ref,
     this.expeditionType,
@@ -82,9 +98,13 @@ class Expedition {
     this.arrivalDate,
     this.startDate,
     this.status,
+    this.warehouseId,
+    this.warehouseName,
+    this.warehouseAddress,
+    this.containerId,
   });
 
-  factory Expedition.fromJson(Map<String, dynamic> json) {
+  factory Packages.fromJson(Map<String, dynamic> json) {
     String? statusString = json['status'];
     Status status;
 
@@ -97,7 +117,12 @@ class Expedition {
       status = Status.CREATE;
     }
 
-    return Expedition(
+    int? parseNullableInt(dynamic value) {
+      if (value == null) return null;
+      return int.tryParse(value.toString());
+    }
+
+    return Packages(
       id: json['id'] as int?,
       ref: json['ref'] as String?,
       expeditionType: json['expeditionType'] as String?,
@@ -116,6 +141,10 @@ class Expedition {
       startDate:
           json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
       status: status,
+      warehouseName: json['warehouseName'] as String?,
+      warehouseAddress: json['warehouseAddress'] as String?,
+      containerId: parseNullableInt(json['containerId']),
+      warehouseId: parseNullableInt(json['warehouseId']),
     );
   }
 }

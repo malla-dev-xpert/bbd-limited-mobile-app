@@ -2,10 +2,9 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_mod
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/models/expedition.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_details_bottom_sheet.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
+import 'package:bbd_limited/models/packages.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:intl/intl.dart';
 
@@ -25,7 +24,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   late Partner _partner;
   final TextEditingController _searchController = TextEditingController();
   List<dynamic>? _filteredVersements;
-  List<Expedition>? _filteredExpeditions;
+  List<Packages>? _filteredPackages;
   OperationType _selectedOperationType = OperationType.versements;
 
   @override
@@ -33,7 +32,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     super.initState();
     _partner = widget.partner;
     _filteredVersements = _partner.versements;
-    _filteredExpeditions = _partner.expeditions;
+    _filteredPackages = _partner.packages;
     _sortVersementsByDate();
     _sortExpeditionsByDate();
   }
@@ -49,8 +48,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   void _sortExpeditionsByDate() {
-    if (_filteredExpeditions != null) {
-      _filteredExpeditions!.sort((a, b) {
+    if (_filteredPackages != null) {
+      _filteredPackages!.sort((a, b) {
         final dateA = a.startDate ?? DateTime(1900);
         final dateB = b.startDate ?? DateTime(1900);
         return dateB.compareTo(dateA);
@@ -71,7 +70,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       setState(() {
         _partner = freshPartner;
         _filteredVersements = _partner.versements;
-        _filteredExpeditions = _partner.expeditions;
+        _filteredPackages = _partner.packages;
         _sortVersementsByDate();
         _sortExpeditionsByDate();
       });
@@ -84,7 +83,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     setState(() {
       if (query.isEmpty) {
         _filteredVersements = _partner.versements;
-        _filteredExpeditions = _partner.expeditions;
+        _filteredPackages = _partner.packages;
       } else {
         _filteredVersements =
             _partner.versements?.where((versement) {
@@ -93,8 +92,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               return reference.contains(searchLower);
             }).toList();
 
-        _filteredExpeditions =
-            _partner.expeditions?.where((expedition) {
+        _filteredPackages =
+            _partner.packages?.where((expedition) {
               final reference = expedition.ref?.toLowerCase() ?? '';
               final searchLower = query.toLowerCase();
               return reference.contains(searchLower);
@@ -262,7 +261,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Widget _buildExpeditionsList(BuildContext context) {
-    if (_filteredExpeditions == null || _filteredExpeditions!.isEmpty) {
+    if (_filteredPackages == null || _filteredPackages!.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height * 0.2,
@@ -282,14 +281,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         shrinkWrap: true,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(bottom: 100),
-        itemCount: _filteredExpeditions?.length ?? 0,
+        itemCount: _filteredPackages?.length ?? 0,
         itemBuilder: (context, index) {
-          final expedition = _filteredExpeditions![index];
+          final package = _filteredPackages![index];
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ExpeditionListItem(
-              expedition: expedition,
-              onTap: () => _showExpeditionDetails(context, expedition),
+            child: GestureDetector(
+              onTap: () => _showPackageDetails(context, package),
+              child: PackageDetailsBottomSheet(packages: package),
             ),
           );
         },
@@ -297,7 +296,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
   }
 
-  void _showExpeditionDetails(BuildContext context, Expedition expedition) {
+  void _showPackageDetails(BuildContext context, Packages package) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -306,8 +305,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return ExpeditionDetailsBottomSheet(
-          expedition: expedition,
+        return PackageDetailsBottomSheet(
+          packages: package,
           onStart: (updatedExpedition) {
             _refreshData();
           },

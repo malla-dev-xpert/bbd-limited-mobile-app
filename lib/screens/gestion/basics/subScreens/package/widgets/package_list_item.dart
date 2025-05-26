@@ -1,14 +1,14 @@
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/models/expedition.dart';
+import 'package:bbd_limited/models/packages.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/ion.dart';
 import 'package:iconify_flutter/icons/ph.dart';
 
 enum ExpeditionStatusFilter { all, delivered, inProgress, pending }
 
-class ExpeditionListItem extends StatelessWidget {
-  final Expedition expedition;
+class PackageListItem extends StatelessWidget {
+  final Packages packages;
   final VoidCallback onTap;
 
   // Constants for styling
@@ -18,9 +18,9 @@ class ExpeditionListItem extends StatelessWidget {
   static const double _spacing = 10.0;
   static const double _infoTextSize = 14.0;
 
-  const ExpeditionListItem({
+  const PackageListItem({
     super.key,
-    required this.expedition,
+    required this.packages,
     required this.onTap,
   });
 
@@ -80,12 +80,12 @@ class ExpeditionListItem extends StatelessWidget {
   }
 
   Widget _buildReferenceText(BuildContext context) {
-    final statusInfo = _getStatusInfo(expedition.status?.name);
+    final statusInfo = _getStatusInfo(packages.status?.name);
 
     return Row(
       children: [
         Text(
-          expedition.ref ?? 'Sans référence',
+          packages.ref ?? 'Sans référence',
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -123,18 +123,18 @@ class ExpeditionListItem extends StatelessWidget {
       children: [
         const SizedBox(height: 5),
         _buildInfoText(
-          "Client : ${expedition.clientName ?? 'Non spécifié'} | ${expedition.clientPhone ?? 'Non spécifié'}",
+          "Client : ${packages.clientName ?? 'Non spécifié'} | ${packages.clientPhone ?? 'Non spécifié'}",
           maxLines: 1,
         ),
         _buildInfoText(
-          expedition.expeditionType?.toLowerCase() == "avion"
-              ? "Poids : ${expedition.weight ?? 0} kg"
-              : "CBN : ${expedition.cbn ?? 0} m³",
+          packages.expeditionType?.toLowerCase() == "avion"
+              ? "Poids : ${packages.weight ?? 0} kg"
+              : "CBN : ${packages.cbn ?? 0} m³",
         ),
         _buildInfoText(
-          "Destination : ${expedition.destinationCountry ?? 'Non spécifiée'}",
+          "Destination : ${packages.destinationCountry ?? 'Non spécifiée'}",
         ),
-        _buildInfoText("Nombre de carton : ${expedition.itemQuantity ?? 0}"),
+        _buildInfoText("Nombre de carton : ${packages.itemQuantity ?? 0}"),
       ],
     );
   }
@@ -182,13 +182,13 @@ class ExpeditionListItem extends StatelessWidget {
   }
 
   String _getExpeditionIcon() {
-    return expedition.expeditionType?.toLowerCase() == 'avion'
+    return packages.expeditionType?.toLowerCase() == 'avion'
         ? Ph.airplane_tilt_fill
         : Ion.boat_sharp;
   }
 
   _TypeColors _getTypeColors(BuildContext context) {
-    switch (expedition.expeditionType?.toLowerCase()) {
+    switch (packages.expeditionType?.toLowerCase()) {
       case "avion":
         return _TypeColors(
           backgroundColor: Colors.amber[50]!,
@@ -208,7 +208,7 @@ class ExpeditionListItem extends StatelessWidget {
   }
 
   _StatusInfo _getStatusInfo(String? status) {
-    switch (expedition.status) {
+    switch (packages.status) {
       case Status.DELIVERED:
         return _StatusInfo(
           displayText: 'Arrivée à destination',

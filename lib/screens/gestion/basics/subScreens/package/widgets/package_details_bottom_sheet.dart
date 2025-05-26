@@ -1,33 +1,32 @@
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/expedition_services.dart';
+import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/edit_package_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/models/expedition.dart';
+import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/edit_expedition_bottom_sheet.dart';
 
-class ExpeditionDetailsBottomSheet extends StatefulWidget {
-  final Expedition expedition;
-  final Function(Expedition)? onDelete;
-  final Function(Expedition)? onStart;
-  final Function(Expedition)? onEdit;
+class PackageDetailsBottomSheet extends StatefulWidget {
+  final Packages packages;
+  final Function(Packages)? onDelete;
+  final Function(Packages)? onStart;
+  final Function(Packages)? onEdit;
 
-  const ExpeditionDetailsBottomSheet({
+  const PackageDetailsBottomSheet({
     Key? key,
-    required this.expedition,
+    required this.packages,
     this.onDelete,
     this.onStart,
     this.onEdit,
   }) : super(key: key);
 
   @override
-  State<ExpeditionDetailsBottomSheet> createState() =>
-      _ExpeditionDetailsBottomSheetState();
+  State<PackageDetailsBottomSheet> createState() =>
+      _PackageDetailsBottomSheetState();
 }
 
-class _ExpeditionDetailsBottomSheetState
-    extends State<ExpeditionDetailsBottomSheet> {
+class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
   bool _isLoading = false;
 
   Color _getStatusColor(Status? status) {
@@ -83,7 +82,7 @@ class _ExpeditionDetailsBottomSheetState
                   mainAxisAlignment: MainAxisAlignment.start,
                   spacing: 10,
                   children: [
-                    widget.expedition.status == Status.PENDING
+                    widget.packages.status == Status.PENDING
                         ? Container(
                           padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -136,7 +135,7 @@ class _ExpeditionDetailsBottomSheetState
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                     Text(
-                      widget.expedition.ref ?? 'N/A',
+                      widget.packages.ref ?? 'N/A',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -159,7 +158,7 @@ class _ExpeditionDetailsBottomSheetState
                       ),
                       decoration: BoxDecoration(
                         color:
-                            widget.expedition.expeditionType?.toLowerCase() ==
+                            widget.packages.expeditionType?.toLowerCase() ==
                                     'avion'
                                 ? Colors.amber[50]
                                 : Colors.deepPurple[50],
@@ -169,24 +168,23 @@ class _ExpeditionDetailsBottomSheetState
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            widget.expedition.expeditionType?.toLowerCase() ==
+                            widget.packages.expeditionType?.toLowerCase() ==
                                     'avion'
                                 ? Icons.airplanemode_active
                                 : Icons.directions_boat,
                             size: 16,
                             color:
-                                widget.expedition.expeditionType
-                                            ?.toLowerCase() ==
+                                widget.packages.expeditionType?.toLowerCase() ==
                                         'avion'
                                     ? Colors.amber[800]
                                     : Colors.deepPurple,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            widget.expedition.expeditionType ?? 'N/A',
+                            widget.packages.expeditionType ?? 'N/A',
                             style: TextStyle(
                               color:
-                                  widget.expedition.expeditionType
+                                  widget.packages.expeditionType
                                               ?.toLowerCase() ==
                                           'avion'
                                       ? Colors.amber[800]
@@ -214,7 +212,7 @@ class _ExpeditionDetailsBottomSheetState
                       ),
                       decoration: BoxDecoration(
                         color: _getStatusColor(
-                          widget.expedition.status,
+                          widget.packages.status,
                         ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -222,20 +220,20 @@ class _ExpeditionDetailsBottomSheetState
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            widget.expedition.status == Status.RECEIVED ||
-                                    widget.expedition.status == Status.DELIVERED
+                            widget.packages.status == Status.RECEIVED ||
+                                    widget.packages.status == Status.DELIVERED
                                 ? Icons.check_circle
-                                : widget.expedition.status == Status.INPROGRESS
+                                : widget.packages.status == Status.INPROGRESS
                                 ? Icons.local_shipping
                                 : Icons.hourglass_empty,
                             size: 16,
-                            color: _getStatusColor(widget.expedition.status),
+                            color: _getStatusColor(widget.packages.status),
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            _getStatusText(widget.expedition.status),
+                            _getStatusText(widget.packages.status),
                             style: TextStyle(
-                              color: _getStatusColor(widget.expedition.status),
+                              color: _getStatusColor(widget.packages.status),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -267,46 +265,44 @@ class _ExpeditionDetailsBottomSheetState
               children: [
                 _buildInfoRow(
                   'Pays de départ',
-                  widget.expedition.startCountry ?? 'N/A',
+                  widget.packages.startCountry ?? 'N/A',
                 ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Pays de destination',
-                  widget.expedition.destinationCountry ?? 'N/A',
+                  widget.packages.destinationCountry ?? 'N/A',
                 ),
                 const SizedBox(height: 12),
-                widget.expedition.expeditionType == "avion"
+                widget.packages.expeditionType == "avion"
                     ? _buildInfoRow(
                       'Poids',
-                      '${widget.expedition.weight ?? 'N/A'} kg',
+                      '${widget.packages.weight ?? 'N/A'} kg',
                     )
                     : _buildInfoRow(
                       'CBN',
-                      '${widget.expedition.cbn ?? 'N/A'} m³',
+                      '${widget.packages.cbn ?? 'N/A'} m³',
                     ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Quantité',
-                  '${widget.expedition.itemQuantity ?? 'N/A'}',
+                  '${widget.packages.itemQuantity ?? 'N/A'}',
                 ),
                 const SizedBox(height: 12),
-                _buildInfoRow('Client', widget.expedition.clientName ?? 'N/A'),
+                _buildInfoRow('Client', widget.packages.clientName ?? 'N/A'),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Téléphone',
-                  widget.expedition.clientPhone ?? 'N/A',
+                  widget.packages.clientPhone ?? 'N/A',
                 ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Date de départ',
-                  DateFormat('dd/MM/yyyy').format(widget.expedition.startDate!),
+                  DateFormat('dd/MM/yyyy').format(widget.packages.startDate!),
                 ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Date d\'arrivée estimée',
-                  DateFormat(
-                    'dd/MM/yyyy',
-                  ).format(widget.expedition.arrivalDate!),
+                  DateFormat('dd/MM/yyyy').format(widget.packages.arrivalDate!),
                 ),
               ],
             ),
@@ -314,7 +310,7 @@ class _ExpeditionDetailsBottomSheetState
           const SizedBox(height: 24),
           Row(
             children: [
-              if (widget.expedition.status == Status.PENDING) ...[
+              if (widget.packages.status == Status.PENDING) ...[
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showDeleteConfirmationDialog(context),
@@ -361,7 +357,7 @@ class _ExpeditionDetailsBottomSheetState
                     ),
                   ),
                 ),
-              ] else if (widget.expedition.status == Status.INPROGRESS) ...[
+              ] else if (widget.packages.status == Status.INPROGRESS) ...[
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showDeliveryConfirmationDialog(context),
@@ -383,7 +379,7 @@ class _ExpeditionDetailsBottomSheetState
                     icon: Icon(Icons.local_shipping, color: Colors.white),
                   ),
                 ),
-              ] else if (widget.expedition.status == Status.DELIVERED) ...[
+              ] else if (widget.packages.status == Status.DELIVERED) ...[
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showReceivedConfirmationDialog(context),
@@ -455,7 +451,7 @@ class _ExpeditionDetailsBottomSheetState
             ],
           ),
           content: const Text(
-            'Êtes-vous sûr de vouloir supprimer cette expédition ? Cette action est irréversible.',
+            'Êtes-vous sûr de vouloir supprimer ce colis ? Cette action est irréversible.',
             style: TextStyle(fontSize: 16),
           ),
           actions: [
@@ -473,15 +469,15 @@ class _ExpeditionDetailsBottomSheetState
                       : () async {
                         setState(() => _isLoading = true);
                         try {
-                          final expeditionServices = ExpeditionServices();
+                          final expeditionServices = PackageServices();
                           final result = await expeditionServices
-                              .deleteExpedition(widget.expedition.id!);
+                              .deleteExpedition(widget.packages.id!);
 
                           if (result == "SUCCESS") {
-                            widget.expedition.status = Status.DELETE;
+                            widget.packages.status = Status.DELETE;
 
                             if (widget.onStart != null) {
-                              widget.onStart!(widget.expedition);
+                              widget.onStart!(widget.packages);
                             }
 
                             if (context.mounted) {
@@ -491,7 +487,7 @@ class _ExpeditionDetailsBottomSheetState
                               Navigator.pop(context); // Fermer le bottom sheet
                               showSuccessTopSnackBar(
                                 context,
-                                "Expédition ${widget.expedition.ref} a été supprimer avec succès.",
+                                "Le colis ${widget.packages.ref} a été supprimer avec succès.",
                               );
                             }
                           } else {
@@ -552,7 +548,7 @@ class _ExpeditionDetailsBottomSheetState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Êtes-vous sûr de vouloir démarrer cette expédition ?',
+                    'Êtes-vous sûr de vouloir démarrer l\'expédition du colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -572,15 +568,15 @@ class _ExpeditionDetailsBottomSheetState
                           : () async {
                             setState(() => _isLoading = true);
                             try {
-                              final expeditionServices = ExpeditionServices();
+                              final expeditionServices = PackageServices();
                               final result = await expeditionServices
-                                  .startExpedition(widget.expedition.id!);
+                                  .startExpedition(widget.packages.id!);
 
                               if (result == "SUCCESS") {
-                                widget.expedition.status = Status.INPROGRESS;
+                                widget.packages.status = Status.INPROGRESS;
 
                                 if (widget.onStart != null) {
-                                  widget.onStart!(widget.expedition);
+                                  widget.onStart!(widget.packages);
                                 }
 
                                 if (context.mounted) {
@@ -592,7 +588,7 @@ class _ExpeditionDetailsBottomSheetState
                                   ); // Fermer le bottom sheet
                                   showSuccessTopSnackBar(
                                     context,
-                                    "Expédition ${widget.expedition.ref} démarrée avec succès.",
+                                    "Expédition du colis ${widget.packages.ref} démarrée avec succès.",
                                   );
                                 }
                               } else {
@@ -655,7 +651,7 @@ class _ExpeditionDetailsBottomSheetState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Êtes-vous sûr de vouloir confirmer l\'arrivée de cette expédition ?',
+                    'Êtes-vous sûr de vouloir confirmer l\'arrivée de ce Colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -675,15 +671,15 @@ class _ExpeditionDetailsBottomSheetState
                           : () async {
                             setState(() => _isLoading = true);
                             try {
-                              final expeditionServices = ExpeditionServices();
+                              final expeditionServices = PackageServices();
                               final result = await expeditionServices
-                                  .deliverExpedition(widget.expedition.id!);
+                                  .deliverExpedition(widget.packages.id!);
 
                               if (result == "SUCCESS") {
-                                widget.expedition.status = Status.DELIVERED;
+                                widget.packages.status = Status.DELIVERED;
 
                                 if (widget.onStart != null) {
-                                  widget.onStart!(widget.expedition);
+                                  widget.onStart!(widget.packages);
                                 }
 
                                 if (context.mounted) {
@@ -691,7 +687,7 @@ class _ExpeditionDetailsBottomSheetState
                                   Navigator.pop(context);
                                   showSuccessTopSnackBar(
                                     context,
-                                    "Expédition ${widget.expedition.ref} arrivée avec succès.",
+                                    "Colis ${widget.packages.ref} arrivé avec succès.",
                                   );
                                 }
                               } else {
@@ -754,7 +750,7 @@ class _ExpeditionDetailsBottomSheetState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Êtes-vous sûr de vouloir confirmer la livraison de cette expédition ?',
+                    'Êtes-vous sûr de vouloir confirmer la livraison de ce Colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -774,15 +770,15 @@ class _ExpeditionDetailsBottomSheetState
                           : () async {
                             setState(() => _isLoading = true);
                             try {
-                              final expeditionServices = ExpeditionServices();
+                              final expeditionServices = PackageServices();
                               final result = await expeditionServices
-                                  .receivedExpedition(widget.expedition.id!);
+                                  .receivedExpedition(widget.packages.id!);
 
                               if (result == "SUCCESS") {
-                                widget.expedition.status = Status.DELIVERED;
+                                widget.packages.status = Status.DELIVERED;
 
                                 if (widget.onStart != null) {
-                                  widget.onStart!(widget.expedition);
+                                  widget.onStart!(widget.packages);
                                 }
 
                                 if (context.mounted) {
@@ -790,7 +786,7 @@ class _ExpeditionDetailsBottomSheetState
                                   Navigator.pop(context);
                                   showSuccessTopSnackBar(
                                     context,
-                                    "Expédition ${widget.expedition.ref} livrée avec succès.",
+                                    "Colis ${widget.packages.ref} livrée avec succès.",
                                   );
                                 }
                               } else {
@@ -840,16 +836,16 @@ class _ExpeditionDetailsBottomSheetState
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return EditExpeditionBottomSheet(
-          expedition: widget.expedition,
+        return EditPackageBottomSheet(
+          packages: widget.packages,
           onSave: (updatedExpedition) async {
             setState(() => _isLoading = true);
             try {
-              final expeditionServices = ExpeditionServices();
+              final expeditionServices = PackageServices();
               final authService = AuthService();
               final user = await authService.getUserInfo();
               final result = await expeditionServices.updateExpedition(
-                widget.expedition.id!,
+                widget.packages.id!,
                 updatedExpedition,
                 user!.id,
               );
@@ -863,7 +859,7 @@ class _ExpeditionDetailsBottomSheetState
                   Navigator.pop(context, true);
                   showSuccessTopSnackBar(
                     context,
-                    "Expédition ${updatedExpedition.ref} mise à jour avec succès.",
+                    "Colis ${updatedExpedition.ref} mise à jour avec succès.",
                   );
                 }
               } else {

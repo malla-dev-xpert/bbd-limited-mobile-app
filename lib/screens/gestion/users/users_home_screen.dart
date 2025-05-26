@@ -222,87 +222,261 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      resizeToAvoidBottomInset: true,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF1A1E49),
-        heroTag: 'users_fab',
-        onPressed: () {
-          _openNewPaiementBottomSheet(context);
-        },
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: MediaQuery.of(context).padding.top),
-            Text(
-              "Gestion des utilisateurs",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -1,
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Reporting Cards
-            IntrinsicHeight(
-              child: Row(
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: true,
+            pinned: true,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      color: Colors.blue[50],
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: _StatItem(
-                          title: 'Total des clients',
-                          value: _allPaiements.length.toString(),
-                          valueStyle: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1E49),
-                          ),
-                        ),
-                      ),
+                  Text(
+                    "Gestion des utilisateurs",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
-                  const SizedBox(width: 8),
                 ],
               ),
             ),
-          ],
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 10,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Search and Filter Bar
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: "Rechercher un utilisateur...",
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: filterPackages,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Stats Cards
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.5,
+                    children: [
+                      _buildStatCard(
+                        title: "Total des clients",
+                        value: _allPaiements.length.toString(),
+                        icon: Icons.people,
+                        color: Colors.blue,
+                      ),
+                      _buildStatCard(
+                        title: "Clients actifs",
+                        value:
+                            _allPaiements
+                                .where((p) => p.status == "active")
+                                .length
+                                .toString(),
+                        icon: Icons.check_circle,
+                        color: Colors.green,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Users List
+                  if (_isLoading && _allPaiements.isEmpty)
+                    const Center(child: CircularProgressIndicator())
+                  else if (_filteredPaiements.isEmpty)
+                    _buildEmptyState()
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount:
+                          _filteredPaiements.length + (_hasMoreData ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _filteredPaiements.length) {
+                          if (_isLoading) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        }
+                        return _buildUserCard(_filteredPaiements[index]);
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _openNewPaiementBottomSheet(context),
+        backgroundColor: Theme.of(context).primaryColor,
+        icon: const Icon(Icons.add),
+        label: const Text("Nouvel utilisateur"),
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(title, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserCard(Versement user) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+          child: Text(
+            user.reference?.substring(0, 1).toUpperCase() ?? "U",
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        title: Text(
+          user.reference ?? "Sans référence",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(
+          user.partnerAccountType ?? "Type inconnu",
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+        ),
+        trailing: PopupMenuButton(
+          itemBuilder:
+              (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 20),
+                      SizedBox(width: 8),
+                      Text("Modifier"),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, size: 20, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text("Supprimer", style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+          onSelected: (value) {
+            if (value == 'edit') {
+              _showEditPaiementModal(context, user);
+            } else if (value == 'delete') {
+              _delete(user);
+            }
+          },
         ),
       ),
     );
   }
-}
 
-class _StatItem extends StatelessWidget {
-  final String title;
-  final String value;
-  final TextStyle valueStyle;
-
-  const _StatItem({
-    required this.title,
-    required this.value,
-    required this.valueStyle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(title, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-        const SizedBox(height: 8),
-        Text(value, style: valueStyle),
-      ],
+  Widget _buildEmptyState() {
+    return Container(
+      height:
+          MediaQuery.of(context).size.height *
+          0.4, // Constrain height to 40% of screen
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "Aucun utilisateur trouvé",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Commencez par ajouter un nouvel utilisateur",
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -6,7 +6,7 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
-import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package_to_warehouse.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/package_detail_modal.dart';
@@ -274,14 +274,14 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
 
   Future<void> fetchPackages() async {
     try {
-      final packages = await _packageServices.findByWarehouse(
-        widget.warehouseId.toInt(),
-      );
+      // final packages = await _packageServices.findByWarehouse(
+      //   widget.warehouseId.toInt(),
+      // );
 
-      setState(() {
-        _allPackages = packages;
-        _filteredPackages = packages;
-      });
+      // setState(() {
+      //   _allPackages = packages;
+      //   _filteredPackages = packages;
+      // });
     } catch (e) {
       print("Erreur de récupération des colis : $e");
     }
@@ -300,7 +300,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
     setState(() {
       _filteredPackages =
           _allPackages.where((pkg) {
-            final searchPackage = pkg.reference!.toLowerCase().contains(
+            final searchPackage = pkg.ref!.toLowerCase().contains(
               query.toLowerCase(),
             );
 
@@ -623,10 +623,10 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                                     return;
                                   }
 
-                                  await _packageServices.deletePackage(
-                                    pkg.id!,
-                                    user.id.toInt(),
-                                  );
+                                  // await _packageServices.deletePackage(
+                                  //   pkg.id!,
+                                  //   user.id.toInt(),
+                                  // );
 
                                   setState(() {
                                     _allPackages.removeWhere(
@@ -659,8 +659,10 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage> {
                                   Icons.inventory,
                                   color: getStatusColor(pkg.status),
                                 ),
-                                title: Text(pkg.reference!),
-                                subtitle: Text("Dimensions: ${pkg.dimensions}"),
+                                title: Text(pkg.ref!),
+                                subtitle: Text(
+                                  "Dimensions: ${pkg.expeditionType == "Avion" ? pkg.weight.toString() : pkg.cbn.toString()}",
+                                ),
                                 trailing: Text(
                                   "Poids: ${pkg.weight!} kg",
                                   style: TextStyle(

@@ -364,35 +364,35 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
                                 return;
                               }
 
-                              final packageId = await packageServices.create(
-                                refController.text,
-                                dimensionController.text,
-                                double.parse(weightController.text),
-                                user.id,
-                                warehouseId,
-                                selectedClient!.id.toInt(),
-                              );
+                              // final packageId = await packageServices.create(
+                              //   refController.text,
+                              //   dimensionController.text,
+                              //   double.parse(weightController.text),
+                              //   user.id,
+                              //   warehouseId,
+                              //   selectedClient!.id.toInt(),
+                              // );
 
-                              if (packageId == null) {
-                                setState(() => isLoading = false);
-                                showErrorTopSnackBar(
-                                  context,
-                                  "Erreur: Référence déjà utilisée.",
-                                );
-                                return;
-                              }
+                              // if (packageId == null) {
+                              //   setState(() => isLoading = false);
+                              //   showErrorTopSnackBar(
+                              //     context,
+                              //     "Erreur: Référence déjà utilisée.",
+                              //   );
+                              //   return;
+                              // }
 
-                              await packageServices.addItemsToPackage(
-                                packageId,
-                                localItems,
-                                user.id.toInt(),
-                              );
+                              // await packageServices.addItemsToPackage(
+                              //   packageId,
+                              //   localItems,
+                              //   user.id.toInt(),
+                              // );
 
-                              setState(() {
-                                isLoading = false;
-                                localItems.clear();
-                                itemServices.findByPackageId(packageId);
-                              });
+                              // setState(() {
+                              //   isLoading = false;
+                              //   localItems.clear();
+                              //   itemServices.findByPackageId(packageId);
+                              // });
 
                               Navigator.pop(context, true);
                               showSuccessTopSnackBar(

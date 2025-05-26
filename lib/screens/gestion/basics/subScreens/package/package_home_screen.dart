@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/expedition_services.dart';
-import 'package:bbd_limited/models/expedition.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_details_bottom_sheet.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
+import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/models/packages.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
@@ -14,20 +14,20 @@ enum ExpeditionType { all, plane, boat }
 
 enum ExpeditionStatus { all, delivered, inTransit, pending }
 
-class ExpeditionHomeScreen extends StatefulWidget {
-  const ExpeditionHomeScreen({Key? key}) : super(key: key);
+class PackageHomeScreen extends StatefulWidget {
+  const PackageHomeScreen({Key? key}) : super(key: key);
 
   @override
-  _ExpeditionHomeScreenState createState() => _ExpeditionHomeScreenState();
+  _PackageHomeScreenState createState() => _PackageHomeScreenState();
 }
 
-class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
+class _PackageHomeScreenState extends State<PackageHomeScreen> {
   final TextEditingController searchController = TextEditingController();
-  final ExpeditionServices expeditionServices = ExpeditionServices();
+  final PackageServices packageServices = PackageServices();
   final AuthService authService = AuthService();
 
-  List<Expedition> allExpeditions = [];
-  List<Expedition> filteredExpeditions = [];
+  List<Packages> allPackages = [];
+  List<Packages> filteredPackages = [];
   String? currentFilter;
   ExpeditionType selectedType = ExpeditionType.all;
   ExpeditionStatus selectedStatus = ExpeditionStatus.all;
@@ -66,21 +66,21 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
       if (reset) {
         currentPage = 0;
         hasMoreData = true;
-        allExpeditions.clear();
+        allPackages.clear();
       }
     });
 
     try {
-      final result = await expeditionServices.findAll(
+      final result = await packageServices.findAll(
         page: currentPage,
         query: searchQuery,
       );
 
       setState(() {
         if (reset) {
-          allExpeditions.clear();
+          allPackages.clear();
         }
-        allExpeditions.addAll(result);
+        allPackages.addAll(result);
         _applyFilters(searchQuery);
 
         if (result.isEmpty || result.length < 30) {
@@ -97,8 +97,8 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
   }
 
   void _applyFilters(String? searchQuery) {
-    filteredExpeditions =
-        allExpeditions.where((exp) {
+    filteredPackages =
+        allPackages.where((exp) {
           final matchesSearch =
               searchQuery == null ||
               searchQuery.isEmpty ||
@@ -213,7 +213,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
 
   Future<void> _openExpeditionDetailsBottomSheet(
     BuildContext context,
-    Expedition expedition,
+    Packages package,
   ) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
@@ -223,16 +223,16 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return ExpeditionDetailsBottomSheet(
-          expedition: expedition,
+        return PackageDetailsBottomSheet(
+          packages: package,
           onStart: (updatedExpedition) {
             fetchExpeditions(reset: true);
           },
           onEdit: (updatedExpedition) async {
             try {
-              final expeditionServices = ExpeditionServices();
+              final packageServices = PackageServices();
               final user = await authService.getUserInfo();
-              final result = await expeditionServices.updateExpedition(
+              final result = await packageServices.updateExpedition(
                 updatedExpedition.id!,
                 updatedExpedition,
                 user!.id,
@@ -241,7 +241,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                 if (context.mounted) {
                   showSuccessTopSnackBar(
                     context,
-                    "Expédition ${updatedExpedition.ref} modifiée avec succès.",
+                    "Colis ${updatedExpedition.ref} modifiée avec succès.",
                   );
                   fetchExpeditions(reset: true);
                 }
@@ -249,7 +249,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                 if (context.mounted) {
                   showErrorTopSnackBar(
                     context,
-                    "Erreur lors de la modification de l'expédition",
+                    "Erreur lors de la modification du colis",
                   );
                 }
               }
@@ -257,7 +257,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
               if (context.mounted) {
                 showErrorTopSnackBar(
                   context,
-                  "Erreur lors de la modification de l'expédition",
+                  "Erreur lors de la modification du colis",
                 );
               }
             }
@@ -312,7 +312,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                           ),
                         ),
                         Text(
-                          '${filteredExpeditions.length} expéditions trouvées',
+                          '${filteredPackages.length} expéditions trouvées',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -439,9 +439,9 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
               const SizedBox(height: 20),
               Expanded(
                 child:
-                    isLoading && filteredExpeditions.isEmpty
+                    isLoading && filteredPackages.isEmpty
                         ? const Center(child: CircularProgressIndicator())
-                        : filteredExpeditions.isNotEmpty
+                        : filteredPackages.isNotEmpty
                         ? NotificationListener<ScrollNotification>(
                           onNotification: (scrollInfo) {
                             if (scrollInfo.metrics.pixels ==
@@ -464,10 +464,10 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                             child: ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               itemCount:
-                                  filteredExpeditions.length +
+                                  filteredPackages.length +
                                   (hasMoreData && isLoading ? 1 : 0),
                               itemBuilder: (context, index) {
-                                if (index >= filteredExpeditions.length) {
+                                if (index >= filteredPackages.length) {
                                   return const Center(
                                     child: Padding(
                                       padding: EdgeInsets.all(8.0),
@@ -476,17 +476,17 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                                   );
                                 }
 
-                                final expedition = filteredExpeditions[index];
+                                final package = filteredPackages[index];
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8.0,
                                   ),
-                                  child: ExpeditionListItem(
-                                    expedition: expedition,
+                                  child: PackageListItem(
+                                    packages: package,
                                     onTap:
                                         () => _openExpeditionDetailsBottomSheet(
                                           context,
-                                          expedition,
+                                          package,
                                         ),
                                   ),
                                 );
