@@ -232,6 +232,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         onPressed: () {
           _openNewVersementBottomSheet(context);
         },
+        heroTag: 'accounts_fab',
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       body: Padding(

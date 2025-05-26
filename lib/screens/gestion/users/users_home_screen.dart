@@ -349,6 +349,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openNewPaiementBottomSheet(context),
         backgroundColor: Theme.of(context).primaryColor,
+        heroTag: 'users_fab',
         icon: const Icon(Icons.add),
         label: const Text("Nouvel utilisateur"),
       ),

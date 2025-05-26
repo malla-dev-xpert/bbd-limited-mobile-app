@@ -28,9 +28,11 @@ class PackageServices {
     required Packages dto,
     required int clientId,
     required int userId,
+    required int containerId,
+    required int warehouseId,
   }) async {
     final url = Uri.parse(
-      '$baseUrl/packages/create?clientId=$clientId&userId=$userId',
+      '$baseUrl/packages/create?clientId=$clientId&userId=$userId&containerId=$containerId&warehouseId=$warehouseId',
     );
 
     try {

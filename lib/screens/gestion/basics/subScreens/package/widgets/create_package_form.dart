@@ -1,6 +1,12 @@
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/models/packages.dart';
+import 'package:bbd_limited/models/container.dart';
+import 'package:bbd_limited/models/warehouses.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/create_warehouse_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
@@ -10,6 +16,7 @@ import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 
 class CreateExpeditionForm extends StatefulWidget {
   final bool isExpeditionScreen;
@@ -29,6 +36,8 @@ class CreateExpeditionForm extends StatefulWidget {
 class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   final _formKey = GlobalKey<FormState>();
   final PartnerServices _partnerServices = PartnerServices();
+  final ContainerServices _containerServices = ContainerServices();
+  final WarehouseServices _warehouseServices = WarehouseServices();
 
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
@@ -48,16 +57,37 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   bool isLoading = false;
   int currentStep = 0;
 
+  List<Containers> _containers = [];
+  List<Warehouses> _warehouses = [];
+  Containers? _selectedContainer;
+  Warehouses? _selectedWarehouse;
+
   @override
   void initState() {
     super.initState();
     _loadClients();
+    _loadContainers();
+    _loadWarehouses();
   }
 
   Future<void> _loadClients() async {
     final clients = await _partnerServices.findCustomers(page: 0);
     setState(() {
       _clients = clients;
+    });
+  }
+
+  Future<void> _loadContainers() async {
+    final containers = await _containerServices.findAll(page: 0);
+    setState(() {
+      _containers = containers;
+    });
+  }
+
+  Future<void> _loadWarehouses() async {
+    final warehouses = await _warehouseServices.findAllWarehouses(page: 0);
+    setState(() {
+      _warehouses = warehouses;
     });
   }
 
@@ -83,7 +113,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                     children: [
                       Expanded(
                         child: Text(
-                          "Ajouter une expédition",
+                          "Ajouter un colis",
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -232,19 +262,36 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             const SizedBox(height: 20),
 
                             if (widget.isExpeditionScreen)
-                              DropDownCustom<Partner>(
-                                items: _clients,
-                                selectedItem: _selectedClient,
-                                onChanged: (client) {
-                                  setState(() {
-                                    _selectedClient = client;
-                                  });
-                                },
-                                itemToString:
-                                    (client) =>
-                                        '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
-                                hintText: 'Choisir un client...',
-                                prefixIcon: Icons.person,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: DropDownCustom<Partner>(
+                                      items: _clients,
+                                      selectedItem: _selectedClient,
+                                      onChanged: (client) {
+                                        setState(() {
+                                          _selectedClient = client;
+                                        });
+                                      },
+                                      itemToString:
+                                          (client) =>
+                                              '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                      hintText: 'Choisir un client...',
+                                      prefixIcon: Icons.person,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: IconButton(
+                                      onPressed: _showCreateClientBottomSheet,
+                                      icon: Icon(Icons.add),
+                                    ),
+                                  ),
+                                ],
                               ),
                           ],
                         ),
@@ -413,6 +460,111 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             ),
                           ],
                         ),
+                        // Step 3 - Container and Warehouse Selection
+                        ListView(
+                          children: [
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              spacing: 10,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: DropDownCustom<Containers>(
+                                    items: _containers,
+                                    selectedItem: _selectedContainer,
+                                    onChanged: (container) {
+                                      setState(() {
+                                        _selectedContainer = container;
+                                      });
+                                    },
+                                    itemToString:
+                                        (container) =>
+                                            '${container.reference} - ${container.size}',
+                                    hintText: 'Choisir un container...',
+                                    prefixIcon: Icons.inventory_2,
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateContainerBottomSheet,
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                            Colors.grey[100],
+                                          ),
+                                      fixedSize: MaterialStateProperty.all(
+                                        const Size(55, 55),
+                                      ),
+                                      padding: MaterialStateProperty.all(
+                                        EdgeInsets.zero,
+                                      ),
+                                      shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    icon: Icon(Icons.add),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              spacing: 10,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: DropDownCustom<Warehouses>(
+                                    items: _warehouses,
+                                    selectedItem: _selectedWarehouse,
+                                    onChanged: (warehouse) {
+                                      setState(() {
+                                        _selectedWarehouse = warehouse;
+                                      });
+                                    },
+                                    itemToString:
+                                        (warehouse) =>
+                                            '${warehouse.name} - ${warehouse.adresse}',
+                                    hintText: 'Choisir un entrepôt...',
+                                    prefixIcon: Icons.warehouse,
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateWarehouseBottomSheet,
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                            Colors.grey[100],
+                                          ),
+                                      fixedSize: MaterialStateProperty.all(
+                                        const Size(55, 55),
+                                      ),
+                                      padding: MaterialStateProperty.all(
+                                        EdgeInsets.zero,
+                                      ),
+                                      shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    icon: Icon(Icons.add),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -437,6 +589,38 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         ),
       ),
     );
+  }
+
+  void _goToNextStep() {
+    if (currentStep == 0 && !_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (currentStep == 1) {
+      if (_departureCountry == null ||
+          _arrivalCountry == null ||
+          _startDate == null ||
+          _estimatedArrivalDate == null) {
+        showErrorTopSnackBar(context, "Veuillez remplir tous les champs");
+        return;
+      }
+    }
+
+    if (currentStep == 2) {
+      if (_selectedContainer == null || _selectedWarehouse == null) {
+        showErrorTopSnackBar(
+          context,
+          "Veuillez sélectionner un container et un entrepôt",
+        );
+        return;
+      }
+    }
+
+    setState(() => currentStep++);
+  }
+
+  void _goToPreviousStep() {
+    setState(() => currentStep--);
   }
 
   Future<void> _submitForm() async {
@@ -474,6 +658,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         "expeditionType": _expeditionType,
         "startCountry": _departureCountry!.name,
         "destinationCountry": _arrivalCountry!.name,
+        "containerId": _selectedContainer?.id,
+        "warehouseId": _selectedWarehouse?.id,
       });
 
       // Appel au service avec les IDs corrects
@@ -484,6 +670,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                 ? _selectedClient!.id
                 : int.parse(widget.clientId!),
         userId: user.id,
+        containerId: _selectedContainer!.id!,
+        warehouseId: _selectedWarehouse!.id,
       );
 
       if (!mounted) return;
@@ -506,27 +694,6 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
     }
   }
 
-  void _goToNextStep() {
-    if (currentStep == 0 && !_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (currentStep == 1) {
-      String? errorMessage;
-
-      if (errorMessage != null) {
-        showErrorTopSnackBar(context, errorMessage);
-        return;
-      }
-    }
-
-    setState(() => currentStep++);
-  }
-
-  void _goToPreviousStep() {
-    setState(() => currentStep--);
-  }
-
   Widget _buildStepControls() {
     if (currentStep == 0) {
       return confirmationButton(
@@ -536,7 +703,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         icon: Icons.arrow_forward_ios,
         subLabel: "Chargement...",
       );
-    } else {
+    } else if (currentStep == 2) {
       return Row(
         children: [
           Expanded(
@@ -558,6 +725,77 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
           ),
         ],
       );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              icon: Icon(Icons.arrow_back),
+              onPressed: _goToPreviousStep,
+              label: Text("Retour"),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: confirmationButton(
+              isLoading: false,
+              label: "Suivant",
+              onPressed: _goToNextStep,
+              icon: Icons.arrow_forward_ios,
+              subLabel: "Chargement...",
+            ),
+          ),
+        ],
+      );
     }
+  }
+
+  void _showCreateClientBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreatePartnerBottomSheet(),
+    ).then((_) {
+      _loadClients(); // Recharger la liste des clients après la création
+    });
+  }
+
+  void _showCreateContainerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const CreateContainerForm(),
+          ),
+    ).then((_) {
+      _loadClients(); // Recharger la liste des clients après la création
+    });
+  }
+
+  void _showCreateWarehouseBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const CreateWarehouseForm(),
+          ),
+    ).then((_) {
+      _loadWarehouses(); // Recharger la liste des entrepôts après la création
+    });
   }
 }
