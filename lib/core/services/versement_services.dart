@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,8 +12,6 @@ class VersementServices {
     final response = await http.get(
       Uri.parse('$baseUrl/versements?cliendId=$cliendId&page=$page'),
     );
-
-    log(response.body);
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
@@ -30,8 +27,6 @@ class VersementServices {
     final response = await http.get(
       Uri.parse('$baseUrl/versements?page=$page'),
     );
-
-    log(response.body);
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
@@ -52,8 +47,6 @@ class VersementServices {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(versement.toJson()),
       );
-
-      log(response.body);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "CREATED";

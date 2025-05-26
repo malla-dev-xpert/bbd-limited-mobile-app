@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -117,8 +116,6 @@ class PartnerServices {
       headers: headers,
       body: jsonEncode(dto),
     );
-
-    log(response.body);
 
     if (response.statusCode == 200) {
       return true;

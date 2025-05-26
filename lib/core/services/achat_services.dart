@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,20 +19,11 @@ class AchatServices {
     );
 
     try {
-      log('Creating purchase with data:');
-      log('clientId: $clientId');
-      log('supplierId: $supplierId');
-      log('userId: $userId');
-      log('dto: ${dto.toJson()}');
-
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(dto.toJson()),
       );
-
-      log('Response status: ${response.statusCode}');
-      log('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         try {
@@ -53,16 +43,12 @@ class AchatServices {
       } else {
         try {
           final responseBody = jsonDecode(response.body);
-          log(
-            'Server error details: ${responseBody['details'] ?? response.body}',
-          );
           return responseBody['message'] ?? 'SERVER_ERROR';
         } catch (e) {
           return response.body.trim();
         }
       }
     } catch (e) {
-      log('Unexpected error: $e');
       return 'UNEXPECTED_ERROR';
     }
   }
