@@ -319,23 +319,22 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
 
   void filterPackages(String query) {
     setState(() {
-      _filteredPackages =
-          _allPackages.where((pkg) {
-            final searchPackage = pkg.ref!.toLowerCase().contains(
+      _filteredPackages = _allPackages.where((pkg) {
+        final searchPackage = pkg.ref!.toLowerCase().contains(
               query.toLowerCase(),
             );
 
-            bool allStatus = true;
-            if (_currentFilter == 'livres') {
-              allStatus = pkg.status == Status.DELIVERED;
-            } else if (_currentFilter == 'en_transit') {
-              allStatus = pkg.status == Status.INPROGRESS;
-            } else if (_currentFilter == 'en_attente') {
-              allStatus = pkg.status == Status.PENDING;
-            }
+        bool allStatus = true;
+        if (_currentFilter == 'livres') {
+          allStatus = pkg.status == Status.DELIVERED;
+        } else if (_currentFilter == 'en_transit') {
+          allStatus = pkg.status == Status.INPROGRESS;
+        } else if (_currentFilter == 'en_attente') {
+          allStatus = pkg.status == Status.PENDING;
+        }
 
-            return searchPackage && allStatus;
-          }).toList();
+        return searchPackage && allStatus;
+      }).toList();
     });
   }
 
@@ -363,26 +362,25 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
   Future<Warehouses?> _deleteWarehouse(Warehouses warehouse) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirmer la suppression"),
-            backgroundColor: Colors.white,
-            content: Text("Supprimer le magasin ${warehouse.name}?"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context, true),
-                icon: const Icon(Icons.delete, color: Colors.red),
-                label: const Text(
-                  "Supprimer",
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        backgroundColor: Colors.white,
+        content: Text("Supprimer le magasin ${warehouse.name}?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Annuler"),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: const Text(
+              "Supprimer",
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed == true) {
@@ -447,27 +445,25 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon:
-                _isRefreshing
-                    ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                    : const Icon(Icons.refresh),
-            onPressed:
-                _isRefreshing
-                    ? null
-                    : () async {
-                      setState(() => _isRefreshing = true);
-                      await fetchPackages();
-                      if (mounted) {
-                        setState(() => _isRefreshing = false);
-                      }
-                    },
+            icon: _isRefreshing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.refresh),
+            onPressed: _isRefreshing
+                ? null
+                : () async {
+                    setState(() => _isRefreshing = true);
+                    await fetchPackages();
+                    if (mounted) {
+                      setState(() => _isRefreshing = false);
+                    }
+                  },
           ),
         ],
       ),
@@ -481,223 +477,211 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body:
-          _fadeAnimation != null
-              ? FadeTransition(
-                opacity: _fadeAnimation!,
-                child: SafeArea(
-                  child: CustomScrollView(
-                    slivers: [
-                      // Section des informations de l'entrepôt
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Card(
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [Colors.white, Colors.grey[50]!],
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text(
-                                          "Informations de l'entrepôt",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            IconButton(
-                                              onPressed:
-                                                  () => _updateWarehouse(),
-                                              icon: const Icon(
-                                                Icons.edit,
-                                                color: Color(0xFF7F78AF),
-                                              ),
-                                              tooltip: 'Modifier',
-                                            ),
-                                            IconButton(
-                                              onPressed:
-                                                  () => _deleteWarehouse(
-                                                    Warehouses(
-                                                      id: widget.warehouseId,
-                                                      name: widget.name,
-                                                    ),
-                                                  ),
-                                              icon: const Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                              ),
-                                              tooltip: 'Supprimer',
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    _buildInfoRow(
-                                      Icons.warehouse,
-                                      widget.name!,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _buildInfoRow(
-                                      Icons.map_rounded,
-                                      widget.adresse!,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _buildInfoRow(
-                                      Icons.type_specimen_rounded,
-                                      widget.storageType!,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+      body: _fadeAnimation != null
+          ? FadeTransition(
+              opacity: _fadeAnimation!,
+              child: SafeArea(
+                child: CustomScrollView(
+                  slivers: [
+                    // Section des informations de l'entrepôt
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Card(
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ),
-                      ),
-
-                      // Barre de recherche fixe
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _SearchBarDelegate(
                           child: Container(
-                            color: Colors.grey[50],
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 10.0,
-                              horizontal: 20,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Colors.white, Colors.grey[50]!],
+                              ),
                             ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    spreadRadius: 1,
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Informations de l'entrepôt",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () => _updateWarehouse(),
+                                            icon: const Icon(
+                                              Icons.edit,
+                                              color: Color(0xFF7F78AF),
+                                            ),
+                                            tooltip: 'Modifier',
+                                          ),
+                                          IconButton(
+                                            onPressed: () => _deleteWarehouse(
+                                              Warehouses(
+                                                id: widget.warehouseId,
+                                                name: widget.name,
+                                              ),
+                                            ),
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
+                                            tooltip: 'Supprimer',
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildInfoRow(
+                                    Icons.warehouse,
+                                    widget.name!,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildInfoRow(
+                                    Icons.map_rounded,
+                                    widget.adresse!,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildInfoRow(
+                                    Icons.type_specimen_rounded,
+                                    widget.storageType!,
                                   ),
                                 ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        onChanged: filterPackages,
-                                        controller: searchController,
-                                        decoration: InputDecoration(
-                                          hintText: 'Rechercher un colis...',
-                                          prefixIcon: const Icon(
-                                            Icons.search,
-                                            color: Color(0xFF7F78AF),
-                                          ),
-                                          border: InputBorder.none,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    FiltreDropdown(
-                                      onSelected: handleStatusFilter,
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
                         ),
                       ),
+                    ),
 
-                      // Liste des colis
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // En-tête de la liste
-                              Row(
+                    // Barre de recherche fixe
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _SearchBarDelegate(
+                        child: Container(
+                          color: Colors.grey[50],
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 20,
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "Liste des colis${_currentFilter == null
-                                        ? ''
-                                        : _currentFilter == 'livres'
-                                        ? ' livrés'
-                                        : _currentFilter == 'en_transit'
-                                        ? ' en transit'
-                                        : ' en attente'}",
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1A1E49),
+                                  Expanded(
+                                    child: TextField(
+                                      onChanged: filterPackages,
+                                      controller: searchController,
+                                      decoration: InputDecoration(
+                                        hintText: 'Rechercher un colis...',
+                                        prefixIcon: const Icon(
+                                          Icons.search,
+                                          color: Color(0xFF7F78AF),
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
                                     ),
                                   ),
-                                  if (_currentFilter != null)
-                                    TextButton.icon(
-                                      onPressed: () {
-                                        setState(() {
-                                          _currentFilter = null;
-                                          _filteredPackages = _allPackages;
-                                          if (searchController
-                                              .text
-                                              .isNotEmpty) {
-                                            filterPackages(
-                                              searchController.text,
-                                            );
-                                          }
-                                        });
-                                      },
-                                      icon: const Icon(
-                                        Icons.clear_all,
-                                        size: 18,
-                                      ),
-                                      label: const Text("Voir tout"),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: const Color(
-                                          0xFF7F78AF,
-                                        ),
-                                      ),
-                                    ),
+                                  const SizedBox(width: 8),
+                                  FiltreDropdown(
+                                    onSelected: handleStatusFilter,
+                                  ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
-                            ],
+                            ),
                           ),
                         ),
                       ),
+                    ),
 
-                      // Liste des colis
-                      _filteredPackages.isEmpty
-                          ? SliverFillRemaining(
+                    // Liste des colis
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // En-tête de la liste
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Liste des colis${_currentFilter == null ? '' : _currentFilter == 'livres' ? ' livrés' : _currentFilter == 'en_transit' ? ' en transit' : ' en attente'}",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1A1E49),
+                                  ),
+                                ),
+                                if (_currentFilter != null)
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        _currentFilter = null;
+                                        _filteredPackages = _allPackages;
+                                        if (searchController.text.isNotEmpty) {
+                                          filterPackages(
+                                            searchController.text,
+                                          );
+                                        }
+                                      });
+                                    },
+                                    icon: const Icon(
+                                      Icons.clear_all,
+                                      size: 18,
+                                    ),
+                                    label: const Text("Voir tout"),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(
+                                        0xFF7F78AF,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Liste des colis
+                    _filteredPackages.isEmpty
+                        ? SliverFillRemaining(
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -719,7 +703,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                               ),
                             ),
                           )
-                          : SliverList(
+                        : SliverList(
                             delegate: SliverChildBuilderDelegate((
                               context,
                               index,
@@ -731,20 +715,19 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                 ),
                                 child: PackageListItem(
                                   packages: pkg,
-                                  onTap:
-                                      () => _openPackageDetailsBottomSheet(
-                                        context,
-                                        pkg,
-                                      ),
+                                  onTap: () => _openPackageDetailsBottomSheet(
+                                    context,
+                                    pkg,
+                                  ),
                                 ),
                               );
                             }, childCount: _filteredPackages.length),
                           ),
-                    ],
-                  ),
+                  ],
                 ),
-              )
-              : const Center(child: CircularProgressIndicator()),
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -879,39 +862,38 @@ class FiltreDropdown extends StatelessWidget {
         onSelected: onSelected,
         color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        itemBuilder:
-            (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'livres',
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green),
-                    SizedBox(width: 8),
-                    Text('Colis livrés'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'en_transit',
-                child: Row(
-                  children: [
-                    Icon(Icons.local_shipping, color: Colors.purple),
-                    SizedBox(width: 8),
-                    Text('Colis en transit'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'en_attente',
-                child: Row(
-                  children: [
-                    Icon(Icons.hourglass_empty, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Text('Colis en attente'),
-                  ],
-                ),
-              ),
-            ],
+        itemBuilder: (BuildContext context) => [
+          const PopupMenuItem<String>(
+            value: 'livres',
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 8),
+                Text('Colis livrés'),
+              ],
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'en_transit',
+            child: Row(
+              children: [
+                Icon(Icons.local_shipping, color: Colors.purple),
+                SizedBox(width: 8),
+                Text('Colis en transit'),
+              ],
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'en_attente',
+            child: Row(
+              children: [
+                Icon(Icons.hourglass_empty, color: Colors.orange),
+                SizedBox(width: 8),
+                Text('Colis en attente'),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

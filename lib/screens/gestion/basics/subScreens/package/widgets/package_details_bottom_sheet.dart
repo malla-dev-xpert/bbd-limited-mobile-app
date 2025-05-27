@@ -84,27 +84,27 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                   children: [
                     widget.packages.status == Status.PENDING
                         ? Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: GestureDetector(
-                            onTap: () => _showEditExpeditionDialog(context),
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.grey[500],
-                              size: 20,
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          ),
-                        )
+                            child: GestureDetector(
+                              onTap: () => _showEditExpeditionDialog(context),
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.grey[500],
+                                size: 20,
+                              ),
+                            ),
+                          )
                         : Container(),
                     Text(
                       'Détails du colis',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1A1E49),
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1A1E49),
+                          ),
                     ),
                   ],
                 ),
@@ -157,11 +157,10 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            widget.packages.expeditionType?.toLowerCase() ==
-                                    'avion'
-                                ? Colors.amber[50]
-                                : Colors.deepPurple[50],
+                        color: widget.packages.expeditionType?.toLowerCase() ==
+                                'avion'
+                            ? Colors.amber[50]
+                            : Colors.deepPurple[50],
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -183,12 +182,11 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                           Text(
                             widget.packages.expeditionType ?? 'N/A',
                             style: TextStyle(
-                              color:
-                                  widget.packages.expeditionType
-                                              ?.toLowerCase() ==
-                                          'avion'
-                                      ? Colors.amber[800]
-                                      : Colors.deepPurple,
+                              color: widget.packages.expeditionType
+                                          ?.toLowerCase() ==
+                                      'avion'
+                                  ? Colors.amber[800]
+                                  : Colors.deepPurple,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -224,8 +222,8 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                                     widget.packages.status == Status.DELIVERED
                                 ? Icons.check_circle
                                 : widget.packages.status == Status.INPROGRESS
-                                ? Icons.local_shipping
-                                : Icons.hourglass_empty,
+                                    ? Icons.local_shipping
+                                    : Icons.hourglass_empty,
                             size: 16,
                             color: _getStatusColor(widget.packages.status),
                           ),
@@ -249,9 +247,9 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
           Text(
             'Informations supplémentaires',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1A1E49),
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1A1E49),
+                ),
           ),
           const SizedBox(height: 12),
           Container(
@@ -279,15 +277,15 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                       .trim(),
                 ),
                 const SizedBox(height: 12),
-                widget.packages.expeditionType == "avion"
+                widget.packages.expeditionType == "Avion"
                     ? _buildInfoRow(
-                      'Poids',
-                      '${widget.packages.weight ?? 'N/A'} kg',
-                    )
+                        'Poids',
+                        '${widget.packages.weight ?? 'N/A'} kg',
+                      )
                     : _buildInfoRow(
-                      'CBN',
-                      '${widget.packages.cbn ?? 'N/A'} m³',
-                    ),
+                        'CBN',
+                        '${widget.packages.cbn ?? 'N/A'} m³',
+                      ),
                 const SizedBox(height: 12),
                 _buildInfoRow(
                   'Quantité',
@@ -469,52 +467,51 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
               ),
             ),
             ElevatedButton(
-              onPressed:
-                  _isLoading
-                      ? null
-                      : () async {
-                        setState(() => _isLoading = true);
-                        try {
-                          final expeditionServices = PackageServices();
-                          final result = await expeditionServices
-                              .deleteExpedition(widget.packages.id!);
+              onPressed: _isLoading
+                  ? null
+                  : () async {
+                      setState(() => _isLoading = true);
+                      try {
+                        final expeditionServices = PackageServices();
+                        final result = await expeditionServices
+                            .deleteExpedition(widget.packages.id!);
 
-                          if (result == "SUCCESS") {
-                            widget.packages.status = Status.DELETE;
+                        if (result == "SUCCESS") {
+                          widget.packages.status = Status.DELETE;
 
-                            if (widget.onStart != null) {
-                              widget.onStart!(widget.packages);
-                            }
-
-                            if (context.mounted) {
-                              Navigator.pop(
-                                context,
-                              ); // Fermer la boîte de dialogue
-                              Navigator.pop(context); // Fermer le bottom sheet
-                              showSuccessTopSnackBar(
-                                context,
-                                "Le colis ${widget.packages.ref} a été supprimer avec succès.",
-                              );
-                            }
-                          } else {
-                            if (context.mounted) {
-                              showErrorTopSnackBar(
-                                context,
-                                "Erreur de suppression, veuillez réessayer",
-                              );
-                              setState(() => _isLoading = false);
-                            }
+                          if (widget.onStart != null) {
+                            widget.onStart!(widget.packages);
                           }
-                        } catch (e) {
+
+                          if (context.mounted) {
+                            Navigator.pop(
+                              context,
+                            ); // Fermer la boîte de dialogue
+                            Navigator.pop(context); // Fermer le bottom sheet
+                            showSuccessTopSnackBar(
+                              context,
+                              "Le colis ${widget.packages.ref} a été supprimer avec succès.",
+                            );
+                          }
+                        } else {
                           if (context.mounted) {
                             showErrorTopSnackBar(
                               context,
-                              "Erreur de suppression",
+                              "Erreur de suppression, veuillez réessayer",
                             );
                             setState(() => _isLoading = false);
                           }
                         }
-                      },
+                      } catch (e) {
+                        if (context.mounted) {
+                          showErrorTopSnackBar(
+                            context,
+                            "Erreur de suppression",
+                          );
+                          setState(() => _isLoading = false);
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[400],
                 shape: RoundedRectangleBorder(
@@ -568,54 +565,53 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed:
-                      _isLoading
-                          ? null
-                          : () async {
-                            setState(() => _isLoading = true);
-                            try {
-                              final expeditionServices = PackageServices();
-                              final result = await expeditionServices
-                                  .startExpedition(widget.packages.id!);
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final expeditionServices = PackageServices();
+                            final result = await expeditionServices
+                                .startExpedition(widget.packages.id!);
 
-                              if (result == "SUCCESS") {
-                                widget.packages.status = Status.INPROGRESS;
+                            if (result == "SUCCESS") {
+                              widget.packages.status = Status.INPROGRESS;
 
-                                if (widget.onStart != null) {
-                                  widget.onStart!(widget.packages);
-                                }
-
-                                if (context.mounted) {
-                                  Navigator.pop(
-                                    context,
-                                  ); // Fermer la boîte de dialogue
-                                  Navigator.pop(
-                                    context,
-                                  ); // Fermer le bottom sheet
-                                  showSuccessTopSnackBar(
-                                    context,
-                                    "Expédition du colis ${widget.packages.ref} démarrée avec succès.",
-                                  );
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur de démarrage, veuillez réessayer",
-                                  );
-                                  setState(() => _isLoading = false);
-                                }
+                              if (widget.onStart != null) {
+                                widget.onStart!(widget.packages);
                               }
-                            } catch (e) {
+
+                              if (context.mounted) {
+                                Navigator.pop(
+                                  context,
+                                ); // Fermer la boîte de dialogue
+                                Navigator.pop(
+                                  context,
+                                ); // Fermer le bottom sheet
+                                showSuccessTopSnackBar(
+                                  context,
+                                  "Expédition du colis ${widget.packages.ref} démarrée avec succès.",
+                                );
+                              }
+                            } else {
                               if (context.mounted) {
                                 showErrorTopSnackBar(
                                   context,
-                                  "Erreur de démarrage",
+                                  "Erreur de démarrage, veuillez réessayer",
                                 );
                                 setState(() => _isLoading = false);
                               }
                             }
-                          },
+                          } catch (e) {
+                            if (context.mounted) {
+                              showErrorTopSnackBar(
+                                context,
+                                "Erreur de démarrage",
+                              );
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     shape: RoundedRectangleBorder(
@@ -671,50 +667,49 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed:
-                      _isLoading
-                          ? null
-                          : () async {
-                            setState(() => _isLoading = true);
-                            try {
-                              final expeditionServices = PackageServices();
-                              final result = await expeditionServices
-                                  .deliverExpedition(widget.packages.id!);
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final expeditionServices = PackageServices();
+                            final result = await expeditionServices
+                                .deliverExpedition(widget.packages.id!);
 
-                              if (result == "SUCCESS") {
-                                widget.packages.status = Status.DELIVERED;
+                            if (result == "SUCCESS") {
+                              widget.packages.status = Status.DELIVERED;
 
-                                if (widget.onStart != null) {
-                                  widget.onStart!(widget.packages);
-                                }
-
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                  showSuccessTopSnackBar(
-                                    context,
-                                    "Colis ${widget.packages.ref} arrivé avec succès.",
-                                  );
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur de confirmation, veuillez réessayer",
-                                  );
-                                  setState(() => _isLoading = false);
-                                }
+                              if (widget.onStart != null) {
+                                widget.onStart!(widget.packages);
                               }
-                            } catch (e) {
+
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                                showSuccessTopSnackBar(
+                                  context,
+                                  "Colis ${widget.packages.ref} arrivé avec succès.",
+                                );
+                              }
+                            } else {
                               if (context.mounted) {
                                 showErrorTopSnackBar(
                                   context,
-                                  "Erreur de confirmation",
+                                  "Erreur de confirmation, veuillez réessayer",
                                 );
                                 setState(() => _isLoading = false);
                               }
                             }
-                          },
+                          } catch (e) {
+                            if (context.mounted) {
+                              showErrorTopSnackBar(
+                                context,
+                                "Erreur de confirmation",
+                              );
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     shape: RoundedRectangleBorder(
@@ -770,50 +765,49 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed:
-                      _isLoading
-                          ? null
-                          : () async {
-                            setState(() => _isLoading = true);
-                            try {
-                              final expeditionServices = PackageServices();
-                              final result = await expeditionServices
-                                  .receivedExpedition(widget.packages.id!);
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final expeditionServices = PackageServices();
+                            final result = await expeditionServices
+                                .receivedExpedition(widget.packages.id!);
 
-                              if (result == "SUCCESS") {
-                                widget.packages.status = Status.DELIVERED;
+                            if (result == "SUCCESS") {
+                              widget.packages.status = Status.DELIVERED;
 
-                                if (widget.onStart != null) {
-                                  widget.onStart!(widget.packages);
-                                }
-
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                  showSuccessTopSnackBar(
-                                    context,
-                                    "Colis ${widget.packages.ref} livrée avec succès.",
-                                  );
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  showErrorTopSnackBar(
-                                    context,
-                                    "Erreur de confirmation, veuillez réessayer",
-                                  );
-                                  setState(() => _isLoading = false);
-                                }
+                              if (widget.onStart != null) {
+                                widget.onStart!(widget.packages);
                               }
-                            } catch (e) {
+
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                                showSuccessTopSnackBar(
+                                  context,
+                                  "Colis ${widget.packages.ref} livrée avec succès.",
+                                );
+                              }
+                            } else {
                               if (context.mounted) {
                                 showErrorTopSnackBar(
                                   context,
-                                  "Erreur de confirmation",
+                                  "Erreur de confirmation, veuillez réessayer",
                                 );
                                 setState(() => _isLoading = false);
                               }
                             }
-                          },
+                          } catch (e) {
+                            if (context.mounted) {
+                              showErrorTopSnackBar(
+                                context,
+                                "Erreur de confirmation",
+                              );
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     shape: RoundedRectangleBorder(

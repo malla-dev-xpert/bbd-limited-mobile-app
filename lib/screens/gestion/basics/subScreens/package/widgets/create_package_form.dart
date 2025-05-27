@@ -97,10 +97,9 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       key: _formKey,
       child: Container(
         constraints: BoxConstraints(
-          maxHeight:
-              widget.isPackageScreen == true
-                  ? MediaQuery.of(context).size.height * 0.7
-                  : MediaQuery.of(context).size.height * 0.6,
+          maxHeight: widget.isPackageScreen == true
+              ? MediaQuery.of(context).size.height * 0.7
+              : MediaQuery.of(context).size.height * 0.6,
         ),
         padding: const EdgeInsets.all(20),
         child: Stack(
@@ -188,11 +187,9 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                               controller: _refController,
                               label: "Référence de l'expédition",
                               icon: Icons.numbers,
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? 'Ce champ est requis'
-                                          : null,
+                              validator: (value) => value?.isEmpty ?? true
+                                  ? 'Ce champ est requis'
+                                  : null,
                             ),
                             const SizedBox(height: 20),
 
@@ -202,49 +199,47 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Expanded(
-                                  child:
-                                      _expeditionType == 'Avion'
-                                          ? buildTextField(
-                                            controller: _weightController,
-                                            label: "Poids (kg)",
-                                            icon: Icons.scale,
-                                            keyboardType: TextInputType.number,
-                                            validator: (value) {
-                                              if (value?.isEmpty ?? true) {
-                                                return 'Ce champ est requis';
-                                              }
-                                              if (double.tryParse(value!) ==
-                                                  null) {
-                                                return 'Veuillez entrer un nombre valide';
-                                              }
-                                              return null;
-                                            },
-                                          )
-                                          : buildTextField(
-                                            controller: _cbnController,
-                                            label: "CBN",
-                                            icon: Icons.monitor_weight,
-                                            keyboardType: TextInputType.number,
-                                            validator: (value) {
-                                              if (value?.isEmpty ?? true) {
-                                                return 'Ce champ est requis';
-                                              }
-                                              if (double.tryParse(value!) ==
-                                                  null) {
-                                                return 'Veuillez entrer un nombre valide';
-                                              }
-                                              return null;
-                                            },
-                                          ),
+                                  child: _expeditionType == 'Avion'
+                                      ? buildTextField(
+                                          controller: _weightController,
+                                          label: "Poids (kg)",
+                                          icon: Icons.scale,
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            if (value?.isEmpty ?? true) {
+                                              return 'Ce champ est requis';
+                                            }
+                                            if (double.tryParse(value!) ==
+                                                null) {
+                                              return 'Veuillez entrer un nombre valide';
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                      : buildTextField(
+                                          controller: _cbnController,
+                                          label: "CBN",
+                                          icon: Icons.monitor_weight,
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            if (value?.isEmpty ?? true) {
+                                              return 'Ce champ est requis';
+                                            }
+                                            if (double.tryParse(value!) ==
+                                                null) {
+                                              return 'Veuillez entrer un nombre valide';
+                                            }
+                                            return null;
+                                          },
+                                        ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: buildTextField(
                                     controller: _quantityController,
                                     label: "Nombre de carton",
-                                    icon:
-                                        Icons
-                                            .production_quantity_limits_outlined,
+                                    icon: Icons
+                                        .production_quantity_limits_outlined,
                                     keyboardType: TextInputType.number,
                                     validator: (value) {
                                       if (value?.isEmpty ?? true) {
@@ -277,9 +272,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                           _selectedClient = client;
                                         });
                                       },
-                                      itemToString:
-                                          (client) =>
-                                              '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                      itemToString: (client) =>
+                                          '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
                                       hintText: 'Choisir un client...',
                                       prefixIcon: Icons.person,
                                     ),
@@ -346,17 +340,18 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         const SizedBox(height: 4),
                                         _departureCountry != null
                                             ? Row(
-                                              children: [
-                                                Text(
-                                                  _departureCountry!.flagEmoji,
-                                                  style: const TextStyle(
-                                                    fontSize: 24,
+                                                children: [
+                                                  Text(
+                                                    _departureCountry!
+                                                        .flagEmoji,
+                                                    style: const TextStyle(
+                                                      fontSize: 24,
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(_departureCountry!.name),
-                                              ],
-                                            )
+                                                  const SizedBox(width: 8),
+                                                  Text(_departureCountry!.name),
+                                                ],
+                                              )
                                             : const Text('Choisir un pays'),
                                       ],
                                     ),
@@ -415,17 +410,17 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         const SizedBox(height: 4),
                                         _arrivalCountry != null
                                             ? Row(
-                                              children: [
-                                                Text(
-                                                  _arrivalCountry!.flagEmoji,
-                                                  style: const TextStyle(
-                                                    fontSize: 24,
+                                                children: [
+                                                  Text(
+                                                    _arrivalCountry!.flagEmoji,
+                                                    style: const TextStyle(
+                                                      fontSize: 24,
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(_arrivalCountry!.name),
-                                              ],
-                                            )
+                                                  const SizedBox(width: 8),
+                                                  Text(_arrivalCountry!.name),
+                                                ],
+                                              )
                                             : const Text('Choisir un pays'),
                                       ],
                                     ),
@@ -478,9 +473,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         _selectedContainer = container;
                                       });
                                     },
-                                    itemToString:
-                                        (container) =>
-                                            '${container.reference} - ${container.size}',
+                                    itemToString: (container) =>
+                                        '${container.reference}',
                                     hintText: 'Choisir un container...',
                                     prefixIcon: Icons.inventory_2,
                                   ),
@@ -492,8 +486,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     style: ButtonStyle(
                                       backgroundColor:
                                           MaterialStateProperty.all(
-                                            Colors.grey[100],
-                                          ),
+                                        Colors.grey[100],
+                                      ),
                                       fixedSize: MaterialStateProperty.all(
                                         const Size(55, 55),
                                       ),
@@ -528,9 +522,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         _selectedWarehouse = warehouse;
                                       });
                                     },
-                                    itemToString:
-                                        (warehouse) =>
-                                            '${warehouse.name} - ${warehouse.adresse}',
+                                    itemToString: (warehouse) =>
+                                        '${warehouse.name} - ${warehouse.adresse}',
                                     hintText: 'Choisir un entrepôt...',
                                     prefixIcon: Icons.warehouse,
                                   ),
@@ -542,8 +535,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     style: ButtonStyle(
                                       backgroundColor:
                                           MaterialStateProperty.all(
-                                            Colors.grey[100],
-                                          ),
+                                        Colors.grey[100],
+                                      ),
                                       fixedSize: MaterialStateProperty.all(
                                         const Size(55, 55),
                                       ),
@@ -571,7 +564,6 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                 ],
               ),
             ),
-
             Positioned(
               bottom: 0,
               left: 0,
@@ -665,10 +657,9 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       // Appel au service avec les IDs corrects
       final result = await packageServices.create(
         dto: dto,
-        clientId:
-            widget.isPackageScreen
-                ? _selectedClient!.id
-                : int.parse(widget.clientId!),
+        clientId: widget.isPackageScreen
+            ? _selectedClient!.id
+            : int.parse(widget.clientId!),
         userId: user.id,
         containerId: _selectedContainer!.id!,
         warehouseId: _selectedWarehouse!.id,
@@ -766,17 +757,16 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const CreateContainerForm(),
-          ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const CreateContainerForm(),
+      ),
     ).then((_) {
-      _loadClients(); // Recharger la liste des clients après la création
+      _loadContainers(); // Recharger la liste des clients après la création
     });
   }
 
@@ -785,15 +775,14 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const CreateWarehouseForm(),
-          ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const CreateWarehouseForm(),
+      ),
     ).then((_) {
       _loadWarehouses(); // Recharger la liste des entrepôts après la création
     });

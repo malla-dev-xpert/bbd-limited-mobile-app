@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +29,7 @@ class PackageServices {
     required Packages dto,
     required int clientId,
     required int userId,
-    required int containerId,
+    int? containerId,
     required int warehouseId,
   }) async {
     final url = Uri.parse(
@@ -41,6 +42,8 @@ class PackageServices {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(dto.toJson()),
       );
+
+      print(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "SUCCESS";
