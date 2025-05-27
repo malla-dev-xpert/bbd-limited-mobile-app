@@ -5,8 +5,8 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/package_items_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/packages/widgets/package_items_list.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_items_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_items_list.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -31,12 +31,11 @@ class PurchaseDialog extends StatefulWidget {
   ) {
     showDialog(
       context: context,
-      builder:
-          (context) => PurchaseDialog(
-            onPurchaseComplete: onPurchaseComplete,
-            clientId: clientId,
-            versementId: versementId,
-          ),
+      builder: (context) => PurchaseDialog(
+        onPurchaseComplete: onPurchaseComplete,
+        clientId: clientId,
+        versementId: versementId,
+      ),
     );
   }
 
@@ -98,7 +97,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     setState(
       () => localItems.add({
         'description': description,
-        'quantity': qty, // Stocké comme int
+        'quantity': qty,
         'unitPrice': unitPrice,
         'supplierId': supplierId,
         'supplier': supplierName,
@@ -132,18 +131,16 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final createAchatDto = CreateAchatDto(
         versementId: widget.versementId,
-        lignes:
-            localItems
-                .map(
-                  (item) => CreateLigneDto(
-                    descriptionItem: item['description']?.toString() ?? '',
-                    quantityItem: (item['quantity'] as num?)?.toInt() ?? 0,
-                    prixUnitaire:
-                        (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
-                    supplierId: selectedSupplier!.id,
-                  ),
-                )
-                .toList(),
+        lignes: localItems
+            .map(
+              (item) => CreateLigneDto(
+                descriptionItem: item['description']?.toString() ?? '',
+                quantityItem: (item['quantity'] as num?)?.toInt() ?? 0,
+                prixUnitaire: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
+                supplierId: selectedSupplier!.id,
+              ),
+            )
+            .toList(),
       );
 
       final result = await achatServices.createAchatForClient(
