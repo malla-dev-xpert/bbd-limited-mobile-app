@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/expedition_services.dart';
-import 'package:bbd_limited/models/expedition.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_details_bottom_sheet.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
+import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/models/packages.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
@@ -14,20 +14,20 @@ enum ExpeditionType { all, plane, boat }
 
 enum ExpeditionStatus { all, delivered, inTransit, pending }
 
-class ExpeditionHomeScreen extends StatefulWidget {
-  const ExpeditionHomeScreen({Key? key}) : super(key: key);
+class PackageHomeScreen extends StatefulWidget {
+  const PackageHomeScreen({Key? key}) : super(key: key);
 
   @override
-  _ExpeditionHomeScreenState createState() => _ExpeditionHomeScreenState();
+  _PackageHomeScreenState createState() => _PackageHomeScreenState();
 }
 
-class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
+class _PackageHomeScreenState extends State<PackageHomeScreen> {
   final TextEditingController searchController = TextEditingController();
-  final ExpeditionServices expeditionServices = ExpeditionServices();
+  final PackageServices packageServices = PackageServices();
   final AuthService authService = AuthService();
 
-  List<Expedition> allExpeditions = [];
-  List<Expedition> filteredExpeditions = [];
+  List<Packages> allPackages = [];
+  List<Packages> filteredPackages = [];
   String? currentFilter;
   ExpeditionType selectedType = ExpeditionType.all;
   ExpeditionStatus selectedStatus = ExpeditionStatus.all;
@@ -42,9 +42,9 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchExpeditions();
+    fetchPackages();
     _refreshController.stream.listen((_) {
-      fetchExpeditions(reset: true);
+      fetchPackages(reset: true);
     });
   }
 
@@ -55,10 +55,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     super.dispose();
   }
 
-  Future<void> fetchExpeditions({
-    bool reset = false,
-    String? searchQuery,
-  }) async {
+  Future<void> fetchPackages({bool reset = false, String? searchQuery}) async {
     if (isLoading || (!reset && !hasMoreData)) return;
 
     setState(() {
@@ -66,21 +63,21 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
       if (reset) {
         currentPage = 0;
         hasMoreData = true;
-        allExpeditions.clear();
+        allPackages.clear();
       }
     });
 
     try {
-      final result = await expeditionServices.findAll(
+      final result = await packageServices.findAll(
         page: currentPage,
         query: searchQuery,
       );
 
       setState(() {
         if (reset) {
-          allExpeditions.clear();
+          allPackages.clear();
         }
-        allExpeditions.addAll(result);
+        allPackages.addAll(result);
         _applyFilters(searchQuery);
 
         if (result.isEmpty || result.length < 30) {
@@ -97,8 +94,8 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
   }
 
   void _applyFilters(String? searchQuery) {
-    filteredExpeditions =
-        allExpeditions.where((exp) {
+    filteredPackages =
+        allPackages.where((exp) {
           final matchesSearch =
               searchQuery == null ||
               searchQuery.isEmpty ||
@@ -125,9 +122,9 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         }).toList();
   }
 
-  void searchExpedition(String query) async {
+  void searchPackage(String query) async {
     if (query.isEmpty) {
-      await fetchExpeditions(reset: true, searchQuery: null);
+      await fetchPackages(reset: true, searchQuery: null);
     } else {
       _applyFilters(query);
     }
@@ -193,53 +190,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
     );
   }
 
-  Widget _buildStatusFilter(
-    ExpeditionStatus status,
-    IconData icon,
-    Color color,
-    String label,
-  ) {
-    final isSelected = selectedStatus == status;
-    return GestureDetector(
-      onTap: () => _onStatusSelected(status),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: isSelected ? Border.all(color: color, width: 2) : null,
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : null,
-            ),
-            width: 60,
-            height: 60,
-            padding: const EdgeInsets.all(10),
-            child: Icon(icon, color: color),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? color : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _openCreateExpeditionBottomSheet(BuildContext context) async {
+  Future<void> _openCreatePackageBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -248,18 +199,18 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreateExpeditionForm(isExpeditionScreen: true);
+        return CreateExpeditionForm(isPackageScreen: true);
       },
     );
 
     if (result == true) {
-      fetchExpeditions(reset: true);
+      fetchPackages(reset: true);
     }
   }
 
-  Future<void> _openExpeditionDetailsBottomSheet(
+  Future<void> _openPackageDetailsBottomSheet(
     BuildContext context,
-    Expedition expedition,
+    Packages package,
   ) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
@@ -269,16 +220,16 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return ExpeditionDetailsBottomSheet(
-          expedition: expedition,
+        return PackageDetailsBottomSheet(
+          packages: package,
           onStart: (updatedExpedition) {
-            fetchExpeditions(reset: true);
+            fetchPackages(reset: true);
           },
           onEdit: (updatedExpedition) async {
             try {
-              final expeditionServices = ExpeditionServices();
+              final packageServices = PackageServices();
               final user = await authService.getUserInfo();
-              final result = await expeditionServices.updateExpedition(
+              final result = await packageServices.updateExpedition(
                 updatedExpedition.id!,
                 updatedExpedition,
                 user!.id,
@@ -287,15 +238,15 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                 if (context.mounted) {
                   showSuccessTopSnackBar(
                     context,
-                    "Expédition ${updatedExpedition.ref} modifiée avec succès.",
+                    "Colis ${updatedExpedition.ref} modifiée avec succès.",
                   );
-                  fetchExpeditions(reset: true);
+                  fetchPackages(reset: true);
                 }
               } else {
                 if (context.mounted) {
                   showErrorTopSnackBar(
                     context,
-                    "Erreur lors de la modification de l'expédition",
+                    "Erreur lors de la modification du colis",
                   );
                 }
               }
@@ -303,20 +254,20 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
               if (context.mounted) {
                 showErrorTopSnackBar(
                   context,
-                  "Erreur lors de la modification de l'expédition",
+                  "Erreur lors de la modification du colis",
                 );
               }
             }
           },
           onDelete: (updatedExpedition) {
-            fetchExpeditions(reset: true);
+            fetchPackages(reset: true);
           },
         );
       },
     );
 
     if (result == true) {
-      fetchExpeditions(reset: true);
+      fetchPackages(reset: true);
     }
   }
 
@@ -348,7 +299,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Gestion des expéditions',
+                          'Gestion des colis',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
@@ -358,7 +309,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                           ),
                         ),
                         Text(
-                          '${filteredExpeditions.length} expéditions trouvées',
+                          '${filteredPackages.length} colis trouvées',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -403,11 +354,11 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                 children: [
                   Expanded(
                     child: TextField(
-                      onChanged: searchExpedition,
+                      onChanged: searchPackage,
                       controller: searchController,
                       autocorrect: false,
                       decoration: InputDecoration(
-                        labelText: 'Rechercher une expédition...',
+                        labelText: 'Rechercher un colis...',
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -485,24 +436,22 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
               const SizedBox(height: 20),
               Expanded(
                 child:
-                    isLoading && filteredExpeditions.isEmpty
+                    isLoading && filteredPackages.isEmpty
                         ? const Center(child: CircularProgressIndicator())
-                        : filteredExpeditions.isNotEmpty
+                        : filteredPackages.isNotEmpty
                         ? NotificationListener<ScrollNotification>(
                           onNotification: (scrollInfo) {
                             if (scrollInfo.metrics.pixels ==
                                     scrollInfo.metrics.maxScrollExtent &&
                                 !isLoading &&
                                 hasMoreData) {
-                              fetchExpeditions(
-                                searchQuery: searchController.text,
-                              );
+                              fetchPackages(searchQuery: searchController.text);
                             }
                             return false;
                           },
                           child: RefreshIndicator(
                             onRefresh: () async {
-                              await fetchExpeditions(reset: true);
+                              await fetchPackages(reset: true);
                             },
                             displacement: 40,
                             color: Theme.of(context).primaryColor,
@@ -510,10 +459,10 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                             child: ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               itemCount:
-                                  filteredExpeditions.length +
+                                  filteredPackages.length +
                                   (hasMoreData && isLoading ? 1 : 0),
                               itemBuilder: (context, index) {
-                                if (index >= filteredExpeditions.length) {
+                                if (index >= filteredPackages.length) {
                                   return const Center(
                                     child: Padding(
                                       padding: EdgeInsets.all(8.0),
@@ -522,17 +471,17 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
                                   );
                                 }
 
-                                final expedition = filteredExpeditions[index];
+                                final package = filteredPackages[index];
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8.0,
                                   ),
-                                  child: ExpeditionListItem(
-                                    expedition: expedition,
+                                  child: PackageListItem(
+                                    packages: package,
                                     onTap:
-                                        () => _openExpeditionDetailsBottomSheet(
+                                        () => _openPackageDetailsBottomSheet(
                                           context,
-                                          expedition,
+                                          package,
                                         ),
                                   ),
                                 );
@@ -549,7 +498,7 @@ class _ExpeditionHomeScreenState extends State<ExpeditionHomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCreateExpeditionBottomSheet(context),
+        onPressed: () => _openCreatePackageBottomSheet(context),
         backgroundColor: const Color(0xFF1A1E49),
         heroTag: 'expedition_fab',
         child: const Icon(Icons.add, color: Colors.white, size: 28),

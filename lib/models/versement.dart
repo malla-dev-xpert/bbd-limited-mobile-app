@@ -12,7 +12,7 @@ class Versement {
   final String? partnerName;
   final String? partnerPhone;
   final String? partnerAccountType;
-  final int? clientId;
+  final int? partnerId;
   List<Achat>? achats;
 
   Versement copyWith({
@@ -26,7 +26,7 @@ class Versement {
     String? partnerName,
     String? partnerPhone,
     String? partnerAccountType,
-    int? clientId,
+    int? partnerId,
     List<Achat>? achats,
   }) {
     return Versement(
@@ -40,7 +40,7 @@ class Versement {
       partnerName: partnerName ?? this.partnerName,
       partnerPhone: partnerPhone ?? this.partnerPhone,
       partnerAccountType: partnerAccountType ?? this.partnerAccountType,
-      clientId: clientId ?? this.clientId,
+      partnerId: partnerId ?? this.partnerId,
       achats: achats ?? this.achats,
     );
   }
@@ -56,7 +56,7 @@ class Versement {
     this.partnerName,
     this.partnerPhone,
     this.partnerAccountType,
-    this.clientId,
+    this.partnerId,
     this.achats,
   });
 
@@ -72,7 +72,7 @@ class Versement {
       'partnerName': partnerName,
       'partnerPhone': partnerPhone,
       'partnerAccountType': partnerAccountType,
-      'clientId': clientId,
+      'partnerId': partnerId,
       'achats': achats?.map((item) => item.toJson()).toList(),
     };
   }
@@ -122,7 +122,7 @@ class Versement {
       partnerName: json['partnerName'] as String?,
       partnerPhone: json['partnerPhone'] as String?,
       partnerAccountType: json['partnerAccountType'] as String?,
-      clientId: json['clientId'] as int?,
+      partnerId: json['partnerId'] as int?,
       achats: achatList,
     );
   }

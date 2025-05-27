@@ -1,37 +1,46 @@
-import 'package:bbd_limited/models/package.dart';
-
 class CreateAchatDto {
   final int versementId;
-  final Packages packageDto;
   final List<CreateLigneDto> lignes;
 
-  CreateAchatDto({
-    required this.versementId,
-    required this.packageDto,
-    required this.lignes,
-  });
+  CreateAchatDto({required this.versementId, required this.lignes});
 
   Map<String, dynamic> toJson() {
     return {
       'versementId': versementId,
-      'packageDto': packageDto.toJson(),
-      'lignes': lignes.map((ligne) => ligne.toJson()).toList(),
+      'lignes':
+          lignes
+              .map(
+                (ligne) => {
+                  'descriptionItem': ligne.descriptionItem,
+                  'quantityItem': ligne.quantityItem.toInt(),
+                  'prixUnitaire': ligne.prixUnitaire,
+                  'supplierId': ligne.supplierId,
+                },
+              )
+              .toList(),
     };
   }
 }
 
 class CreateLigneDto {
-  final String? descriptionItem;
-  final double? quantityItem;
-  final double? prixUnitaire; // Nom aligné avec le backend
+  final String descriptionItem;
+  final int quantityItem;
+  final double prixUnitaire;
+  final int supplierId;
 
-  CreateLigneDto({this.descriptionItem, this.quantityItem, this.prixUnitaire});
+  CreateLigneDto({
+    required this.descriptionItem,
+    required this.quantityItem,
+    required this.prixUnitaire,
+    required this.supplierId,
+  });
 
   Map<String, dynamic> toJson() {
     return {
       'descriptionItem': descriptionItem,
       'quantityItem': quantityItem,
-      'prixUnitaire': prixUnitaire, // Clé correspondant au backend
+      'prixUnitaire': prixUnitaire,
+      'supplierId': supplierId,
     };
   }
 }

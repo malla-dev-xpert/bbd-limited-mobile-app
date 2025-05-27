@@ -334,17 +334,14 @@ void showContainerDetailsBottomSheet(
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              _detailRow(
-                                                "Référence",
-                                                pkg.reference,
-                                              ),
+                                              _detailRow("Référence", pkg.ref),
                                               _detailRow(
                                                 "Client",
-                                                pkg.partnerName,
+                                                pkg.clientName,
                                               ),
                                               _detailRow(
                                                 "Téléphone",
-                                                pkg.partnerPhoneNumber,
+                                                pkg.clientPhone,
                                               ),
                                             ],
                                           ),

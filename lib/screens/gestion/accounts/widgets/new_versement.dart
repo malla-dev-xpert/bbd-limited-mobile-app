@@ -56,13 +56,13 @@ class _NewVersementModalState extends State<NewVersementModal>
     setState(() => isLoading = true);
     try {
       if (widget.isVersementScreen) {
-        final clientData = await partnerServices.findAll(page: 0);
+        final clientData = await partnerServices.findCustomers(page: 0);
         setState(() {
           clients = clientData;
           isLoading = false;
         });
       } else if (widget.clientId != null) {
-        final clientData = await partnerServices.findAll(page: 0);
+        final clientData = await partnerServices.findCustomers(page: 0);
         final client = clientData.firstWhere(
           (c) => c.id.toString() == widget.clientId,
           orElse: () => throw Exception("Client non trouvé"),
@@ -105,6 +105,10 @@ class _NewVersementModalState extends State<NewVersementModal>
       final versementDto = Versement.fromJson({
         "montantVerser": double.tryParse(montantVerserController.text),
         "createdAt": myDate!.toIso8601String(),
+        "clientId":
+            widget.isVersementScreen
+                ? selectedCLients!.id
+                : int.parse(widget.clientId!),
       });
 
       final result = await versementServices.create(
@@ -115,7 +119,7 @@ class _NewVersementModalState extends State<NewVersementModal>
         versementDto,
       );
 
-      if (result == "CREATED") {
+      if (result != null) {
         widget.onVersementCreated?.call();
         Navigator.pop(context, true);
         showSuccessTopSnackBar(

@@ -2,10 +2,10 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_mod
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/models/expedition.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_list_item.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/expedition_details_bottom_sheet.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/expedition/widgets/create_expedition_form.dart';
+import 'package:bbd_limited/models/packages.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:intl/intl.dart';
 
@@ -25,7 +25,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   late Partner _partner;
   final TextEditingController _searchController = TextEditingController();
   List<dynamic>? _filteredVersements;
-  List<Expedition>? _filteredExpeditions;
+  List<Packages>? _filteredPackages;
   OperationType _selectedOperationType = OperationType.versements;
 
   @override
@@ -33,8 +33,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     super.initState();
     _partner = widget.partner;
     _filteredVersements = _partner.versements;
-    _filteredExpeditions = _partner.expeditions;
+    _filteredPackages = _partner.packages;
     _sortVersementsByDate();
+    _sortExpeditionsByDate();
   }
 
   void _sortVersementsByDate() {
@@ -47,11 +48,21 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     }
   }
 
+  void _sortExpeditionsByDate() {
+    if (_filteredPackages != null) {
+      _filteredPackages!.sort((a, b) {
+        final dateA = a.startDate ?? DateTime(1900);
+        final dateB = b.startDate ?? DateTime(1900);
+        return dateB.compareTo(dateA);
+      });
+    }
+  }
+
   Future<void> _refreshData() async {
     try {
-      // Fetch fresh partner data
+      // Obtenir de nouvelles données des clients
       final partnerServices = PartnerServices();
-      final partners = await partnerServices.findAll(page: 0);
+      final partners = await partnerServices.findCustomers(page: 0);
       final freshPartner = partners.firstWhere(
         (p) => p.id == widget.partner.id,
         orElse: () => widget.partner,
@@ -60,8 +71,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       setState(() {
         _partner = freshPartner;
         _filteredVersements = _partner.versements;
-        _filteredExpeditions = _partner.expeditions;
+        _filteredPackages = _partner.packages;
         _sortVersementsByDate();
+        _sortExpeditionsByDate();
       });
     } catch (e) {
       print('Error refreshing data: $e');
@@ -72,7 +84,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     setState(() {
       if (query.isEmpty) {
         _filteredVersements = _partner.versements;
-        _filteredExpeditions = _partner.expeditions;
+        _filteredPackages = _partner.packages;
       } else {
         _filteredVersements =
             _partner.versements?.where((versement) {
@@ -81,14 +93,15 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               return reference.contains(searchLower);
             }).toList();
 
-        _filteredExpeditions =
-            _partner.expeditions?.where((expedition) {
+        _filteredPackages =
+            _partner.packages?.where((expedition) {
               final reference = expedition.ref?.toLowerCase() ?? '';
               final searchLower = query.toLowerCase();
               return reference.contains(searchLower);
             }).toList();
       }
       _sortVersementsByDate();
+      _sortExpeditionsByDate();
     });
   }
 
@@ -137,18 +150,16 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           icon: Icon(Icons.add, color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildBalanceCard(currencyFormat, context),
-            const SizedBox(height: 30),
-            _buildOperationTypeSelector(),
-            const SizedBox(height: 16),
-            _buildSearchBar(),
-            const SizedBox(height: 8),
-            _buildOperationsList(currencyFormat, context),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildBalanceCard(currencyFormat, context),
+          const SizedBox(height: 30),
+          _buildOperationTypeSelector(),
+          const SizedBox(height: 16),
+          _buildSearchBar(),
+          const SizedBox(height: 8),
+          Expanded(child: _buildOperationsList(currencyFormat, context)),
+        ],
       ),
     );
   }
@@ -169,8 +180,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           Expanded(
             child: _buildOperationTypeButton(
               OperationType.expeditions,
-              'Expéditions',
-              Icons.local_shipping_outlined,
+              'Colis',
+              Icons.inventory_2,
             ),
           ),
         ],
@@ -251,7 +262,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Widget _buildExpeditionsList(BuildContext context) {
-    if (_filteredExpeditions == null || _filteredExpeditions!.isEmpty) {
+    if (_filteredPackages == null || _filteredPackages!.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height * 0.2,
@@ -265,46 +276,28 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Text(
-              'Historique des expéditions',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
-              ),
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
+        itemCount: _filteredPackages?.length ?? 0,
+        itemBuilder: (context, index) {
+          final package = _filteredPackages![index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: PackageListItem(
+              packages: package,
+              onTap: () => _showPackageDetails(context, package),
             ),
-          ),
-          RefreshIndicator(
-            onRefresh: _refreshData,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: _filteredExpeditions?.length ?? 0,
-              itemBuilder: (context, index) {
-                final expedition = _filteredExpeditions![index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: ExpeditionListItem(
-                    expedition: expedition,
-                    onTap: () => _showExpeditionDetails(context, expedition),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  void _showExpeditionDetails(BuildContext context, Expedition expedition) {
+  void _showPackageDetails(BuildContext context, Packages package) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -313,8 +306,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return ExpeditionDetailsBottomSheet(
-          expedition: expedition,
+        return PackageDetailsBottomSheet(
+          packages: package,
           onStart: (updatedExpedition) {
             _refreshData();
           },
@@ -459,96 +452,73 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Text(
-              'Historique des versements',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100, left: 10, right: 10),
+        itemCount: _filteredVersements?.length ?? 0,
+        itemBuilder: (context, index) {
+          final versement = _filteredVersements![index];
+          final montantRestant = versement.montantRestant ?? 0.0;
+          final isNegative = montantRestant < 0;
+          final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
+
+          return Container(
+            padding: EdgeInsets.all(0),
+            child: ListTile(
+              onTap:
+                  () => showVersementDetailsBottomSheet(
+                    context,
+                    versement,
+                    _refreshData,
+                  ),
+              title: Text(
+                versement.reference ?? 'Sans référence',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                versement.createdAt != null
+                    ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
+                    : 'Date inconnue',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 5,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        currencyFormat.format(versement.montantVerser),
+                        style: TextStyle(fontSize: 13, color: Colors.blue),
+                      ),
+                      Text(
+                        currencyFormat.format(versement.montantRestant),
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(
+                    isNegative ? Icons.arrow_downward : Icons.arrow_upward,
+                    color: statusColor,
+                    size: 20,
+                  ),
+                ],
               ),
             ),
-          ),
-          RefreshIndicator(
-            onRefresh: _refreshData,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: _filteredVersements?.length ?? 0,
-              itemBuilder: (context, index) {
-                final versement = _filteredVersements![index];
-                final montantRestant = versement.montantRestant ?? 0.0;
-                final isNegative = montantRestant < 0;
-                final statusColor =
-                    isNegative ? Colors.red[400] : Colors.green[400];
-
-                return Container(
-                  padding: EdgeInsets.all(0),
-                  child: ListTile(
-                    onTap:
-                        () =>
-                            showVersementDetailsBottomSheet(context, versement),
-                    title: Text(
-                      versement.reference ?? 'Sans référence',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      versement.createdAt != null
-                          ? DateFormat(
-                            'dd/MM/yyyy',
-                          ).format(versement.createdAt!)
-                          : 'Date inconnue',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 5,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              currencyFormat.format(versement.montantVerser),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(versement.montantRestant),
-                              style: TextStyle(
-                                color: statusColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Icon(
-                          isNegative
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward,
-                          color: statusColor,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -6,7 +6,7 @@ import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/harbor.dart';
-import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_container_to_harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -582,13 +582,13 @@ class _ContainerDetailsModal extends StatelessWidget {
   Widget _buildPackageItem(Packages p) {
     return ListTile(
       leading: const Icon(Icons.inventory, color: Colors.grey),
-      title: Text(p.reference ?? 'Colis sans référence'),
+      title: Text(p.ref ?? 'Colis sans référence'),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Client: ${p.partnerName}'),
-          Text('Téléphone: ${p.partnerPhoneNumber}'),
-          Text('Nombre d\'article: ${p.items!.length}'),
+          Text('Client: ${p.clientName}'),
+          Text('Téléphone: ${p.clientPhone}'),
+          Text('Nombre d\'article: ${p.itemQuantity}'),
         ],
       ),
     );

@@ -323,6 +323,7 @@ class _DeviseState extends State<DevicesScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         tooltip: 'Add New devise',
+        heroTag: 'devices_fab',
         onPressed: () {
           showModalBottomSheet(
             context: context,

@@ -27,14 +27,14 @@ class CardData {
 List<CardData> cardDataList = [
   CardData(
     icon: Icons.inventory_2,
-    title: 'Gestion des expéditions',
-    description: 'Gérer les expéditions et les commandes',
+    title: 'Gestion des colis',
+    description: 'Gérer les colis et les achats de marchandises.',
     backgroundColor: Colors.grey[50]!,
     iconColor: const Color(0xFF13084F),
     titleColor: const Color(0xFF13084F),
     descriptionColor: Colors.black54,
     onPressed: (context) {
-      Navigator.of(context).pushNamed('/expedition');
+      Navigator.of(context).pushNamed('/package');
     },
   ),
   CardData(

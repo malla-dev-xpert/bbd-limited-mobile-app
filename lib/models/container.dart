@@ -1,5 +1,5 @@
 import 'package:bbd_limited/core/enums/status.dart';
-import 'package:bbd_limited/models/package.dart';
+import 'package:bbd_limited/models/packages.dart';
 
 class Containers {
   final int? id;

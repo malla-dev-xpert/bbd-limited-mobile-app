@@ -184,11 +184,11 @@ Future<bool?> showAddItemsModal(BuildContext context, int packageId) async {
                           return;
                         }
 
-                        await packageServices.addItemsToPackage(
-                          packageId,
-                          localItems,
-                          user.id.toInt(),
-                        );
+                        // await packageServices.addItemsToPackage(
+                        //   packageId,
+                        //   localItems,
+                        //   user.id.toInt(),
+                        // );
 
                         setState(() {
                           isLoading = false;

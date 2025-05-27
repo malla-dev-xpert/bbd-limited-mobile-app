@@ -50,12 +50,12 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
   Future<void> _loadData() async {
     setState(() => isLoading = true);
     try {
-      final clientData = await partnerServices.findAll(page: 0);
+      final clientData = await partnerServices.findCustomers(page: 0);
 
       if (clientData.isNotEmpty) {
-        if (widget.versement.clientId != null) {
+        if (widget.versement.partnerId != null) {
           selectedClient = clientData.firstWhere(
-            (c) => c.id == widget.versement.clientId,
+            (c) => c.id == widget.versement.partnerId,
             orElse: () => clientData.first,
           );
         } else if (widget.versement.partnerName != null) {

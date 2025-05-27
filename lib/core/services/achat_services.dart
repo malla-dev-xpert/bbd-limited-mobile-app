@@ -8,27 +8,14 @@ class AchatServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  // Future<List<Packages>> findAll({int page = 0}) async {
-  //   final response = await http.get(Uri.parse('$baseUrl/achats?page=$page'));
-
-  //   if (response.statusCode == 200) {
-  //     final List<dynamic> jsonBody = json.decode(response.body);
-  //     return jsonBody.map((e) => Packages.fromJson(e)).toList();
-  //   } else {
-  //     throw Exception("Erreur lors du chargement des colis");
-  //   }
-  // }
-
   Future<String?> createAchatForClient({
     required int clientId,
     required int supplierId,
     required int userId,
-    required int warehouseId,
-    required int containerId,
     required CreateAchatDto dto,
   }) async {
     final url = Uri.parse(
-      '$baseUrl/achats/create?clientId=$clientId&supplierId=$supplierId&userId=$userId&warehouseId=$warehouseId&containerId=$containerId',
+      '$baseUrl/achats/create?clientId=$clientId&supplierId=$supplierId&userId=$userId',
     );
 
     try {
@@ -38,19 +25,31 @@ class AchatServices {
         body: jsonEncode(dto.toJson()),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return "SUCCESS";
-      } else if (response.statusCode == 409 &&
-          response.body == 'Invalid versement.') {
-        return "INVALID_ACHAT";
-      } else if (response.statusCode == 409 &&
-          response.body == "Inactif versement.") {
-        return "INACTIVE_ACHAT";
+      if (response.statusCode == 200) {
+        try {
+          final responseBody = jsonDecode(response.body);
+          return responseBody['code'] ?? "ACHAT_CREATED";
+        } catch (e) {
+          // If response is not JSON, return it directly
+          return response.body.trim();
+        }
+      } else if (response.statusCode == 400) {
+        try {
+          final responseBody = jsonDecode(response.body);
+          return responseBody['code'] ?? 'VALIDATION_ERROR';
+        } catch (e) {
+          return response.body.trim();
+        }
+      } else {
+        try {
+          final responseBody = jsonDecode(response.body);
+          return responseBody['message'] ?? 'SERVER_ERROR';
+        } catch (e) {
+          return response.body.trim();
+        }
       }
-    } on http.ClientException catch (e) {
-      return 'NETWORK_ERROR';
     } catch (e) {
-      throw Exception('Erreur inattendue: ${e.toString()}');
+      return 'UNEXPECTED_ERROR';
     }
   }
 }
