@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -93,6 +94,8 @@ class AuthService {
         body: json.encode(userDto.toJson()),
       );
 
+      log(response.body);
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.body;
       } else if (response.statusCode == 400) {
@@ -184,8 +187,7 @@ class AuthService {
         return true;
       } else {
         // Récupérer le message d'erreur du backend
-        final errorMessage =
-            json.decode(response.body)['message'] ??
+        final errorMessage = json.decode(response.body)['message'] ??
             'Erreur lors de la suppression de l\'utilisateur';
         throw Exception(errorMessage);
       }

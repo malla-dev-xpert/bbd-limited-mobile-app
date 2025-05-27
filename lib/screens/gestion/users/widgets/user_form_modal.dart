@@ -11,7 +11,7 @@ class UserFormModal extends StatefulWidget {
   final Function(User) onSubmit;
 
   const UserFormModal({Key? key, this.user, required this.onSubmit})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<UserFormModal> createState() => _UserFormModalState();
@@ -94,29 +94,28 @@ class _UserFormModalState extends State<UserFormModal> {
     });
 
     try {
-      final user =
-          widget.user == null
-              ? User(
-                id: 0,
-                username: _usernameController.text,
-                firstName: _firstNameController.text,
-                lastName: _lastNameController.text,
-                email: _emailController.text.trim(),
-                phoneNumber: _phoneController.text.trim(),
-                roleName: _selectedRole!.name,
-              )
-              : widget.user!.copyWith(
-                username: _usernameController.text,
-                firstName: _firstNameController.text,
-                lastName: _lastNameController.text,
-                email: _emailController.text.trim(),
-                phoneNumber: _phoneController.text.trim(),
-                roleName: _selectedRole!.name,
-              );
+      final user = widget.user == null
+          ? User(
+              id: 0,
+              username: _usernameController.text,
+              firstName: _firstNameController.text,
+              lastName: _lastNameController.text,
+              email: _emailController.text.trim(),
+              phoneNumber: _phoneController.text.trim(),
+              roleName: _selectedRole!.name,
+            )
+          : widget.user!.copyWith(
+              username: _usernameController.text,
+              firstName: _firstNameController.text,
+              lastName: _lastNameController.text,
+              email: _emailController.text.trim(),
+              phoneNumber: _phoneController.text.trim(),
+              roleName: _selectedRole!.name,
+            );
 
-      final result = await widget.onSubmit(user);
+      await widget.onSubmit(user);
 
-      if (result == true && mounted) {
+      if (mounted) {
         showSuccessTopSnackBar(
           context,
           widget.user == null
