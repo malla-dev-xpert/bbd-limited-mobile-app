@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/user.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class AuthService {
   final String baseUrl =
@@ -154,26 +158,75 @@ class AuthService {
     }
   }
 
-  Future<bool> deleteUser(int userId) async {
+  Future<bool> deleteUser(int userIdToDelete, User currentUser) async {
     try {
       final token = await getToken();
       if (token == null) throw Exception('Non authentifié');
 
       final response = await http.delete(
-        Uri.parse('$baseUrl/users/$userId'),
+        Uri.parse(
+          '$baseUrl/users/delete?deleteUser=$userIdToDelete&admin=${currentUser.id}',
+        ),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
+      log(response.body);
+
       if (response.statusCode == 200) {
+        // Si l'utilisateur supprime son propre compte, le déconnecter
+        if (currentUser.id == userIdToDelete) {
+          await logout();
+          Navigator.pushReplacementNamed(
+            navigatorKey.currentContext!,
+            '/login',
+          );
+        }
         return true;
       } else {
-        throw Exception('Erreur lors de la suppression de l\'utilisateur');
+        // Récupérer le message d'erreur du backend
+        final errorMessage =
+            json.decode(response.body)['message'] ??
+            'Erreur lors de la suppression de l\'utilisateur';
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      throw Exception('Erreur de connexion: $e');
+      throw Exception('Erreur lors de la suppression: $e');
+    }
+  }
+
+  Future<void> sendDeleteConfirmationEmail(
+    String email,
+    String firstName,
+    String lastName,
+    String username,
+  ) async {
+    try {
+      final token = await getToken();
+      if (token == null) throw Exception('Non authentifié');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/send-delete-confirmation'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'firstName': firstName,
+          'lastName': lastName,
+          'username': username,
+          'editedAt': DateTime.now().toIso8601String(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Erreur lors de l\'envoi de l\'email de confirmation');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de l\'envoi de l\'email: $e');
     }
   }
 

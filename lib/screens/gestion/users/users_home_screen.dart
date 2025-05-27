@@ -238,8 +238,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               TextButton.icon(
                 onPressed: () => Navigator.pop(context, true),
                 icon: const Icon(Icons.delete, color: Colors.red),
-                label: const Text(
-                  "Supprimer",
+                label: Text(
+                  _isLoading ? 'Suppression...' : 'Supprimer',
                   style: TextStyle(color: Colors.red, fontSize: 16),
                 ),
               ),
@@ -250,24 +250,27 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     if (confirmed != true) return;
 
     try {
-      final success = await _authService.deleteUser(user.id);
+      setState(() {
+        _isLoading = true;
+      });
+      final success = await _authService.deleteUser(user.id, _currentUser!);
       if (success) {
+        showSuccessTopSnackBar(context, "Utilisateur supprimé avec succès");
+        // Navigator.pop(context, true);
         setState(() {
           _allUsers.removeWhere((d) => d.id == user.id);
           _filteredUsers.removeWhere((d) => d.id == user.id);
         });
-        showSuccessTopSnackBar(context, "Utilisateur supprimé avec succès");
-      } else {
-        showErrorTopSnackBar(
-          context,
-          "Erreur lors de la suppression de l'utilisateur",
-        );
       }
     } catch (e) {
       showErrorTopSnackBar(
         context,
         "Erreur lors de la suppression: ${e.toString()}",
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
