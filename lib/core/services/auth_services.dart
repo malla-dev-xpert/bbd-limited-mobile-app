@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -172,8 +171,6 @@ class AuthService {
           'Content-Type': 'application/json',
         },
       );
-
-      log(response.body);
 
       if (response.statusCode == 200) {
         // Si l'utilisateur supprime son propre compte, le déconnecter
