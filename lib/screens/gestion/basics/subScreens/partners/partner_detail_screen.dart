@@ -180,8 +180,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           Expanded(
             child: _buildOperationTypeButton(
               OperationType.expeditions,
-              'Expéditions',
-              Icons.local_shipping_outlined,
+              'Colis',
+              Icons.inventory_2,
             ),
           ),
         ],

@@ -159,20 +159,20 @@ class PackageServices {
     }
   }
 
-  // Future<List<Packages>> findByWarehouse(int warehouseId) async {
-  //   final response = await http.get(
-  //     Uri.parse('$baseUrl/packages/warehouse?warehouseId=$warehouseId'),
-  //   );
+  Future<List<Packages>> findByWarehouse(int warehouseId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/packages/warehouse?warehouseId=$warehouseId'),
+    );
 
-  //   if (response.statusCode == 200) {
-  //     final List<dynamic> jsonBody = json.decode(
-  //       utf8.decode(response.bodyBytes),
-  //     );
-  //     return jsonBody.map((e) => Packages.fromJson(e)).toList();
-  //   } else {
-  //     throw Exception("Erreur lors du chargement des colis");
-  //   }
-  // }
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      return jsonBody.map((e) => Packages.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des colis");
+    }
+  }
 
   // Future<List<Packages>> findAll({int page = 0}) async {
   //   final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
