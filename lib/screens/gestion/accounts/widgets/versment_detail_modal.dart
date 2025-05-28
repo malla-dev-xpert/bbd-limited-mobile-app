@@ -36,6 +36,8 @@ void showVersementDetailsBottomSheet(
   VoidCallback? onVersementUpdated,
 ) async {
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   return showModalBottomSheet(
     context: context,
@@ -44,22 +46,40 @@ void showVersementDetailsBottomSheet(
     ),
     transitionAnimationController: AnimationController(
       vsync: Scaffold.of(context),
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     ),
     isScrollControlled: true,
     backgroundColor: Colors.white,
-    builder:
-        (context) => StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Padding(
+    builder: (context) => StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        final allLignes =
+            versement.achats?.expand((a) => a.lignes ?? []).toList() ?? [];
+        final filteredLignes = searchQuery.isEmpty
+            ? allLignes
+            : allLignes.where((ligne) {
+                final description = (ligne.descriptionItem ?? '').toLowerCase();
+                final itemId = ligne.itemId?.toString().toLowerCase() ?? '';
+                final searchLower = searchQuery.toLowerCase();
+                return description.contains(searchLower) ||
+                    itemId.contains(searchLower);
+              }).toList();
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Wrap(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Détails du versement",
                         style: TextStyle(
                           fontSize: 20,
@@ -75,7 +95,7 @@ void showVersementDetailsBottomSheet(
                         ),
                         child: IconButton(
                           onPressed: () => {Navigator.of(context).pop()},
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.clear,
                             color: Colors.white,
                             size: 15,
@@ -84,7 +104,7 @@ void showVersementDetailsBottomSheet(
                       ),
                     ],
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 20),
                   _detailRow("Référence", versement.reference),
                   _detailRow("Client", versement.partnerName),
                   _detailRow("Téléphone", "${versement.partnerPhone}"),
@@ -107,165 +127,175 @@ void showVersementDetailsBottomSheet(
                         .length
                         .toString(),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "La liste des articles achetés",
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ],
+                  const Divider(),
+                  const Text(
+                    "La liste des articles achetés",
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher un article...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 10),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.4,
-                        ),
-                        child:
-                            versement.achats == null ||
-                                    versement.achats!.isEmpty ||
-                                    versement.achats!.every(
-                                      (a) =>
-                                          a.lignes == null || a.lignes!.isEmpty,
-                                    )
-                                ? Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "Pas d'articles achetés pour ce versement.",
-                                      ),
-                                    ],
-                                  ),
-                                )
-                                : ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount:
-                                      versement.achats!
-                                          .expand((a) => a.lignes ?? [])
-                                          .length,
-                                  itemBuilder: (context, index) {
-                                    final allLignes =
-                                        versement.achats!
-                                            .expand((a) => a.lignes ?? [])
-                                            .toList();
-                                    final ligne = allLignes[index];
-
-                                    return Container(
-                                      margin: EdgeInsets.symmetric(vertical: 8),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.grey[50],
-                                        border: Border.all(
-                                          color: Colors.grey[300]!,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              ligne.descriptionItem ??
-                                                  'Article sans nom',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  'Quantité: ${ligne.quantity}',
-                                                ),
-                                                Text(
-                                                  'P.U: ${currencyFormat.format(ligne.unitPriceItem)}',
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(height: 4),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  'Total: ${currencyFormat.format(ligne.prixTotal)}',
-                                                ),
-                                                if (ligne.itemId != null)
-                                                  Text('Ref: ${ligne.itemId}'),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.4,
+                    ),
+                    child: versement.achats == null ||
+                            versement.achats!.isEmpty ||
+                            versement.achats!.every(
+                              (a) => a.lignes == null || a.lignes!.isEmpty,
+                            )
+                        ? const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "Pas d'articles achetés pour ce versement.",
                                 ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.bottom,
-                        ),
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            if (versement.partnerId == null ||
-                                versement.id == null) {
-                              showErrorTopSnackBar(
-                                context,
-                                "Informations du versement incomplètes",
-                              );
-                              return;
-                            }
-
-                            // Fermer d'abord le bottom sheet
-                            Navigator.of(context).pop();
-
-                            // Attendre un court instant avant d'ouvrir le dialogue
-                            Future.delayed(Duration(milliseconds: 100), () {
-                              PurchaseDialog.show(
-                                context,
-                                (achat) {
-                                  onVersementUpdated?.call();
-                                },
-                                versement.partnerId!,
-                                versement.id!,
-                              );
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1A1E49),
-                            padding: EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              ],
                             ),
-                          ),
-                          label: Text(
-                            'Effectuer un achat',
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                          icon: Iconify(
-                            Majesticons.money_hand_line,
-                            color: Colors.white,
-                          ),
+                          )
+                        : filteredLignes.isEmpty
+                            ? const Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "Aucun article trouvé pour cette recherche.",
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: filteredLignes.length,
+                                itemBuilder: (context, index) {
+                                  final ligne = filteredLignes[index];
+
+                                  return Container(
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Colors.grey[50],
+                                      border: Border.all(
+                                        color: Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            ligne.descriptionItem ??
+                                                'Article sans nom',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Quantité: ${ligne.quantity}',
+                                              ),
+                                              Text(
+                                                'P.U: ${currencyFormat.format(ligne.unitPriceItem)}',
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Total: ${currencyFormat.format(ligne.prixTotal)}',
+                                              ),
+                                              if (ligne.itemId != null)
+                                                Text('Ref: ${ligne.itemId}'),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (versement.partnerId == null ||
+                            versement.id == null) {
+                          showErrorTopSnackBar(
+                            context,
+                            "Informations du versement incomplètes",
+                          );
+                          return;
+                        }
+
+                        // Fermer d'abord le bottom sheet
+                        Navigator.of(context).pop();
+
+                        // Attendre un court instant avant d'ouvrir le dialogue
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          PurchaseDialog.show(
+                            context,
+                            (achat) {
+                              onVersementUpdated?.call();
+                            },
+                            versement.partnerId!,
+                            versement.id!,
+                          );
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A1E49),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                    ],
+                      label: const Text(
+                        'Effectuer un achat',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      icon: const Iconify(
+                        Majesticons.money_hand_line,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          ),
+        );
+      },
+    ),
   );
 }

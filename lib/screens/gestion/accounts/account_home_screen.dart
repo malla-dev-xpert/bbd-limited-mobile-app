@@ -294,7 +294,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         child: _StatItem(
                           title: 'Total des versements',
                           value: _allPaiements.length.toString(),
-                          valueStyle: TextStyle(
+                          valueStyle: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
@@ -311,7 +311,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                       ),
                       color: Colors.amber[50],
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Montant total',
                           value: currencyFormat.format(
@@ -324,7 +324,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                       : 0),
                             ),
                           ),
-                          valueStyle: TextStyle(
+                          valueStyle: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
@@ -407,7 +407,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         return false;
                       },
                       child: _filteredPaiements.isEmpty
-                          ? Center(child: Text("Aucun paiement trouvé."))
+                          ? const Center(child: Text("Aucun paiement trouvé."))
                           : RefreshIndicator(
                               onRefresh: () async {
                                 await fetchPaiements(reset: true);

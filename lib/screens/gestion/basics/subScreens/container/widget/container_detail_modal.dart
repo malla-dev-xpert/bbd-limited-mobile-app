@@ -41,6 +41,7 @@ void showContainerDetailsBottomSheet(
   final ContainerServices containerServices = ContainerServices();
   final AuthService authService = AuthService();
   bool isLoading = false;
+  String searchQuery = '';
 
   return showModalBottomSheet(
     context: context,
@@ -55,9 +56,19 @@ void showContainerDetailsBottomSheet(
     backgroundColor: Colors.white,
     builder: (context) => StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
-        return Padding(
+        // Filtrer les colis en fonction de la recherche
+        final filteredPackages = container.packages?.where((pkg) {
+          if (searchQuery.isEmpty) return true;
+          final query = searchQuery.toLowerCase();
+          return pkg.ref?.toLowerCase().contains(query) == true ||
+              pkg.clientName?.toLowerCase().contains(query) == true ||
+              pkg.clientPhone?.toLowerCase().contains(query) == true;
+        }).toList();
+
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
           padding: const EdgeInsets.all(24.0),
-          child: Wrap(
+          child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -88,7 +99,7 @@ void showContainerDetailsBottomSheet(
                   ),
                 ],
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 20),
               _detailRow("Référence", container.reference),
               _detailRow("Taille", "${container.size} pieds"),
               _detailRow(
@@ -99,323 +110,344 @@ void showContainerDetailsBottomSheet(
                 "Date de reception",
                 DateFormat.yMMMMEEEEd().format(container.createdAt!),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "La liste des colis",
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      container.status == Status.PENDING &&
-                              container.isAvailable == true
-                          ? TextButton.icon(
-                              onPressed: () async {
-                                final selectedPackages =
-                                    await showAddPackagesToContainerDialog(
-                                  context,
-                                  container.id!,
-                                  packageServices,
-                                );
-
-                                if (selectedPackages != null &&
-                                    selectedPackages.isNotEmpty) {
-                                  // Rafraîchir les données du conteneur
-                                  final updatedContainer =
-                                      await containerServices
-                                          .getContainerDetails(container.id!);
-
-                                  setState(() {
-                                    container = updatedContainer;
-                                  });
-                                }
-                              },
-                              label: const Text("Ajouter des colis"),
-                              icon: const Icon(Icons.add),
-                            )
-                          : const Text(""),
-                    ],
+                  const Text(
+                    "La liste des colis",
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 10),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.4,
-                    ),
-                    child: container.packages == null ||
-                            container.packages!.isEmpty
-                        ? const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text("Pas de colis pour ce conteneur."),
-                              ],
-                            ),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: () async {
-                              container.packages!;
-                            },
-                            displacement: 40,
-                            color: Theme.of(context).primaryColor,
-                            backgroundColor: Colors.white,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: container.packages!
-                                  .where(
-                                    (ctn) =>
-                                        ctn.status != Status.DELETE ||
-                                        ctn.status !=
-                                            Status.DELETE_ON_CONTAINER,
-                                  )
-                                  .length,
-                              itemBuilder: (context, index) {
-                                final pkg = container.packages![index];
+                  container.status == Status.PENDING &&
+                          container.isAvailable == true
+                      ? TextButton.icon(
+                          onPressed: () async {
+                            final selectedPackages =
+                                await showAddPackagesToContainerDialog(
+                              context,
+                              container.id!,
+                              packageServices,
+                            );
 
-                                return Dismissible(
-                                  key: Key('${pkg.id}'),
-                                  direction:
-                                      container.status != Status.INPROGRESS
-                                          ? DismissDirection.endToStart
-                                          : DismissDirection.none,
-                                  background: Container(
-                                    padding: const EdgeInsets.only(
-                                      right: 16,
-                                    ),
-                                    color: container.status != Status.RECEIVED
-                                        ? Colors.red
-                                        : Colors.grey,
-                                    alignment: Alignment.centerRight,
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ),
-                                  confirmDismiss: container.status !=
-                                          Status.INPROGRESS
-                                      ? (direction) async {
-                                          final bool confirm = await showDialog(
-                                            context: context,
-                                            builder: (
-                                              BuildContext context,
-                                            ) {
-                                              return AlertDialog(
-                                                backgroundColor: Colors.white,
-                                                title: const Text(
-                                                  "Confirmation",
-                                                ),
-                                                content: const Text(
-                                                  "Voulez-vous vraiment retirer ce colis du conteneur ?",
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(
-                                                      context,
-                                                    ).pop(
-                                                      false,
-                                                    ),
-                                                    child: const Text(
-                                                      "Annuler",
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(
-                                                      context,
-                                                    ).pop(true),
-                                                    child: Text(
-                                                      isLoading
-                                                          ? "Suppression..."
-                                                          : "Confirmer",
-                                                      style: const TextStyle(
-                                                        color: Colors.red,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
+                            if (selectedPackages != null &&
+                                selectedPackages.isNotEmpty) {
+                              final updatedContainer = await containerServices
+                                  .getContainerDetails(container.id!);
 
-                                          if (confirm != true) return false;
-
-                                          try {
-                                            final user =
-                                                await authService.getUserInfo();
-                                            setState(() {
-                                              isLoading = true;
-                                            });
-                                            final result = await packageServices
-                                                .removePackageFromContainer(
-                                              packageId: pkg.id!,
-                                              containerId: container.id!,
-                                              userId: user!.id.toInt(),
-                                            );
-
-                                            if (result == "REMOVED") {
-                                              setState(() {
-                                                container.packages!.removeWhere(
-                                                  (p) => p.id == pkg.id,
-                                                );
-                                              });
-                                              showSuccessTopSnackBar(
-                                                context,
-                                                "Colis retiré du conteneur",
-                                              );
-                                              return true;
-                                            } else if (result ==
-                                                "PACKAGE_NOT_IN_CONTAINER") {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Le colis n'appartient pas à ce conteneur",
-                                              );
-                                            } else if (result ==
-                                                "CONTAINER_INPROGRESS") {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Impossible de retirer un colis d'un conteneur en cours de livraison",
-                                              );
-                                            }
-                                          } catch (e) {
-                                            showErrorTopSnackBar(
-                                              context,
-                                              "Erreur lors de la suppression",
-                                            );
-                                          } finally {
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                          }
-                                          return false;
-                                        }
-                                      : null,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                        10,
-                                      ),
-                                      color: Colors.grey[50],
-                                      border: Border.all(
-                                        color: Colors.grey[300]!,
-                                      ),
-                                    ),
-                                    padding: const EdgeInsets.all(8),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 5,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        _detailRow("Référence", pkg.ref),
-                                        _detailRow(
-                                          "Client",
-                                          pkg.clientName,
-                                        ),
-                                        _detailRow(
-                                          "Téléphone",
-                                          pkg.clientPhone,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                  ),
+                              setState(() {
+                                container = updatedContainer;
+                              });
+                            }
+                          },
+                          label: const Text("Ajouter des colis"),
+                          icon: const Icon(Icons.add),
+                        )
+                      : const Text(""),
                 ],
               ),
-              const SizedBox(height: 60),
-              container.packages != null &&
-                      container.packages!.isNotEmpty &&
-                      container.status == Status.PENDING
-                  ? confirmationButton(
-                      subLabel: "Démarrage...",
-                      icon: Icons.check,
-                      label: "Démarrer la livraison",
-                      isLoading: isLoading,
-                      onPressed: () async {
-                        final bool confirm = await showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text("Confirmer le démarrage"),
-                              backgroundColor: Colors.white,
-                              content: const Text(
-                                "Voulez-vous vraiment démarrer la livraison de ce conteneur ?",
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 50,
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un colis...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              setState(() {
+                                searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: container.packages == null || container.packages!.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Pas de colis pour ce conteneur."),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          container.packages!;
+                        },
+                        displacement: 40,
+                        color: Theme.of(context).primaryColor,
+                        backgroundColor: Colors.white,
+                        child: filteredPackages?.isEmpty == true
+                            ? const Center(
+                                child: Text(
+                                  "Aucun colis ne correspond à votre recherche",
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: filteredPackages?.length ?? 0,
+                                itemBuilder: (context, index) {
+                                  final pkg = filteredPackages![index];
+
+                                  return Dismissible(
+                                    key: Key('${pkg.id}'),
+                                    direction:
+                                        container.status != Status.INPROGRESS
+                                            ? DismissDirection.endToStart
+                                            : DismissDirection.none,
+                                    background: Container(
+                                      padding: const EdgeInsets.only(
+                                        right: 16,
+                                      ),
+                                      color: container.status != Status.RECEIVED
+                                          ? Colors.red
+                                          : Colors.grey,
+                                      alignment: Alignment.centerRight,
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                    ),
+                                    confirmDismiss: container.status !=
+                                            Status.INPROGRESS
+                                        ? (direction) async {
+                                            final bool confirm =
+                                                await showDialog(
+                                              context: context,
+                                              builder: (
+                                                BuildContext context,
+                                              ) {
+                                                return AlertDialog(
+                                                  backgroundColor: Colors.white,
+                                                  title: const Text(
+                                                    "Confirmation",
+                                                  ),
+                                                  content: const Text(
+                                                    "Voulez-vous vraiment retirer ce colis du conteneur ?",
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(
+                                                        context,
+                                                      ).pop(
+                                                        false,
+                                                      ),
+                                                      child: const Text(
+                                                        "Annuler",
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(
+                                                        context,
+                                                      ).pop(true),
+                                                      child: Text(
+                                                        isLoading
+                                                            ? "Suppression..."
+                                                            : "Confirmer",
+                                                        style: const TextStyle(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (confirm != true) return false;
+
+                                            try {
+                                              final user = await authService
+                                                  .getUserInfo();
+                                              setState(() {
+                                                isLoading = true;
+                                              });
+                                              final result = await packageServices
+                                                  .removePackageFromContainer(
+                                                packageId: pkg.id!,
+                                                containerId: container.id!,
+                                                userId: user!.id.toInt(),
+                                              );
+
+                                              if (result == "REMOVED") {
+                                                setState(() {
+                                                  container.packages!
+                                                      .removeWhere(
+                                                    (p) => p.id == pkg.id,
+                                                  );
+                                                });
+                                                showSuccessTopSnackBar(
+                                                  context,
+                                                  "Colis retiré du conteneur",
+                                                );
+                                                return true;
+                                              } else if (result ==
+                                                  "PACKAGE_NOT_IN_CONTAINER") {
+                                                showErrorTopSnackBar(
+                                                  context,
+                                                  "Le colis n'appartient pas à ce conteneur",
+                                                );
+                                              } else if (result ==
+                                                  "CONTAINER_INPROGRESS") {
+                                                showErrorTopSnackBar(
+                                                  context,
+                                                  "Impossible de retirer un colis d'un conteneur en cours de livraison",
+                                                );
+                                              }
+                                            } catch (e) {
+                                              showErrorTopSnackBar(
+                                                context,
+                                                "Erreur lors de la suppression",
+                                              );
+                                            } finally {
+                                              setState(() {
+                                                isLoading = false;
+                                              });
+                                            }
+                                            return false;
+                                          }
+                                        : null,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                          10,
+                                        ),
+                                        color: Colors.grey[50],
+                                        border: Border.all(
+                                          color: Colors.grey[300]!,
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.all(8),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 5,
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _detailRow("Référence", pkg.ref),
+                                          _detailRow(
+                                            "Client",
+                                            pkg.clientName,
+                                          ),
+                                          _detailRow(
+                                            "Téléphone",
+                                            pkg.clientPhone,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: const Text("Annuler"),
+                      ),
+              ),
+              if (container.packages != null &&
+                  container.packages!.isNotEmpty &&
+                  container.status == Status.PENDING)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: confirmationButton(
+                    subLabel: "Démarrage...",
+                    icon: Icons.check,
+                    label: "Démarrer la livraison",
+                    isLoading: isLoading,
+                    onPressed: () async {
+                      final bool confirm = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("Confirmer le démarrage"),
+                            backgroundColor: Colors.white,
+                            content: const Text(
+                              "Voulez-vous vraiment démarrer la livraison de ce conteneur ?",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text("Annuler"),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: Text(
+                                  isLoading ? "Démarrage..." : "Confirmer",
+                                  style: const TextStyle(color: Colors.green),
                                 ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: Text(
-                                    isLoading ? "Démarrage..." : "Confirmer",
-                                    style: const TextStyle(color: Colors.green),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirm != true) return;
+
+                      setState(() {
+                        isLoading = true;
+                      });
+
+                      final user = await authService.getUserInfo();
+
+                      if (user == null) {
+                        showErrorTopSnackBar(
+                          context,
+                          "Erreur: Utilisateur non connecté",
                         );
+                        setState(() => isLoading = false);
+                        return;
+                      }
 
-                        // Si l'utilisateur annule, on ne fait rien
-                        if (confirm != true) return;
+                      try {
+                        final result = await containerServices.startDelivery(
+                            container.id!, user.id.toInt());
 
+                        if (result == "SUCCESS") {
+                          Navigator.of(context).pop(true);
+                          showSuccessTopSnackBar(
+                            context,
+                            "Livraison démarrée avec succès !",
+                          );
+                        } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+                          showErrorTopSnackBar(
+                            context,
+                            "Impossible de démarrer la livraison, pas de colis dans le conteneur.",
+                          );
+                        }
+                      } catch (e) {
+                        print(e);
+                        showErrorTopSnackBar(
+                          context,
+                          "Erreur lors du démarrage de la livraison",
+                        );
+                      } finally {
                         setState(() {
-                          isLoading = true;
+                          isLoading = false;
                         });
-
-                        final user = await authService.getUserInfo();
-
-                        if (user == null) {
-                          showErrorTopSnackBar(
-                            context,
-                            "Erreur: Utilisateur non connecté",
-                          );
-                          setState(() => isLoading = false);
-                          return;
-                        }
-
-                        try {
-                          final result = await containerServices.startDelivery(
-                              container.id!, user.id.toInt());
-
-                          if (result == "SUCCESS") {
-                            Navigator.of(context).pop(true);
-                            showSuccessTopSnackBar(
-                              context,
-                              "Livraison démarrée avec succès !",
-                            );
-                          } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(
-                              context,
-                              "Impossible de démarrer la livraison, pas de colis dans le conteneur.",
-                            );
-                          }
-                        } catch (e) {
-                          print(e);
-                          showErrorTopSnackBar(
-                            context,
-                            "Erreur lors du démarrage de la livraison",
-                          );
-                        } finally {
-                          setState(() {
-                            isLoading = false;
-                          });
-                        }
-                      },
-                    )
-                  : const Text(""),
-              const SizedBox(height: 70),
+                      }
+                    },
+                  ),
+                ),
             ],
           ),
         );
