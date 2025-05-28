@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +17,7 @@ Future<List<Packages>?> showAddPackagesToContainerDialog(
     barrierDismissible: false,
     builder: (context) {
       return Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         backgroundColor: Colors.white,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
@@ -49,6 +52,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
   late Future<List<Packages>> _availablePackages;
   final List<Packages> _selectedPackages = [];
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -72,11 +76,13 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
     setState(() => _isLoading = true);
 
     try {
+      final user = await _authService.getUserInfo();
       final request = EmbarquementRequest(
         containerId: widget.containerId.toInt(),
         packageId: _selectedPackages.map((p) => p.id!).toList(),
       );
-      final result = await widget.packageServices.embarquerColis(request);
+      final result =
+          await widget.packageServices.embarquerColis(request, user!.id);
 
       if (result == "SUCCESS") {
         showSuccessTopSnackBar(context, "Colis embarqués avec succès");
@@ -89,9 +95,9 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
             errorMessage =
                 "Un ou plusieurs colis sont déjà dans un autre conteneur";
             break;
-          case "PACKAGE_NOT_IN_RECEIVED_STATUS":
+          case "PACKAGE_NOT_IN_PENDING_STATUS":
             errorMessage =
-                "Un ou plusieurs colis ne sont pas en statut RECEIVED";
+                "Un ou plusieurs colis ne sont pas en statut en attente.";
             break;
           case "CONTAINER_NOT_AVAILABLE":
             errorMessage = "Le conteneur n'est pas disponible";
@@ -125,7 +131,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Ajouter des colis',
                 style: TextStyle(
                   fontSize: 20,
@@ -134,27 +140,27 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.close),
+                icon: const Icon(Icons.close),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
           ),
         ),
-        Divider(height: 1),
+        const Divider(height: 1),
         Expanded(
           child: FutureBuilder<List<Packages>>(
             future: _availablePackages,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Erreur de chargement'));
+                return const Center(child: Text('Erreur de chargement'));
               }
 
               if (snapshot.data!.isEmpty) {
-                return Center(child: Text('Aucun colis disponible'));
+                return const Center(child: Text('Aucun colis disponible'));
               }
 
               return ListView.builder(
@@ -181,7 +187,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
             },
           ),
         ),
-        Divider(height: 1),
+        const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -189,14 +195,13 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
             children: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Annuler'),
+                child: const Text('Annuler'),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               ElevatedButton(
-                onPressed:
-                    _isLoading || _selectedPackages.isEmpty
-                        ? null
-                        : _addPackagesToContainer,
+                onPressed: _isLoading || _selectedPackages.isEmpty
+                    ? null
+                    : _addPackagesToContainer,
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith<Color>((
                     states,
@@ -210,7 +215,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                   }),
                   foregroundColor: MaterialStateProperty.all(Colors.white),
                   padding: MaterialStateProperty.all(
-                    EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   shape: MaterialStateProperty.all(
                     RoundedRectangleBorder(
@@ -220,28 +225,27 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                   enableFeedback: true,
                 ),
                 child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 200),
-                  child:
-                      _isLoading
-                          ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                          : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Ajouter (${_selectedPackages.length})',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ],
+                  duration: const Duration(milliseconds: 200),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Ajouter (${_selectedPackages.length})',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],

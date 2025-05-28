@@ -11,6 +11,8 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
 class ContainerScreen extends StatefulWidget {
+  const ContainerScreen({super.key});
+
   @override
   State<ContainerScreen> createState() => _ContainerScreen();
 }
@@ -44,11 +46,10 @@ class _ContainerScreen extends State<ContainerScreen> {
     final query = searchController.text.toLowerCase();
 
     setState(() {
-      _filteredContainers =
-          _allContainers!.where((devise) {
-            final reference = devise.reference!.toLowerCase();
-            return reference.contains(query);
-          }).toList();
+      _filteredContainers = _allContainers.where((devise) {
+        final reference = devise.reference!.toLowerCase();
+        return reference.contains(query);
+      }).toList();
     });
   }
 
@@ -86,7 +87,6 @@ class _ContainerScreen extends State<ContainerScreen> {
       });
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur de chargement des colis.");
-      print("Erreur de récupération des colis : $e");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -118,7 +118,7 @@ class _ContainerScreen extends State<ContainerScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreateContainerForm();
+        return const CreateContainerForm();
       },
     );
 
@@ -130,28 +130,27 @@ class _ContainerScreen extends State<ContainerScreen> {
   Future<void> _delete(Containers container) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirmer la suppression"),
-            content: Text(
-              "Voulez-vous vraiment supprimer le conteneur ${container.reference}?",
-            ),
-            backgroundColor: Colors.white,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context, true),
-                icon: const Icon(Icons.delete, color: Colors.red),
-                label: Text(
-                  _isLoading ? 'Suppression...' : 'Supprimer',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        content: Text(
+          "Voulez-vous vraiment supprimer le conteneur ${container.reference}?",
+        ),
+        backgroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Annuler"),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: Text(
+              _isLoading ? 'Suppression...' : 'Supprimer',
+              style: const TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed != true) return;
@@ -194,12 +193,12 @@ class _ContainerScreen extends State<ContainerScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Gestion des conteneurs',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCreateConatinerBottomSheet(context),
@@ -226,7 +225,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                     autocorrect: false,
                     decoration: InputDecoration(
                       labelText: 'Rechercher un conteneur...',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -238,13 +237,12 @@ class _ContainerScreen extends State<ContainerScreen> {
             const SizedBox(height: 20),
 
             // Liste des colis
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   "La liste des conteneurs",
-
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -255,20 +253,19 @@ class _ContainerScreen extends State<ContainerScreen> {
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Expanded(
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (scrollInfo) {
-                      if (scrollInfo.metrics.pixels ==
-                              scrollInfo.metrics.maxScrollExtent &&
-                          !_isLoading &&
-                          _hasMoreData) {
-                        fetchContainers();
-                      }
-                      return false;
-                    },
-                    child:
-                        _filteredContainers.isEmpty
-                            ? Center(child: Text("Aucun conteneur trouvé."))
-                            : RefreshIndicator(
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (scrollInfo) {
+                        if (scrollInfo.metrics.pixels ==
+                                scrollInfo.metrics.maxScrollExtent &&
+                            !_isLoading &&
+                            _hasMoreData) {
+                          fetchContainers();
+                        }
+                        return false;
+                      },
+                      child: _filteredContainers.isEmpty
+                          ? const Center(child: Text("Aucun conteneur trouvé."))
+                          : RefreshIndicator(
                               onRefresh: () async {
                                 await fetchContainers(reset: true);
                               },
@@ -277,8 +274,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                               backgroundColor: Colors.white,
                               child: ListView.builder(
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount:
-                                    _filteredContainers.length +
+                                itemCount: _filteredContainers.length +
                                     (_hasMoreData && _isLoading ? 1 : 0),
                                 itemBuilder: (context, index) {
                                   if (index >= _filteredContainers.length) {
@@ -293,23 +289,22 @@ class _ContainerScreen extends State<ContainerScreen> {
 
                                   return ContainerListItem(
                                     container: container,
-                                    onTap:
-                                        () => showContainerDetailsBottomSheet(
-                                          context,
-                                          container,
-                                        ),
-                                    onEdit:
-                                        () => _showEditContainerModal(
-                                          context,
-                                          container,
-                                        ),
+                                    onTap: () =>
+                                        showContainerDetailsBottomSheet(
+                                      context,
+                                      container,
+                                    ),
+                                    onEdit: () => _showEditContainerModal(
+                                      context,
+                                      container,
+                                    ),
                                     onDelete: () => _delete(container),
                                   );
                                 },
                               ),
                             ),
+                    ),
                   ),
-                ),
           ],
         ),
       ),
