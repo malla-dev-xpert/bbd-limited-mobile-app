@@ -24,6 +24,21 @@ class ContainerServices {
     }
   }
 
+  Future<List<Containers>> findAllContainerNotInHarbor({int page = 0}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/containers/not-in-harbor?page=$page'),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      return jsonBody.map((e) => Containers.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des conteneurs");
+    }
+  }
+
   Future<Containers> getContainerDetails(int containerId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/containers/$containerId'),
@@ -136,10 +151,10 @@ class ContainerServices {
   }
 
   Future<String> embarquerContainerToHarbor(
-    HarborEmbarquementRequest request,
-  ) async {
+      HarborEmbarquementRequest request, int userId) async {
     try {
-      final url = Uri.parse('$baseUrl/containers/embarquer/in-harbor');
+      final url =
+          Uri.parse('$baseUrl/containers/embarquer/in-harbor?userId=$userId');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
