@@ -95,10 +95,6 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
             errorMessage =
                 "Un ou plusieurs colis sont déjà dans un autre conteneur";
             break;
-          case "PACKAGE_NOT_IN_PENDING_STATUS":
-            errorMessage =
-                "Un ou plusieurs colis ne sont pas en statut en attente.";
-            break;
           case "CONTAINER_NOT_AVAILABLE":
             errorMessage = "Le conteneur n'est pas disponible";
             break;

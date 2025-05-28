@@ -254,10 +254,6 @@ class PackageServices {
 
         if (errorMessage.contains("Le conteneur n'est pas disponible")) {
           return "CONTAINER_NOT_AVAILABLE";
-        } else if (errorMessage.contains(
-          "Le conteneur n'est pas dans le bon statut",
-        )) {
-          return "CONTAINER_NOT_IN_PENDING";
         } else if (errorMessage.contains("est déjà dans le conteneur")) {
           return "PACKAGE_ALREADY_IN_ANOTHER_CONTAINER";
         } else if (errorMessage.contains("n'est pas en statut PENDING")) {
