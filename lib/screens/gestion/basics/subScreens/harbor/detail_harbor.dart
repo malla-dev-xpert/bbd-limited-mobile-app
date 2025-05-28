@@ -165,10 +165,9 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-        widget.harbor.createdAt != null
-            ? DateFormat.yMMMMEEEEd().format(widget.harbor.createdAt!)
-            : 'Date non disponible';
+    final formattedDate = widget.harbor.createdAt != null
+        ? DateFormat.yMMMMEEEEd().format(widget.harbor.createdAt!)
+        : 'Date non disponible';
 
     return Scaffold(
       body: CustomScrollView(
@@ -354,15 +353,14 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                 _buildEmptyContainersState()
               else
                 Column(
-                  children:
-                      widget.harbor.containers!
-                          .where(
-                            (element) =>
-                                element.status != Status.DELETE &&
-                                element.status != Status.RETRIEVE,
-                          )
-                          .map((item) => _buildContainerItem(item))
-                          .toList(),
+                  children: widget.harbor.containers!
+                      .where(
+                        (element) =>
+                            element.status != Status.DELETE &&
+                            element.status != Status.RETRIEVE,
+                      )
+                      .map((item) => _buildContainerItem(item))
+                      .toList(),
                 ),
             ],
           ),
@@ -475,7 +473,7 @@ class _ContainerDetailsModal extends StatelessWidget {
   final Containers item;
 
   const _ContainerDetailsModal({required this.item, Key? key})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -551,14 +549,13 @@ class _ContainerDetailsModal extends StatelessWidget {
   }
 
   Widget _buildPackagesSection() {
-    final packages =
-        item.packages
-            ?.where(
-              (p) =>
-                  p.status != Status.DELETE &&
-                  p.status != Status.DELETE_ON_CONTAINER,
-            )
-            .toList();
+    final packages = item.packages
+        ?.where(
+          (p) =>
+              p.status != Status.DELETE &&
+              p.status != Status.DELETE_ON_CONTAINER,
+        )
+        .toList();
 
     return Padding(
       padding: const EdgeInsets.all(16),
