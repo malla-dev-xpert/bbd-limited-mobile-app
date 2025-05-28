@@ -12,7 +12,7 @@ import 'package:bbd_limited/core/enums/status.dart';
 
 enum ExpeditionType { all, plane, boat }
 
-enum ExpeditionStatus { all, delivered, inTransit, pending }
+enum ExpeditionStatus { all, received, inTransit, pending }
 
 class PackageHomeScreen extends StatefulWidget {
   const PackageHomeScreen({Key? key}) : super(key: key);
@@ -94,32 +94,27 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
   }
 
   void _applyFilters(String? searchQuery) {
-    filteredPackages =
-        allPackages.where((exp) {
-          final matchesSearch =
-              searchQuery == null ||
-              searchQuery.isEmpty ||
-              (exp.ref?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false);
+    filteredPackages = allPackages.where((exp) {
+      final matchesSearch = searchQuery == null ||
+          searchQuery.isEmpty ||
+          (exp.ref?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false);
 
-          final matchesType =
-              selectedType == ExpeditionType.all ||
-              (selectedType == ExpeditionType.plane &&
-                  exp.expeditionType?.toLowerCase() == 'avion') ||
-              (selectedType == ExpeditionType.boat &&
-                  exp.expeditionType?.toLowerCase() == 'bateau');
+      final matchesType = selectedType == ExpeditionType.all ||
+          (selectedType == ExpeditionType.plane &&
+              exp.expeditionType?.toLowerCase() == 'avion') ||
+          (selectedType == ExpeditionType.boat &&
+              exp.expeditionType?.toLowerCase() == 'bateau');
 
-          final matchesStatus =
-              selectedStatus == ExpeditionStatus.all ||
-              (selectedStatus == ExpeditionStatus.delivered &&
-                  exp.status == Status.DELIVERED) ||
-              (selectedStatus == ExpeditionStatus.inTransit &&
-                  exp.status == Status.INPROGRESS) ||
-              (selectedStatus == ExpeditionStatus.pending &&
-                  exp.status == Status.PENDING);
+      final matchesStatus = selectedStatus == ExpeditionStatus.all ||
+          (selectedStatus == ExpeditionStatus.received &&
+              exp.status == Status.RECEIVED) ||
+          (selectedStatus == ExpeditionStatus.inTransit &&
+              exp.status == Status.INPROGRESS) ||
+          (selectedStatus == ExpeditionStatus.pending &&
+              exp.status == Status.PENDING);
 
-          return matchesSearch && matchesType && matchesStatus;
-        }).toList();
+      return matchesSearch && matchesType && matchesStatus;
+    }).toList();
   }
 
   void searchPackage(String query) async {
@@ -160,16 +155,15 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
               border: isSelected ? Border.all(color: color, width: 2) : null,
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             width: 60,
             height: 60,
@@ -382,24 +376,24 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                       icon: const Icon(Icons.arrow_drop_down),
                       dropdownColor: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      items: [
+                      items: const [
                         DropdownMenuItem(
                           value: ExpeditionStatus.all,
                           child: Row(
                             children: [
                               Icon(Icons.filter_list, color: Colors.blue),
-                              const SizedBox(width: 8),
-                              const Text("Tous"),
+                              SizedBox(width: 8),
+                              Text("Tous"),
                             ],
                           ),
                         ),
                         DropdownMenuItem(
-                          value: ExpeditionStatus.delivered,
+                          value: ExpeditionStatus.received,
                           child: Row(
                             children: [
                               Icon(Icons.check_circle, color: Colors.green),
-                              const SizedBox(width: 8),
-                              const Text("Livrée"),
+                              SizedBox(width: 8),
+                              Text("Livrée"),
                             ],
                           ),
                         ),
@@ -408,8 +402,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                           child: Row(
                             children: [
                               Icon(Icons.local_shipping, color: Colors.orange),
-                              const SizedBox(width: 8),
-                              const Text("En transit"),
+                              SizedBox(width: 8),
+                              Text("En transit"),
                             ],
                           ),
                         ),
@@ -418,8 +412,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                           child: Row(
                             children: [
                               Icon(Icons.hourglass_empty, color: Colors.red),
-                              const SizedBox(width: 8),
-                              const Text("En attente"),
+                              SizedBox(width: 8),
+                              Text("En attente"),
                             ],
                           ),
                         ),
@@ -435,63 +429,62 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child:
-                    isLoading && filteredPackages.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
-                        : filteredPackages.isNotEmpty
+                child: isLoading && filteredPackages.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : filteredPackages.isNotEmpty
                         ? NotificationListener<ScrollNotification>(
-                          onNotification: (scrollInfo) {
-                            if (scrollInfo.metrics.pixels ==
-                                    scrollInfo.metrics.maxScrollExtent &&
-                                !isLoading &&
-                                hasMoreData) {
-                              fetchPackages(searchQuery: searchController.text);
-                            }
-                            return false;
-                          },
-                          child: RefreshIndicator(
-                            onRefresh: () async {
-                              await fetchPackages(reset: true);
+                            onNotification: (scrollInfo) {
+                              if (scrollInfo.metrics.pixels ==
+                                      scrollInfo.metrics.maxScrollExtent &&
+                                  !isLoading &&
+                                  hasMoreData) {
+                                fetchPackages(
+                                    searchQuery: searchController.text);
+                              }
+                              return false;
                             },
-                            displacement: 40,
-                            color: Theme.of(context).primaryColor,
-                            backgroundColor: Colors.white,
-                            child: ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount:
-                                  filteredPackages.length +
-                                  (hasMoreData && isLoading ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= filteredPackages.length) {
-                                  return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(),
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                await fetchPackages(reset: true);
+                              },
+                              displacement: 40,
+                              color: Theme.of(context).primaryColor,
+                              backgroundColor: Colors.white,
+                              child: ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: filteredPackages.length +
+                                    (hasMoreData && isLoading ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >= filteredPackages.length) {
+                                    return const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+
+                                  final package = filteredPackages[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                    ),
+                                    child: PackageListItem(
+                                      packages: package,
+                                      onTap: () =>
+                                          _openPackageDetailsBottomSheet(
+                                        context,
+                                        package,
+                                      ),
                                     ),
                                   );
-                                }
-
-                                final package = filteredPackages[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: PackageListItem(
-                                    packages: package,
-                                    onTap:
-                                        () => _openPackageDetailsBottomSheet(
-                                          context,
-                                          package,
-                                        ),
-                                  ),
-                                );
-                              },
+                                },
+                              ),
                             ),
-                          ),
-                        )
+                          )
                         : const Center(
-                          child: Text("Aucune expédition trouvée"),
-                        ),
+                            child: Text("Aucune expédition trouvée"),
+                          ),
               ),
             ],
           ),
