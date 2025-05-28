@@ -81,4 +81,44 @@ class HarborServices {
       throw Exception("Erreur lors du retrait : $e");
     }
   }
+
+  Future<String?> delete(int harborId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/harbors/$harborId'),
+      );
+
+      if (response.statusCode == 200) {
+        return "SUCCESS";
+      } else if (response.statusCode == 409) {
+        return "HARBOR_HAS_CONTAINERS";
+      } else {
+        throw Exception("Erreur lors de la suppression du port");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion: $e");
+    }
+  }
+
+  Future<String?> update(
+      int harborId, String name, String location, int userId) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/harbors/$harborId?userId=$userId'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": name, "location": location}),
+      );
+
+      if (response.statusCode == 200) {
+        return "UPDATED";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Nom de port déjà utilisé !') {
+        return "NAME_EXIST";
+      } else {
+        throw Exception("Erreur lors de la mise à jour du port");
+      }
+    } catch (e) {
+      throw Exception("Erreur de connexion: $e");
+    }
+  }
 }

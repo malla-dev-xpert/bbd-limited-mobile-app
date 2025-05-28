@@ -9,21 +9,20 @@ Widget confirmationButton({
 }) {
   return ElevatedButton.icon(
     style: ElevatedButton.styleFrom(
-      minimumSize: Size(double.infinity, 50),
+      minimumSize: const Size(double.infinity, 50),
       backgroundColor: Colors.green,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
-    icon:
-        isLoading
-            ? SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-            : Icon(icon, color: Colors.white),
+    icon: isLoading
+        ? const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          )
+        : Icon(icon, color: Colors.white),
     label: Text(
       isLoading ? subLabel : label,
       style: TextStyle(color: Colors.white),

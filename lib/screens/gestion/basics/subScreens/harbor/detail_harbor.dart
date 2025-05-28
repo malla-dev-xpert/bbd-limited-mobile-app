@@ -516,26 +516,30 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
 
   Widget _buildEmptyContainersState() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text("Pas de conteneurs pour ce port."),
-          const SizedBox(height: 10),
-          ElevatedButton.icon(
-            onPressed: _isLoading ? null : _handleAddContainers,
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              "Embarquer un conteneur",
-              style: TextStyle(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7F78AF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.height * 0.2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Pas de conteneurs pour ce port."),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _handleAddContainers,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                "Embarquer un conteneur",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7F78AF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

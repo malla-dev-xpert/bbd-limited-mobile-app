@@ -1,11 +1,12 @@
-import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
+import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/components/confirm_btn.dart';
 
-Future<bool?> showAddHarborModal(BuildContext context) async {
+Future<bool?> showAddHarborModal(BuildContext context, {Harbor? harbor}) async {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final AuthService authService = AuthService();
@@ -13,75 +14,76 @@ Future<bool?> showAddHarborModal(BuildContext context) async {
 
   bool isLoading = false;
 
-  return showDialog(
+  // Si on est en mode édition, on pré-remplit les champs
+  if (harbor != null) {
+    nameController.text = harbor.name ?? '';
+    locationController.text = harbor.location ?? '';
+  }
+
+  return showModalBottomSheet(
     context: context,
-    barrierDismissible: false,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        child: StatefulBuilder(
-          builder: (context, setState) {
-            return Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.9,
-              ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 10,
-                children: [
-                  Row(
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "Ajouter un nouveau port",
-                        style: TextStyle(
+                        harbor == null ? 'Ajouter un port' : 'Modifier le port',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: -1,
                         ),
                       ),
                       IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.clear, color: Colors.black),
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context, false),
                       ),
                     ],
                   ),
-                  // const SizedBox(height: 40),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      buildTextField(
-                        controller: nameController,
-                        label: "Le nom du port",
-                        icon: Icons.local_shipping,
-                        validator:
-                            (v) =>
-                                v == null || v.isEmpty
-                                    ? 'Veuillez entrer un nom'
-                                    : null,
-                      ),
-                      const SizedBox(height: 10),
-
-                      buildTextField(
-                        controller: locationController,
-                        label: "L'adresse du port",
-                        icon: Icons.maps_home_work,
-                        validator:
-                            (v) =>
-                                v == null || v.isEmpty
-                                    ? 'L\'adresse du port est requise.'
-                                    : null,
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      confirmationButton(
-                        isLoading: isLoading,
-                        onPressed: () async {
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildTextField(
+                            controller: nameController,
+                            label: "Nom du port",
+                            icon: Icons.local_shipping),
+                        const SizedBox(height: 16),
+                        buildTextField(
+                            controller: locationController,
+                            label: "Adresse",
+                            icon: Icons.map),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: confirmationButton(
+                      isLoading: isLoading,
+                      onPressed: () async {
+                        if (!isLoading) {
                           setState(() {
                             isLoading = true;
                           });
@@ -116,51 +118,71 @@ Future<bool?> showAddHarborModal(BuildContext context) async {
                               return;
                             }
 
-                            final result = await harborServices.create(
-                              nameController.text,
-                              locationController.text,
-                              user.id,
-                            );
-
-                            if (result == "NAME_EXIST") {
-                              setState(() => isLoading = false);
-                              showErrorTopSnackBar(
-                                context,
-                                "Le nom '${nameController.text}' existe déjà.",
+                            if (harbor == null) {
+                              // Création d'un nouveau port
+                              final result = await harborServices.create(
+                                nameController.text,
+                                locationController.text,
+                                user.id,
                               );
-                              return;
-                            } else if (result == "CREATED") {
-                              setState(() {
-                                isLoading = false;
-                              });
 
-                              Navigator.pop(context, true);
-                              showSuccessTopSnackBar(
-                                context,
-                                "Nouveau port ajouté avec succès !",
+                              if (result == "CREATED") {
+                                showSuccessTopSnackBar(
+                                  context,
+                                  "Port créé avec succès",
+                                );
+                                Navigator.pop(context, true);
+                              } else if (result == "NAME_EXIST") {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Ce nom de port existe déjà",
+                                );
+                              }
+                            } else {
+                              // Mise à jour d'un port existant
+                              final result = await harborServices.update(
+                                harbor.id,
+                                nameController.text,
+                                locationController.text,
+                                user.id,
                               );
+
+                              if (result == "UPDATED") {
+                                showSuccessTopSnackBar(
+                                  context,
+                                  "Port mis à jour avec succès",
+                                );
+                                Navigator.pop(context, true);
+                              } else if (result == "NAME_EXIST") {
+                                showErrorTopSnackBar(
+                                  context,
+                                  "Ce nom de port existe déjà",
+                                );
+                              }
                             }
                           } catch (e) {
-                            setState(() {
-                              isLoading = false;
-                              showErrorTopSnackBar(
-                                context,
-                                "Une erreur est survenue, veuillez réessayer.",
-                              );
-                            });
+                            showErrorTopSnackBar(
+                              context,
+                              "Erreur: ${e.toString()}",
+                            );
+                          } finally {
+                            setState(() => isLoading = false);
                           }
-                        },
-                        label: "Enregistrer",
-                        icon: Icons.check_circle_outline_rounded,
-                        subLabel: "Enregistrement...",
-                      ),
-                    ],
+                        }
+                      },
+                      label: harbor == null ? "Enregistrer" : "Modifier",
+                      icon: harbor == null ? Icons.check_circle : Icons.edit,
+                      subLabel: harbor == null
+                          ? "Enregistrement..."
+                          : "Modification...",
+                    ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        },
       );
     },
   );
