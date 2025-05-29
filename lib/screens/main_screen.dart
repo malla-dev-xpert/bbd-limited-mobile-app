@@ -2,7 +2,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/accounts/account_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/basic_home_screen.dart';
-import 'package:bbd_limited/screens/gestion/exportation/export_home_screen.dart';
+import 'package:bbd_limited/screens/gestion/profil/profil_screen.dart';
 import 'package:bbd_limited/screens/gestion/report/report_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/users/users_home_screen.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +42,7 @@ class MainScreenState extends State<MainScreen> {
         if (isAdmin) ManageUsersScreen(),
         const ReportHomeScreen(),
         AccountHomeScreen(),
-        ProfilePage(),
+        const ProfilePage(),
       ];
     });
   }
