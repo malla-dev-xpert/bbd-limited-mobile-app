@@ -15,7 +15,7 @@ class PartnerDetailScreen extends StatefulWidget {
   final Partner partner;
 
   const PartnerDetailScreen({Key? key, required this.partner})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<PartnerDetailScreen> createState() => _PartnerDetailScreenState();
@@ -86,19 +86,17 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         _filteredVersements = _partner.versements;
         _filteredPackages = _partner.packages;
       } else {
-        _filteredVersements =
-            _partner.versements?.where((versement) {
-              final reference = versement.reference?.toLowerCase() ?? '';
-              final searchLower = query.toLowerCase();
-              return reference.contains(searchLower);
-            }).toList();
+        _filteredVersements = _partner.versements?.where((versement) {
+          final reference = versement.reference?.toLowerCase() ?? '';
+          final searchLower = query.toLowerCase();
+          return reference.contains(searchLower);
+        }).toList();
 
-        _filteredPackages =
-            _partner.packages?.where((expedition) {
-              final reference = expedition.ref?.toLowerCase() ?? '';
-              final searchLower = query.toLowerCase();
-              return reference.contains(searchLower);
-            }).toList();
+        _filteredPackages = _partner.packages?.where((expedition) {
+          final reference = expedition.ref?.toLowerCase() ?? '';
+          final searchLower = query.toLowerCase();
+          return reference.contains(searchLower);
+        }).toList();
       }
       _sortVersementsByDate();
       _sortExpeditionsByDate();
@@ -269,7 +267,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         ),
         child: Center(
           child: Text(
-            'Aucune expédition trouvée.',
+            'Aucun colis trouvé.',
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -327,8 +325,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     final isNegative = balance <= 0;
     final statusColor = isNegative ? Colors.red[200] : Colors.green[200];
 
-    final totalVersement =
-        _partner.versements?.fold(
+    final totalVersement = _partner.versements?.fold(
           0.0,
           (sum, versement) => sum + (versement.montantVerser ?? 0.0),
         ) ??
@@ -466,14 +463,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
 
           return Container(
-            padding: EdgeInsets.all(0),
+            padding: const EdgeInsets.all(0),
             child: ListTile(
-              onTap:
-                  () => showVersementDetailsBottomSheet(
-                    context,
-                    versement,
-                    _refreshData,
-                  ),
+              onTap: () => showVersementDetailsBottomSheet(
+                context,
+                versement,
+                _refreshData,
+              ),
               title: Text(
                 versement.reference ?? 'Sans référence',
                 style: const TextStyle(

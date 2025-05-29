@@ -8,15 +8,6 @@ class PackageItemsList extends StatelessWidget {
   PackageItemsList({Key? key, required this.items, required this.onRemoveItem})
       : super(key: key);
 
-  // Fonction pour calculer le total
-  double _calculateTotal() {
-    double total = 0.0;
-    for (var item in items) {
-      total += (item['unitPrice'] as double) * (item['quantity'] as double);
-    }
-    return total;
-  }
-
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
   @override
@@ -53,15 +44,15 @@ class PackageItemsList extends StatelessWidget {
                         ],
                       ),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => onRemoveItem(index),
                       ),
                     );
                   },
                 ),
               )
-            : Padding(
-                padding: const EdgeInsets.symmetric(vertical: 50),
+            : const Padding(
+                padding: EdgeInsets.symmetric(vertical: 50),
                 child: Center(
                   child: Text(
                     "Aucun article ajouté.",

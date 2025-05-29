@@ -13,8 +13,7 @@ class PackageItemForm extends StatefulWidget {
     double unitPrice,
     int supplierId,
     String supplierName,
-  )
-  onAddItem;
+  ) onAddItem;
 
   const PackageItemForm({Key? key, required this.onAddItem}) : super(key: key);
 
@@ -69,11 +68,10 @@ class _PackageItemFormState extends State<PackageItemForm> {
                 key: _dropdownKey,
                 items: suppliers,
                 selectedItem: selectedSupplier,
-                onChanged:
-                    (supplier) => setState(() => selectedSupplier = supplier),
-                itemToString:
-                    (supplier) =>
-                        '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
+                onChanged: (supplier) =>
+                    setState(() => selectedSupplier = supplier),
+                itemToString: (supplier) =>
+                    '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
                 hintText: 'Choisir un fournisseur...',
                 prefixIcon: Icons.person_add,
               ),
@@ -86,13 +84,12 @@ class _PackageItemFormState extends State<PackageItemForm> {
                   final result = await showModalBottomSheet<bool>(
                     context: context,
                     isScrollControlled: true,
-                    builder:
-                        (context) => CreateSupplierBottomSheet(
-                          onSupplierCreated: () async {
-                            // Recharger la liste des fournisseurs
-                            await _loadSupplier();
-                          },
-                        ),
+                    builder: (context) => CreateSupplierBottomSheet(
+                      onSupplierCreated: () async {
+                        // Recharger la liste des fournisseurs
+                        await _loadSupplier();
+                      },
+                    ),
                   );
 
                   if (result == true) {
@@ -132,7 +129,6 @@ class _PackageItemFormState extends State<PackageItemForm> {
           keyboardType: TextInputType.number,
           icon: Icons.attach_money,
         ),
-
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -147,17 +143,17 @@ class _PackageItemFormState extends State<PackageItemForm> {
                 icon: Icons.numbers,
               ),
             ),
-
             ElevatedButton.icon(
               onPressed: _addItem,
-              icon: Icon(Icons.add, color: Colors.white),
-              label: Text("Ajouter", style: TextStyle(color: Colors.white)),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label:
+                  const Text("Ajouter", style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7F78AF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
               ),
             ),
           ],
@@ -191,27 +187,20 @@ class _PackageItemFormState extends State<PackageItemForm> {
       return;
     }
 
-    final supplierId = int.tryParse(selectedSupplier!.id.toString());
-    final supplierName =
-        '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}';
-
     widget.onAddItem(
       description,
       quantity,
       unitPrice,
-      supplierId!,
-      supplierName,
+      selectedSupplier!.id,
+      '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
     );
 
     // Reset form
-    setState(() {
-      descriptionController.clear();
-      quantityController.clear();
-      unitPriceController.clear();
-      selectedSupplier = null;
-    });
+    descriptionController.clear();
+    quantityController.clear();
+    unitPriceController.clear();
 
-    // Force rebuild of dropdown
+    // Force rebuild of dropdown (optionnel)
     setState(() {
       _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
     });

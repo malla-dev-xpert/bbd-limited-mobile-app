@@ -100,7 +100,8 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
         'quantity': qty,
         'unitPrice': unitPrice,
         'supplierId': supplierId,
-        'supplier': supplierName,
+        'supplier':
+            supplierName, // Utilisez directement le nom passé en paramètre
       }),
     );
   }
