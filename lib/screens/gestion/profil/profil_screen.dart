@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/personal_info_card.dart';
 import 'package:bbd_limited/components/privacy_policy_dialog.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/user.dart';
@@ -135,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: 'Informations personnelles',
             subtitle: 'Modifier vos coordonnées',
             onTap: () {
-              _navigateToEditProfile(context);
+              _showProfileDetails(context);
             },
           ),
           const Divider(height: 1, indent: 20),
@@ -229,8 +229,24 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _navigateToEditProfile(BuildContext context) {
-    // Navigation vers l'édition du profil
+  void _showProfileDetails(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        height: MediaQuery.of(context).size.height * 0.45,
+        child: PersonalInfoCard(user: _user!),
+      ),
+    );
   }
 
   void _showChangePasswordModal(BuildContext context) {
