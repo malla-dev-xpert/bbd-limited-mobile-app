@@ -68,8 +68,13 @@ class _PackageItemFormState extends State<PackageItemForm> {
                 key: _dropdownKey,
                 items: suppliers,
                 selectedItem: selectedSupplier,
-                onChanged: (supplier) =>
-                    setState(() => selectedSupplier = supplier),
+                onChanged: (Partner? newSupplier) {
+                  if (newSupplier != null) {
+                    setState(() {
+                      selectedSupplier = newSupplier;
+                    });
+                  }
+                },
                 itemToString: (supplier) =>
                     '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
                 hintText: 'Choisir un fournisseur...',
@@ -196,12 +201,11 @@ class _PackageItemFormState extends State<PackageItemForm> {
     );
 
     // Reset form
-    descriptionController.clear();
-    quantityController.clear();
-    unitPriceController.clear();
-
-    // Force rebuild of dropdown (optionnel)
     setState(() {
+      descriptionController.clear();
+      quantityController.clear();
+      unitPriceController.clear();
+      selectedSupplier = null;
       _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
     });
   }

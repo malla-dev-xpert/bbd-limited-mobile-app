@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -66,9 +68,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       final suppliersData = await partnerServices.findSuppliers(page: 0);
       setState(() {
         suppliers = suppliersData;
-        if (suppliers.isNotEmpty) {
-          selectedSupplier = suppliers.first;
-        }
+        // selectedSupplier = null;
       });
     } catch (e) {
       if (mounted) {
@@ -87,23 +87,15 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     int supplierId,
     String supplierName,
   ) {
-    // Conversion explicite et validation
-    final qty = quantity.toInt();
-    if (qty <= 0) {
-      showErrorTopSnackBar(context, "Quantité invalide");
-      return;
-    }
-
-    setState(
-      () => localItems.add({
+    setState(() {
+      localItems.add({
         'description': description,
-        'quantity': qty,
+        'quantity': quantity.toInt(),
         'unitPrice': unitPrice,
         'supplierId': supplierId,
-        'supplier':
-            supplierName, // Utilisez directement le nom passé en paramètre
-      }),
-    );
+        'supplier': supplierName,
+      });
+    });
   }
 
   void _removeItem(int index) {
@@ -111,11 +103,6 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
   }
 
   Future<void> _submitForm() async {
-    if (selectedSupplier == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur.");
-      return;
-    }
-
     if (localItems.isEmpty) {
       showErrorTopSnackBar(context, "Ajoutez au moins un article.");
       return;
@@ -138,7 +125,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 descriptionItem: item['description']?.toString() ?? '',
                 quantityItem: (item['quantity'] as num?)?.toInt() ?? 0,
                 prixUnitaire: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
-                supplierId: selectedSupplier!.id,
+                supplierId: item['supplierId'],
               ),
             )
             .toList(),
@@ -146,7 +133,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final result = await achatServices.createAchatForClient(
         clientId: widget.clientId,
-        supplierId: selectedSupplier!.id,
+        supplierId: localItems.first['supplierId'],
         userId: user!.id,
         dto: createAchatDto,
       );
@@ -224,18 +211,16 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                               description,
                               quantity,
                               unitPrice,
-                              _,
-                              __,
+                              supplierId,
+                              supplierName,
                             ) {
-                              if (selectedSupplier != null) {
-                                _addItem(
-                                  description,
-                                  quantity,
-                                  unitPrice,
-                                  selectedSupplier!.id,
-                                  '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
-                                );
-                              }
+                              _addItem(
+                                description,
+                                quantity,
+                                unitPrice,
+                                supplierId,
+                                supplierName,
+                              );
                             },
                           ),
                           const SizedBox(height: 10),
