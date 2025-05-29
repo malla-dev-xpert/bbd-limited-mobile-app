@@ -638,6 +638,26 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                           ),
                         ],
                       ),
+                      const SizedBox(width: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person_3,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.supplier_id != null
+                                ? '${item.supplierName ?? ""} | ${item.supplierPhone ?? ""}'
+                                : 'BBD Limited',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
