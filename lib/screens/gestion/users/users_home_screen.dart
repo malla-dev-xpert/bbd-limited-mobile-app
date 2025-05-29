@@ -107,20 +107,18 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   void _applyFilters() {
     final query = searchController.text.toLowerCase();
     setState(() {
-      _filteredUsers =
-          _allUsers.where((user) {
-            final searchUser =
-                user.username.toLowerCase().contains(query) ||
-                (user.firstName?.toLowerCase().contains(query) ?? false) ||
-                (user.lastName?.toLowerCase().contains(query) ?? false);
+      _filteredUsers = _allUsers.where((user) {
+        final searchUser = user.username.toLowerCase().contains(query) ||
+            (user.firstName?.toLowerCase().contains(query) ?? false) ||
+            (user.lastName?.toLowerCase().contains(query) ?? false);
 
-            bool allStatus = true;
-            if (_currentFilter == 'admin') {
-              allStatus = user.roleName?.toLowerCase() == 'admin';
-            }
+        bool allStatus = true;
+        if (_currentFilter == 'administrateur') {
+          allStatus = user.roleName?.toLowerCase() == 'administrateur';
+        }
 
-            return searchUser && allStatus;
-          }).toList();
+        return searchUser && allStatus;
+      }).toList();
     });
   }
 
@@ -223,28 +221,27 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   Future<void> _delete(User user) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirmer la suppression"),
-            content: Text(
-              "Voulez-vous vraiment supprimer l'utilisateur ${user.username}?",
-            ),
-            backgroundColor: Colors.white,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context, true),
-                icon: const Icon(Icons.delete, color: Colors.red),
-                label: Text(
-                  _isLoading ? 'Suppression...' : 'Supprimer',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        content: Text(
+          "Voulez-vous vraiment supprimer l'utilisateur ${user.username}?",
+        ),
+        backgroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Annuler"),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: Text(
+              _isLoading ? 'Suppression...' : 'Supprimer',
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed != true) return;
@@ -291,7 +288,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 30),
-            Text(
+            const Text(
               "Gestion des utilisateurs",
               style: TextStyle(
                 fontSize: 24,
@@ -317,7 +314,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         child: _StatItem(
                           title: 'Total des utilisateurs',
                           value: _allUsers.length.toString(),
-                          valueStyle: TextStyle(
+                          valueStyle: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
@@ -340,12 +337,11 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Administrateurs',
-                          value:
-                              _allUsers
-                                  .where((u) => u.roleName == 'ADMIN')
-                                  .length
-                                  .toString(),
-                          valueStyle: TextStyle(
+                          value: _allUsers
+                              .where((u) => u.roleName == 'ADMINISTRATEUR')
+                              .length
+                              .toString(),
+                          valueStyle: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
@@ -392,56 +388,52 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
             // Users List
             Expanded(
-              child:
-                  _isLoading && _allUsers.isEmpty
-                      ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF1A1E49),
-                          strokeWidth: 3,
-                        ),
-                      )
-                      : NotificationListener<ScrollNotification>(
-                        onNotification: (scrollInfo) {
-                          if (scrollInfo.metrics.pixels ==
-                                  scrollInfo.metrics.maxScrollExtent &&
-                              !_isLoading &&
-                              _hasMoreData) {
-                            fetchUsers();
-                          }
-                          return false;
-                        },
-                        child:
-                            _filteredUsers.isEmpty
-                                ? _buildEmptyState()
-                                : RefreshIndicator(
-                                  onRefresh: () async {
-                                    await fetchUsers(reset: true);
-                                  },
-                                  // displacement: 20,
-                                  color: Theme.of(context).primaryColor,
-                                  backgroundColor: Colors.white,
-                                  child: ListView.builder(
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(),
-                                    itemCount:
-                                        _filteredUsers.length +
-                                        (_hasMoreData && _isLoading ? 1 : 0),
-                                    itemBuilder: (context, index) {
-                                      if (index >= _filteredUsers.length) {
-                                        return const Center(
-                                          child: Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: CircularProgressIndicator(),
-                                          ),
-                                        );
-                                      }
-                                      return _buildUserCard(
-                                        _filteredUsers[index],
-                                      );
-                                    },
-                                  ),
-                                ),
+              child: _isLoading && _allUsers.isEmpty
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF1A1E49),
+                        strokeWidth: 3,
                       ),
+                    )
+                  : NotificationListener<ScrollNotification>(
+                      onNotification: (scrollInfo) {
+                        if (scrollInfo.metrics.pixels ==
+                                scrollInfo.metrics.maxScrollExtent &&
+                            !_isLoading &&
+                            _hasMoreData) {
+                          fetchUsers();
+                        }
+                        return false;
+                      },
+                      child: _filteredUsers.isEmpty
+                          ? _buildEmptyState()
+                          : RefreshIndicator(
+                              onRefresh: () async {
+                                await fetchUsers(reset: true);
+                              },
+                              // displacement: 20,
+                              color: Theme.of(context).primaryColor,
+                              backgroundColor: Colors.white,
+                              child: ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: _filteredUsers.length +
+                                    (_hasMoreData && _isLoading ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >= _filteredUsers.length) {
+                                    return const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+                                  return _buildUserCard(
+                                    _filteredUsers[index],
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
             ),
           ],
         ),
