@@ -5,6 +5,7 @@ import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:iconify_flutter/icons/majesticons.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 
 Widget _detailRow(String label, String? value) {
   return Padding(
@@ -27,6 +28,34 @@ Widget _detailRow(String label, String? value) {
         ),
       ],
     ),
+  );
+}
+
+Widget _detailItem(String label, String value) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.start,
+    spacing: 10,
+    children: [
+      Expanded(
+        flex: 2,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+          ),
+        ),
+      ),
+      Expanded(
+        flex: 3,
+        child: Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    ],
   );
 }
 
@@ -183,10 +212,17 @@ void showVersementDetailsBottomSheet(
                               )
                             : ListView.builder(
                                 shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
+                                physics: const AlwaysScrollableScrollPhysics(),
                                 itemCount: filteredLignes.length,
                                 itemBuilder: (context, index) {
                                   final ligne = filteredLignes[index];
+                                  Achat? achat;
+                                  for (var a in versement.achats ?? []) {
+                                    if (a.lignes?.contains(ligne) ?? false) {
+                                      achat = a;
+                                      break;
+                                    }
+                                  }
 
                                   return Container(
                                     margin:
@@ -209,33 +245,32 @@ void showVersementDetailsBottomSheet(
                                                 'Article sans nom',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 16,
+                                              fontSize: 18,
                                             ),
                                           ),
+                                          if (achat?.fournisseur != null) ...[
+                                            const SizedBox(height: 4),
+                                            _detailItem(
+                                              'Fournisseur',
+                                              '${achat!.fournisseur} | ${achat.fournisseurPhone}',
+                                            ),
+                                          ],
                                           const SizedBox(height: 4),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Quantité: ${ligne.quantity}',
-                                              ),
-                                              Text(
-                                                'P.U: ${currencyFormat.format(ligne.unitPriceItem)}',
-                                              ),
-                                            ],
+                                          _detailItem(
+                                            'Quantité',
+                                            '${ligne.quantity}',
                                           ),
                                           const SizedBox(height: 4),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Total: ${currencyFormat.format(ligne.prixTotal)}',
-                                              ),
-                                              if (ligne.itemId != null)
-                                                Text('Ref: ${ligne.itemId}'),
-                                            ],
+                                          _detailItem(
+                                            'Prix Unitaire',
+                                            currencyFormat
+                                                .format(ligne.unitPriceItem),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          _detailItem(
+                                            'Total',
+                                            currencyFormat
+                                                .format(ligne.prixTotal),
                                           ),
                                         ],
                                       ),
