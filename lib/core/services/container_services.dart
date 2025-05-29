@@ -56,10 +56,15 @@ class ContainerServices {
     String size,
     bool isAvailable,
     int? userId,
+    int? supplierId,
   ) async {
     try {
+      String url = '$baseUrl/containers/create?userId=$userId';
+      if (supplierId != null) {
+        url += '&supplierId=$supplierId';
+      }
       final response = await http.post(
-        Uri.parse('$baseUrl/containers/create?userId=$userId'),
+        Uri.parse(url),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "reference": reference,

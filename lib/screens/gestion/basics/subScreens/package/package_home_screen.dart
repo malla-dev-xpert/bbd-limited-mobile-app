@@ -193,7 +193,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreateExpeditionForm(isPackageScreen: true);
+        return const CreateExpeditionForm(isPackageScreen: true);
       },
     );
 

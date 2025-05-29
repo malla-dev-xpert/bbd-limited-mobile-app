@@ -107,6 +107,11 @@ void showContainerDetailsBottomSheet(
                 container.isAvailable == true ? 'Disponible' : 'Indisponible',
               ),
               _detailRow(
+                  "Fournisseur",
+                  container.supplier_id != null
+                      ? '${container.supplierName ?? ""} | ${container.supplierPhone ?? ""}'
+                      : 'BBD Limited'),
+              _detailRow(
                 "Date de reception",
                 DateFormat.yMMMMEEEEd().format(container.createdAt!),
               ),
@@ -347,12 +352,16 @@ void showContainerDetailsBottomSheet(
                                         children: [
                                           _detailRow("Référence", pkg.ref),
                                           _detailRow(
-                                            "Client",
-                                            pkg.clientName,
+                                            "Type d'expédition",
+                                            pkg.expeditionType,
                                           ),
                                           _detailRow(
-                                            "Téléphone",
-                                            pkg.clientPhone,
+                                            "Client",
+                                            '${pkg.clientName} | ${pkg.clientPhone}',
+                                          ),
+                                          _detailRow(
+                                            "Nombre de carton",
+                                            pkg.itemQuantity.toString(),
                                           ),
                                         ],
                                       ),

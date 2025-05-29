@@ -37,12 +37,14 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       final reference = refController.text.trim();
       final size = sizeController.text.trim();
       final isAvailable = _containerInfoKey.currentState?.isAvailable ?? false;
+      final selectedSupplier = _containerInfoKey.currentState?.selectedSupplier;
 
       final response = await containerService.create(
         reference,
         size,
         isAvailable,
         user.id.toInt(),
+        selectedSupplier?.id,
       );
 
       if (response == "CREATED") {
