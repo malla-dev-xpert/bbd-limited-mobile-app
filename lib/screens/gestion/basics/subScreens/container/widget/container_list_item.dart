@@ -20,14 +20,17 @@ class ContainerListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Slidable(
+      enabled: container.status != Status.INPROGRESS,
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
         children: [
           SlidableAction(
-            onPressed: container.status != Status.INPROGRESS
+            onPressed: (container.status != Status.INPROGRESS &&
+                    container.status != Status.RECEIVED)
                 ? (context) => onEdit()
                 : null,
-            backgroundColor: container.status != Status.INPROGRESS
+            backgroundColor: (container.status != Status.INPROGRESS &&
+                    container.status != Status.RECEIVED)
                 ? Colors.blue
                 : Colors.grey[300]!,
             foregroundColor: Colors.white,
@@ -35,8 +38,12 @@ class ContainerListItem extends StatelessWidget {
             label: 'Modifier',
           ),
           SlidableAction(
-            onPressed: (context) => onDelete(),
-            backgroundColor: Colors.red,
+            onPressed: (container.status != Status.INPROGRESS)
+                ? (context) => onDelete()
+                : null,
+            backgroundColor: (container.status != Status.INPROGRESS)
+                ? Colors.red
+                : Colors.grey[300]!,
             foregroundColor: Colors.white,
             icon: Icons.delete,
             label: 'Supprimer',
