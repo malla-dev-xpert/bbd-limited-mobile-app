@@ -9,6 +9,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/c
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 class ContainerScreen extends StatefulWidget {
   const ContainerScreen({super.key});
@@ -24,6 +25,7 @@ class _ContainerScreen extends State<ContainerScreen> {
 
   List<Containers> _allContainers = [];
   List<Containers> _filteredContainers = [];
+  Status? _selectedStatus;
 
   bool _isLoading = false;
   bool _hasMoreData = true;
@@ -46,10 +48,20 @@ class _ContainerScreen extends State<ContainerScreen> {
     final query = searchController.text.toLowerCase();
 
     setState(() {
-      _filteredContainers = _allContainers.where((devise) {
-        final reference = devise.reference!.toLowerCase();
-        return reference.contains(query);
+      _filteredContainers = _allContainers.where((container) {
+        final reference = container.reference!.toLowerCase();
+        final matchesSearch = reference.contains(query);
+        final matchesStatus = _selectedStatus == null ||
+            (container.status != null && container.status == _selectedStatus);
+        return matchesSearch && matchesStatus;
       }).toList();
+    });
+  }
+
+  void _onStatusChanged(Status? status) {
+    setState(() {
+      _selectedStatus = status;
+      _onSearchChanged();
     });
   }
 
@@ -187,6 +199,20 @@ class _ContainerScreen extends State<ContainerScreen> {
     }
   }
 
+  String _getStatusLabel(Status? status) {
+    if (status == null) return 'Tous';
+    switch (status) {
+      case Status.PENDING:
+        return 'En attente';
+      case Status.INPROGRESS:
+        return 'En transit';
+      case Status.RECEIVED:
+        return 'Arrivé à destination';
+      default:
+        return status.name;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,7 +246,6 @@ class _ContainerScreen extends State<ContainerScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    // onChanged: _filteredContainers,
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
@@ -233,6 +258,23 @@ class _ContainerScreen extends State<ContainerScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+
+            // Filtre de statut
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildStatusChip(null, 'Tous'),
+                  _buildStatusChip(
+                      Status.PENDING, _getStatusLabel(Status.PENDING)),
+                  _buildStatusChip(
+                      Status.INPROGRESS, _getStatusLabel(Status.INPROGRESS)),
+                  _buildStatusChip(
+                      Status.RECEIVED, _getStatusLabel(Status.RECEIVED)),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -318,6 +360,39 @@ class _ContainerScreen extends State<ContainerScreen> {
                   ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(Status? status, String label) {
+    final isSelected = _selectedStatus == status;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: FilterChip(
+        selected: isSelected,
+        label: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF1A1E49),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        selectedColor: const Color(0xFF1A1E49),
+        checkmarkColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isSelected ? const Color(0xFF1A1E49) : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        onSelected: (bool selected) {
+          setState(() {
+            _selectedStatus = selected ? status : null;
+            _onSearchChanged();
+          });
+        },
       ),
     );
   }
