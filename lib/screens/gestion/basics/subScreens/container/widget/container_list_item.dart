@@ -24,14 +24,12 @@ class ContainerListItem extends StatelessWidget {
         motion: const DrawerMotion(),
         children: [
           SlidableAction(
-            onPressed:
-                container.status != Status.INPROGRESS
-                    ? (context) => onEdit()
-                    : null,
-            backgroundColor:
-                container.status != Status.INPROGRESS
-                    ? Colors.blue
-                    : Colors.grey[300]!,
+            onPressed: container.status != Status.INPROGRESS
+                ? (context) => onEdit()
+                : null,
+            backgroundColor: container.status != Status.INPROGRESS
+                ? Colors.blue
+                : Colors.grey[300]!,
             foregroundColor: Colors.white,
             icon: Icons.edit,
             label: 'Modifier',
@@ -47,23 +45,23 @@ class ContainerListItem extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(
+        leading: const Icon(
           Icons.view_quilt_sharp,
           size: 30,
-          color: const Color(0xFF1A1E49),
+          color: Color(0xFF1A1E49),
         ),
         title: Text(container.reference!),
         subtitle: Text(
           "Nombre de colis: ${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length}",
         ),
         trailing: Text(
-          container.status != Status.INPROGRESS
-              ? container.isAvailable == true
-                  ? 'Disponible'
-                  : 'Indisponible'
-              : container.status == Status.INPROGRESS
+          container.status == Status.INPROGRESS
               ? "En cours de livraison"
-              : container.status.toString(),
+              : container.status == Status.RECEIVED
+                  ? "Arrivé à destination"
+                  : container.status == Status.PENDING
+                      ? "Conteneur en attente"
+                      : container.status.toString(),
           style: TextStyle(
             color: container.isAvailable == true ? Colors.green : Colors.grey,
             fontWeight: FontWeight.w600,

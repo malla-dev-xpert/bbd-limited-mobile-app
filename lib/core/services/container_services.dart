@@ -128,6 +128,28 @@ class ContainerServices {
     }
   }
 
+  Future<String?> confirmReceiving(int id, int? userId) async {
+    final url =
+        Uri.parse("$baseUrl/containers/delivery-received/$id?userId=$userId");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return "SUCCESS";
+      } else if (response.statusCode == 409 &&
+          response.body ==
+              'Impossible de confirmer la réception, pas de colis dans le conteneur.') {
+        return "NO_PACKAGE_FOR_DELIVERY";
+      } else if (response.statusCode == 409 &&
+          response.body == 'Le conteneur n\'est pas en status INPROGRESS.') {
+        return "CONTAINER_NOT_IN_PROGRESS";
+      }
+    } catch (e) {
+      throw Exception("Erreur lors du démarrage de la livraison : $e");
+    }
+  }
+
   Future<String?> update(int id, int? userId, Containers dto) async {
     try {
       final url = Uri.parse('$baseUrl/containers/update/$id?userId=$userId');

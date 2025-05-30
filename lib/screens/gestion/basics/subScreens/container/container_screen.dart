@@ -293,6 +293,17 @@ class _ContainerScreen extends State<ContainerScreen> {
                                         showContainerDetailsBottomSheet(
                                       context,
                                       container,
+                                      onContainerUpdated: (updatedContainer) {
+                                        setState(() {
+                                          final index = _filteredContainers
+                                              .indexWhere((c) =>
+                                                  c.id == updatedContainer.id);
+                                          if (index != -1) {
+                                            _filteredContainers[index] =
+                                                updatedContainer;
+                                          }
+                                        });
+                                      },
                                     ),
                                     onEdit: () => _showEditContainerModal(
                                       context,

@@ -33,10 +33,8 @@ Widget _detailRow(String label, String? value) {
   );
 }
 
-void showContainerDetailsBottomSheet(
-  BuildContext context,
-  Containers container,
-) async {
+void showContainerDetailsBottomSheet(BuildContext context, Containers container,
+    {Function(Containers)? onContainerUpdated}) async {
   final PackageServices packageServices = PackageServices();
   final ContainerServices containerServices = ContainerServices();
   final AuthService authService = AuthService();
@@ -432,7 +430,12 @@ void showContainerDetailsBottomSheet(
                             container.id!, user.id.toInt());
 
                         if (result == "SUCCESS") {
-                          Navigator.of(context).pop(true);
+                          final updatedContainer = await containerServices
+                              .getContainerDetails(container.id!);
+                          Navigator.of(context).pop(updatedContainer);
+                          if (onContainerUpdated != null) {
+                            onContainerUpdated(updatedContainer);
+                          }
                           showSuccessTopSnackBar(
                             context,
                             "Livraison démarrée avec succès !",
@@ -448,6 +451,102 @@ void showContainerDetailsBottomSheet(
                         showErrorTopSnackBar(
                           context,
                           "Erreur lors du démarrage de la livraison",
+                        );
+                      } finally {
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
+                    },
+                  ),
+                )
+              else if (container.status == Status.INPROGRESS)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: confirmationButton(
+                    subLabel: "Changement de statut...",
+                    icon: Icons.check,
+                    label: "Arrivé à destination",
+                    isLoading: isLoading,
+                    onPressed: () async {
+                      final bool confirm = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title:
+                                const Text("Confirmer l'arrivée du conteneur"),
+                            backgroundColor: Colors.white,
+                            content: const Text(
+                              "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text("Annuler"),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: Text(
+                                  isLoading
+                                      ? "Changement de statut..."
+                                      : "Confirmer",
+                                  style: const TextStyle(color: Colors.green),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirm != true) return;
+
+                      setState(() {
+                        isLoading = true;
+                      });
+
+                      final user = await authService.getUserInfo();
+
+                      if (user == null) {
+                        showErrorTopSnackBar(
+                          context,
+                          "Erreur: Utilisateur non connecté",
+                        );
+                        setState(() => isLoading = false);
+                        return;
+                      }
+
+                      try {
+                        final result = await containerServices.confirmReceiving(
+                            container.id!, user.id.toInt());
+
+                        if (result == "SUCCESS") {
+                          final updatedContainer = await containerServices
+                              .getContainerDetails(container.id!);
+                          Navigator.of(context).pop(updatedContainer);
+                          if (onContainerUpdated != null) {
+                            onContainerUpdated(updatedContainer);
+                          }
+                          showSuccessTopSnackBar(
+                            context,
+                            "Conteneur confirmé à destination !",
+                          );
+                        } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+                          showErrorTopSnackBar(
+                            context,
+                            "Impossible de confirmer la réception, pas de colis dans le conteneur.",
+                          );
+                        } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
+                          showErrorTopSnackBar(
+                            context,
+                            "Le conteneur n'est pas en status INPROGRESS.",
+                          );
+                        }
+                      } catch (e) {
+                        showErrorTopSnackBar(
+                          context,
+                          "Erreur lors de la reception du conteneur",
                         );
                       } finally {
                         setState(() {
