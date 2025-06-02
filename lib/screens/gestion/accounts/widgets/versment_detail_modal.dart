@@ -137,6 +137,9 @@ void showVersementDetailsBottomSheet(
                   _detailRow("Référence", versement.reference),
                   _detailRow("Client", versement.partnerName),
                   _detailRow("Téléphone", "${versement.partnerPhone}"),
+                  _detailRow("Commissionnaire",
+                      versement.commissionnaireName ?? 'N/V'),
+                  _detailRow("Téléphone", "${versement.commissionnairePhone}"),
                   _detailRow(
                     "Montant versé",
                     currencyFormat.format(versement.montantVerser),

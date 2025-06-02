@@ -14,6 +14,8 @@ class Versement {
   final String? partnerAccountType;
   final int? partnerId;
   List<Achat>? achats;
+  final String? commissionnaireName;
+  final String? commissionnairePhone;
 
   Versement copyWith({
     int? id,
@@ -28,6 +30,8 @@ class Versement {
     String? partnerAccountType,
     int? partnerId,
     List<Achat>? achats,
+    String? commissionnaireName,
+    String? commissionnairePhone,
   }) {
     return Versement(
       id: id ?? this.id,
@@ -42,6 +46,8 @@ class Versement {
       partnerAccountType: partnerAccountType ?? this.partnerAccountType,
       partnerId: partnerId ?? this.partnerId,
       achats: achats ?? this.achats,
+      commissionnaireName: commissionnaireName ?? this.commissionnaireName,
+      commissionnairePhone: commissionnairePhone ?? this.commissionnairePhone,
     );
   }
 
@@ -58,6 +64,8 @@ class Versement {
     this.partnerAccountType,
     this.partnerId,
     this.achats,
+    this.commissionnaireName,
+    this.commissionnairePhone,
   });
 
   Map<String, dynamic> toJson() {
@@ -74,6 +82,8 @@ class Versement {
       'partnerAccountType': partnerAccountType,
       'partnerId': partnerId,
       'achats': achats?.map((item) => item.toJson()).toList(),
+      'commissionnaireName': commissionnaireName,
+      'commissionnairePhone': commissionnairePhone,
     };
   }
 
@@ -92,10 +102,9 @@ class Versement {
 
     List<Achat> achatList = [];
     if (json['achats'] != null) {
-      achatList =
-          (json['achats'] as List)
-              .map((achat) => Achat.fromJson(achat))
-              .toList();
+      achatList = (json['achats'] as List)
+          .map((achat) => Achat.fromJson(achat))
+          .toList();
     }
 
     int? parseNullableInt(dynamic value) {
@@ -106,14 +115,12 @@ class Versement {
     return Versement(
       id: json['id'] as int?,
       reference: json['reference'] as String?,
-      montantVerser:
-          json['montantVerser'] != null
-              ? (json['montantVerser'] as num).toDouble()
-              : null,
-      montantRestant:
-          json['montantRestant'] != null
-              ? (json['montantRestant'] as num).toDouble()
-              : null,
+      montantVerser: json['montantVerser'] != null
+          ? (json['montantVerser'] as num).toDouble()
+          : null,
+      montantRestant: json['montantRestant'] != null
+          ? (json['montantRestant'] as num).toDouble()
+          : null,
       status: status,
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
@@ -124,6 +131,8 @@ class Versement {
       partnerAccountType: json['partnerAccountType'] as String?,
       partnerId: json['partnerId'] as int?,
       achats: achatList,
+      commissionnaireName: json['commissionnaireName'] as String?,
+      commissionnairePhone: json['commissionnairePhone'] as String?,
     );
   }
 }

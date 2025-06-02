@@ -36,6 +36,10 @@ class _NewVersementModalState extends State<NewVersementModal>
   DateTime? myDate;
 
   final TextEditingController montantVerserController = TextEditingController();
+  final TextEditingController commissionnaireNameController =
+      TextEditingController();
+  final TextEditingController commissionnairePhoneController =
+      TextEditingController();
 
   final AuthService authService = AuthService();
   final PartnerServices partnerServices = PartnerServices();
@@ -105,10 +109,11 @@ class _NewVersementModalState extends State<NewVersementModal>
       final versementDto = Versement.fromJson({
         "montantVerser": double.tryParse(montantVerserController.text),
         "createdAt": myDate!.toIso8601String(),
-        "clientId":
-            widget.isVersementScreen
-                ? selectedCLients!.id
-                : int.parse(widget.clientId!),
+        "clientId": widget.isVersementScreen
+            ? selectedCLients!.id
+            : int.parse(widget.clientId!),
+        "commissionnaireName": commissionnaireNameController.text,
+        "commissionnairePhone": commissionnairePhoneController.text,
       });
 
       final result = await versementServices.create(
@@ -143,10 +148,9 @@ class _NewVersementModalState extends State<NewVersementModal>
         padding: const EdgeInsets.all(20),
         child: Container(
           constraints: BoxConstraints(
-            maxHeight:
-                widget.isVersementScreen == true
-                    ? MediaQuery.of(context).size.height * 0.45
-                    : MediaQuery.of(context).size.height * 0.35,
+            maxHeight: widget.isVersementScreen == true
+                ? MediaQuery.of(context).size.height * 0.55
+                : MediaQuery.of(context).size.height * 0.50,
           ),
           child: Stack(
             children: [
@@ -160,7 +164,7 @@ class _NewVersementModalState extends State<NewVersementModal>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Effectuer un nouveau versement",
                           style: TextStyle(
                             fontSize: 20,
@@ -169,7 +173,7 @@ class _NewVersementModalState extends State<NewVersementModal>
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.clear),
+                          icon: const Icon(Icons.clear),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -187,7 +191,7 @@ class _NewVersementModalState extends State<NewVersementModal>
                                 icon: Icons.attach_money,
                                 keyboardType: TextInputType.number,
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
                               if (widget.isVersementScreen)
                                 DropDownCustom<Partner>(
                                   items: clients,
@@ -197,14 +201,13 @@ class _NewVersementModalState extends State<NewVersementModal>
                                       selectedCLients = client;
                                     });
                                   },
-                                  itemToString:
-                                      (client) =>
-                                          '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                  itemToString: (client) =>
+                                      '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
                                   hintText: 'Choisir un client...',
                                   prefixIcon: Icons.person_3,
                                 ),
                               if (widget.isVersementScreen)
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 10),
                               DatePickerField(
                                 label: "Date de paiement",
                                 selectedDate: myDate,
@@ -213,6 +216,19 @@ class _NewVersementModalState extends State<NewVersementModal>
                                     myDate = date;
                                   });
                                 },
+                              ),
+                              const SizedBox(height: 10),
+                              buildTextField(
+                                controller: commissionnaireNameController,
+                                label: "Nom complet du commissionnaire",
+                                icon: Icons.person,
+                              ),
+                              const SizedBox(height: 10),
+                              buildTextField(
+                                controller: commissionnairePhoneController,
+                                label: "Téléphone du commissionnaire",
+                                icon: Icons.phone,
+                                keyboardType: TextInputType.phone,
                               ),
                             ],
                           ),
@@ -252,6 +268,8 @@ class _NewVersementModalState extends State<NewVersementModal>
   @override
   void dispose() {
     montantVerserController.dispose();
+    commissionnaireNameController.dispose();
+    commissionnairePhoneController.dispose();
     super.dispose();
   }
 }
