@@ -29,6 +29,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
   Partner? selectedSupplier;
   bool get isAvailable => _isAvailable;
   final PartnerServices _partnerServices = PartnerServices();
+  String? _selectedSize;
 
   @override
   void initState() {
@@ -55,6 +56,55 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     });
   }
 
+  Widget _buildSizeButton(String size) {
+    final bool isSelected = _selectedSize == size;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Material(
+          elevation: isSelected ? 4 : 1,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _selectedSize = size;
+                widget.size.text = size;
+              });
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: isSelected
+                    ? const LinearGradient(
+                        colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isSelected ? null : Colors.grey[100],
+                border: Border.all(
+                  color: isSelected ? Colors.blue : Colors.grey[300]!,
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                size,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey[800],
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -70,12 +120,30 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 v == null || v.isEmpty ? 'Veuillez entrer la référence' : null,
           ),
           const SizedBox(height: 10),
-          buildTextField(
-            controller: widget.size,
-            label: "Taille du conteneur",
-            icon: Icons.height,
-            validator: (v) =>
-                v == null || v.isEmpty ? 'Veuillez entrer la référence' : null,
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0, top: 8.0),
+                  child: Text("Taille du conteneur",
+                      style: TextStyle(fontSize: 16)),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSizeButton("20 pieds"),
+                    _buildSizeButton("40 pieds"),
+                    _buildSizeButton("45 pieds"),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 10),
           Row(
