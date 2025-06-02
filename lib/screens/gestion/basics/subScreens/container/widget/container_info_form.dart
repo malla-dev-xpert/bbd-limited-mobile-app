@@ -36,6 +36,9 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     super.initState();
     _isAvailable = widget.initialAvailability;
     _loadSuppliers();
+    if (widget.size.text.isNotEmpty) {
+      _selectedSize = widget.size.text;
+    }
   }
 
   Future<void> _loadSuppliers() async {
