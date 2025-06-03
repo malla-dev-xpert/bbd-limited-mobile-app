@@ -10,10 +10,11 @@ class DeviseServices {
   Future<String> create(
     String name,
     String code,
+    int userId,
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/devises/create'),
+        Uri.parse('$baseUrl/devises/create?userId=$userId'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "name": name,

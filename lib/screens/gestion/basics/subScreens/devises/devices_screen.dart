@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/models/devises.dart';
@@ -22,21 +23,30 @@ class _DeviseState extends State<DevicesScreen> {
   final DeviseServices deviseServices = DeviseServices();
   final ExchangeRateService exchangeRateService = ExchangeRateService();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _rateController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late final KeyboardVisibilityController _keyboardVisibilityController;
   late final StreamSubscription<bool> _keyboardSubscription;
   final TextEditingController _searchController = TextEditingController();
+  final AuthService authService = AuthService();
+
+  // Stream controllers for error handling
+  final StreamController<String> _errorStreamController =
+      StreamController<String>.broadcast();
+  Stream<String> get errorStream => _errorStreamController.stream;
 
   List<Devise>? _allDevises;
   List<Devise> _filteredDevises = [];
   Map<String, double> _currentRates = {};
   int currentPage = 0;
   bool _isLoading = false;
-  String _errorMessage = '';
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
+
+  // Constants for validation
+  static const int _maxNameLength = 50;
+  static const int _maxCodeLength = 3;
+  static const String _currencyCodePattern = r'^[A-Z]{3}$';
 
   @override
   void initState() {
@@ -60,6 +70,10 @@ class _DeviseState extends State<DevicesScreen> {
     });
   }
 
+  void _showError(String message) {
+    _errorStreamController.add(message);
+  }
+
   Future<void> _fetchExchangeRates() async {
     try {
       for (var devise in _allDevises ?? []) {
@@ -69,7 +83,7 @@ class _DeviseState extends State<DevicesScreen> {
         });
       }
     } catch (e) {
-      print('Erreur lors de la récupération des taux: $e');
+      _showError('Erreur lors de la récupération des taux: $e');
     }
   }
 
@@ -102,14 +116,79 @@ class _DeviseState extends State<DevicesScreen> {
         }
       });
 
-      // Récupérer les taux de change après avoir chargé les devises
       await _fetchExchangeRates();
     } catch (e) {
-      setState(() {
-        _errorMessage = "Erreur de chargement: ${e.toString()}";
-      });
+      _showError("Erreur de chargement: ${e.toString()}");
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Le nom est requis';
+    }
+    if (value.length > _maxNameLength) {
+      return 'Le nom ne doit pas dépasser $_maxNameLength caractères';
+    }
+    return null;
+  }
+
+  String? _validateCode(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Le code est requis';
+    }
+    if (!RegExp(_currencyCodePattern).hasMatch(value)) {
+      return 'Le code doit être composé de 3 lettres majuscules';
+    }
+    return null;
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = await authService.getUserInfo();
+      if (user == null) {
+        _showError('Session utilisateur invalide');
+        return;
+      }
+
+      final success = await deviseServices.create(
+        _nameController.text.trim(),
+        _codeController.text.trim().toUpperCase(),
+        user.id,
+      );
+
+      switch (success) {
+        case "NAME_EXIST":
+          _showError("Le nom '${_nameController.text}' existe déjà");
+          break;
+        case "CODE_EXIST":
+          _showError("Le code '${_codeController.text}' existe déjà");
+          break;
+        case "CREATED":
+          _nameController.clear();
+          _codeController.clear();
+          Navigator.pop(context);
+          showSuccessTopSnackBar(context, 'Devise créée avec succès!');
+          _refreshController.add(null);
+          break;
+        default:
+          _showError('Une erreur inattendue est survenue');
+      }
+    } catch (e) {
+      _showError('Erreur serveur: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -135,60 +214,6 @@ class _DeviseState extends State<DevicesScreen> {
     super.dispose();
   }
 
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final success = await deviseServices.create(
-        _nameController.text,
-        _codeController.text,
-      );
-
-      if (success == "NAME_EXIST") {
-        setState(() {
-          _errorMessage =
-              "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (success == "CODE_EXIST") {
-        setState(() {
-          _errorMessage =
-              "Le code '${_codeController.text}' existe déjà. Veuillez en choisir un autre.";
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (success == "CREATED") {
-        _nameController.clear();
-        _codeController.clear();
-        _rateController.clear();
-        Navigator.pop(context);
-        showSuccessTopSnackBar(context, 'Devise créée avec succès!');
-        _refreshController.add(null);
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Erreur liée au serveur, veuillez réessayer plus tard.';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   Future<bool?> _showEditDeviseModal(
     BuildContext context,
     Devise devise,
@@ -200,6 +225,8 @@ class _DeviseState extends State<DevicesScreen> {
       text: devise.code,
     );
     bool _isLoading = false;
+    final StreamController<String> _editErrorStreamController =
+        StreamController<String>.broadcast();
 
     return showDialog(
       context: context,
@@ -216,43 +243,93 @@ class _DeviseState extends State<DevicesScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      _editErrorStreamController.close();
+                      Navigator.pop(context);
+                    },
                     icon: const Icon(Icons.close),
                   ),
                 ],
               ),
               backgroundColor: Colors.white,
               content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    buildTextField(
-                      controller: nameController,
-                      label: "Nom de la devise",
-                      icon: Icons.description,
-                    ),
-                    const SizedBox(height: 16),
-                    buildTextField(
-                      controller: codeController,
-                      label: "Code de la devise",
-                      icon: Icons.numbers,
-                    ),
-                  ],
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: "Nom de la devise",
+                          prefixIcon: const Icon(Icons.description),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: _validateName,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: codeController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          labelText: "Code de la devise",
+                          prefixIcon: const Icon(Icons.numbers),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: _validateCode,
+                      ),
+                      const SizedBox(height: 16),
+                      StreamBuilder<String>(
+                        stream: _editErrorStreamController.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                snapshot.data!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    _editErrorStreamController.close();
+                    Navigator.pop(context);
+                  },
                   child: const Text('Annuler'),
                 ),
                 TextButton.icon(
                   onPressed: () async {
+                    if (!_formKey.currentState!.validate()) {
+                      return;
+                    }
+
                     try {
                       setState(() => _isLoading = true);
 
                       final deviseDto = devise.copyWith(
-                        name: nameController.text,
-                        code: codeController.text,
+                        name: nameController.text.trim(),
+                        code: codeController.text.trim().toUpperCase(),
                       );
 
                       final updatedDevise = await deviseServices.updateDevise(
@@ -261,21 +338,19 @@ class _DeviseState extends State<DevicesScreen> {
                       );
 
                       if (updatedDevise) {
-                        setState(() {
-                          _isLoading = false;
-                          loadDevises(reset: true);
-                        });
-
+                        _editErrorStreamController.close();
                         Navigator.pop(context, true);
-
                         showSuccessTopSnackBar(
                           context,
                           "Devise modifiée avec succès",
                         );
+                        _refreshController.add(null);
+                      } else {
+                        _editErrorStreamController
+                            .add("Erreur lors de la modification");
                       }
                     } catch (e) {
-                      setState(() => _isLoading = false);
-                      showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+                      _editErrorStreamController.add("Erreur: ${e.toString()}");
                     } finally {
                       setState(() => _isLoading = false);
                     }
@@ -301,6 +376,46 @@ class _DeviseState extends State<DevicesScreen> {
         );
       },
     );
+  }
+
+  Future<void> _deleteDevise(Devise devise) async {
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Confirmer la suppression"),
+          content: Text(
+            "Voulez-vous vraiment supprimer la devise ${devise.name} (${devise.code})?",
+          ),
+          backgroundColor: Colors.white,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Annuler"),
+            ),
+            TextButton.icon(
+              onPressed: () => Navigator.pop(context, true),
+              icon: const Icon(Icons.delete, color: Colors.red),
+              label: const Text(
+                "Supprimer",
+                style: TextStyle(color: Colors.red, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await deviseServices.deleteDevise(devise.id!);
+        setState(() {
+          _allDevises!.removeWhere((d) => d.id == devise.id);
+          _filteredDevises = List.from(_allDevises!);
+        });
+        showSuccessTopSnackBar(context, "Devise supprimée avec succès");
+      }
+    } catch (e) {
+      _showError("Erreur lors de la suppression: ${e.toString()}");
+    }
   }
 
   @override
@@ -374,9 +489,7 @@ class _DeviseState extends State<DevicesScreen> {
                                 onPressed: () {
                                   Navigator.pop(context);
                                   _codeController.clear();
-                                  _rateController.clear();
                                   _nameController.clear();
-                                  setModalState(() => _errorMessage = '');
                                 },
                                 icon: const Icon(Icons.close_rounded, size: 30),
                                 padding: EdgeInsets.zero,
@@ -418,17 +531,13 @@ class _DeviseState extends State<DevicesScreen> {
                               ),
                             ),
                             textInputAction: TextInputAction.next,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Veuillez definir un nom';
-                              }
-                              return null;
-                            },
+                            validator: _validateName,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _codeController,
                             autocorrect: false,
+                            textCapitalization: TextCapitalization.characters,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.abc,
@@ -458,73 +567,27 @@ class _DeviseState extends State<DevicesScreen> {
                                 ),
                               ),
                             ),
-                            textInputAction: TextInputAction.next,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Veuillez definir le code';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _rateController,
-                            autocorrect: false,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.percent,
-                                color: Color(0xFF1A1E49),
-                              ),
-                              labelText: 'Taux de change',
-                              hintText: 'Ex: 545.0',
-                              fillColor: Colors.white,
-                              filled: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.withOpacity(0.2),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.withOpacity(0.2),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF1A1E49),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
                             textInputAction: TextInputAction.done,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Veuillez definir le taux de change actuel.';
-                              }
-                              return null;
-                            },
+                            validator: _validateCode,
                           ),
                           const SizedBox(height: 40),
-                          if (_errorMessage != '')
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                _errorMessage,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
+                          StreamBuilder<String>(
+                            stream: errorStream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData &&
+                                  snapshot.data!.isNotEmpty) {
+                                return Text(
+                                  snapshot.data!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                           const SizedBox(height: 16),
                           confirmationButton(
                             isLoading: _isLoading,
@@ -662,54 +725,13 @@ class _DeviseState extends State<DevicesScreen> {
             label: 'Modifier',
           ),
           SlidableAction(
-            onPressed: (context) async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text("Confirmer la suppression"),
-                  content: Text(
-                    "Voulez-vous vraiment supprimer la devise ${devise.name} (${devise.code})?",
-                  ),
-                  backgroundColor: Colors.white,
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text("Annuler"),
-                    ),
-                    TextButton.icon(
-                      onPressed: () => Navigator.pop(context, true),
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      label: const Text(
-                        "Supprimer",
-                        style: TextStyle(color: Colors.red, fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirmed == true) {
-                try {
-                  await deviseServices.deleteDevise(devise.id!);
-                  setState(() {
-                    _allDevises!.removeWhere((d) => d.id == devise.id);
-                    _filteredDevises = List.from(_allDevises!);
-                  });
-                  showSuccessTopSnackBar(context, "Devise supprimée");
-                } catch (e) {
-                  showErrorTopSnackBar(
-                    context,
-                    "Erreur lors de la suppression",
-                  );
-                }
-              }
-            },
+            onPressed: (_) => _deleteDevise(devise),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
             label: 'Supprimer',
-            borderRadius: const BorderRadius.horizontal(
-                right: Radius.circular(16)), // Adjusted radius
+            borderRadius:
+                const BorderRadius.horizontal(right: Radius.circular(16)),
           ),
         ],
       ),
@@ -721,68 +743,58 @@ class _DeviseState extends State<DevicesScreen> {
             // Ajouter une action au clic si nécessaire
           },
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 12), // Adjusted padding
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Row(
               children: [
-                // Icon and Code
                 Container(
-                  padding: const EdgeInsets.all(10), // Increased padding
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: isRateIncreasing
-                        ? Colors.green[50]
-                        : Colors.red[50], // Adjusted opacity
-                    borderRadius: BorderRadius.circular(12), // Adjusted radius
-                    // Removed border for a cleaner look
+                    color: isRateIncreasing ? Colors.green[50] : Colors.red[50],
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    rateIcon, // Using the trend icon here
-                    color: rateColor, // Color based on trend
-                    size: 24, // Increased size
+                    rateIcon,
+                    color: rateColor,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 16), // Increased spacing
-                // Name and Placeholder Date (or other info)
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        devise.name, // Displaying currency name
+                        devise.name,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFF2C2C2C),
                         ),
                       ),
-                      const SizedBox(
-                          height: 4), // Spacing between name and date
+                      const SizedBox(height: 4),
                       Text(
-                        devise
-                            .code, // Displaying currency code as secondary info
+                        devise.code,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors
-                              .grey[600], // Muted color for secondary info
+                          color: Colors.grey[600],
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Rate
                 Text(
-                  currentRate.toStringAsFixed(2), // Displaying the rate
+                  currentRate.toStringAsFixed(2),
                   style: const TextStyle(
-                    color: rateColor, // Color based on trend
+                    color: rateColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  devise.code, // Displaying the target currency code
+                  devise.code,
                   style: TextStyle(
-                    color: Colors.grey[600], // Muted color for currency code
+                    color: Colors.grey[600],
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
