@@ -2,7 +2,9 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -44,19 +46,24 @@ class _NewVersementModalState extends State<NewVersementModal>
   final AuthService authService = AuthService();
   final PartnerServices partnerServices = PartnerServices();
   final VersementServices versementServices = VersementServices();
+  final DeviseServices deviseServices = DeviseServices();
 
   List<Partner> clients = [];
   Partner? selectedCLients;
+
+  List<Devise> devises = [];
+  Devise? selectedDevise;
 
   int currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadClientsData();
+    _loadDevisesData();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadClientsData() async {
     setState(() => isLoading = true);
     try {
       if (widget.isVersementScreen) {
@@ -82,6 +89,20 @@ class _NewVersementModalState extends State<NewVersementModal>
     }
   }
 
+  Future<void> _loadDevisesData() async {
+    setState(() => isLoading = true);
+    try {
+      final deviseData = await deviseServices.findAllDevises(page: 0);
+      setState(() {
+        devises = deviseData;
+        isLoading = false;
+      });
+    } catch (_) {
+      setState(() => isLoading = false);
+      showErrorTopSnackBar(context, "Erreur lors du chargement des données");
+    }
+  }
+
   Future<void> _submitForm() async {
     if (montantVerserController.text.isEmpty) {
       showErrorTopSnackBar(context, "Veuillez entrer un montant");
@@ -91,8 +112,13 @@ class _NewVersementModalState extends State<NewVersementModal>
       showErrorTopSnackBar(context, "Veuillez sélectionner un client");
       return;
     }
+
     if (myDate == null) {
       showErrorTopSnackBar(context, "Veuillez sélectionner une date");
+      return;
+    }
+    if (selectedDevise == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner une devise");
       return;
     }
 
@@ -121,6 +147,7 @@ class _NewVersementModalState extends State<NewVersementModal>
         widget.isVersementScreen
             ? selectedCLients!.id
             : int.parse(widget.clientId!),
+        selectedDevise!.id!,
         versementDto,
       );
 
@@ -140,6 +167,22 @@ class _NewVersementModalState extends State<NewVersementModal>
     }
   }
 
+  bool _validateFirstStep() {
+    if (montantVerserController.text.isEmpty) {
+      showErrorTopSnackBar(context, "Veuillez entrer un montant");
+      return false;
+    }
+    if (widget.isVersementScreen && selectedCLients == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un client");
+      return false;
+    }
+    if (myDate == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner une date");
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -149,12 +192,11 @@ class _NewVersementModalState extends State<NewVersementModal>
         child: Container(
           constraints: BoxConstraints(
             maxHeight: widget.isVersementScreen == true
-                ? MediaQuery.of(context).size.height * 0.55
-                : MediaQuery.of(context).size.height * 0.50,
+                ? MediaQuery.of(context).size.height * 0.45
+                : MediaQuery.of(context).size.height * 0.40,
           ),
           child: Stack(
             children: [
-              /// 🧱 Contenu principal scrollable
               Padding(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).padding.bottom,
@@ -164,9 +206,11 @@ class _NewVersementModalState extends State<NewVersementModal>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Effectuer un nouveau versement",
-                          style: TextStyle(
+                        Text(
+                          currentStep == 0
+                              ? "Informations du versement"
+                              : "Informations du commissionnaire",
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.5,
@@ -217,7 +261,10 @@ class _NewVersementModalState extends State<NewVersementModal>
                                   });
                                 },
                               ),
-                              const SizedBox(height: 10),
+                            ],
+                          ),
+                          ListView(
+                            children: [
                               buildTextField(
                                 controller: commissionnaireNameController,
                                 label: "Nom complet du commissionnaire",
@@ -230,6 +277,19 @@ class _NewVersementModalState extends State<NewVersementModal>
                                 icon: Icons.phone,
                                 keyboardType: TextInputType.phone,
                               ),
+                              const SizedBox(height: 10),
+                              DropDownCustom<Devise>(
+                                items: devises,
+                                selectedItem: selectedDevise,
+                                onChanged: (currency) {
+                                  setState(() {
+                                    selectedDevise = currency;
+                                  });
+                                },
+                                itemToString: (currency) => currency.code,
+                                hintText: 'Choisir une devise...',
+                                prefixIcon: Icons.currency_exchange,
+                              ),
                             ],
                           ),
                         ],
@@ -238,7 +298,6 @@ class _NewVersementModalState extends State<NewVersementModal>
                   ],
                 ),
               ),
-
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -249,12 +308,39 @@ class _NewVersementModalState extends State<NewVersementModal>
                     vertical: 10,
                     horizontal: 10,
                   ),
-                  child: confirmationButton(
-                    isLoading: isLoading,
-                    label: "Enregistrer",
-                    subLabel: "Enregistrement...",
-                    icon: Icons.check,
-                    onPressed: _submitForm,
+                  child: Row(
+                    children: [
+                      if (currentStep > 0)
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              currentStep--;
+                            });
+                          },
+                          label: const Text("Retour"),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                      if (currentStep > 0) const SizedBox(width: 10),
+                      Expanded(
+                        child: confirmationButton(
+                          isLoading: isLoading,
+                          label: currentStep == 0 ? "Suivant" : "Enregistrer",
+                          subLabel: "Enregistrement...",
+                          icon: currentStep == 0
+                              ? Icons.arrow_forward
+                              : Icons.check,
+                          onPressed: currentStep == 0
+                              ? () {
+                                  if (_validateFirstStep()) {
+                                    setState(() {
+                                      currentStep++;
+                                    });
+                                  }
+                                }
+                              : _submitForm,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

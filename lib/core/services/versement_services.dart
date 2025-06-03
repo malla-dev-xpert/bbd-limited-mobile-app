@@ -38,11 +38,12 @@ class VersementServices {
     }
   }
 
-  Future<String?> create(int userId, int partnerId, Versement versement) async {
+  Future<String?> create(
+      int userId, int partnerId, int deviseId, Versement versement) async {
     try {
       final response = await http.post(
         Uri.parse(
-          '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId',
+          '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId&deviseId=$deviseId',
         ),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(versement.toJson()),
