@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
+import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -19,24 +20,21 @@ class DevicesScreen extends StatefulWidget {
 class _DeviseState extends State<DevicesScreen> {
   final _formKey = GlobalKey<FormState>();
   final DeviseServices deviseServices = DeviseServices();
+  final ExchangeRateService exchangeRateService = ExchangeRateService();
   final TextEditingController _nameController = TextEditingController();
-
   final TextEditingController _rateController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
-
   final ScrollController _scrollController = ScrollController();
   late final KeyboardVisibilityController _keyboardVisibilityController;
   late final StreamSubscription<bool> _keyboardSubscription;
-
   final TextEditingController _searchController = TextEditingController();
 
-  List<Devise>? _allDevises; // liste complète récupérée une seule fois
+  List<Devise>? _allDevises;
   List<Devise> _filteredDevises = [];
+  Map<String, double> _currentRates = {};
   int currentPage = 0;
-
   bool _isLoading = false;
   String _errorMessage = '';
-
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
@@ -50,10 +48,8 @@ class _DeviseState extends State<DevicesScreen> {
     });
 
     _keyboardVisibilityController = KeyboardVisibilityController();
-
-    _keyboardSubscription = _keyboardVisibilityController.onChange.listen((
-      visible,
-    ) {
+    _keyboardSubscription =
+        _keyboardVisibilityController.onChange.listen((visible) {
       if (!visible) {
         _scrollController.animateTo(
           0.0,
@@ -62,6 +58,19 @@ class _DeviseState extends State<DevicesScreen> {
         );
       }
     });
+  }
+
+  Future<void> _fetchExchangeRates() async {
+    try {
+      for (var devise in _allDevises ?? []) {
+        final rate = await exchangeRateService.getExchangeRate(devise.code);
+        setState(() {
+          _currentRates[devise.code] = rate;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération des taux: $e');
+    }
   }
 
   bool _hasMoreData = true;
@@ -92,6 +101,9 @@ class _DeviseState extends State<DevicesScreen> {
           currentPage++;
         }
       });
+
+      // Récupérer les taux de change après avoir chargé les devises
+      await _fetchExchangeRates();
     } catch (e) {
       setState(() {
         _errorMessage = "Erreur de chargement: ${e.toString()}";
@@ -293,15 +305,20 @@ class _DeviseState extends State<DevicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    // final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        elevation: 0,
         title: const Text(
           "Gestion des devises",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -314,14 +331,20 @@ class _DeviseState extends State<DevicesScreen> {
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.white,
+            isScrollControlled: true,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             builder: (BuildContext context) {
               return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setModalState) {
                   return Container(
-                    padding: const EdgeInsets.all(30),
+                    padding: EdgeInsets.only(
+                      left: 30,
+                      right: 30,
+                      top: 30,
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 30,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -337,9 +360,10 @@ class _DeviseState extends State<DevicesScreen> {
                                   child: Text(
                                     'Ajouter une nouvelle devise',
                                     style: TextStyle(
-                                      fontSize: 25,
+                                      fontSize: 24,
                                       fontWeight: FontWeight.bold,
-                                      letterSpacing: -1,
+                                      letterSpacing: -0.5,
+                                      color: Color(0xFF1A1E49),
                                     ),
                                     softWrap: true,
                                     overflow: TextOverflow.visible,
@@ -360,14 +384,14 @@ class _DeviseState extends State<DevicesScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           TextFormField(
                             controller: _nameController,
                             autocorrect: false,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.attach_money,
-                                color: Colors.black,
+                                color: Color(0xFF1A1E49),
                               ),
                               labelText: 'Nom de la devise',
                               hintText: 'Ex: Dollar US',
@@ -375,6 +399,22 @@ class _DeviseState extends State<DevicesScreen> {
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF1A1E49),
+                                  width: 2,
+                                ),
                               ),
                             ),
                             textInputAction: TextInputAction.next,
@@ -392,7 +432,7 @@ class _DeviseState extends State<DevicesScreen> {
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.abc,
-                                color: Colors.black,
+                                color: Color(0xFF1A1E49),
                               ),
                               labelText: 'Code',
                               hintText: 'Ex: USD, EUR, GBP',
@@ -400,6 +440,22 @@ class _DeviseState extends State<DevicesScreen> {
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF1A1E49),
+                                  width: 2,
+                                ),
                               ),
                             ),
                             textInputAction: TextInputAction.next,
@@ -417,7 +473,7 @@ class _DeviseState extends State<DevicesScreen> {
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.percent,
-                                color: Colors.black,
+                                color: Color(0xFF1A1E49),
                               ),
                               labelText: 'Taux de change',
                               hintText: 'Ex: 545.0',
@@ -425,6 +481,22 @@ class _DeviseState extends State<DevicesScreen> {
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF1A1E49),
+                                  width: 2,
+                                ),
                               ),
                             ),
                             keyboardType: TextInputType.number,
@@ -438,12 +510,22 @@ class _DeviseState extends State<DevicesScreen> {
                           ),
                           const SizedBox(height: 40),
                           if (_errorMessage != '')
-                            Text(
-                              _errorMessage,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.red),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                _errorMessage,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 16),
                           confirmationButton(
                             isLoading: _isLoading,
                             onPressed: _submitForm,
@@ -466,18 +548,35 @@ class _DeviseState extends State<DevicesScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            TextField(
-              controller: _searchController,
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: 'Rechercher une devise...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.08),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: 'Rechercher une devise...',
+                  prefixIcon:
+                      const Icon(Icons.search, color: Color(0xFF1A1E49)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (scrollInfo) {
@@ -537,6 +636,12 @@ class _DeviseState extends State<DevicesScreen> {
 
   // Les donnees de la liste
   Widget _buildDeviseItem(Devise devise) {
+    final currentRate = _currentRates[devise.code] ?? 0.0;
+    const bool isRateIncreasing = true;
+    const Color rateColor = isRateIncreasing ? Colors.green : Colors.red;
+    const IconData rateIcon =
+        isRateIncreasing ? Icons.arrow_upward : Icons.arrow_downward;
+
     return Slidable(
       key: Key(devise.id.toString()),
       endActionPane: ActionPane(
@@ -603,29 +708,86 @@ class _DeviseState extends State<DevicesScreen> {
             foregroundColor: Colors.white,
             icon: Icons.delete,
             label: 'Supprimer',
+            borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(16)), // Adjusted radius
           ),
         ],
       ),
-      child: ListTile(
-        title: Text(
-          devise.name,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Text(
-          devise.code,
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF7F78AF).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          child: const Text(
-            'XOF 0.00',
-            style: TextStyle(
-              color: Color(0xFF7F78AF),
-              fontWeight: FontWeight.bold,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            // Ajouter une action au clic si nécessaire
+          },
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 12), // Adjusted padding
+            child: Row(
+              children: [
+                // Icon and Code
+                Container(
+                  padding: const EdgeInsets.all(10), // Increased padding
+                  decoration: BoxDecoration(
+                    color: isRateIncreasing
+                        ? Colors.green[50]
+                        : Colors.red[50], // Adjusted opacity
+                    borderRadius: BorderRadius.circular(12), // Adjusted radius
+                    // Removed border for a cleaner look
+                  ),
+                  child: const Icon(
+                    rateIcon, // Using the trend icon here
+                    color: rateColor, // Color based on trend
+                    size: 24, // Increased size
+                  ),
+                ),
+                const SizedBox(width: 16), // Increased spacing
+                // Name and Placeholder Date (or other info)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        devise.name, // Displaying currency name
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xFF2C2C2C),
+                        ),
+                      ),
+                      const SizedBox(
+                          height: 4), // Spacing between name and date
+                      Text(
+                        devise
+                            .code, // Displaying currency code as secondary info
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors
+                              .grey[600], // Muted color for secondary info
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Rate
+                Text(
+                  currentRate.toStringAsFixed(2), // Displaying the rate
+                  style: const TextStyle(
+                    color: rateColor, // Color based on trend
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  devise.code, // Displaying the target currency code
+                  style: TextStyle(
+                    color: Colors.grey[600], // Muted color for currency code
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
