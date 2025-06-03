@@ -274,7 +274,7 @@ class _DeviseState extends State<DevicesScreen> {
                   ),
                   label: _isLoading
                       ? const Text('Modification...')
-                      : Text(
+                      : const Text(
                           'Modifier',
                           style: TextStyle(
                             color: Colors.green,
@@ -304,7 +304,7 @@ class _DeviseState extends State<DevicesScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
@@ -314,14 +314,14 @@ class _DeviseState extends State<DevicesScreen> {
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             builder: (BuildContext context) {
               return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setModalState) {
                   return Container(
-                    padding: EdgeInsets.all(30),
+                    padding: const EdgeInsets.all(30),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -331,10 +331,10 @@ class _DeviseState extends State<DevicesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
+                              const Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: const Text(
+                                  padding: EdgeInsets.only(right: 8.0),
+                                  child: Text(
                                     'Ajouter une nouvelle devise',
                                     style: TextStyle(
                                       fontSize: 25,
@@ -471,7 +471,7 @@ class _DeviseState extends State<DevicesScreen> {
               autocorrect: false,
               decoration: InputDecoration(
                 labelText: 'Rechercher une devise...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -501,11 +501,11 @@ class _DeviseState extends State<DevicesScreen> {
   // la liste des devises
   Widget _buildDeviseList() {
     if (_allDevises == null) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_filteredDevises.isEmpty) {
-      return Center(child: Text("Aucune devise trouvée"));
+      return const Center(child: Text("Aucune devise trouvée"));
     }
 
     return RefreshIndicator(
@@ -516,12 +516,12 @@ class _DeviseState extends State<DevicesScreen> {
       color: Theme.of(context).primaryColor,
       backgroundColor: Colors.white,
       child: ListView.builder(
-        physics: AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         itemCount:
             _filteredDevises.length + (_hasMoreData && _isLoading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _filteredDevises.length) {
-            return Center(
+            return const Center(
               child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: CircularProgressIndicator(),
@@ -621,9 +621,9 @@ class _DeviseState extends State<DevicesScreen> {
             color: const Color(0xFF7F78AF).withOpacity(0.1),
             borderRadius: BorderRadius.circular(2),
           ),
-          child: Text(
+          child: const Text(
             'XOF 0.00',
-            style: const TextStyle(
+            style: TextStyle(
               color: Color(0xFF7F78AF),
               fontWeight: FontWeight.bold,
             ),
