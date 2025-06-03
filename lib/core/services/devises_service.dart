@@ -7,12 +7,18 @@ class DeviseServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<String> create(String name, String code, double rate) async {
+  Future<String> create(
+    String name,
+    String code,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/devises/create'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"name": name, "code": code, "rate": rate}),
+        body: jsonEncode({
+          "name": name,
+          "code": code,
+        }),
       );
 
       if (response.statusCode == 201) {

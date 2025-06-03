@@ -105,12 +105,11 @@ class _DeviseState extends State<DevicesScreen> {
     final query = _searchController.text.toLowerCase();
 
     setState(() {
-      _filteredDevises =
-          _allDevises!.where((devise) {
-            final code = devise.code.toLowerCase();
-            final name = devise.name.toLowerCase();
-            return code.contains(query) || name.contains(query);
-          }).toList();
+      _filteredDevises = _allDevises!.where((devise) {
+        final code = devise.code.toLowerCase();
+        final name = devise.name.toLowerCase();
+        return code.contains(query) || name.contains(query);
+      }).toList();
     });
   }
 
@@ -138,7 +137,6 @@ class _DeviseState extends State<DevicesScreen> {
       final success = await deviseServices.create(
         _nameController.text,
         _codeController.text,
-        double.tryParse(_rateController.text) ?? 0.0,
       );
 
       if (success == "NAME_EXIST") {
@@ -189,9 +187,6 @@ class _DeviseState extends State<DevicesScreen> {
     final TextEditingController codeController = TextEditingController(
       text: devise.code,
     );
-    final TextEditingController rateController = TextEditingController(
-      text: devise.rate.toString(),
-    );
     bool _isLoading = false;
 
     return showDialog(
@@ -230,13 +225,6 @@ class _DeviseState extends State<DevicesScreen> {
                       label: "Code de la devise",
                       icon: Icons.numbers,
                     ),
-                    const SizedBox(height: 16),
-                    buildTextField(
-                      controller: rateController,
-                      keyboardType: TextInputType.number,
-                      label: "Taux de change",
-                      icon: Icons.numbers,
-                    ),
                   ],
                 ),
               ),
@@ -253,7 +241,6 @@ class _DeviseState extends State<DevicesScreen> {
                       final deviseDto = devise.copyWith(
                         name: nameController.text,
                         code: codeController.text,
-                        rate: double.parse(rateController.text),
                       );
 
                       final updatedDevise = await deviseServices.updateDevise(
@@ -285,17 +272,16 @@ class _DeviseState extends State<DevicesScreen> {
                     Icons.check_circle_outline_outlined,
                     color: Colors.green,
                   ),
-                  label:
-                      _isLoading
-                          ? const Text('Modification...')
-                          : Text(
-                            'Modifier',
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+                  label: _isLoading
+                      ? const Text('Modification...')
+                      : Text(
+                          'Modifier',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
                           ),
+                        ),
                 ),
               ],
             );
@@ -450,9 +436,7 @@ class _DeviseState extends State<DevicesScreen> {
                               return null;
                             },
                           ),
-
                           const SizedBox(height: 40),
-
                           if (_errorMessage != '')
                             Text(
                               _errorMessage,
@@ -478,7 +462,6 @@ class _DeviseState extends State<DevicesScreen> {
         },
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -577,28 +560,27 @@ class _DeviseState extends State<DevicesScreen> {
             onPressed: (context) async {
               final confirmed = await showDialog<bool>(
                 context: context,
-                builder:
-                    (context) => AlertDialog(
-                      title: const Text("Confirmer la suppression"),
-                      content: Text(
-                        "Voulez-vous vraiment supprimer la devise ${devise.name} (${devise.code})?",
-                      ),
-                      backgroundColor: Colors.white,
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text("Annuler"),
-                        ),
-                        TextButton.icon(
-                          onPressed: () => Navigator.pop(context, true),
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          label: const Text(
-                            "Supprimer",
-                            style: TextStyle(color: Colors.red, fontSize: 16),
-                          ),
-                        ),
-                      ],
+                builder: (context) => AlertDialog(
+                  title: const Text("Confirmer la suppression"),
+                  content: Text(
+                    "Voulez-vous vraiment supprimer la devise ${devise.name} (${devise.code})?",
+                  ),
+                  backgroundColor: Colors.white,
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Annuler"),
                     ),
+                    TextButton.icon(
+                      onPressed: () => Navigator.pop(context, true),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      label: const Text(
+                        "Supprimer",
+                        style: TextStyle(color: Colors.red, fontSize: 16),
+                      ),
+                    ),
+                  ],
+                ),
               );
 
               if (confirmed == true) {
@@ -640,7 +622,7 @@ class _DeviseState extends State<DevicesScreen> {
             borderRadius: BorderRadius.circular(2),
           ),
           child: Text(
-            devise.rate.toString(),
+            'XOF 0.00',
             style: const TextStyle(
               color: Color(0xFF7F78AF),
               fontWeight: FontWeight.bold,
