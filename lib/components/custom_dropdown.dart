@@ -26,7 +26,7 @@ class DropDownCustom<T> extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

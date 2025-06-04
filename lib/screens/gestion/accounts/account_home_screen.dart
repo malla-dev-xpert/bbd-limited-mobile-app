@@ -13,6 +13,7 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_mod
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/components/custom_dropdown.dart';
 
 class AccountHomeScreen extends StatefulWidget {
   @override
@@ -148,7 +149,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     });
   }
 
-  void handleStatusFilter(String value) {
+  void handleStatusFilter(String? value) {
     setState(() {
       _currentFilter = value;
     });
@@ -495,7 +496,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 }
 
 class FiltreDropdown extends StatelessWidget {
-  final Function(String) onSelected;
+  final Function(String?) onSelected;
   final List<Devise> devises;
 
   const FiltreDropdown({
@@ -506,40 +507,20 @@ class FiltreDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7F78AF),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: PopupMenuButton<String>(
-        icon: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.filter_list, color: Colors.white),
-            SizedBox(width: 8),
-            Text(
-              'Filtrer',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(width: 8),
-          ],
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.35,
+      child: Container(
+        padding: const EdgeInsets.all(0),
+        child: DropDownCustom<Devise>(
+          items: devises,
+          selectedItem: null,
+          onChanged: (devise) {
+            onSelected(devise?.code);
+          },
+          itemToString: (devise) => devise.code,
+          hintText: 'Filtrer',
+          prefixIcon: Icons.filter_list,
         ),
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-        onSelected: onSelected,
-        itemBuilder: (BuildContext context) => [
-          const PopupMenuItem<String>(
-            value: null,
-            child: Text('Toutes les devises'),
-          ),
-          ...devises.map((devise) => PopupMenuItem<String>(
-                value: devise.code,
-                child: Text(devise.code),
-              )),
-        ],
       ),
     );
   }
