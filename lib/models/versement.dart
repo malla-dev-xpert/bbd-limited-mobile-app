@@ -16,57 +16,62 @@ class Versement {
   List<Achat>? achats;
   final String? commissionnaireName;
   final String? commissionnairePhone;
+  final int? deviseId;
+  final String? deviseCode;
 
-  Versement copyWith({
-    int? id,
-    String? reference,
-    double? montantVerser,
-    double? montantRestant,
-    Status? status,
-    DateTime? createdAt,
-    DateTime? editedAt,
-    String? partnerName,
-    String? partnerPhone,
-    String? partnerAccountType,
-    int? partnerId,
-    List<Achat>? achats,
-    String? commissionnaireName,
-    String? commissionnairePhone,
-  }) {
+  Versement copyWith(
+      {int? id,
+      String? reference,
+      double? montantVerser,
+      double? montantRestant,
+      Status? status,
+      DateTime? createdAt,
+      DateTime? editedAt,
+      String? partnerName,
+      String? partnerPhone,
+      String? partnerAccountType,
+      int? partnerId,
+      List<Achat>? achats,
+      String? commissionnaireName,
+      String? commissionnairePhone,
+      int? deviseId,
+      String? deviseCode}) {
     return Versement(
-      id: id ?? this.id,
-      reference: reference ?? this.reference,
-      montantVerser: montantVerser ?? this.montantVerser,
-      montantRestant: montantRestant ?? this.montantRestant,
-      status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
-      editedAt: editedAt ?? this.editedAt,
-      partnerName: partnerName ?? this.partnerName,
-      partnerPhone: partnerPhone ?? this.partnerPhone,
-      partnerAccountType: partnerAccountType ?? this.partnerAccountType,
-      partnerId: partnerId ?? this.partnerId,
-      achats: achats ?? this.achats,
-      commissionnaireName: commissionnaireName ?? this.commissionnaireName,
-      commissionnairePhone: commissionnairePhone ?? this.commissionnairePhone,
-    );
+        id: id ?? this.id,
+        reference: reference ?? this.reference,
+        montantVerser: montantVerser ?? this.montantVerser,
+        montantRestant: montantRestant ?? this.montantRestant,
+        status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
+        editedAt: editedAt ?? this.editedAt,
+        partnerName: partnerName ?? this.partnerName,
+        partnerPhone: partnerPhone ?? this.partnerPhone,
+        partnerAccountType: partnerAccountType ?? this.partnerAccountType,
+        partnerId: partnerId ?? this.partnerId,
+        achats: achats ?? this.achats,
+        commissionnaireName: commissionnaireName ?? this.commissionnaireName,
+        commissionnairePhone: commissionnairePhone ?? this.commissionnairePhone,
+        deviseId: deviseId ?? this.deviseId,
+        deviseCode: deviseCode ?? this.deviseCode);
   }
 
-  Versement({
-    this.id,
-    this.reference,
-    this.montantVerser,
-    this.montantRestant,
-    this.status,
-    this.createdAt,
-    this.editedAt,
-    this.partnerName,
-    this.partnerPhone,
-    this.partnerAccountType,
-    this.partnerId,
-    this.achats,
-    this.commissionnaireName,
-    this.commissionnairePhone,
-  });
+  Versement(
+      {this.id,
+      this.reference,
+      this.montantVerser,
+      this.montantRestant,
+      this.status,
+      this.createdAt,
+      this.editedAt,
+      this.partnerName,
+      this.partnerPhone,
+      this.partnerAccountType,
+      this.partnerId,
+      this.achats,
+      this.commissionnaireName,
+      this.commissionnairePhone,
+      this.deviseId,
+      this.deviseCode});
 
   Map<String, dynamic> toJson() {
     return {
@@ -84,6 +89,8 @@ class Versement {
       'achats': achats?.map((item) => item.toJson()).toList(),
       'commissionnaireName': commissionnaireName,
       'commissionnairePhone': commissionnairePhone,
+      'deviseId': deviseId,
+      'deviseCode': deviseCode
     };
   }
 
@@ -113,26 +120,28 @@ class Versement {
     }
 
     return Versement(
-      id: json['id'] as int?,
-      reference: json['reference'] as String?,
-      montantVerser: json['montantVerser'] != null
-          ? (json['montantVerser'] as num).toDouble()
-          : null,
-      montantRestant: json['montantRestant'] != null
-          ? (json['montantRestant'] as num).toDouble()
-          : null,
-      status: status,
-      createdAt:
-          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      editedAt:
-          json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
-      partnerName: json['partnerName'] as String?,
-      partnerPhone: json['partnerPhone'] as String?,
-      partnerAccountType: json['partnerAccountType'] as String?,
-      partnerId: json['partnerId'] as int?,
-      achats: achatList,
-      commissionnaireName: json['commissionnaireName'] as String?,
-      commissionnairePhone: json['commissionnairePhone'] as String?,
-    );
+        id: json['id'] as int?,
+        reference: json['reference'] as String?,
+        montantVerser: json['montantVerser'] != null
+            ? (json['montantVerser'] as num).toDouble()
+            : null,
+        montantRestant: json['montantRestant'] != null
+            ? (json['montantRestant'] as num).toDouble()
+            : null,
+        status: status,
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'])
+            : null,
+        editedAt:
+            json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
+        partnerName: json['partnerName'] as String?,
+        partnerPhone: json['partnerPhone'] as String?,
+        partnerAccountType: json['partnerAccountType'] as String?,
+        partnerId: json['partnerId'] as int?,
+        achats: achatList,
+        commissionnaireName: json['commissionnaireName'] as String?,
+        commissionnairePhone: json['commissionnairePhone'] as String?,
+        deviseId: json['deviseId'] as int?,
+        deviseCode: json['deviseCode'] as String?);
   }
 }
