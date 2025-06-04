@@ -179,7 +179,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           label: Text(
             _selectedOperationType == OperationType.versements
                 ? 'Nouveau versement'
-                : 'Nouvelle expédition',
+                : 'Nouveau colis',
             style: const TextStyle(color: Colors.white),
           ),
           icon: const Icon(Icons.add, color: Colors.white),
