@@ -24,7 +24,7 @@ class PartnerListItem extends StatelessWidget {
 
     final currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
-      symbol: 'FCFA',
+      symbol: 'USD',
     );
 
     return Slidable(

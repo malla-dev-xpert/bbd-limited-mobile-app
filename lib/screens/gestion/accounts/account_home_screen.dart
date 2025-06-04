@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
@@ -20,10 +21,12 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final TextEditingController searchController = TextEditingController();
   final VersementServices _versementServices = VersementServices();
   final AuthService _authService = AuthService();
+  final ExchangeRateService _exchangeRateService = ExchangeRateService();
 
-  List<Versement> _allPaiements = [];
-  List<Versement> _filteredPaiements = [];
+  List<Versement> _allVersements = [];
+  List<Versement> _filteredVersements = [];
   String? _currentFilter;
+  double _totalVersementsUSD = 0.0;
 
   bool _isLoading = false;
   bool _refreshLoading = false;
@@ -33,7 +36,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'USD');
 
   @override
   void initState() {
@@ -50,6 +53,32 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     super.dispose();
   }
 
+  Future<void> _calculateTotalVersementsUSD() async {
+    if (_allVersements.isEmpty) {
+      setState(() {
+        _totalVersementsUSD = 0.0;
+      });
+      return;
+    }
+
+    double totalUSD = 0.0;
+    for (var versement in _allVersements) {
+      if (versement.montantVerser != null && versement.deviseCode != null) {
+        if (versement.deviseCode == 'USD') {
+          totalUSD += versement.montantVerser!;
+        } else {
+          final rate =
+              await _exchangeRateService.getExchangeRate(versement.deviseCode!);
+          totalUSD += versement.montantVerser! / rate;
+        }
+      }
+    }
+
+    setState(() {
+      _totalVersementsUSD = totalUSD;
+    });
+  }
+
   Future<void> fetchPaiements({bool reset = false}) async {
     if (_isLoading || (!reset && !_hasMoreData)) return;
 
@@ -59,15 +88,15 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         _refreshLoading = true;
         currentPage = 0;
         _hasMoreData = true;
-        _allPaiements = [];
+        _allVersements = [];
       }
     });
     try {
       final paiement = await _versementServices.getAll(page: currentPage);
 
       setState(() {
-        _allPaiements.addAll(paiement);
-        _filteredPaiements = List.from(_allPaiements);
+        _allVersements.addAll(paiement);
+        _filteredVersements = List.from(_allVersements);
 
         if (paiement.isEmpty || paiement.length < 30) {
           _hasMoreData = false;
@@ -75,9 +104,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
           currentPage++;
         }
       });
+      await _calculateTotalVersementsUSD();
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur de récupération des paiements.");
-      print("Erreur de récupération des paiements : $e");
     } finally {
       setState(() {
         _isLoading = false;
@@ -88,7 +117,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   void filterPackages(String query) {
     setState(() {
-      _filteredPaiements = _allPaiements.where((pmt) {
+      _filteredVersements = _allVersements.where((pmt) {
         final searchPackage = pmt.reference!.toLowerCase().contains(
               query.toLowerCase(),
             );
@@ -122,7 +151,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return NewVersementModal(isVersementScreen: true);
+        return const NewVersementModal(isVersementScreen: true);
       },
     );
 
@@ -206,8 +235,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         );
       } else if (result == "DELETED") {
         setState(() {
-          _allPaiements.removeWhere((d) => d.id == versement.id);
-          _filteredPaiements.removeWhere((d) => d.id == versement.id);
+          _allVersements.removeWhere((d) => d.id == versement.id);
+          _filteredVersements.removeWhere((d) => d.id == versement.id);
         });
 
         showSuccessTopSnackBar(context, "Paiement supprimé avec succès");
@@ -293,7 +322,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         padding: EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Total des versements',
-                          value: _allPaiements.length.toString(),
+                          value: _allVersements.length.toString(),
                           valueStyle: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -314,16 +343,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Montant total',
-                          value: currencyFormat.format(
-                            _allPaiements.fold<double>(
-                              0,
-                              (sum, item) =>
-                                  sum +
-                                  (item.status != Status.DELETE
-                                      ? (item.montantRestant ?? 0)
-                                      : 0),
-                            ),
-                          ),
+                          value: currencyFormat.format(_totalVersementsUSD),
                           valueStyle: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -377,7 +397,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     onPressed: () {
                       setState(() {
                         _currentFilter = null;
-                        _filteredPaiements = _allPaiements;
+                        _filteredVersements = _allVersements;
                         if (searchController.text.isNotEmpty) {
                           filterPackages(searchController.text);
                         }
@@ -406,7 +426,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         }
                         return false;
                       },
-                      child: _filteredPaiements.isEmpty
+                      child: _filteredVersements.isEmpty
                           ? const Center(child: Text("Aucun paiement trouvé."))
                           : RefreshIndicator(
                               onRefresh: () async {
@@ -417,10 +437,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                               backgroundColor: Colors.white,
                               child: ListView.builder(
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _filteredPaiements.length +
+                                itemCount: _filteredVersements.length +
                                     (_hasMoreData && _isLoading ? 1 : 0),
                                 itemBuilder: (context, index) {
-                                  if (index >= _filteredPaiements.length) {
+                                  if (index >= _filteredVersements.length) {
                                     return const Center(
                                       child: Padding(
                                         padding: EdgeInsets.all(8.0),
@@ -428,7 +448,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                       ),
                                     );
                                   }
-                                  final paiement = _filteredPaiements[index];
+                                  final paiement = _filteredVersements[index];
                                   return PaiementListItem(
                                     versement: paiement,
                                     onTap: () =>

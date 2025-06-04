@@ -7,6 +7,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/pa
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:intl/intl.dart';
 
 enum OperationType { versements, expeditions }
@@ -27,6 +28,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   List<dynamic>? _filteredVersements;
   List<Packages>? _filteredPackages;
   OperationType _selectedOperationType = OperationType.versements;
+  final ExchangeRateService _exchangeRateService = ExchangeRateService();
+  double _totalVersementsUSD = 0.0;
 
   @override
   void initState() {
@@ -36,6 +39,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _filteredPackages = _partner.packages;
     _sortVersementsByDate();
     _sortExpeditionsByDate();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await _calculateTotalVersementsUSD();
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _sortVersementsByDate() {
@@ -103,11 +114,37 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     });
   }
 
+  Future<void> _calculateTotalVersementsUSD() async {
+    if (_partner.versements == null || _partner.versements!.isEmpty) {
+      setState(() {
+        _totalVersementsUSD = 0.0;
+      });
+      return;
+    }
+
+    double totalUSD = 0.0;
+    for (var versement in _partner.versements!) {
+      if (versement.montantVerser != null && versement.deviseCode != null) {
+        if (versement.deviseCode == 'USD') {
+          totalUSD += versement.montantVerser!;
+        } else {
+          final rate =
+              await _exchangeRateService.getExchangeRate(versement.deviseCode!);
+          totalUSD += versement.montantVerser! / rate;
+        }
+      }
+    }
+
+    setState(() {
+      _totalVersementsUSD = totalUSD;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
-      symbol: 'FCFA',
+      symbol: 'USD',
     );
 
     final partnerName =
@@ -120,7 +157,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           textAlign: TextAlign.left,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
@@ -143,9 +180,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             _selectedOperationType == OperationType.versements
                 ? 'Nouveau versement'
                 : 'Nouvelle expédition',
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
-          icon: Icon(Icons.add, color: Colors.white),
+          icon: const Icon(Icons.add, color: Colors.white),
         ),
       ),
       body: Column(
@@ -235,14 +272,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         onChanged: _filterOperations,
         decoration: InputDecoration(
           hintText: 'Rechercher...',
-          prefixIcon: Icon(Icons.search),
+          prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.grey[300]!),
           ),
           filled: true,
           fillColor: Colors.grey[50],
-          contentPadding: EdgeInsets.symmetric(vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
       ),
     );
@@ -325,12 +362,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     final isNegative = balance <= 0;
     final statusColor = isNegative ? Colors.red[200] : Colors.green[200];
 
-    final totalVersement = _partner.versements?.fold(
-          0.0,
-          (sum, versement) => sum + (versement.montantVerser ?? 0.0),
-        ) ??
-        0.0;
-
     return Card(
       elevation: 4,
       color: const Color(0xFF7F78AF),
@@ -342,14 +373,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.1, // Augmentation de l'opacité
-
+              opacity: 0.1,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
                   'assets/images/ports.jpg',
                   fit: BoxFit.cover,
-                  alignment: Alignment.center, // Centrage de l'image
+                  alignment: Alignment.center,
                 ),
               ),
             ),
@@ -408,11 +438,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Montant total versé",
+                          "Montant total versé (USD)",
                           style: TextStyle(color: Colors.grey[50]),
                         ),
                         Text(
-                          currencyFormat.format(totalVersement),
+                          NumberFormat.currency(
+                            locale: 'fr_FR',
+                            symbol: 'USD',
+                          ).format(_totalVersementsUSD),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
@@ -462,6 +495,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           final isNegative = montantRestant < 0;
           final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
 
+          final versementCurrencyFormat = NumberFormat.currency(
+            locale: 'fr_FR',
+            symbol: versement.deviseCode ?? 'USD',
+          );
+
           return Container(
             padding: const EdgeInsets.all(0),
             child: ListTile(
@@ -481,7 +519,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                 versement.createdAt != null
                     ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
                     : 'Date inconnue',
-                style: TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 12),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -492,11 +530,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        currencyFormat.format(versement.montantVerser),
-                        style: TextStyle(fontSize: 13, color: Colors.blue),
+                        versementCurrencyFormat.format(versement.montantVerser),
+                        style:
+                            const TextStyle(fontSize: 13, color: Colors.blue),
                       ),
                       Text(
-                        currencyFormat.format(versement.montantRestant),
+                        versementCurrencyFormat
+                            .format(versement.montantRestant),
                         style: TextStyle(
                           color: statusColor,
                           fontWeight: FontWeight.w600,
