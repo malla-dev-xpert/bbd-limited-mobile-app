@@ -3,7 +3,9 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
+import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
@@ -22,9 +24,11 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final VersementServices _versementServices = VersementServices();
   final AuthService _authService = AuthService();
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
+  final DeviseServices _deviseServices = DeviseServices();
 
   List<Versement> _allVersements = [];
   List<Versement> _filteredVersements = [];
+  List<Devise> _devises = [];
   String? _currentFilter;
   double _totalVersementsUSD = 0.0;
 
@@ -42,6 +46,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void initState() {
     super.initState();
     fetchPaiements();
+    _loadDevises();
     _refreshController.stream.listen((_) {
       fetchPaiements(reset: true);
     });
@@ -51,6 +56,17 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void dispose() {
     _refreshController.close();
     super.dispose();
+  }
+
+  Future<void> _loadDevises() async {
+    try {
+      final devises = await _deviseServices.findAllDevises();
+      setState(() {
+        _devises = devises;
+      });
+    } catch (e) {
+      showErrorTopSnackBar(context, "Erreur lors du chargement des devises");
+    }
   }
 
   Future<void> _calculateTotalVersementsUSD() async {
@@ -122,14 +138,12 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
               query.toLowerCase(),
             );
 
-        bool allStatus = true;
-        if (_currentFilter == 'client') {
-          allStatus = pmt.partnerAccountType?.toLowerCase() == 'client';
-        } else if (_currentFilter == 'supplier') {
-          allStatus = pmt.partnerAccountType?.toLowerCase() == 'fournisseur';
+        bool deviseMatch = true;
+        if (_currentFilter != null) {
+          deviseMatch = pmt.deviseCode == _currentFilter;
         }
 
-        return searchPackage && allStatus;
+        return searchPackage && deviseMatch;
       }).toList();
     });
   }
@@ -377,7 +391,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FiltreDropdown(onSelected: handleStatusFilter),
+                FiltreDropdown(
+                  onSelected: handleStatusFilter,
+                  devises: _devises,
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -479,8 +496,13 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
 class FiltreDropdown extends StatelessWidget {
   final Function(String) onSelected;
+  final List<Devise> devises;
 
-  const FiltreDropdown({super.key, required this.onSelected});
+  const FiltreDropdown({
+    super.key,
+    required this.onSelected,
+    required this.devises,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -510,13 +532,13 @@ class FiltreDropdown extends StatelessWidget {
         onSelected: onSelected,
         itemBuilder: (BuildContext context) => [
           const PopupMenuItem<String>(
-            value: 'client',
-            child: Text('Clients'),
+            value: null,
+            child: Text('Toutes les devises'),
           ),
-          const PopupMenuItem<String>(
-            value: 'supplier',
-            child: Text('Fournisseurs'),
-          ),
+          ...devises.map((devise) => PopupMenuItem<String>(
+                value: devise.code,
+                child: Text(devise.code),
+              )),
         ],
       ),
     );
