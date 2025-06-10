@@ -82,7 +82,7 @@ void showVersementDetailsBottomSheet(
     builder: (context) => StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
         final allLignes =
-            versement.achats?.expand((a) => a.lignes ?? []).toList() ?? [];
+            versement.achats?.expand((a) => a.items ?? []).toList() ?? [];
         final filteredLignes = searchQuery.isEmpty
             ? allLignes
             : allLignes.where((ligne) {
@@ -155,7 +155,7 @@ void showVersementDetailsBottomSheet(
                   _detailRow(
                     "Total des achats",
                     versement.achats!
-                        .expand((a) => a.lignes ?? [])
+                        .expand((a) => a.items ?? [])
                         .length
                         .toString(),
                   ),
@@ -190,7 +190,7 @@ void showVersementDetailsBottomSheet(
                     child: versement.achats == null ||
                             versement.achats!.isEmpty ||
                             versement.achats!.every(
-                              (a) => a.lignes == null || a.lignes!.isEmpty,
+                              (a) => a.items == null || a.items!.isEmpty,
                             )
                         ? const Center(
                             child: Column(
@@ -308,6 +308,7 @@ void showVersementDetailsBottomSheet(
                             },
                             versement.partnerId!,
                             versement.id!,
+                            versement.achats?.first.invoiceNumber ?? '',
                           );
                         });
                       },

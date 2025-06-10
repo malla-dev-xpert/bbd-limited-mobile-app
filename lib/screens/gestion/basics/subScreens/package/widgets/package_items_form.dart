@@ -23,6 +23,7 @@ class PackageItemForm extends StatefulWidget {
 
 class _PackageItemFormState extends State<PackageItemForm> {
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController invoiceNumberController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController unitPriceController = TextEditingController();
   final PartnerServices partnerServices = PartnerServices();
@@ -126,6 +127,12 @@ class _PackageItemFormState extends State<PackageItemForm> {
           controller: descriptionController,
           label: "Description de l'article",
           icon: Icons.description,
+        ),
+        const SizedBox(height: 10),
+        buildTextField(
+          controller: invoiceNumberController,
+          label: "Numéro de facture",
+          icon: Icons.inventory_outlined,
         ),
         const SizedBox(height: 10),
         buildTextField(

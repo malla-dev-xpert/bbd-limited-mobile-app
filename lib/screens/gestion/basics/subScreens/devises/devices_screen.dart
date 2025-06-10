@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
-import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';

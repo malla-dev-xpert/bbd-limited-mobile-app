@@ -17,26 +17,25 @@ class PurchaseDialog extends StatefulWidget {
   final Function(Achat) onPurchaseComplete;
   final int clientId;
   final int versementId;
+  final String invoiceNumber;
 
-  const PurchaseDialog({
-    Key? key,
-    required this.onPurchaseComplete,
-    required this.clientId,
-    required this.versementId,
-  }) : super(key: key);
+  const PurchaseDialog(
+      {Key? key,
+      required this.onPurchaseComplete,
+      required this.clientId,
+      required this.versementId,
+      required this.invoiceNumber})
+      : super(key: key);
 
-  static void show(
-    BuildContext context,
-    Function(Achat) onPurchaseComplete,
-    int clientId,
-    int versementId,
-  ) {
+  static void show(BuildContext context, Function(Achat) onPurchaseComplete,
+      int clientId, int versementId, String invoiceNumber) {
     showDialog(
       context: context,
       builder: (context) => PurchaseDialog(
         onPurchaseComplete: onPurchaseComplete,
         clientId: clientId,
         versementId: versementId,
+        invoiceNumber: invoiceNumber,
       ),
     );
   }
@@ -119,13 +118,13 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final createAchatDto = CreateAchatDto(
         versementId: widget.versementId,
-        lignes: localItems
+        invoiceNumber: widget.invoiceNumber,
+        items: localItems
             .map(
-              (item) => CreateLigneDto(
-                descriptionItem: item['description']?.toString() ?? '',
-                quantityItem: (item['quantity'] as num?)?.toInt() ?? 0,
-                prixUnitaire: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
-                supplierId: item['supplierId'],
+              (item) => CreateItemDto(
+                description: item['description']?.toString() ?? '',
+                quantity: (item['quantity'] as num?)?.toInt() ?? 0,
+                unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
               ),
             )
             .toList(),

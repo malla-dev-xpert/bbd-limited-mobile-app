@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -41,21 +43,33 @@ class VersementServices {
   Future<String?> create(
       int userId, int partnerId, int deviseId, Versement versement) async {
     try {
-      final response = await http.post(
-        Uri.parse(
-          '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId&deviseId=$deviseId',
-        ),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(versement.toJson()),
+      final url = Uri.parse(
+        '$baseUrl/versements/new?userId=$userId&partnerId=$partnerId&deviseId=$deviseId',
       );
+
+      final response = await http
+          .post(
+            url,
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(versement.toJson()),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "CREATED";
       } else {
-        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+        final errorMsg = jsonDecode(response.body)['message'] ?? response.body;
+        throw Exception("Erreur (${response.statusCode}): $errorMsg");
       }
+    } on SocketException {
+      throw Exception("Pas de connexion internet");
+    } on TimeoutException {
+      throw Exception("Timeout - Serveur non disponible");
     } catch (e) {
-      throw Exception("Erreur de connexion: $e");
+      throw Exception("Erreur: ${e.toString()}");
     }
   }
 
