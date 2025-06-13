@@ -101,6 +101,18 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     setState(() => localItems.removeAt(index));
   }
 
+  void _duplicateItem(int index) {
+    setState(() {
+      final item = localItems[index];
+      localItems.add(Map<String, dynamic>.from(item));
+    });
+  }
+
+  void _editItem(int index) {
+    // TODO: Implement edit functionality
+    showErrorTopSnackBar(context, "Fonctionnalité en cours de développement");
+  }
+
   Future<void> _submitForm() async {
     if (localItems.isEmpty) {
       showErrorTopSnackBar(context, "Ajoutez au moins un article.");
@@ -229,6 +241,8 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                           PackageItemsList(
                             items: localItems,
                             onRemoveItem: _removeItem,
+                            onDuplicateItem: _duplicateItem,
+                            onEditItem: _editItem,
                           ),
                         ],
                       ),
