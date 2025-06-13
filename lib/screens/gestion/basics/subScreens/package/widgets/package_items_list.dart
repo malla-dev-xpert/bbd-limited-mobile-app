@@ -34,6 +34,7 @@ class PackageItemsList extends StatelessWidget {
                             ],
                           ),
                           Text("Fournisseur : ${item['supplier']}"),
+                          Text("Facture N : ${item['invoiceNumber']}"),
                           Text(
                             "Total : ${currencyFormat.format((item['unitPrice'] as num) * (item['quantity'] as num))}",
                             style: TextStyle(

@@ -64,7 +64,11 @@ void showVersementDetailsBottomSheet(
   Versement versement,
   VoidCallback? onVersementUpdated,
 ) async {
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  final currencyFormat = NumberFormat.currency(
+      locale: 'fr_FR',
+      symbol: versement.deviseCode ??
+          'USD' // Utiliser la devise du versement ou USD par défaut
+      );
   final TextEditingController searchController = TextEditingController();
   String searchQuery = '';
 
@@ -86,8 +90,8 @@ void showVersementDetailsBottomSheet(
         final filteredLignes = searchQuery.isEmpty
             ? allLignes
             : allLignes.where((ligne) {
-                final description = (ligne.descriptionItem ?? '').toLowerCase();
-                final itemId = ligne.itemId?.toString().toLowerCase() ?? '';
+                final description = (ligne.description ?? '').toLowerCase();
+                final itemId = ligne.id?.toString().toLowerCase() ?? '';
                 final searchLower = searchQuery.toLowerCase();
                 return description.contains(searchLower) ||
                     itemId.contains(searchLower);
@@ -221,7 +225,7 @@ void showVersementDetailsBottomSheet(
                                   final ligne = filteredLignes[index];
                                   Achat? achat;
                                   for (var a in versement.achats ?? []) {
-                                    if (a.lignes?.contains(ligne) ?? false) {
+                                    if (a.items?.contains(ligne) ?? false) {
                                       achat = a;
                                       break;
                                     }
@@ -244,7 +248,7 @@ void showVersementDetailsBottomSheet(
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            ligne.descriptionItem ??
+                                            ligne.description ??
                                                 'Article sans nom',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -267,13 +271,15 @@ void showVersementDetailsBottomSheet(
                                           _detailItem(
                                             'Prix Unitaire',
                                             currencyFormat
-                                                .format(ligne.unitPriceItem),
+                                                .format(ligne.unitPrice ?? 0),
                                           ),
                                           const SizedBox(height: 4),
                                           _detailItem(
                                             'Total',
-                                            currencyFormat
-                                                .format(ligne.prixTotal),
+                                            currencyFormat.format(
+                                                ligne.totalPrice ??
+                                                    (ligne.quantity ?? 0) *
+                                                        (ligne.unitPrice ?? 0)),
                                           ),
                                         ],
                                       ),
@@ -308,7 +314,9 @@ void showVersementDetailsBottomSheet(
                             },
                             versement.partnerId!,
                             versement.id!,
-                            versement.achats?.first.invoiceNumber ?? '',
+                            versement.achats?.isNotEmpty == true
+                                ? versement.achats!.first.invoiceNumber ?? ''
+                                : '',
                           );
                         });
                       },

@@ -13,19 +13,24 @@ class PackageItemForm extends StatefulWidget {
     double unitPrice,
     int supplierId,
     String supplierName,
+    String invoiceNumber,
   ) onAddItem;
 
-  const PackageItemForm({Key? key, required this.onAddItem}) : super(key: key);
+  const PackageItemForm({
+    Key? key,
+    required this.onAddItem,
+  }) : super(key: key);
 
   @override
-  _PackageItemFormState createState() => _PackageItemFormState();
+  State<PackageItemForm> createState() => _PackageItemFormState();
 }
 
 class _PackageItemFormState extends State<PackageItemForm> {
-  final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController invoiceNumberController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController();
-  final TextEditingController unitPriceController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _descriptionController = TextEditingController();
+  final _quantityController = TextEditingController();
+  final _unitPriceController = TextEditingController();
+  final _invoiceNumberController = TextEditingController();
   final PartnerServices partnerServices = PartnerServices();
   ValueKey _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
 
@@ -56,172 +61,168 @@ class _PackageItemFormState extends State<PackageItemForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              flex: 4,
-              child: DropDownCustom<Partner>(
-                key: _dropdownKey,
-                items: suppliers,
-                selectedItem: selectedSupplier,
-                onChanged: (Partner? newSupplier) {
-                  if (newSupplier != null) {
-                    setState(() {
-                      selectedSupplier = newSupplier;
-                    });
-                  }
-                },
-                itemToString: (supplier) =>
-                    '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
-                hintText: 'Choisir un fournisseur...',
-                prefixIcon: Icons.person_add,
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 4,
+                child: DropDownCustom<Partner>(
+                  key: _dropdownKey,
+                  items: suppliers,
+                  selectedItem: selectedSupplier,
+                  onChanged: (Partner? newSupplier) {
+                    if (newSupplier != null) {
+                      setState(() {
+                        selectedSupplier = newSupplier;
+                      });
+                    }
+                  },
+                  itemToString: (supplier) =>
+                      '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
+                  hintText: 'Choisir un fournisseur...',
+                  prefixIcon: Icons.person_add,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                onPressed: () async {
-                  final result = await showModalBottomSheet<bool>(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (context) => CreateSupplierBottomSheet(
-                      onSupplierCreated: () async {
-                        // Recharger la liste des fournisseurs
-                        await _loadSupplier();
-                      },
-                    ),
-                  );
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: () async {
+                    final result = await showModalBottomSheet<bool>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => CreateSupplierBottomSheet(
+                        onSupplierCreated: () async {
+                          // Recharger la liste des fournisseurs
+                          await _loadSupplier();
+                        },
+                      ),
+                    );
 
-                  if (result == true) {
-                    // Le fournisseur a été créé avec succès
-                    await _loadSupplier();
-                  }
-                },
-                icon: Icon(Icons.add, color: Colors.grey[500]),
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                    Colors.grey[200]!,
-                  ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.grey[500]!),
+                    if (result == true) {
+                      // Le fournisseur a été créé avec succès
+                      await _loadSupplier();
+                    }
+                  },
+                  icon: Icon(Icons.add, color: Colors.grey[500]),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      Colors.grey[200]!,
+                    ),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(color: Colors.grey[500]!),
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all<EdgeInsets>(
+                      const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
-                  padding: MaterialStateProperty.all<EdgeInsets>(
-                    const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          buildTextField(
+            controller: _descriptionController,
+            label: "Description de l'article",
+            icon: Icons.description,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Veuillez entrer une description';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 10),
+          buildTextField(
+            controller: _invoiceNumberController,
+            label: "Numéro de facture",
+            icon: Icons.inventory_outlined,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Veuillez entrer un numéro de facture';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 10),
+          buildTextField(
+            controller: _unitPriceController,
+            label: "Prix Unitaire",
+            keyboardType: TextInputType.number,
+            icon: Icons.attach_money,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 10,
+            children: [
+              Expanded(
+                child: buildTextField(
+                  controller: _quantityController,
+                  label: "Quantité",
+                  keyboardType: TextInputType.number,
+                  icon: Icons.numbers,
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: _submitForm,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text("Ajouter",
+                    style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7F78AF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  padding: const EdgeInsets.all(16),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        buildTextField(
-          controller: descriptionController,
-          label: "Description de l'article",
-          icon: Icons.description,
-        ),
-        const SizedBox(height: 10),
-        buildTextField(
-          controller: invoiceNumberController,
-          label: "Numéro de facture",
-          icon: Icons.inventory_outlined,
-        ),
-        const SizedBox(height: 10),
-        buildTextField(
-          controller: unitPriceController,
-          label: "Prix Unitaire",
-          keyboardType: TextInputType.number,
-          icon: Icons.attach_money,
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 10,
-          children: [
-            Expanded(
-              child: buildTextField(
-                controller: quantityController,
-                label: "Quantité",
-                keyboardType: TextInputType.number,
-                icon: Icons.numbers,
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: _addItem,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label:
-                  const Text("Ajouter", style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7F78AF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: const EdgeInsets.all(16),
-              ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  void _addItem() {
-    final description = descriptionController.text.trim();
-    final quantity = double.tryParse(quantityController.text.trim());
-    final unitPrice = double.tryParse(unitPriceController.text.trim());
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      widget.onAddItem(
+        _descriptionController.text,
+        double.parse(_quantityController.text),
+        double.parse(_unitPriceController.text),
+        selectedSupplier!.id,
+        '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
+        _invoiceNumberController.text,
+      );
 
-    if (selectedSupplier == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur");
-      return;
+      // Reset form
+      _descriptionController.clear();
+      _quantityController.clear();
+      _unitPriceController.clear();
+      _invoiceNumberController.clear();
+      setState(() {
+        selectedSupplier = null;
+        _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
+      });
     }
-
-    if (description.isEmpty) {
-      showErrorTopSnackBar(context, "Veuillez entrer une description");
-      return;
-    }
-
-    if (unitPrice == null) {
-      showErrorTopSnackBar(context, "Veuillez entrer le prix unitaire");
-      return;
-    }
-
-    if (quantity == null) {
-      showErrorTopSnackBar(context, "Veuillez entrer une quantité");
-      return;
-    }
-
-    widget.onAddItem(
-      description,
-      quantity,
-      unitPrice,
-      selectedSupplier!.id,
-      '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
-    );
-
-    // Reset form
-    setState(() {
-      descriptionController.clear();
-      quantityController.clear();
-      unitPriceController.clear();
-      selectedSupplier = null;
-      _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
-    });
   }
 
   @override
   void dispose() {
-    descriptionController.dispose();
-    quantityController.dispose();
-    unitPriceController.dispose();
+    _descriptionController.dispose();
+    _quantityController.dispose();
+    _unitPriceController.dispose();
+    _invoiceNumberController.dispose();
     super.dispose();
   }
 }

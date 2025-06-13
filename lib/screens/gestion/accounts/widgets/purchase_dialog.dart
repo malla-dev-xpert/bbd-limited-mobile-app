@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -85,6 +83,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     double unitPrice,
     int supplierId,
     String supplierName,
+    String invoiceNumber,
   ) {
     setState(() {
       localItems.add({
@@ -93,6 +92,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
         'unitPrice': unitPrice,
         'supplierId': supplierId,
         'supplier': supplierName,
+        'invoiceNumber': invoiceNumber,
       });
     });
   }
@@ -125,6 +125,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 description: item['description']?.toString() ?? '',
                 quantity: (item['quantity'] as num?)?.toInt() ?? 0,
                 unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
+                invoiceNumber: item['invoiceNumber']?.toString() ?? '',
               ),
             )
             .toList(),
@@ -187,7 +188,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                   const Text(
                     'Nouvel Achat',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
                     ),
@@ -212,6 +213,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                               unitPrice,
                               supplierId,
                               supplierName,
+                              invoiceNumber,
                             ) {
                               _addItem(
                                 description,
@@ -219,6 +221,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                                 unitPrice,
                                 supplierId,
                                 supplierName,
+                                invoiceNumber,
                               );
                             },
                           ),
