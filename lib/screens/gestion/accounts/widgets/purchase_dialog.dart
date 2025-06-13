@@ -108,9 +108,10 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     });
   }
 
-  void _editItem(int index) {
-    // TODO: Implement edit functionality
-    showErrorTopSnackBar(context, "Fonctionnalité en cours de développement");
+  void _editItem(int index, Map<String, dynamic> updatedItem) {
+    setState(() {
+      localItems[index] = updatedItem;
+    });
   }
 
   Future<void> _submitForm() async {
@@ -240,6 +241,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                           const SizedBox(height: 10),
                           PackageItemsList(
                             items: localItems,
+                            suppliers: suppliers,
                             onRemoveItem: _removeItem,
                             onDuplicateItem: _duplicateItem,
                             onEditItem: _editItem,
