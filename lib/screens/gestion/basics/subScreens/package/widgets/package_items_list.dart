@@ -39,6 +39,8 @@ class _PackageItemsListState extends State<PackageItemsList> {
     setState(() {
       editingIndex = index;
       final item = widget.items[index];
+      controllers['description'] =
+          TextEditingController(text: item['description']);
       controllers['quantity'] =
           TextEditingController(text: item['quantity'].toString());
       controllers['unitPrice'] =
@@ -56,6 +58,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
 
   void _saveChanges(int index) {
     final updatedItem = Map<String, dynamic>.from(widget.items[index]);
+    updatedItem['description'] = controllers['description']!.text;
     updatedItem['quantity'] =
         int.tryParse(controllers['quantity']!.text) ?? updatedItem['quantity'];
     updatedItem['unitPrice'] =
@@ -236,6 +239,15 @@ class _PackageItemsListState extends State<PackageItemsList> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        TextField(
+          controller: controllers['description'],
+          decoration: const InputDecoration(
+            labelText: 'Description',
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
