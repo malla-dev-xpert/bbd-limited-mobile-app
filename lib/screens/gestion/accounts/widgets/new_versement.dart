@@ -287,7 +287,12 @@ class _NewVersementModalState extends State<NewVersementModal>
     return Form(
       key: _formKey,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
         child: Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -319,6 +324,7 @@ class _NewVersementModalState extends State<NewVersementModal>
               const SizedBox(height: 30),
               Flexible(
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   child: IndexedStack(
                     index: currentStep,
                     children: [
