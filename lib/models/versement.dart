@@ -18,6 +18,8 @@ class Versement {
   final String? commissionnairePhone;
   final int? deviseId;
   final String? deviseCode;
+  final String? type;
+  final String? note;
 
   Versement copyWith(
       {int? id,
@@ -35,7 +37,9 @@ class Versement {
       String? commissionnaireName,
       String? commissionnairePhone,
       int? deviseId,
-      String? deviseCode}) {
+      String? deviseCode,
+      String? type,
+      String? note}) {
     return Versement(
         id: id ?? this.id,
         reference: reference ?? this.reference,
@@ -52,7 +56,9 @@ class Versement {
         commissionnaireName: commissionnaireName ?? this.commissionnaireName,
         commissionnairePhone: commissionnairePhone ?? this.commissionnairePhone,
         deviseId: deviseId ?? this.deviseId,
-        deviseCode: deviseCode ?? this.deviseCode);
+        deviseCode: deviseCode ?? this.deviseCode,
+        type: type ?? this.type,
+        note: note ?? this.note);
   }
 
   Versement(
@@ -71,7 +77,9 @@ class Versement {
       this.commissionnaireName,
       this.commissionnairePhone,
       this.deviseId,
-      this.deviseCode});
+      this.deviseCode,
+      this.type,
+      this.note});
 
   Map<String, dynamic> toJson() {
     return {
@@ -90,7 +98,9 @@ class Versement {
       'commissionnaireName': commissionnaireName,
       'commissionnairePhone': commissionnairePhone,
       'deviseId': deviseId,
-      'deviseCode': deviseCode
+      'deviseCode': deviseCode,
+      'type': type,
+      'note': note
     };
   }
 
@@ -142,6 +152,8 @@ class Versement {
         commissionnaireName: json['commissionnaireName'] as String?,
         commissionnairePhone: json['commissionnairePhone'] as String?,
         deviseId: json['deviseId'] as int?,
-        deviseCode: json['deviseCode'] as String?);
+        deviseCode: json['deviseCode'] as String?,
+        type: json['type'] as String?,
+        note: json['note'] as String?);
   }
 }
