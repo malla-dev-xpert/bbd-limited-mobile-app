@@ -33,6 +33,8 @@ class NewVersementModal extends StatefulWidget {
   State<NewVersementModal> createState() => _NewVersementModalState();
 }
 
+enum VersementType { general, dette, commande, compteBancaire, autres }
+
 class _NewVersementModalState extends State<NewVersementModal>
     with SingleTickerProviderStateMixin {
   int currentStep = 0;
@@ -74,6 +76,9 @@ class _NewVersementModalState extends State<NewVersementModal>
   Devise? selectedDevise;
 
   int currentPage = 0;
+
+  VersementType? selectedType;
+  final TextEditingController noteController = TextEditingController();
 
   @override
   void initState() {
@@ -152,6 +157,12 @@ class _NewVersementModalState extends State<NewVersementModal>
         return;
       }
 
+      if (selectedType == null) {
+        showErrorTopSnackBar(
+            context, "Veuillez sélectionner un type de versement");
+        return;
+      }
+
       setState(() => isLoading = true);
 
       final user = await authService.getUserInfo();
@@ -169,6 +180,8 @@ class _NewVersementModalState extends State<NewVersementModal>
             : int.tryParse(widget.clientId ?? ''),
         "commissionnaireName": commissionnaireNameController.text,
         "commissionnairePhone": commissionnairePhoneController.text,
+        "type": selectedType.toString().split('.').last,
+        "note": noteController.text,
       });
 
       final result = await versementServices.create(
@@ -261,6 +274,11 @@ class _NewVersementModalState extends State<NewVersementModal>
       showErrorTopSnackBar(context, "Veuillez sélectionner une date");
       return false;
     }
+    if (selectedType == null) {
+      showErrorTopSnackBar(
+          context, "Veuillez sélectionner un type de versement");
+      return false;
+    }
     return true;
   }
 
@@ -272,168 +290,188 @@ class _NewVersementModalState extends State<NewVersementModal>
         padding: const EdgeInsets.all(20),
         child: Container(
           constraints: BoxConstraints(
-            maxHeight: widget.isVersementScreen == true
-                ? MediaQuery.of(context).size.height * 0.45
-                : MediaQuery.of(context).size.height * 0.40,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
-          child: Stack(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom,
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          currentStep == 0
-                              ? "Informations du versement"
-                              : "Informations du commissionnaire",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    currentStep == 0
+                        ? "Informations du versement"
+                        : currentStep == 1
+                            ? "Informations du commissionnaire"
+                            : "Note additionnelle",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
                     ),
-                    const SizedBox(height: 30),
-                    Expanded(
-                      child: IndexedStack(
-                        index: currentStep,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: IndexedStack(
+                    index: currentStep,
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          ListView(
+                          buildTextField(
+                            controller: montantVerserController,
+                            label: "Montant à versé",
+                            icon: Icons.attach_money,
+                            keyboardType: TextInputType.number,
+                          ),
+                          const SizedBox(height: 10),
+                          DropDownCustom<VersementType>(
+                            items: VersementType.values.toList(),
+                            selectedItem: selectedType,
+                            onChanged: (type) {
+                              setState(() {
+                                selectedType = type;
+                              });
+                            },
+                            itemToString: (type) =>
+                                type.toString().split('.').last,
+                            hintText: 'Choisir un type de versement...',
+                            prefixIcon: Icons.category,
+                          ),
+                          const SizedBox(height: 10),
+                          if (widget.isVersementScreen)
+                            DropDownCustom<Partner>(
+                              items: clients,
+                              selectedItem: selectedCLients,
+                              onChanged: (client) {
+                                setState(() {
+                                  selectedCLients = client;
+                                });
+                              },
+                              itemToString: (client) =>
+                                  '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                              hintText: 'Choisir un client...',
+                              prefixIcon: Icons.person_3,
+                            ),
+                          if (widget.isVersementScreen)
+                            const SizedBox(height: 10),
+                          DatePickerField(
+                            label: "Date de paiement",
+                            selectedDate: myDate,
+                            onDateSelected: (date) {
+                              setState(() {
+                                myDate = date;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          buildTextField(
+                            controller: commissionnaireNameController,
+                            label: "Nom complet du commissionnaire",
+                            icon: Icons.person,
+                          ),
+                          const SizedBox(height: 10),
+                          buildTextField(
+                            controller: commissionnairePhoneController,
+                            label: "Téléphone du commissionnaire",
+                            icon: Icons.phone,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
                             children: [
-                              buildTextField(
-                                controller: montantVerserController,
-                                label: "Montant à versé",
-                                icon: Icons.attach_money,
-                                keyboardType: TextInputType.number,
-                              ),
-                              const SizedBox(height: 10),
-                              if (widget.isVersementScreen)
-                                DropDownCustom<Partner>(
-                                  items: clients,
-                                  selectedItem: selectedCLients,
-                                  onChanged: (client) {
+                              Expanded(
+                                child: DropDownCustom<Devise>(
+                                  items: devises,
+                                  selectedItem: selectedDevise,
+                                  onChanged: (currency) {
                                     setState(() {
-                                      selectedCLients = client;
+                                      selectedDevise = currency;
                                     });
                                   },
-                                  itemToString: (client) =>
-                                      '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
-                                  hintText: 'Choisir un client...',
-                                  prefixIcon: Icons.person_3,
+                                  itemToString: (currency) => currency.code,
+                                  hintText: 'Choisir une devise...',
+                                  prefixIcon: Icons.currency_exchange,
                                 ),
-                              if (widget.isVersementScreen)
-                                const SizedBox(height: 10),
-                              DatePickerField(
-                                label: "Date de paiement",
-                                selectedDate: myDate,
-                                onDateSelected: (date) {
-                                  setState(() {
-                                    myDate = date;
-                                  });
-                                },
                               ),
-                            ],
-                          ),
-                          ListView(
-                            children: [
-                              buildTextField(
-                                controller: commissionnaireNameController,
-                                label: "Nom complet du commissionnaire",
-                                icon: Icons.person,
-                              ),
-                              const SizedBox(height: 10),
-                              buildTextField(
-                                controller: commissionnairePhoneController,
-                                label: "Téléphone du commissionnaire",
-                                icon: Icons.phone,
-                                keyboardType: TextInputType.phone,
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: DropDownCustom<Devise>(
-                                      items: devises,
-                                      selectedItem: selectedDevise,
-                                      onChanged: (currency) {
-                                        setState(() {
-                                          selectedDevise = currency;
-                                        });
-                                      },
-                                      itemToString: (currency) => currency.code,
-                                      hintText: 'Choisir une devise...',
-                                      prefixIcon: Icons.currency_exchange,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  IconButton(
-                                    onPressed: _showAddDeviseDialog,
-                                    icon: const Icon(Icons.add),
-                                  ),
-                                ],
+                              const SizedBox(width: 10),
+                              IconButton(
+                                onPressed: _showAddDeviseDialog,
+                                icon: const Icon(Icons.add),
                               ),
                             ],
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      if (currentStep > 0)
-                        TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              currentStep--;
-                            });
-                          },
-                          label: const Text("Retour"),
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                      if (currentStep > 0) const SizedBox(width: 10),
-                      Expanded(
-                        child: confirmationButton(
-                          isLoading: isLoading,
-                          label: currentStep == 0 ? "Suivant" : "Enregistrer",
-                          subLabel: "Enregistrement...",
-                          icon: currentStep == 0
-                              ? Icons.arrow_forward
-                              : Icons.check,
-                          onPressed: currentStep == 0
-                              ? () {
-                                  if (_validateFirstStep()) {
-                                    setState(() {
-                                      currentStep++;
-                                    });
-                                  }
-                                }
-                              : _submitForm,
-                        ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextFormField(
+                            controller: noteController,
+                            decoration: InputDecoration(
+                              labelText: "Note (optionnelle)",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            maxLines: 6,
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 10,
+                ),
+                child: Row(
+                  children: [
+                    if (currentStep > 0)
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            currentStep--;
+                          });
+                        },
+                        label: const Text("Retour"),
+                        icon: const Icon(Icons.arrow_back),
+                      ),
+                    if (currentStep > 0) const SizedBox(width: 10),
+                    Expanded(
+                      child: confirmationButton(
+                        isLoading: isLoading,
+                        label: currentStep == 2 ? "Enregistrer" : "Suivant",
+                        subLabel: "Enregistrement...",
+                        icon: currentStep == 2
+                            ? Icons.check
+                            : Icons.arrow_forward,
+                        onPressed: currentStep == 2
+                            ? _submitForm
+                            : () {
+                                if (_validateFirstStep()) {
+                                  setState(() {
+                                    currentStep++;
+                                  });
+                                }
+                              },
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -448,6 +486,10 @@ class _NewVersementModalState extends State<NewVersementModal>
     montantVerserController.dispose();
     commissionnaireNameController.dispose();
     commissionnairePhoneController.dispose();
+    _nameController.dispose();
+    _codeController.dispose();
+    _rateController.dispose();
+    noteController.dispose();
     super.dispose();
   }
 
