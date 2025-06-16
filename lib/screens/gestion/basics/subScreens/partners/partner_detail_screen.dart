@@ -144,7 +144,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
-      symbol: 'USD',
+      symbol: 'CNY',
     );
 
     final partnerName =
@@ -438,13 +438,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Montant total versé (USD)",
+                          "Montant total versé (CNY)",
                           style: TextStyle(color: Colors.grey[50]),
                         ),
                         Text(
                           NumberFormat.currency(
                             locale: 'fr_FR',
-                            symbol: 'USD',
+                            symbol: 'CNY',
                           ).format(_totalVersementsUSD),
                           style: TextStyle(
                             fontSize: 16,

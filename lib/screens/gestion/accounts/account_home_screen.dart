@@ -40,7 +40,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'USD');
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
 
   @override
   void initState() {
@@ -80,7 +80,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     double totalUSD = 0.0;
     for (var versement in _allVersements) {
       if (versement.montantVerser != null && versement.deviseCode != null) {
-        if (versement.deviseCode == 'USD') {
+        if (versement.deviseCode == 'CNY') {
           totalUSD += versement.montantVerser!;
         } else {
           final rate =
@@ -333,7 +333,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                       ),
                       color: Colors.blue[50],
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Total des versements',
                           value: _allVersements.length.toString(),
@@ -383,7 +383,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     autocorrect: false,
                     decoration: InputDecoration(
                       labelText: 'Rechercher un paiement...',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
