@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class ExchangeRateService {
   static const String exchangeRateBaseUrl =
-      'https://open.er-api.com/v6/latest/USD';
+      'https://open.er-api.com/v6/latest/CNY';
 
   Future<double> getExchangeRate(String fromCurrency) async {
     try {

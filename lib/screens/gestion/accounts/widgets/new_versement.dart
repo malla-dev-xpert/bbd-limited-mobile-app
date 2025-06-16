@@ -49,6 +49,7 @@ class _NewVersementModalState extends State<NewVersementModal>
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _rateController = TextEditingController();
 
   final AuthService authService = AuthService();
   final PartnerServices partnerServices = PartnerServices();
@@ -62,7 +63,6 @@ class _NewVersementModalState extends State<NewVersementModal>
 
   // Constants for validation
   static const int _maxNameLength = 50;
-  static const int _maxCodeLength = 3;
   static const String _currencyCodePattern = r'^[A-Z]{3}$';
 
   bool _isLoading = false;
@@ -212,9 +212,10 @@ class _NewVersementModalState extends State<NewVersementModal>
       }
 
       final success = await deviseServices.create(
-        _nameController.text.trim(),
-        _codeController.text.trim().toUpperCase(),
-        user.id,
+        name: _nameController.text.trim(),
+        code: _codeController.text.trim().toUpperCase(),
+        rate: double.parse(_rateController.text.trim()),
+        userId: user.id,
       );
 
       switch (success) {

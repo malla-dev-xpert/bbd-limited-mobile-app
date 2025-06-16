@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -23,6 +24,7 @@ class _DeviseState extends State<DevicesScreen> {
   final ExchangeRateService exchangeRateService = ExchangeRateService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _rateController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late final KeyboardVisibilityController _keyboardVisibilityController;
   late final StreamSubscription<bool> _keyboardSubscription;
@@ -36,7 +38,6 @@ class _DeviseState extends State<DevicesScreen> {
 
   List<Devise>? _allDevises;
   List<Devise> _filteredDevises = [];
-  Map<String, double> _currentRates = {};
   int currentPage = 0;
   bool _isLoading = false;
   final StreamController<void> _refreshController =
@@ -44,7 +45,6 @@ class _DeviseState extends State<DevicesScreen> {
 
   // Constants for validation
   static const int _maxNameLength = 50;
-  static const int _maxCodeLength = 3;
   static const String _currencyCodePattern = r'^[A-Z]{3}$';
 
   @override
@@ -71,19 +71,6 @@ class _DeviseState extends State<DevicesScreen> {
 
   void _showError(String message) {
     _errorStreamController.add(message);
-  }
-
-  Future<void> _fetchExchangeRates() async {
-    try {
-      for (var devise in _allDevises ?? []) {
-        final rate = await exchangeRateService.getExchangeRate(devise.code);
-        setState(() {
-          _currentRates[devise.code] = rate;
-        });
-      }
-    } catch (e) {
-      _showError('Erreur lors de la récupération des taux: $e');
-    }
   }
 
   bool _hasMoreData = true;
@@ -114,8 +101,6 @@ class _DeviseState extends State<DevicesScreen> {
           currentPage++;
         }
       });
-
-      await _fetchExchangeRates();
     } catch (e) {
       _showError("Erreur de chargement: ${e.toString()}");
     } finally {
@@ -141,54 +126,6 @@ class _DeviseState extends State<DevicesScreen> {
       return 'Le code doit être composé de 3 lettres majuscules';
     }
     return null;
-  }
-
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final user = await authService.getUserInfo();
-      if (user == null) {
-        _showError('Session utilisateur invalide');
-        return;
-      }
-
-      final success = await deviseServices.create(
-        _nameController.text.trim(),
-        _codeController.text.trim().toUpperCase(),
-        user.id,
-      );
-
-      switch (success) {
-        case "NAME_EXIST":
-          _showError("Le nom '${_nameController.text}' existe déjà");
-          break;
-        case "CODE_EXIST":
-          _showError("Le code '${_codeController.text}' existe déjà");
-          break;
-        case "CREATED":
-          _nameController.clear();
-          _codeController.clear();
-          Navigator.pop(context);
-          showSuccessTopSnackBar(context, 'Devise créée avec succès!');
-          _refreshController.add(null);
-          break;
-        default:
-          _showError('Une erreur inattendue est survenue');
-      }
-    } catch (e) {
-      _showError('Erreur serveur: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   void _onSearchChanged() {
@@ -489,6 +426,7 @@ class _DeviseState extends State<DevicesScreen> {
                                   Navigator.pop(context);
                                   _codeController.clear();
                                   _nameController.clear();
+                                  _rateController.clear();
                                 },
                                 icon: const Icon(Icons.close_rounded, size: 30),
                                 padding: EdgeInsets.zero,
@@ -569,6 +507,42 @@ class _DeviseState extends State<DevicesScreen> {
                             textInputAction: TextInputAction.done,
                             validator: _validateCode,
                           ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _rateController,
+                            autocorrect: false,
+                            textCapitalization: TextCapitalization.characters,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.percent,
+                                color: Color(0xFF1A1E49),
+                              ),
+                              labelText: 'Taux de change',
+                              hintText: 'Ex: 0.85',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF1A1E49),
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            textInputAction: TextInputAction.done,
+                          ),
                           const SizedBox(height: 40),
                           StreamBuilder<String>(
                             stream: errorStream,
@@ -590,7 +564,69 @@ class _DeviseState extends State<DevicesScreen> {
                           const SizedBox(height: 16),
                           confirmationButton(
                             isLoading: _isLoading,
-                            onPressed: _submitForm,
+                            onPressed: () async {
+                              if (!_formKey.currentState!.validate()) {
+                                return;
+                              }
+
+                              setModalState(() {
+                                _isLoading = true;
+                              });
+
+                              try {
+                                final user = await authService.getUserInfo();
+                                if (user == null) {
+                                  _showError('Session utilisateur invalide');
+                                  return;
+                                }
+
+                                final success = await deviseServices.create(
+                                  name: _nameController.text.trim(),
+                                  code:
+                                      _codeController.text.trim().toUpperCase(),
+                                  rate: _rateController.text.trim().isEmpty
+                                      ? null
+                                      : double.tryParse(
+                                          _rateController.text.trim()),
+                                  userId: user.id,
+                                );
+
+                                switch (success) {
+                                  case "NAME_EXIST":
+                                    _showError(
+                                        "Le nom '${_nameController.text}' existe déjà");
+                                    break;
+                                  case "CODE_EXIST":
+                                    _showError(
+                                        "Le code '${_codeController.text}' existe déjà");
+                                    break;
+                                  case "RATE_SERVICE_ERROR":
+                                    _showError(
+                                        "Le service de taux de change est temporairement indisponible.");
+                                    break;
+                                  case "SUCCESS":
+                                    _nameController.clear();
+                                    _codeController.clear();
+                                    _rateController.clear();
+                                    Navigator.pop(context);
+                                    showSuccessTopSnackBar(
+                                        context, 'Devise créée avec succès!');
+                                    _refreshController.add(null);
+                                    await loadDevises(reset: true);
+                                    break;
+                                  default:
+                                    _showError(
+                                        'Une erreur inattendue est survenue');
+                                }
+                              } catch (e) {
+                                _showError('Erreur serveur: ${e.toString()}');
+                                log(e.toString());
+                              } finally {
+                                setModalState(() {
+                                  _isLoading = false;
+                                });
+                              }
+                            },
                             label: "Enregistrer",
                             icon: Icons.check_circle_outline_outlined,
                             subLabel: "Enregistrement...",
@@ -698,7 +734,6 @@ class _DeviseState extends State<DevicesScreen> {
 
   // Les donnees de la liste
   Widget _buildDeviseItem(Devise devise) {
-    final currentRate = _currentRates[devise.code] ?? 0.0;
     const bool isRateIncreasing = true;
     const Color rateColor = isRateIncreasing ? Colors.green : Colors.red;
     const IconData rateIcon =
@@ -782,9 +817,9 @@ class _DeviseState extends State<DevicesScreen> {
                   ),
                 ),
                 Text(
-                  currentRate.toStringAsFixed(2),
-                  style: const TextStyle(
-                    color: rateColor,
+                  devise.rate?.toStringAsFixed(2) ?? 'N/A',
+                  style: TextStyle(
+                    color: devise.rate != null ? rateColor : Colors.grey,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),

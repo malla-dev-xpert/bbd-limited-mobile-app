@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
