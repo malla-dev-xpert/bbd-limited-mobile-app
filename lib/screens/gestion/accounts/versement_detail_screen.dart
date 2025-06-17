@@ -339,7 +339,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   ),
                   _buildDetailRow(
                     "Date de versement",
-                    DateFormat('dd/MM/yyyy HH:mm')
+                    DateFormat('dd/MM/yyyy')
                         .format(widget.versement.createdAt!),
                   ),
                   _buildDetailRow(
