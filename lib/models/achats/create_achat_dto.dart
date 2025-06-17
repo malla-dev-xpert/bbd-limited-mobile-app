@@ -1,23 +1,20 @@
 class CreateAchatDto {
   final int versementId;
-  final String invoiceNumber;
   final List<CreateItemDto> items;
 
-  CreateAchatDto(
-      {required this.versementId,
-      required this.invoiceNumber,
-      required this.items});
+  CreateAchatDto({required this.versementId, required this.items});
 
   Map<String, dynamic> toJson() {
     return {
       'versementId': versementId,
-      'invoiceNumber': invoiceNumber,
       'items': items
           .map(
             (item) => {
               'description': item.description,
               'quantity': item.quantity.toInt(),
               'unitPrice': item.unitPrice,
+              'invoiceNumber': item.invoiceNumber,
+              'supplierId': item.supplierId,
             },
           )
           .toList(),
@@ -30,12 +27,14 @@ class CreateItemDto {
   final int quantity;
   final double unitPrice;
   final String invoiceNumber;
+  final int supplierId;
 
   CreateItemDto({
     required this.description,
     required this.quantity,
     required this.unitPrice,
     required this.invoiceNumber,
+    required this.supplierId,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +43,7 @@ class CreateItemDto {
       'quantity': quantity,
       'unitPrice': unitPrice,
       'invoiceNumber': invoiceNumber,
+      'supplierId': supplierId,
     };
   }
 }

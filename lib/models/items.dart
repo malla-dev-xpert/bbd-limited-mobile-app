@@ -9,6 +9,10 @@ class Item {
   final int? clientId;
   final String? clientName;
   final String? clientPhone;
+  final int? supplierId;
+  final String? supplierName;
+  final String? supplierPhone;
+  final String? invoiceNumber;
   Status status;
 
   Item({
@@ -20,6 +24,10 @@ class Item {
     this.clientId,
     this.clientName,
     this.clientPhone,
+    this.supplierId,
+    this.supplierName,
+    this.supplierPhone,
+    this.invoiceNumber,
     required this.status,
   });
 
@@ -32,6 +40,10 @@ class Item {
     int? clientId,
     String? clientName,
     String? clientPhone,
+    int? supplierId,
+    String? supplierName,
+    String? supplierPhone,
+    String? invoiceNumber,
     Status? status,
   }) {
     return Item(
@@ -43,6 +55,10 @@ class Item {
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
       clientPhone: clientPhone ?? this.clientPhone,
+      supplierId: supplierId ?? this.supplierId,
+      supplierName: supplierName ?? this.supplierName,
+      supplierPhone: supplierPhone ?? this.supplierPhone,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
     );
   }
@@ -70,6 +86,10 @@ class Item {
       clientId: json['clientId'],
       clientName: json['clientName'],
       clientPhone: json['clientPhone'],
+      supplierId: json['supplierId'],
+      supplierName: json['supplierName'],
+      supplierPhone: json['supplierPhone'],
+      invoiceNumber: json['invoiceNumber'],
       status: status,
     );
   }
@@ -84,6 +104,10 @@ class Item {
       'clientId': clientId,
       'clientName': clientName,
       'clientPhone': clientPhone,
+      'supplierId': supplierId,
+      'supplierName': supplierName,
+      'supplierPhone': supplierPhone,
+      'invoiceNumber': invoiceNumber,
       'status': status.name,
     };
   }

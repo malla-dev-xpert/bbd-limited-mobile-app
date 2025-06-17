@@ -196,6 +196,11 @@ class _PackageItemFormState extends State<PackageItemForm> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
+      if (selectedSupplier == null) {
+        showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur");
+        return;
+      }
+
       widget.onAddItem(
         _descriptionController.text,
         double.parse(_quantityController.text),
@@ -206,10 +211,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
       );
 
       // Reset form
-      _descriptionController.clear();
-      _quantityController.clear();
-      _unitPriceController.clear();
-      _invoiceNumberController.clear();
+      _formKey.currentState!.reset();
       setState(() {
         selectedSupplier = null;
         _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);

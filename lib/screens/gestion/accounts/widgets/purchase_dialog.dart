@@ -131,7 +131,6 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final createAchatDto = CreateAchatDto(
         versementId: widget.versementId,
-        invoiceNumber: widget.invoiceNumber,
         items: localItems
             .map(
               (item) => CreateItemDto(
@@ -139,6 +138,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 quantity: (item['quantity'] as num?)?.toInt() ?? 0,
                 unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
                 invoiceNumber: item['invoiceNumber']?.toString() ?? '',
+                supplierId: item['supplierId']?.toInt() ?? 0,
               ),
             )
             .toList(),
@@ -146,30 +146,21 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final result = await achatServices.createAchatForClient(
         clientId: widget.clientId,
-        supplierId: localItems.first['supplierId'],
         userId: user!.id,
         dto: createAchatDto,
       );
 
       if (!mounted) return;
 
-      switch (result) {
-        case "ACHAT_CREATED":
-          // Récupérer l'achat créé
-          Navigator.pop(context, true);
-          showSuccessTopSnackBar(context, "Achat créé avec succès !");
-          break;
-        case "INVALID_VERSEMENT":
-          showErrorTopSnackBar(
-            context,
-            "Le versement ne correspond pas au client",
-          );
-          break;
-        case "INACTIVE_VERSEMENT":
-          showErrorTopSnackBar(context, "Le versement n'est pas actif");
-          break;
-        default:
-          showErrorTopSnackBar(context, "Erreur: $result");
+      if (result.isSuccess) {
+        Navigator.pop(context, true);
+        showSuccessTopSnackBar(context, "Achat créé avec succès !");
+      } else {
+        String message = result.errorMessage ?? "Erreur inconnue";
+        if (result.errors != null && result.errors!.isNotEmpty) {
+          message = result.errors!.join('\n');
+        }
+        showErrorTopSnackBar(context, message);
       }
     } catch (e) {
       if (mounted) {
