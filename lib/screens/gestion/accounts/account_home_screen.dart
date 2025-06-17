@@ -8,7 +8,7 @@ import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
+import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -468,12 +468,17 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                   final paiement = _filteredVersements[index];
                                   return PaiementListItem(
                                     versement: paiement,
-                                    onTap: () =>
-                                        showVersementDetailsBottomSheet(
+                                    onTap: () => Navigator.push(
                                       context,
-                                      paiement,
-                                      () => fetchPaiements(
-                                        reset: true,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            VersementDetailScreen(
+                                          versement: paiement,
+                                          onVersementUpdated: () =>
+                                              fetchPaiements(
+                                            reset: true,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     onEdit: () => _showEditPaiementModal(

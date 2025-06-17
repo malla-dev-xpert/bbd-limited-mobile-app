@@ -1,4 +1,3 @@
-import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
@@ -9,6 +8,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/pa
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 
 enum OperationType { versements, expeditions }
 
@@ -503,10 +503,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           return Container(
             padding: const EdgeInsets.all(0),
             child: ListTile(
-              onTap: () => showVersementDetailsBottomSheet(
+              onTap: () => Navigator.push(
                 context,
-                versement,
-                _refreshData,
+                MaterialPageRoute(
+                  builder: (context) => VersementDetailScreen(
+                    versement: versement,
+                    onVersementUpdated: _refreshData,
+                  ),
+                ),
               ),
               title: Text(
                 versement.reference ?? 'Sans référence',
