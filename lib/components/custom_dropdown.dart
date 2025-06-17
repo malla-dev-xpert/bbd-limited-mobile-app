@@ -46,6 +46,7 @@ class DropDownCustom<T> extends StatelessWidget {
               prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
             ),
             noResultFoundText: 'Aucun résultat trouvé.',
+            searchHintText: 'Rechercher...',
             items: items.map(itemToString).toList(),
             onChanged: (value) {
               final selected = items.firstWhere(
