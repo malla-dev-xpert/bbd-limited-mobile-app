@@ -39,7 +39,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     super.initState();
     currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
-      symbol: widget.versement.deviseCode ?? 'USD',
+      symbol: widget.versement.deviseCode ?? 'CNY',
     );
   }
 
@@ -151,7 +151,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
 
     return ListView.builder(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       itemCount: filteredLignes.length,
       itemBuilder: (context, index) {
         final ligne = filteredLignes[index];
@@ -269,6 +268,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     PurchaseDialog.show(
       context,
       (achat) {
+        setState(() {
+          widget.versement.achats ??= [];
+          widget.versement.achats!.add(achat);
+        });
         widget.onVersementUpdated?.call();
       },
       widget.versement.partnerId!,
@@ -480,7 +483,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   const SizedBox(height: 16),
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.4,
+                      maxHeight: MediaQuery.of(context).size.height * 0.5,
                     ),
                     child: _buildArticleList(),
                   ),

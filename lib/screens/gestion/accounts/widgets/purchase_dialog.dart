@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -10,6 +12,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/pa
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 class PurchaseDialog extends StatefulWidget {
   final Function(Achat) onPurchaseComplete;
@@ -153,7 +156,22 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       if (!mounted) return;
 
       if (result.isSuccess) {
+        // Créer un nouvel achat avec les données locales
+        final newAchat = Achat(
+          items: localItems
+              .map((item) => Items(
+                    description: item['description']?.toString(),
+                    quantity: item['quantity'] as int?,
+                    unitPrice: item['unitPrice'] as double?,
+                    supplierId: item['supplierId'] as int?,
+                    supplierName: item['supplier']?.toString(),
+                    status: Status.PENDING,
+                  ))
+              .toList(),
+        );
+
         Navigator.pop(context, true);
+        widget.onPurchaseComplete(newAchat);
         showSuccessTopSnackBar(context, "Achat créé avec succès !");
       } else {
         String message = result.errorMessage ?? "Erreur inconnue";
@@ -166,6 +184,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       if (mounted) {
         showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
       }
+      log(e.toString());
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
