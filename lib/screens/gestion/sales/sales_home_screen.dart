@@ -1,8 +1,7 @@
-import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/models/achats/achat.dart';
-import 'package:bbd_limited/core/enums/status.dart';
 import 'historique_achats_screen.dart';
+import 'widgets/customers_with_purchases_bottom_sheet.dart';
+import 'package:bbd_limited/models/partner.dart';
 
 class SalesHomeScreen extends StatelessWidget {
   const SalesHomeScreen({super.key});
@@ -22,7 +21,7 @@ class SalesHomeScreen extends StatelessWidget {
           ),
         ),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFF1A1E49),
       ),
       body: SafeArea(
@@ -125,7 +124,7 @@ class SalesHomeScreen extends StatelessWidget {
                       context,
                       'Clients',
                       Icons.people,
-                      () {},
+                      () => _showCustomersWithPurchases(context),
                       Colors.green,
                     ),
                     _buildActionCard(
@@ -247,6 +246,28 @@ class SalesHomeScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showCustomersWithPurchases(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) =>
+            CustomersWithPurchasesBottomSheet(
+          onCustomerSelected: (Partner customer) {
+            // Ici vous pouvez ajouter la logique pour gérer la sélection du client
+            // Par exemple, naviguer vers une page de détails ou ouvrir un formulaire
+            print(
+                'Client sélectionné: ${customer.firstName} ${customer.lastName}');
+          },
         ),
       ),
     );
