@@ -2,20 +2,10 @@ import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
+import 'historique_achats_screen.dart';
 
 class SalesHomeScreen extends StatelessWidget {
   const SalesHomeScreen({super.key});
-
-  void _showHistoriqueBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => const HistoriqueAchatsSheet(),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +113,12 @@ class SalesHomeScreen extends StatelessWidget {
                       context,
                       'Historique',
                       Icons.history,
-                      () => _showHistoriqueBottomSheet(context),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HistoriqueAchatsScreen(),
+                        ),
+                      ),
                       Colors.orange,
                     ),
                     _buildActionCard(
@@ -253,238 +248,6 @@ class SalesHomeScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class HistoriqueAchatsSheet extends StatefulWidget {
-  const HistoriqueAchatsSheet({super.key});
-
-  @override
-  State<HistoriqueAchatsSheet> createState() => _HistoriqueAchatsSheetState();
-}
-
-class _HistoriqueAchatsSheetState extends State<HistoriqueAchatsSheet> {
-  final AchatServices _achatsService = AchatServices();
-  List<Achat> _achats = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _chargerAchats();
-  }
-
-  Future<void> _chargerAchats() async {
-    final achats = await _achatsService.findAll();
-    setState(() {
-      _achats = achats;
-      _isLoading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Historique des achats',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (_achats.isEmpty)
-            const Center(
-              child: Text('Aucun achat trouvé'),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: _achats.length,
-                itemBuilder: (context, index) {
-                  final achat = _achats[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      title: Text(
-                        'Réf: ${achat.referenceVersement ?? "N/A"}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Client: ${achat.client ?? "N/A"}'),
-                          if (achat.clientPhone != null)
-                            Text('Tél: ${achat.clientPhone}'),
-                        ],
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${achat.montantVerser?.toStringAsFixed(2) ?? "0"} €',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(achat.status),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              achat.status?.name ?? "N/A",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      onTap: () => _showAchatDetails(context, achat),
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Color _getStatusColor(Status? status) {
-    switch (status) {
-      case Status.PENDING:
-        return Colors.blue;
-      case Status.RECEIVED:
-        return Colors.green;
-      case Status.DELETE:
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  void _showAchatDetails(BuildContext context, Achat achat) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => AchatDetailsSheet(achat: achat),
-    );
-  }
-}
-
-class AchatDetailsSheet extends StatelessWidget {
-  final Achat achat;
-
-  const AchatDetailsSheet({super.key, required this.achat});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Détails de l\'achat',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text('Référence: ${achat.referenceVersement ?? "N/A"}'),
-          Text('Client: ${achat.client ?? "N/A"}'),
-          if (achat.clientPhone != null)
-            Text('Téléphone: ${achat.clientPhone}'),
-          Text(
-              'Montant versé: ${achat.montantVerser?.toStringAsFixed(2) ?? "0"} €'),
-          if (achat.montantRestant != null)
-            Text(
-                'Montant restant: ${achat.montantRestant?.toStringAsFixed(2)} €'),
-          const SizedBox(height: 16),
-          const Text(
-            'Articles achetés:',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          if (achat.items != null && achat.items!.isNotEmpty)
-            ...achat.items!.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.description ?? "N/A",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Quantité: ${item.quantity ?? 0}'),
-                              Text(
-                                  'Prix unitaire: ${item.unitPrice?.toStringAsFixed(2) ?? "0"} €'),
-                            ],
-                          ),
-                          if (item.totalPrice != null)
-                            Text(
-                              'Total: ${item.totalPrice?.toStringAsFixed(2)} €',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          if (item.supplierName != null)
-                            Text('Fournisseur: ${item.supplierName}'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ))
-          else
-            const Text('Aucun article trouvé'),
-        ],
       ),
     );
   }
