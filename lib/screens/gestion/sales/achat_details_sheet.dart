@@ -6,6 +6,17 @@ class AchatDetailsSheet extends StatelessWidget {
 
   const AchatDetailsSheet({super.key, required this.achat});
 
+  String _formatAmount(double? amount) {
+    if (amount == null) return "0,00";
+    return amount
+        .toStringAsFixed(2)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match match) => '${match[1]} ',
+        )
+        .replaceAll('.', ',');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -39,6 +50,8 @@ class AchatDetailsSheet extends StatelessWidget {
           _buildInfoRow('Client', achat.client ?? "N/A"),
           if (achat.clientPhone != null)
             _buildInfoRow('Téléphone', achat.clientPhone!),
+          _buildInfoRow('Montant de l\'achat',
+              '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
           const SizedBox(height: 20),
           const Text(
             'Articles achetés',
@@ -113,18 +126,18 @@ class AchatDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 'Quantité: ${item.quantity ?? 0}',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: Colors.grey[700]!, fontSize: 15),
               ),
               Text(
-                'Prix unitaire: ${item.unitPrice?.toStringAsFixed(2) ?? "0"} €',
-                style: TextStyle(color: Colors.grey[600]),
+                'Prix unitaire: ${_formatAmount(item.unitPrice ?? 0)} ¥',
+                style: TextStyle(color: Colors.grey[700]!, fontSize: 15),
               ),
             ],
           ),
           if (item.totalPrice != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Total: ${item.totalPrice?.toStringAsFixed(2)} €',
+              'Total: ${_formatAmount(item.totalPrice ?? 0)} ¥',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1A1E49),
@@ -135,15 +148,15 @@ class AchatDetailsSheet extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.business_outlined,
                   size: 16,
-                  color: Colors.grey,
+                  color: Colors.grey[700]!,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   item.supplierName!,
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.grey[700]!, fontSize: 15),
                 ),
               ],
             ),

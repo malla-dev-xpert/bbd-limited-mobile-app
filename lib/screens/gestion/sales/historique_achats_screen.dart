@@ -304,7 +304,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                               ),
                                             ),
                                             Text(
-                                              '${achat.montantTotal?.toStringAsFixed(2) ?? "0"} ¥',
+                                              '${_formatAmount(achat.montantTotal)} ¥',
                                               style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
@@ -326,6 +326,17 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         ],
       ),
     );
+  }
+
+  String _formatAmount(double? amount) {
+    if (amount == null) return "0,00";
+    return amount
+        .toStringAsFixed(2)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match match) => '${match[1]} ',
+        )
+        .replaceAll('.', ',');
   }
 
   Color _getStatusColor(Status? status) {
