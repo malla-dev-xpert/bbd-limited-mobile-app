@@ -5,12 +5,9 @@ class Achat {
   final String? referenceVersement;
   final double? montantVerser;
   final double? montantRestant;
-  final String? fournisseur;
-  final String? fournisseurPhone;
   final String? client;
   final String? clientPhone;
   final List<Items>? items;
-  final String? invoiceNumber;
   Status? status;
 
   Achat copyWith({
@@ -18,12 +15,9 @@ class Achat {
     String? referenceVersement,
     double? montantVerser,
     double? montantRestant,
-    String? fournisseur,
-    String? fournisseurPhone,
     String? client,
     String? clientPhone,
     List<Items>? items,
-    String? invoiceNumber,
     Status? status,
   }) {
     return Achat(
@@ -31,12 +25,9 @@ class Achat {
       referenceVersement: referenceVersement ?? this.referenceVersement,
       montantVerser: montantVerser ?? this.montantVerser,
       montantRestant: montantRestant ?? this.montantRestant,
-      fournisseur: fournisseur ?? this.fournisseur,
-      fournisseurPhone: fournisseurPhone ?? this.fournisseurPhone,
       client: client ?? this.client,
       clientPhone: clientPhone ?? this.clientPhone,
       items: items ?? this.items,
-      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
     );
   }
@@ -46,12 +37,9 @@ class Achat {
     this.referenceVersement,
     this.montantVerser,
     this.montantRestant,
-    this.fournisseur,
-    this.fournisseurPhone,
     this.client,
     this.clientPhone,
     this.items,
-    this.invoiceNumber,
     this.status,
   });
 
@@ -61,12 +49,9 @@ class Achat {
       'referenceVersement': referenceVersement,
       'montantVerser': montantVerser,
       'montantRestant': montantRestant,
-      'fournisseur': fournisseur,
-      'fournisseurPhone': fournisseurPhone,
       'client': client,
       'clientPhone': clientPhone,
       'items': items?.map((ligne) => ligne.toJson()).toList(),
-      'invoiceNumber': invoiceNumber,
       'status': status?.name,
     };
   }
@@ -93,8 +78,6 @@ class Achat {
       montantRestant: json['montantRestant'] != null
           ? (json['montantRestant'] as num).toDouble()
           : null,
-      fournisseur: json['fournisseur'] as String?,
-      fournisseurPhone: json['fournisseurPhone'] as String?,
       client: json['client'] as String?,
       clientPhone: json['clientPhone'] as String?,
       items: json['items'] != null
@@ -102,7 +85,6 @@ class Achat {
               .map((ligne) => Items.fromJson(ligne))
               .toList()
           : null,
-      invoiceNumber: json['invoiceNumber'] as String?,
       status: status,
     );
   }
@@ -114,6 +96,10 @@ class Items {
   final int? quantity;
   final double? unitPrice;
   final double? totalPrice;
+  final int? supplierId;
+  final String? supplierName;
+  final String? supplierPhone;
+  Status? status;
 
   Items({
     this.id,
@@ -121,6 +107,10 @@ class Items {
     this.quantity,
     this.unitPrice,
     this.totalPrice,
+    this.supplierId,
+    this.supplierName,
+    this.supplierPhone,
+    this.status,
   });
 
   Map<String, dynamic> toJson() {
@@ -130,10 +120,26 @@ class Items {
       'totalPrice': totalPrice,
       'description': description,
       'quantity': quantity,
+      'supplierId': supplierId,
+      'supplierName': supplierName,
+      'supplierPhone': supplierPhone,
+      'status': status?.name,
     };
   }
 
   factory Items.fromJson(Map<String, dynamic> json) {
+    String? statusString = json['status'];
+    Status status;
+
+    if (statusString != null) {
+      status = Status.values.firstWhere(
+        (e) => e.name.toUpperCase() == statusString.toUpperCase(),
+        orElse: () => Status.CREATE,
+      );
+    } else {
+      status = Status.CREATE;
+    }
+
     return Items(
       id: json['id'] as int?,
       quantity: json['quantity'] as int?,
@@ -144,6 +150,10 @@ class Items {
       totalPrice: json['totalPrice'] != null
           ? (json['totalPrice'] as num).toDouble()
           : null,
+      supplierId: json['supplierId'] as int?,
+      supplierName: json['supplierName'] as String?,
+      supplierPhone: json['supplierPhone'] as String?,
+      status: status,
     );
   }
 }

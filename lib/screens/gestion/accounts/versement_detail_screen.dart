@@ -1,3 +1,5 @@
+import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -6,6 +8,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/majesticons.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -23,11 +26,13 @@ class VersementDetailScreen extends StatefulWidget {
 
 class _VersementDetailScreenState extends State<VersementDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final AchatServices _achatServices = AchatServices();
   String _searchQuery = '';
   bool isLoading = false;
   bool _isInfoExpanded = true;
   bool _isArticlesExpanded = false;
   late NumberFormat currencyFormat;
+  final Set<String> _confirmedArticles = {};
 
   @override
   void initState() {
@@ -158,6 +163,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           }
         }
 
+        final isConfirmed = _confirmedArticles.contains(ligne.id?.toString());
+
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
@@ -170,22 +177,65 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  ligne.description ?? 'Article sans nom',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        ligne.description ?? 'Article sans nom',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (!isConfirmed && ligne.status != Status.RECEIVED)
+                      ElevatedButton.icon(
+                        onPressed: () =>
+                            _confirmArticle(ligne.id?.toString() ?? ''),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: Text(isLoading ? "Chargement..." : "Confirmer"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1A1E49),
+                          foregroundColor: Colors.white,
+                        ),
+                      )
+                    else if (ligne.status == Status.RECEIVED)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green[700],
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Reçu',
+                              style: TextStyle(
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
-                if (achat?.fournisseur != null) ...[
-                  const SizedBox(height: 4),
-                  _buildDetailItem(
-                    'Fournisseur',
-                    '${achat!.fournisseur} | ${achat.fournisseurPhone}',
-                  ),
-                ],
-                const SizedBox(height: 4),
                 _buildDetailItem('Quantité', '${ligne.quantity}'),
+                const SizedBox(height: 4),
+                _buildDetailItem('Fournisseur', ligne.supplierName ?? 'N/A'),
+                const SizedBox(height: 4),
+                _buildDetailItem('Téléphone', ligne.supplierPhone ?? 'N/A'),
                 const SizedBox(height: 4),
                 _buildDetailItem(
                   'Prix Unitaire',
@@ -223,9 +273,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       },
       widget.versement.partnerId!,
       widget.versement.id!,
-      widget.versement.achats?.isNotEmpty == true
-          ? widget.versement.achats!.first.invoiceNumber ?? ''
-          : '',
+      widget.versement.reference ?? '',
     );
   }
 
@@ -443,6 +491,43 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmArticle(String itemId) async {
+    if (isLoading) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        return;
+      }
+      final result = await _achatServices.confirmDelivery(
+        itemIds: [int.parse(itemId)],
+        userId: user.id,
+      );
+
+      if (result.isSuccess) {
+        setState(() {
+          _confirmedArticles.add(itemId);
+        });
+        showSuccessTopSnackBar(context, "Article confirmé avec succès");
+      } else {
+        showErrorTopSnackBar(
+            context, result.errorMessage ?? "Erreur lors de la confirmation");
+      }
+    } catch (e) {
+      showErrorTopSnackBar(
+          context, "Une erreur est survenue lors de la confirmation");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
