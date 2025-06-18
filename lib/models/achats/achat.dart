@@ -3,31 +3,28 @@ import 'package:bbd_limited/core/enums/status.dart';
 class Achat {
   final int? id;
   final String? referenceVersement;
-  final double? montantVerser;
-  final double? montantRestant;
   final String? client;
   final String? clientPhone;
   final List<Items>? items;
+  final double? montantTotal;
   Status? status;
 
   Achat copyWith({
     int? id,
     String? referenceVersement,
-    double? montantVerser,
-    double? montantRestant,
     String? client,
     String? clientPhone,
     List<Items>? items,
+    double? montantTotal,
     Status? status,
   }) {
     return Achat(
       id: id ?? this.id,
       referenceVersement: referenceVersement ?? this.referenceVersement,
-      montantVerser: montantVerser ?? this.montantVerser,
-      montantRestant: montantRestant ?? this.montantRestant,
       client: client ?? this.client,
       clientPhone: clientPhone ?? this.clientPhone,
       items: items ?? this.items,
+      montantTotal: montantTotal ?? this.montantTotal,
       status: status ?? this.status,
     );
   }
@@ -35,11 +32,10 @@ class Achat {
   Achat({
     this.id,
     this.referenceVersement,
-    this.montantVerser,
-    this.montantRestant,
     this.client,
     this.clientPhone,
     this.items,
+    this.montantTotal,
     this.status,
   });
 
@@ -47,11 +43,10 @@ class Achat {
     return {
       'id': id,
       'referenceVersement': referenceVersement,
-      'montantVerser': montantVerser,
-      'montantRestant': montantRestant,
       'client': client,
       'clientPhone': clientPhone,
       'items': items?.map((ligne) => ligne.toJson()).toList(),
+      'montantTotal': montantTotal,
       'status': status?.name,
     };
   }
@@ -72,18 +67,15 @@ class Achat {
     return Achat(
       id: json['id'] as int?,
       referenceVersement: json['referenceVersement'] as String?,
-      montantVerser: json['montantVerser'] != null
-          ? (json['montantVerser'] as num).toDouble()
-          : null,
-      montantRestant: json['montantRestant'] != null
-          ? (json['montantRestant'] as num).toDouble()
-          : null,
       client: json['client'] as String?,
       clientPhone: json['clientPhone'] as String?,
       items: json['items'] != null
           ? (json['items'] as List)
               .map((ligne) => Items.fromJson(ligne))
               .toList()
+          : null,
+      montantTotal: json['montantTotal'] != null
+          ? (json['montantTotal'] as num).toDouble()
           : null,
       status: status,
     );

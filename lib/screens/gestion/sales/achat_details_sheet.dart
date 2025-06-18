@@ -39,17 +39,6 @@ class AchatDetailsSheet extends StatelessWidget {
           _buildInfoRow('Client', achat.client ?? "N/A"),
           if (achat.clientPhone != null)
             _buildInfoRow('Téléphone', achat.clientPhone!),
-          _buildInfoRow(
-            'Montant versé',
-            '${achat.montantVerser?.toStringAsFixed(2) ?? "0"} €',
-            isAmount: true,
-          ),
-          if (achat.montantRestant != null)
-            _buildInfoRow(
-              'Montant restant',
-              '${achat.montantRestant?.toStringAsFixed(2)} €',
-              isAmount: true,
-            ),
           const SizedBox(height: 20),
           const Text(
             'Articles achetés',

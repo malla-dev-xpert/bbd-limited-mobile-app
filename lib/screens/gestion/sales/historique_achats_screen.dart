@@ -107,7 +107,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Réf: ${achat.referenceVersement ?? "N/A"}',
+                                          'Réf. V: ${achat.referenceVersement ?? "N/A"}',
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -139,17 +139,17 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.person_outline,
                                         size: 16,
-                                        color: Colors.grey,
+                                        color: Colors.grey[700]!,
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           achat.client ?? "N/A",
-                                          style: const TextStyle(
-                                            color: Colors.grey,
+                                          style: TextStyle(
+                                            color: Colors.grey[700]!,
                                           ),
                                         ),
                                       ),
@@ -159,16 +159,16 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.phone_outlined,
                                           size: 16,
-                                          color: Colors.grey,
+                                          color: Colors.grey[700]!,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
                                           achat.clientPhone!,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
+                                          style: TextStyle(
+                                            color: Colors.grey[700]!,
                                           ),
                                         ),
                                       ],
@@ -187,7 +187,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '${achat.montantVerser?.toStringAsFixed(2) ?? "0"} €',
+                                        '${achat.montantTotal?.toStringAsFixed(2) ?? "0"} ¥',
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
