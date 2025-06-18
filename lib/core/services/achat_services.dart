@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
 import 'package:bbd_limited/core/api/api_result.dart';
 import 'package:http/http.dart' as http;
@@ -112,6 +113,23 @@ class AchatServices {
         errorMessage: 'Unexpected error: ${e.toString()}',
         errorCode: 0,
       );
+    }
+  }
+
+  Future<List<Achat>> findAll({int page = 0}) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/achats?page=$page',
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonBody = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      return jsonBody.map((e) => Achat.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des achats");
     }
   }
 }
