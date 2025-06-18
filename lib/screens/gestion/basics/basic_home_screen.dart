@@ -53,11 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.grey[200],
-                          backgroundImage:
-                              const AssetImage(
-                                    'assets/images/profile-picture.avif',
-                                  )
-                                  as ImageProvider,
+                          backgroundImage: const AssetImage(
+                            'assets/images/profile-picture.avif',
+                          ) as ImageProvider,
                           child: Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
@@ -71,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Bienvenue',
                               style: TextStyle(
                                 fontSize: 24,
@@ -83,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               _user?.firstName ??
                                   _user?.username ??
                                   'Utilisateur',
-                              style: TextStyle(letterSpacing: 0, fontSize: 16),
+                              style: const TextStyle(
+                                  letterSpacing: 0, fontSize: 16),
                             ),
                           ],
                         ),
@@ -104,27 +103,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
-                        children:
-                            reportCardDataList.map((data) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 3.0,
-                                ),
-                                child: ReportCard(
-                                  icon: data.icon,
-                                  title: data.title,
-                                  quantity: data.quantity,
-                                ),
-                              );
-                            }).toList(),
+                        children: reportCardDataList.map((data) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 3.0,
+                            ),
+                            child: ReportCard(
+                              icon: data.icon,
+                              title: data.title,
+                              quantity: data.quantity,
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ],
                 ),
               ),
-
-              SliverToBoxAdapter(child: const SizedBox(height: 20)),
-
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
               SliverToBoxAdapter(
                 child: Text(
                   "Informations de base",
@@ -136,7 +132,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-
               SliverPadding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 10.0,
@@ -146,19 +141,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
-                  children:
-                      cardDataList.map((data) {
-                        return CustomCard(
-                          icon: data.icon,
-                          title: data.title,
-                          description: data.description,
-                          backgroundColor: data.backgroundColor,
-                          iconColor: data.iconColor,
-                          titleColor: data.titleColor,
-                          descriptionColor: data.descriptionColor,
-                          onPressed: data.onPressed,
-                        );
-                      }).toList(),
+                  children: cardDataList.map((data) {
+                    return CustomCard(
+                      icon: data.icon,
+                      title: data.title,
+                      description: data.description,
+                      backgroundColor: data.backgroundColor,
+                      iconColor: data.iconColor,
+                      titleColor: data.titleColor,
+                      descriptionColor: data.descriptionColor,
+                      onPressed: data.onPressed,
+                    );
+                  }).toList(),
                 ),
               ),
             ],

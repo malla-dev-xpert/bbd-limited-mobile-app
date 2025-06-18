@@ -3,7 +3,7 @@ import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/accounts/account_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/basic_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/profil/profil_screen.dart';
-import 'package:bbd_limited/screens/gestion/report/report_home_screen.dart';
+import 'package:bbd_limited/screens/gestion/sales/sales_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/users/users_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -40,7 +40,7 @@ class MainScreenState extends State<MainScreen> {
       _screens = [
         const HomeScreen(),
         if (isAdmin) ManageUsersScreen(),
-        const ReportHomeScreen(),
+        const SalesHomeScreen(),
         AccountHomeScreen(),
         const ProfilePage(),
       ];
