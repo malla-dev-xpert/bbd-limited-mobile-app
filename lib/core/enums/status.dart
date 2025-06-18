@@ -9,4 +9,5 @@ enum Status {
   RETRIEVE,
   DELETE_ON_CONTAINER,
   IN_CONTAINER,
+  COMPLETED
 }

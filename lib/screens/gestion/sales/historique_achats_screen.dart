@@ -211,8 +211,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   Color _getStatusColor(Status? status) {
     switch (status) {
       case Status.PENDING:
-        return Colors.blue;
-      case Status.RECEIVED:
+        return Colors.amber;
+      case Status.COMPLETED:
         return Colors.green;
       case Status.DELETE:
         return Colors.red;
