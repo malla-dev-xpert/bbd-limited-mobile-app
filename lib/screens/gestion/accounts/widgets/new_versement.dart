@@ -439,6 +439,7 @@ class _NewVersementModalState extends State<NewVersementModal>
                   ),
                 ),
               ),
+              const SizedBox(height: 40),
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(
