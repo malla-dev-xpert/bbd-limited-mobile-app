@@ -205,34 +205,42 @@ class PackageServices {
     }
   }
 
-  Future<String?> deletePackageOnContainer(
-    int id,
-    int? userId,
-    int? containerId,
-  ) async {
+  Future<String?> removePackageFromContainer({
+    required int packageId,
+    required int containerId,
+    required int userId,
+  }) async {
     final url = Uri.parse(
-      "$baseUrl/packages/$id/container/$containerId/delete?userId=$userId",
+      '$baseUrl/packages/$packageId/container/$containerId?userId=$userId',
     );
 
     try {
       final response = await http.delete(url);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return "DELETED";
-      } else if (response.body == "Le colis n'appartient pas à ce conteneur") {
-        return "PACKAGE_NOT_IN_SPECIFIED_CONTAINER";
-      } else if (response.body ==
-          "Impossible de retirer un colis d'un conteneur en cours de livraison") {
-        return "CONTAINER_NOT_EDITABLE";
+      switch (response.statusCode) {
+        case 200 || 201:
+          return "REMOVED";
+        case 400 || 409:
+          final errorMsg = response.body;
+          if (errorMsg.contains("CONTAINER_INPROGRESS")) {
+            return "CONTAINER_INPROGRESS";
+          } else if (errorMsg.contains("PACKAGE_NOT_IN_CONTAINER")) {
+            return "PACKAGE_NOT_IN_CONTAINER";
+          }
+          return "UNKNOWN_ERROR";
+        case 404:
+          return "NOT_FOUND";
+        default:
+          return "SERVER_ERROR";
       }
     } catch (e) {
-      throw Exception("Erreur lors de la suppression du colis : $e");
+      throw Exception("Erreur réseau: ${e.toString()}");
     }
   }
 
-  Future<String> embarquerColis(EmbarquementRequest request) async {
+  Future<String> embarquerColis(EmbarquementRequest request, int userId) async {
     try {
-      final url = Uri.parse('$baseUrl/containers/embarquer');
+      final url = Uri.parse('$baseUrl/containers/embarquer?userId=$userId');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -246,13 +254,9 @@ class PackageServices {
 
         if (errorMessage.contains("Le conteneur n'est pas disponible")) {
           return "CONTAINER_NOT_AVAILABLE";
-        } else if (errorMessage.contains(
-          "Le conteneur n'est pas dans le bon statut",
-        )) {
-          return "CONTAINER_NOT_IN_PENDING";
         } else if (errorMessage.contains("est déjà dans le conteneur")) {
           return "PACKAGE_ALREADY_IN_ANOTHER_CONTAINER";
-        } else if (errorMessage.contains("n'est pas en statut RECEIVED")) {
+        } else if (errorMessage.contains("n'est pas en statut PENDING")) {
           return "PACKAGE_NOT_IN_RECEIVED_STATUS";
         }
         return "CONFLICT_ERROR";

@@ -40,7 +40,7 @@ class _LoginState extends State<Login> {
         // Si le clavier se ferme, on revient en haut du scroll
         _scrollController.animateTo(
           0.0,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -86,17 +86,14 @@ class _LoginState extends State<Login> {
       resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         controller: _scrollController,
-        physics:
-            keyboardVisible
-                ? const BouncingScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
+        physics: keyboardVisible
+            ? const BouncingScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
         child: GestureDetector(
-          onTap:
-              () =>
-                  FocusScope.of(
-                    context,
-                  ).unfocus(), //fermer le clavier si on tape sur n'importe quel partie de la page
+          onTap: () => FocusScope.of(
+            context,
+          ).unfocus(), //fermer le clavier si on tape sur n'importe quel partie de la page
           child: SafeArea(
             child: Column(
               children: [
@@ -117,7 +114,9 @@ class _LoginState extends State<Login> {
                       Center(
                         child: Text(
                           'Bienvenue sur BBD-LIMITED',
-                          style: Theme.of(context).textTheme.headlineMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                       ),
@@ -141,8 +140,8 @@ class _LoginState extends State<Login> {
                     vertical: 32,
                   ),
                   height: MediaQuery.of(context).size.height * 0.6,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1E49),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1A1E49),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(34),
                       topRight: Radius.circular(34),
@@ -236,7 +235,7 @@ class _LoginState extends State<Login> {
                             onPressed: () {
                               Navigator.pushNamed(context, '/forgot-password');
                             },
-                            child: Text(
+                            child: const Text(
                               'Mot de passe oublié ?',
                               style: TextStyle(
                                 color: Colors.white,
@@ -275,29 +274,28 @@ class _LoginState extends State<Login> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child:
-                                _isLoading
-                                    ? CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    )
-                                    : Text(
-                                      'Se connecter',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  )
+                                : const Text(
+                                    'Se connecter',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
+                                  ),
                           ),
                         ),
 
                         const SizedBox(height: 20),
 
                         // Lien d'inscription
-                        Column(
+                        const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               'Vous ne disposez pas d\'un compte ?',
                               style: TextStyle(color: Colors.white70),
                             ),

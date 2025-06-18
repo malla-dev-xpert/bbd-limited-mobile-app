@@ -9,8 +9,11 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/c
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 class ContainerScreen extends StatefulWidget {
+  const ContainerScreen({super.key});
+
   @override
   State<ContainerScreen> createState() => _ContainerScreen();
 }
@@ -22,6 +25,7 @@ class _ContainerScreen extends State<ContainerScreen> {
 
   List<Containers> _allContainers = [];
   List<Containers> _filteredContainers = [];
+  Status? _selectedStatus;
 
   bool _isLoading = false;
   bool _hasMoreData = true;
@@ -44,11 +48,20 @@ class _ContainerScreen extends State<ContainerScreen> {
     final query = searchController.text.toLowerCase();
 
     setState(() {
-      _filteredContainers =
-          _allContainers!.where((devise) {
-            final reference = devise.reference!.toLowerCase();
-            return reference.contains(query);
-          }).toList();
+      _filteredContainers = _allContainers.where((container) {
+        final reference = container.reference!.toLowerCase();
+        final matchesSearch = reference.contains(query);
+        final matchesStatus = _selectedStatus == null ||
+            (container.status != null && container.status == _selectedStatus);
+        return matchesSearch && matchesStatus;
+      }).toList();
+    });
+  }
+
+  void _onStatusChanged(Status? status) {
+    setState(() {
+      _selectedStatus = status;
+      _onSearchChanged();
     });
   }
 
@@ -86,7 +99,6 @@ class _ContainerScreen extends State<ContainerScreen> {
       });
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur de chargement des colis.");
-      print("Erreur de récupération des colis : $e");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -118,7 +130,7 @@ class _ContainerScreen extends State<ContainerScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return CreateContainerForm();
+        return const CreateContainerForm();
       },
     );
 
@@ -130,28 +142,27 @@ class _ContainerScreen extends State<ContainerScreen> {
   Future<void> _delete(Containers container) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirmer la suppression"),
-            content: Text(
-              "Voulez-vous vraiment supprimer le conteneur ${container.reference}?",
-            ),
-            backgroundColor: Colors.white,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context, true),
-                icon: const Icon(Icons.delete, color: Colors.red),
-                label: Text(
-                  _isLoading ? 'Suppression...' : 'Supprimer',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        content: Text(
+          "Voulez-vous vraiment supprimer le conteneur ${container.reference}?",
+        ),
+        backgroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Annuler"),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: Text(
+              _isLoading ? 'Suppression...' : 'Supprimer',
+              style: const TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed != true) return;
@@ -188,18 +199,32 @@ class _ContainerScreen extends State<ContainerScreen> {
     }
   }
 
+  String _getStatusLabel(Status? status) {
+    if (status == null) return 'Tous';
+    switch (status) {
+      case Status.PENDING:
+        return 'En attente';
+      case Status.INPROGRESS:
+        return 'En transit';
+      case Status.RECEIVED:
+        return 'Arrivé à destination';
+      default:
+        return status.name;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Gestion des conteneurs',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCreateConatinerBottomSheet(context),
@@ -221,12 +246,11 @@ class _ContainerScreen extends State<ContainerScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    // onChanged: _filteredContainers,
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
                       labelText: 'Rechercher un conteneur...',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -235,16 +259,32 @@ class _ContainerScreen extends State<ContainerScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // Filtre de statut
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildStatusChip(null, 'Tous'),
+                  _buildStatusChip(
+                      Status.PENDING, _getStatusLabel(Status.PENDING)),
+                  _buildStatusChip(
+                      Status.INPROGRESS, _getStatusLabel(Status.INPROGRESS)),
+                  _buildStatusChip(
+                      Status.RECEIVED, _getStatusLabel(Status.RECEIVED)),
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
 
             // Liste des colis
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   "La liste des conteneurs",
-
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -255,20 +295,19 @@ class _ContainerScreen extends State<ContainerScreen> {
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Expanded(
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (scrollInfo) {
-                      if (scrollInfo.metrics.pixels ==
-                              scrollInfo.metrics.maxScrollExtent &&
-                          !_isLoading &&
-                          _hasMoreData) {
-                        fetchContainers();
-                      }
-                      return false;
-                    },
-                    child:
-                        _filteredContainers.isEmpty
-                            ? Center(child: Text("Aucun conteneur trouvé."))
-                            : RefreshIndicator(
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (scrollInfo) {
+                        if (scrollInfo.metrics.pixels ==
+                                scrollInfo.metrics.maxScrollExtent &&
+                            !_isLoading &&
+                            _hasMoreData) {
+                          fetchContainers();
+                        }
+                        return false;
+                      },
+                      child: _filteredContainers.isEmpty
+                          ? const Center(child: Text("Aucun conteneur trouvé."))
+                          : RefreshIndicator(
                               onRefresh: () async {
                                 await fetchContainers(reset: true);
                               },
@@ -277,8 +316,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                               backgroundColor: Colors.white,
                               child: ListView.builder(
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount:
-                                    _filteredContainers.length +
+                                itemCount: _filteredContainers.length +
                                     (_hasMoreData && _isLoading ? 1 : 0),
                                 itemBuilder: (context, index) {
                                   if (index >= _filteredContainers.length) {
@@ -293,25 +331,68 @@ class _ContainerScreen extends State<ContainerScreen> {
 
                                   return ContainerListItem(
                                     container: container,
-                                    onTap:
-                                        () => showContainerDetailsBottomSheet(
-                                          context,
-                                          container,
-                                        ),
-                                    onEdit:
-                                        () => _showEditContainerModal(
-                                          context,
-                                          container,
-                                        ),
+                                    onTap: () =>
+                                        showContainerDetailsBottomSheet(
+                                      context,
+                                      container,
+                                      onContainerUpdated: (updatedContainer) {
+                                        setState(() {
+                                          final index = _filteredContainers
+                                              .indexWhere((c) =>
+                                                  c.id == updatedContainer.id);
+                                          if (index != -1) {
+                                            _filteredContainers[index] =
+                                                updatedContainer;
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    onEdit: () => _showEditContainerModal(
+                                      context,
+                                      container,
+                                    ),
                                     onDelete: () => _delete(container),
                                   );
                                 },
                               ),
                             ),
+                    ),
                   ),
-                ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(Status? status, String label) {
+    final isSelected = _selectedStatus == status;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: FilterChip(
+        selected: isSelected,
+        label: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF1A1E49),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        selectedColor: const Color(0xFF1A1E49),
+        checkmarkColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isSelected ? const Color(0xFF1A1E49) : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        onSelected: (bool selected) {
+          setState(() {
+            _selectedStatus = selected ? status : null;
+            _onSearchChanged();
+          });
+        },
       ),
     );
   }

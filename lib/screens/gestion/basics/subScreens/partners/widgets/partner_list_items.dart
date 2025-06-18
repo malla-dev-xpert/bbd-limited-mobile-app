@@ -24,7 +24,7 @@ class PartnerListItem extends StatelessWidget {
 
     final currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
-      symbol: 'FCFA',
+      symbol: 'CNY',
     );
 
     return Slidable(
@@ -69,7 +69,7 @@ class PartnerListItem extends StatelessWidget {
                 children: [
                   Text(
                     partner.accountType,
-                    style: TextStyle(color: Colors.blue),
+                    style: const TextStyle(color: Colors.blue),
                   ),
                   Text(
                     currencyFormat.format(balance),

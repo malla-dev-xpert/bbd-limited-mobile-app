@@ -1,7 +1,10 @@
 import 'dart:developer';
 
+import 'package:bbd_limited/components/personal_info_card.dart';
+import 'package:bbd_limited/components/privacy_policy_dialog.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/user.dart';
+import 'package:bbd_limited/screens/gestion/profil/widgets/change_password_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -132,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: 'Informations personnelles',
             subtitle: 'Modifier vos coordonnées',
             onTap: () {
-              _navigateToEditProfile(context);
+              _showProfileDetails(context);
             },
           ),
           const Divider(height: 1, indent: 20),
@@ -142,7 +145,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: 'Mot de passe',
             subtitle: 'Changer votre mot de passe',
             onTap: () {
-              _navigateToChangePassword(context);
+              _showChangePasswordModal(context);
             },
           ),
           const Divider(height: 1, indent: 20),
@@ -162,7 +165,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: 'Politique de confidentialité',
             subtitle: 'Consulter la politique de confidentialité',
             onTap: () {
-              _navigateToNotificationSettings(context);
+              _showPrivacyPolicyDialog(context);
             },
           ),
         ],
@@ -226,63 +229,85 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _navigateToEditProfile(BuildContext context) {
-    // Navigation vers l'édition du profil
+  void _showProfileDetails(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        height: MediaQuery.of(context).size.height * 0.45,
+        child: PersonalInfoCard(user: _user!),
+      ),
+    );
   }
 
-  void _navigateToChangePassword(BuildContext context) {
-    // Navigation vers le changement de mot de passe
+  void _showChangePasswordModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ChangePasswordBottomSheet(),
+    );
   }
 
   void _navigateToDeliveryPreferences(BuildContext context) {
     // Navigation vers les préférences de livraison
   }
 
-  void _navigateToNotificationSettings(BuildContext context) {
-    // Navigation vers les paramètres de notification
+  void _showPrivacyPolicyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const PrivacyPolicyDialog(),
+    );
   }
 
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Déconnexion'),
-            content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
-            backgroundColor: Colors.white,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Annuler'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  setState(() {
-                    isLoading = true;
-                  });
-                  try {
-                    final user = await _authService.logout();
-                    if (user == null) {
-                      Navigator.pop(context);
-                      Navigator.pushReplacementNamed(context, '/login');
-                      return;
-                    }
-                  } catch (e) {
-                    log('Erreur lors de la déconnexion: $e');
-                  } finally {
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }
-                },
-                child: Text(
-                  isLoading == true ? 'Déconnexion en cours...' : 'Déconnexion',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        backgroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
           ),
+          TextButton(
+            onPressed: () async {
+              setState(() {
+                isLoading = true;
+              });
+              try {
+                final user = await _authService.logout();
+                if (user == null) {
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/login');
+                  return;
+                }
+              } catch (e) {
+                log('Erreur lors de la déconnexion: $e');
+              } finally {
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            },
+            child: Text(
+              isLoading == true ? 'Déconnexion en cours...' : 'Déconnexion',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

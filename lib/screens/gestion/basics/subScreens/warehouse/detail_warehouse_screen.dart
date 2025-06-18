@@ -326,7 +326,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
 
         bool allStatus = true;
         if (_currentFilter == 'livres') {
-          allStatus = pkg.status == Status.DELIVERED;
+          allStatus = pkg.status == Status.RECEIVED;
         } else if (_currentFilter == 'en_transit') {
           allStatus = pkg.status == Status.INPROGRESS;
         } else if (_currentFilter == 'en_attente') {

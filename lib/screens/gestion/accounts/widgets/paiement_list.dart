@@ -21,7 +21,7 @@ class PaiementListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
-      symbol: 'FCFA',
+      symbol: versement.deviseCode ?? 'USD',
     );
 
     final montantRestant = versement.montantRestant ?? 0.0;
@@ -59,7 +59,7 @@ class PaiementListItem extends StatelessWidget {
         leading: Icon(partnerIcon, color: Color(0xFF7F78AF)),
         title: Text(
           versement.reference!,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -67,7 +67,7 @@ class PaiementListItem extends StatelessWidget {
           children: [
             Text(
               DateFormat('dd/MM/yyyy').format(versement.createdAt!),
-              style: TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 12),
             ),
             Text(
               versement.partnerName ?? '',

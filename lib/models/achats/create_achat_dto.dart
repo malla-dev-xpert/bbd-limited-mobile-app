@@ -1,45 +1,48 @@
 class CreateAchatDto {
   final int versementId;
-  final List<CreateLigneDto> lignes;
+  final List<CreateItemDto> items;
 
-  CreateAchatDto({required this.versementId, required this.lignes});
+  CreateAchatDto({required this.versementId, required this.items});
 
   Map<String, dynamic> toJson() {
     return {
       'versementId': versementId,
-      'lignes':
-          lignes
-              .map(
-                (ligne) => {
-                  'descriptionItem': ligne.descriptionItem,
-                  'quantityItem': ligne.quantityItem.toInt(),
-                  'prixUnitaire': ligne.prixUnitaire,
-                  'supplierId': ligne.supplierId,
-                },
-              )
-              .toList(),
+      'items': items
+          .map(
+            (item) => {
+              'description': item.description,
+              'quantity': item.quantity.toInt(),
+              'unitPrice': item.unitPrice,
+              'invoiceNumber': item.invoiceNumber,
+              'supplierId': item.supplierId,
+            },
+          )
+          .toList(),
     };
   }
 }
 
-class CreateLigneDto {
-  final String descriptionItem;
-  final int quantityItem;
-  final double prixUnitaire;
+class CreateItemDto {
+  final String description;
+  final int quantity;
+  final double unitPrice;
+  final String invoiceNumber;
   final int supplierId;
 
-  CreateLigneDto({
-    required this.descriptionItem,
-    required this.quantityItem,
-    required this.prixUnitaire,
+  CreateItemDto({
+    required this.description,
+    required this.quantity,
+    required this.unitPrice,
+    required this.invoiceNumber,
     required this.supplierId,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'descriptionItem': descriptionItem,
-      'quantityItem': quantityItem,
-      'prixUnitaire': prixUnitaire,
+      'description': description,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'invoiceNumber': invoiceNumber,
       'supplierId': supplierId,
     };
   }

@@ -245,4 +245,42 @@ class AuthService {
         return 'Unknown response from server';
     }
   }
+
+  Future<String> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) throw Exception('Non authentifié');
+
+      final user = await getUserInfo();
+      if (user == null) throw Exception('Utilisateur non trouvé');
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/change-password/${user.id}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+          'editedAt': DateTime.now().toIso8601String(),
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.body;
+      } else if (response.statusCode == 400 ||
+          response.statusCode == 409 &&
+              response.body == "OLD_PASSWORD_INCORRECT") {
+        throw Exception('Ancien mot de passe incorrect');
+      } else {
+        throw Exception('Erreur lors du changement de mot de passe');
+      }
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
 }

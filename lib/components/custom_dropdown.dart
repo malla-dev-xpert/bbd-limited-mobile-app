@@ -26,7 +26,7 @@ class DropDownCustom<T> extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,6 +45,8 @@ class DropDownCustom<T> extends StatelessWidget {
             decoration: CustomDropdownDecoration(
               prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
             ),
+            noResultFoundText: 'Aucun résultat trouvé.',
+            searchHintText: 'Rechercher...',
             items: items.map(itemToString).toList(),
             onChanged: (value) {
               final selected = items.firstWhere(

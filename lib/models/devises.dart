@@ -3,8 +3,8 @@ import 'package:bbd_limited/core/enums/status.dart';
 class Devise {
   final int? id;
   final String name;
-  final double rate;
   final String code;
+  final double? rate;
   final Status? status;
   final DateTime? createdAt;
   final DateTime? editedAt;
@@ -12,8 +12,8 @@ class Devise {
   Devise copyWith({
     int? id,
     String? name,
-    double? rate,
     String? code,
+    double? rate,
     Status? status,
     DateTime? createdAt,
     DateTime? editedAt,
@@ -21,8 +21,8 @@ class Devise {
     return Devise(
       id: id ?? this.id,
       name: name ?? this.name,
-      rate: rate ?? this.rate,
       code: code ?? this.code,
+      rate: rate ?? this.rate,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       editedAt: editedAt ?? this.editedAt,
@@ -33,8 +33,8 @@ class Devise {
     return {
       'id': id,
       'name': name,
-      'rate': rate,
       'code': code,
+      'rate': rate,
       'status': status?.name,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
@@ -44,8 +44,8 @@ class Devise {
   Devise({
     this.id,
     required this.name,
-    required this.rate,
     required this.code,
+    this.rate,
     this.status,
     this.createdAt,
     this.editedAt,
@@ -55,8 +55,8 @@ class Devise {
     return Devise(
       id: json['id'],
       name: json['name'],
-      rate: (json['rate'] as num).toDouble(),
       code: json['code'],
+      rate: json['rate'] != null ? (json['rate'] as num).toDouble() : null,
       status: Status.values.firstWhere(
         (e) => e.name == json['status'],
         orElse: () => Status.CREATE,

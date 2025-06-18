@@ -7,27 +7,45 @@ class DeviseServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<String> create(String name, String code, double rate) async {
+  Future<String> create({
+    required String name,
+    required String code,
+    double? rate, // Rend le taux nullable
+    required int userId,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/devises/create'),
+        Uri.parse('$baseUrl/devises/create?userId=$userId'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"name": name, "code": code, "rate": rate}),
+        body: jsonEncode({
+          "name": name,
+          "code": code,
+          "rate": rate,
+        }),
       );
 
-      if (response.statusCode == 201) {
-        return "CREATED";
-      } else if (response.statusCode == 409 &&
-          response.body == 'Nom de devise déjà utilisé !') {
-        return "NAME_EXIST";
-      } else if (response.statusCode == 409 &&
-          response.body == 'Code déjà utilisé !') {
-        return "CODE_EXIST";
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return "SUCCESS";
+      } else if (response.statusCode == 409) {
+        // Gestion des différents messages d'erreur
+        final responseBody = response.body;
+        if (responseBody.contains("Nom de devise déjà utilisé")) {
+          return "NAME_EXIST";
+        } else if (responseBody.contains("Code déjà utilisé")) {
+          return "CODE_EXIST";
+        } else if (responseBody.contains("Le taux de conversion")) {
+          return "RATE_NOT_FOUND";
+        } else if (responseBody.contains("Le service de taux")) {
+          return "RATE_SERVICE_ERROR";
+        } else {
+          return "GENERAL_ERROR";
+        }
       } else {
-        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+        return "GENERAL_ERROR";
       }
     } catch (e) {
-      throw Exception("Erreur de connexion: $e");
+      // Gestion des erreurs de connexion
+      return "CONNECTION_ERROR";
     }
   }
 

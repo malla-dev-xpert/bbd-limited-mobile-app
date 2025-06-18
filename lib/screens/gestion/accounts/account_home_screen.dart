@@ -1,15 +1,18 @@
 import 'dart:async';
-import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/core/services/exchange_rate_service.dart';
+import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/versment_detail_modal.dart';
+import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/components/custom_dropdown.dart';
 
 class AccountHomeScreen extends StatefulWidget {
   @override
@@ -20,10 +23,14 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final TextEditingController searchController = TextEditingController();
   final VersementServices _versementServices = VersementServices();
   final AuthService _authService = AuthService();
+  final ExchangeRateService _exchangeRateService = ExchangeRateService();
+  final DeviseServices _deviseServices = DeviseServices();
 
-  List<Versement> _allPaiements = [];
-  List<Versement> _filteredPaiements = [];
+  List<Versement> _allVersements = [];
+  List<Versement> _filteredVersements = [];
+  List<Devise> _devises = [];
   String? _currentFilter;
+  double _totalVersementsUSD = 0.0;
 
   bool _isLoading = false;
   bool _refreshLoading = false;
@@ -33,12 +40,13 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
 
   @override
   void initState() {
     super.initState();
     fetchPaiements();
+    _loadDevises();
     _refreshController.stream.listen((_) {
       fetchPaiements(reset: true);
     });
@@ -50,6 +58,43 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     super.dispose();
   }
 
+  Future<void> _loadDevises() async {
+    try {
+      final devises = await _deviseServices.findAllDevises();
+      setState(() {
+        _devises = devises;
+      });
+    } catch (e) {
+      showErrorTopSnackBar(context, "Erreur lors du chargement des devises");
+    }
+  }
+
+  Future<void> _calculateTotalVersementsUSD() async {
+    if (_allVersements.isEmpty) {
+      setState(() {
+        _totalVersementsUSD = 0.0;
+      });
+      return;
+    }
+
+    double totalUSD = 0.0;
+    for (var versement in _allVersements) {
+      if (versement.montantVerser != null && versement.deviseCode != null) {
+        if (versement.deviseCode == 'CNY') {
+          totalUSD += versement.montantVerser!;
+        } else {
+          final rate =
+              await _exchangeRateService.getExchangeRate(versement.deviseCode!);
+          totalUSD += versement.montantVerser! / rate;
+        }
+      }
+    }
+
+    setState(() {
+      _totalVersementsUSD = totalUSD;
+    });
+  }
+
   Future<void> fetchPaiements({bool reset = false}) async {
     if (_isLoading || (!reset && !_hasMoreData)) return;
 
@@ -59,15 +104,15 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         _refreshLoading = true;
         currentPage = 0;
         _hasMoreData = true;
-        _allPaiements = [];
+        _allVersements = [];
       }
     });
     try {
       final paiement = await _versementServices.getAll(page: currentPage);
 
       setState(() {
-        _allPaiements.addAll(paiement);
-        _filteredPaiements = List.from(_allPaiements);
+        _allVersements.addAll(paiement);
+        _filteredVersements = List.from(_allVersements);
 
         if (paiement.isEmpty || paiement.length < 30) {
           _hasMoreData = false;
@@ -75,9 +120,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
           currentPage++;
         }
       });
+      await _calculateTotalVersementsUSD();
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur de récupération des paiements.");
-      print("Erreur de récupération des paiements : $e");
     } finally {
       setState(() {
         _isLoading = false;
@@ -88,24 +133,22 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   void filterPackages(String query) {
     setState(() {
-      _filteredPaiements = _allPaiements.where((pmt) {
+      _filteredVersements = _allVersements.where((pmt) {
         final searchPackage = pmt.reference!.toLowerCase().contains(
               query.toLowerCase(),
             );
 
-        bool allStatus = true;
-        if (_currentFilter == 'client') {
-          allStatus = pmt.partnerAccountType?.toLowerCase() == 'client';
-        } else if (_currentFilter == 'supplier') {
-          allStatus = pmt.partnerAccountType?.toLowerCase() == 'fournisseur';
+        bool deviseMatch = true;
+        if (_currentFilter != null) {
+          deviseMatch = pmt.deviseCode == _currentFilter;
         }
 
-        return searchPackage && allStatus;
+        return searchPackage && deviseMatch;
       }).toList();
     });
   }
 
-  void handleStatusFilter(String value) {
+  void handleStatusFilter(String? value) {
     setState(() {
       _currentFilter = value;
     });
@@ -122,7 +165,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return NewVersementModal(isVersementScreen: true);
+        return const NewVersementModal(isVersementScreen: true);
       },
     );
 
@@ -206,8 +249,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         );
       } else if (result == "DELETED") {
         setState(() {
-          _allPaiements.removeWhere((d) => d.id == versement.id);
-          _filteredPaiements.removeWhere((d) => d.id == versement.id);
+          _allVersements.removeWhere((d) => d.id == versement.id);
+          _filteredVersements.removeWhere((d) => d.id == versement.id);
         });
 
         showSuccessTopSnackBar(context, "Paiement supprimé avec succès");
@@ -290,11 +333,11 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                       ),
                       color: Colors.blue[50],
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Total des versements',
-                          value: _allPaiements.length.toString(),
-                          valueStyle: TextStyle(
+                          value: _allVersements.length.toString(),
+                          valueStyle: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
@@ -311,20 +354,11 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                       ),
                       color: Colors.amber[50],
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
                           title: 'Montant total',
-                          value: currencyFormat.format(
-                            _allPaiements.fold<double>(
-                              0,
-                              (sum, item) =>
-                                  sum +
-                                  (item.status != Status.DELETE
-                                      ? (item.montantRestant ?? 0)
-                                      : 0),
-                            ),
-                          ),
-                          valueStyle: TextStyle(
+                          value: currencyFormat.format(_totalVersementsUSD),
+                          valueStyle: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
@@ -349,7 +383,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     autocorrect: false,
                     decoration: InputDecoration(
                       labelText: 'Rechercher un paiement...',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -357,7 +391,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FiltreDropdown(onSelected: handleStatusFilter),
+                FiltreDropdown(
+                  onSelected: handleStatusFilter,
+                  devises: _devises,
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -377,7 +414,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     onPressed: () {
                       setState(() {
                         _currentFilter = null;
-                        _filteredPaiements = _allPaiements;
+                        _filteredVersements = _allVersements;
                         if (searchController.text.isNotEmpty) {
                           filterPackages(searchController.text);
                         }
@@ -406,8 +443,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         }
                         return false;
                       },
-                      child: _filteredPaiements.isEmpty
-                          ? Center(child: Text("Aucun paiement trouvé."))
+                      child: _filteredVersements.isEmpty
+                          ? const Center(child: Text("Aucun paiement trouvé."))
                           : RefreshIndicator(
                               onRefresh: () async {
                                 await fetchPaiements(reset: true);
@@ -417,10 +454,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                               backgroundColor: Colors.white,
                               child: ListView.builder(
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _filteredPaiements.length +
+                                itemCount: _filteredVersements.length +
                                     (_hasMoreData && _isLoading ? 1 : 0),
                                 itemBuilder: (context, index) {
-                                  if (index >= _filteredPaiements.length) {
+                                  if (index >= _filteredVersements.length) {
                                     return const Center(
                                       child: Padding(
                                         padding: EdgeInsets.all(8.0),
@@ -428,15 +465,20 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                       ),
                                     );
                                   }
-                                  final paiement = _filteredPaiements[index];
+                                  final paiement = _filteredVersements[index];
                                   return PaiementListItem(
                                     versement: paiement,
-                                    onTap: () =>
-                                        showVersementDetailsBottomSheet(
+                                    onTap: () => Navigator.push(
                                       context,
-                                      paiement,
-                                      () => fetchPaiements(
-                                        reset: true,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            VersementDetailScreen(
+                                          versement: paiement,
+                                          onVersementUpdated: () =>
+                                              fetchPaiements(
+                                            reset: true,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     onEdit: () => _showEditPaiementModal(
@@ -458,46 +500,31 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 }
 
 class FiltreDropdown extends StatelessWidget {
-  final Function(String) onSelected;
+  final Function(String?) onSelected;
+  final List<Devise> devises;
 
-  const FiltreDropdown({super.key, required this.onSelected});
+  const FiltreDropdown({
+    super.key,
+    required this.onSelected,
+    required this.devises,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7F78AF),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: PopupMenuButton<String>(
-        icon: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.filter_list, color: Colors.white),
-            SizedBox(width: 8),
-            Text(
-              'Filtrer',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(width: 8),
-          ],
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.35,
+      child: Container(
+        padding: const EdgeInsets.all(0),
+        child: DropDownCustom<Devise>(
+          items: devises,
+          selectedItem: null,
+          onChanged: (devise) {
+            onSelected(devise?.code);
+          },
+          itemToString: (devise) => devise.code,
+          hintText: 'Filtrer',
+          prefixIcon: Icons.filter_list,
         ),
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-        onSelected: onSelected,
-        itemBuilder: (BuildContext context) => [
-          const PopupMenuItem<String>(
-            value: 'client',
-            child: Text('Clients'),
-          ),
-          const PopupMenuItem<String>(
-            value: 'supplier',
-            child: Text('Fournisseurs'),
-          ),
-        ],
       ),
     );
   }

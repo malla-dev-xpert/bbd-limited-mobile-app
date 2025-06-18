@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/embarquement.dart';
@@ -14,7 +15,7 @@ Future<List<Containers>?> showAddContainerToHarborDialog(
     barrierDismissible: false,
     builder: (context) {
       return Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         backgroundColor: Colors.white,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
@@ -50,11 +51,13 @@ class _AddContainerToHarborDialogContentState
   late Future<List<Containers>> _availableContainers;
   final List<Containers> _selectedContainers = [];
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
-    _availableContainers = widget.containerServices.findAll();
+    _availableContainers =
+        widget.containerServices.findAllContainerNotInHarbor();
   }
 
   void _toggleContainerSelection(Containers container) {
@@ -73,13 +76,13 @@ class _AddContainerToHarborDialogContentState
     setState(() => _isLoading = true);
 
     try {
+      final user = await _authService.getUserInfo();
       final request = HarborEmbarquementRequest(
         harborId: widget.harborId.toInt(),
         containerId: _selectedContainers.map((p) => p.id!).toList(),
       );
-      final result = await widget.containerServices.embarquerContainerToHarbor(
-        request,
-      );
+      final result = await widget.containerServices
+          .embarquerContainerToHarbor(request, user!.id);
 
       if (result == "SUCCESS") {
         showSuccessTopSnackBar(context, "Conteneurs embarqués avec succès");
@@ -117,7 +120,7 @@ class _AddContainerToHarborDialogContentState
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Ajouter des conteneurs',
                 style: TextStyle(
                   fontSize: 20,
@@ -126,27 +129,27 @@ class _AddContainerToHarborDialogContentState
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.close),
+                icon: const Icon(Icons.close),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
           ),
         ),
-        Divider(height: 1),
+        const Divider(height: 1),
         Expanded(
           child: FutureBuilder<List<Containers>>(
             future: _availableContainers,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Erreur de chargement'));
+                return const Center(child: Text('Erreur de chargement'));
               }
 
               if (snapshot.data!.isEmpty) {
-                return Center(child: Text('Aucun colis disponible'));
+                return const Center(child: Text('Aucun colis disponible'));
               }
 
               return ListView.builder(
@@ -173,7 +176,7 @@ class _AddContainerToHarborDialogContentState
             },
           ),
         ),
-        Divider(height: 1),
+        const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -181,14 +184,13 @@ class _AddContainerToHarborDialogContentState
             children: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Annuler'),
+                child: const Text('Annuler'),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               ElevatedButton(
-                onPressed:
-                    _isLoading || _selectedContainers.isEmpty
-                        ? null
-                        : _addContainerToHarbor,
+                onPressed: _isLoading || _selectedContainers.isEmpty
+                    ? null
+                    : _addContainerToHarbor,
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith<Color>((
                     states,
@@ -202,7 +204,7 @@ class _AddContainerToHarborDialogContentState
                   }),
                   foregroundColor: MaterialStateProperty.all(Colors.white),
                   padding: MaterialStateProperty.all(
-                    EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   shape: MaterialStateProperty.all(
                     RoundedRectangleBorder(
@@ -212,28 +214,27 @@ class _AddContainerToHarborDialogContentState
                   enableFeedback: true,
                 ),
                 child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 200),
-                  child:
-                      _isLoading
-                          ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                          : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Ajouter (${_selectedContainers.length})',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ],
+                  duration: const Duration(milliseconds: 200),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Ajouter (${_selectedContainers.length})',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],

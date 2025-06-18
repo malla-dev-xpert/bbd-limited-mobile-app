@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -10,31 +12,31 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/pa
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 class PurchaseDialog extends StatefulWidget {
   final Function(Achat) onPurchaseComplete;
   final int clientId;
   final int versementId;
+  final String invoiceNumber;
 
-  const PurchaseDialog({
-    Key? key,
-    required this.onPurchaseComplete,
-    required this.clientId,
-    required this.versementId,
-  }) : super(key: key);
+  const PurchaseDialog(
+      {Key? key,
+      required this.onPurchaseComplete,
+      required this.clientId,
+      required this.versementId,
+      required this.invoiceNumber})
+      : super(key: key);
 
-  static void show(
-    BuildContext context,
-    Function(Achat) onPurchaseComplete,
-    int clientId,
-    int versementId,
-  ) {
+  static void show(BuildContext context, Function(Achat) onPurchaseComplete,
+      int clientId, int versementId, String invoiceNumber) {
     showDialog(
       context: context,
       builder: (context) => PurchaseDialog(
         onPurchaseComplete: onPurchaseComplete,
         clientId: clientId,
         versementId: versementId,
+        invoiceNumber: invoiceNumber,
       ),
     );
   }
@@ -66,9 +68,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       final suppliersData = await partnerServices.findSuppliers(page: 0);
       setState(() {
         suppliers = suppliersData;
-        if (suppliers.isNotEmpty) {
-          selectedSupplier = suppliers.first;
-        }
+        // selectedSupplier = null;
       });
     } catch (e) {
       if (mounted) {
@@ -86,35 +86,38 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     double unitPrice,
     int supplierId,
     String supplierName,
+    String invoiceNumber,
   ) {
-    // Conversion explicite et validation
-    final qty = quantity.toInt();
-    if (qty <= 0) {
-      showErrorTopSnackBar(context, "Quantité invalide");
-      return;
-    }
-
-    setState(
-      () => localItems.add({
+    setState(() {
+      localItems.add({
         'description': description,
-        'quantity': qty,
+        'quantity': quantity.toInt(),
         'unitPrice': unitPrice,
         'supplierId': supplierId,
         'supplier': supplierName,
-      }),
-    );
+        'invoiceNumber': invoiceNumber,
+      });
+    });
   }
 
   void _removeItem(int index) {
     setState(() => localItems.removeAt(index));
   }
 
-  Future<void> _submitForm() async {
-    if (selectedSupplier == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur.");
-      return;
-    }
+  void _duplicateItem(int index) {
+    setState(() {
+      final item = localItems[index];
+      localItems.add(Map<String, dynamic>.from(item));
+    });
+  }
 
+  void _editItem(int index, Map<String, dynamic> updatedItem) {
+    setState(() {
+      localItems[index] = updatedItem;
+    });
+  }
+
+  Future<void> _submitForm() async {
     if (localItems.isEmpty) {
       showErrorTopSnackBar(context, "Ajoutez au moins un article.");
       return;
@@ -131,13 +134,14 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final createAchatDto = CreateAchatDto(
         versementId: widget.versementId,
-        lignes: localItems
+        items: localItems
             .map(
-              (item) => CreateLigneDto(
-                descriptionItem: item['description']?.toString() ?? '',
-                quantityItem: (item['quantity'] as num?)?.toInt() ?? 0,
-                prixUnitaire: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
-                supplierId: selectedSupplier!.id,
+              (item) => CreateItemDto(
+                description: item['description']?.toString() ?? '',
+                quantity: (item['quantity'] as num?)?.toInt() ?? 0,
+                unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
+                invoiceNumber: item['invoiceNumber']?.toString() ?? '',
+                supplierId: item['supplierId']?.toInt() ?? 0,
               ),
             )
             .toList(),
@@ -145,35 +149,42 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       final result = await achatServices.createAchatForClient(
         clientId: widget.clientId,
-        supplierId: selectedSupplier!.id,
         userId: user!.id,
         dto: createAchatDto,
       );
 
       if (!mounted) return;
 
-      switch (result) {
-        case "ACHAT_CREATED":
-          // Récupérer l'achat créé
-          Navigator.pop(context, true);
-          showSuccessTopSnackBar(context, "Achat créé avec succès !");
-          break;
-        case "INVALID_VERSEMENT":
-          showErrorTopSnackBar(
-            context,
-            "Le versement ne correspond pas au client",
-          );
-          break;
-        case "INACTIVE_VERSEMENT":
-          showErrorTopSnackBar(context, "Le versement n'est pas actif");
-          break;
-        default:
-          showErrorTopSnackBar(context, "Erreur: $result");
+      if (result.isSuccess) {
+        // Créer un nouvel achat avec les données locales
+        final newAchat = Achat(
+          items: localItems
+              .map((item) => Items(
+                    description: item['description']?.toString(),
+                    quantity: item['quantity'] as int?,
+                    unitPrice: item['unitPrice'] as double?,
+                    supplierId: item['supplierId'] as int?,
+                    supplierName: item['supplier']?.toString(),
+                    status: Status.PENDING,
+                  ))
+              .toList(),
+        );
+
+        Navigator.pop(context, true);
+        widget.onPurchaseComplete(newAchat);
+        showSuccessTopSnackBar(context, "Achat créé avec succès !");
+      } else {
+        String message = result.errorMessage ?? "Erreur inconnue";
+        if (result.errors != null && result.errors!.isNotEmpty) {
+          message = result.errors!.join('\n');
+        }
+        showErrorTopSnackBar(context, message);
       }
     } catch (e) {
       if (mounted) {
         showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
       }
+      log(e.toString());
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -200,7 +211,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                   const Text(
                     'Nouvel Achat',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
                     ),
@@ -223,24 +234,27 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                               description,
                               quantity,
                               unitPrice,
-                              _,
-                              __,
+                              supplierId,
+                              supplierName,
+                              invoiceNumber,
                             ) {
-                              if (selectedSupplier != null) {
-                                _addItem(
-                                  description,
-                                  quantity,
-                                  unitPrice,
-                                  selectedSupplier!.id,
-                                  '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
-                                );
-                              }
+                              _addItem(
+                                description,
+                                quantity,
+                                unitPrice,
+                                supplierId,
+                                supplierName,
+                                invoiceNumber,
+                              );
                             },
                           ),
                           const SizedBox(height: 10),
                           PackageItemsList(
                             items: localItems,
+                            suppliers: suppliers,
                             onRemoveItem: _removeItem,
+                            onDuplicateItem: _duplicateItem,
+                            onEditItem: _editItem,
                           ),
                         ],
                       ),

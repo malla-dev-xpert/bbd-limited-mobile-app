@@ -12,6 +12,9 @@ class Containers {
   List<Packages>? packages;
   final int? userId;
   final String? userName;
+  final int? supplier_id;
+  final String? supplierName;
+  final String? supplierPhone;
   // final int? harborId;
   // final String? harborName;
 
@@ -26,8 +29,9 @@ class Containers {
     List<Packages>? packages,
     int? userId,
     String? userName,
-    // int? harborId,
-    // String? harborName,
+    int? supplier_id,
+    String? supplierName,
+    String? supplierPhone,
   }) {
     return Containers(
       id: id ?? this.id,
@@ -40,6 +44,9 @@ class Containers {
       packages: packages ?? this.packages,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
+      supplier_id: supplier_id ?? this.supplier_id,
+      supplierName: supplierName ?? this.supplierName,
+      supplierPhone: supplierPhone ?? this.supplierPhone,
       // harborId: harborId ?? this.harborId,
       // harborName: harborName ?? this.harborName,
     );
@@ -57,6 +64,9 @@ class Containers {
       'packages': packages?.map((e) => e.toJson()).toList(),
       'userId': userId,
       'userName': userName,
+      'supplier_id': supplier_id,
+      'supplierName': supplierName,
+      'supplierPhone': supplierPhone,
       // 'harborId': harborId,
       // 'harborName': harborName,
     };
@@ -73,6 +83,9 @@ class Containers {
     this.packages,
     this.userId,
     this.userName,
+    this.supplier_id,
+    this.supplierName,
+    this.supplierPhone,
     // this.harborId,
     // this.harborName,
   });
@@ -92,10 +105,9 @@ class Containers {
 
     List<Packages> packageList = [];
     if (json['packages'] != null) {
-      packageList =
-          (json['packages'] as List)
-              .map((item) => Packages.fromJson(item))
-              .toList();
+      packageList = (json['packages'] as List)
+          .map((item) => Packages.fromJson(item))
+          .toList();
     }
 
     return Containers(
@@ -111,6 +123,9 @@ class Containers {
       packages: packageList,
       userId: json['userId'] as int?,
       userName: json['userName'] as String?,
+      supplier_id: json['supplier_id'] as int?,
+      supplierName: json['supplierName'] as String?,
+      supplierPhone: json['supplierPhone'] as String?,
     );
   }
 }

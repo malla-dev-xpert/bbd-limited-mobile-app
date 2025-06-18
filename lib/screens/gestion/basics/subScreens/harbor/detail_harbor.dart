@@ -28,6 +28,35 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
   final HarborServices _harborServices = HarborServices();
   final ContainerServices _containerServices = ContainerServices();
   bool _isLoading = false;
+  bool _isRefreshing = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Containers> get _filteredContainers {
+    if (_searchQuery.isEmpty) {
+      return widget.harbor.containers
+              ?.where((c) =>
+                  c.status != Status.DELETE && c.status != Status.RETRIEVE)
+              .toList() ??
+          [];
+    }
+    return widget.harbor.containers
+            ?.where((c) =>
+                c.status != Status.DELETE &&
+                c.status != Status.RETRIEVE &&
+                (c.reference
+                        ?.toLowerCase()
+                        .contains(_searchQuery.toLowerCase()) ??
+                    false))
+            .toList() ??
+        [];
+  }
 
   Future<void> _handleAddContainers() async {
     if (_isLoading || !mounted) return;
@@ -163,34 +192,167 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
     );
   }
 
+  Future<void> fetchPackages() async {
+    try {
+      final updatedHarbor = await _harborServices.getHarborDetails(
+        widget.harbor.id,
+      );
+      if (mounted) {
+        setState(() {
+          widget.harbor.containers = updatedHarbor.containers;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(
+          context,
+          "Erreur lors de l'actualisation: ${e.toString()}",
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-        widget.harbor.createdAt != null
-            ? DateFormat.yMMMMEEEEd().format(widget.harbor.createdAt!)
-            : 'Date non disponible';
+    final formattedDate = widget.harbor.createdAt != null
+        ? DateFormat.yMMMMEEEEd().format(widget.harbor.createdAt!)
+        : 'Date non disponible';
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 150.0,
+            expandedHeight: 200.0,
             pinned: true,
+            actions: [
+              IconButton(
+                onPressed: _isRefreshing
+                    ? null
+                    : () async {
+                        setState(() => _isRefreshing = true);
+                        await fetchPackages();
+                        if (mounted) {
+                          setState(() => _isRefreshing = false);
+                        }
+                      },
+                tooltip: 'Rafraîchir',
+                icon: _isRefreshing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(200),
+                          color: Colors.white,
+                        ),
+                        child: const Icon(
+                          Icons.refresh,
+                          color: Color(0xFF1A1E49),
+                        ),
+                      ),
+              ),
+            ],
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  widget.harbor.name ?? 'Port sans nom',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                  maxLines: 2,
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.harbor.name ?? 'Port sans nom',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                      ),
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            widget.harbor.location ?? 'Adresse non spécifiée',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_today,
+                                size: 16,
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  formattedDate,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.inventory,
+                                size: 16,
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  "${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0} conteneurs",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              centerTitle: true,
+              centerTitle: false,
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
               background: Hero(
                 tag: 'portImage-${widget.harbor.id}',
                 child: Stack(
@@ -211,112 +373,22 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(20),
                         ),
-                        color: Colors.black.withOpacity(0.6),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.3),
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
                       ),
-                      alignment: Alignment.center,
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          _buildHarborInfoSection(formattedDate),
           _buildContainersListSection(),
-        ],
-      ),
-    );
-  }
-
-  SliverList _buildHarborInfoSection(String formattedDate) {
-    return SliverList(
-      delegate: SliverChildListDelegate([
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Informations générales du port",
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 5),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: const Color(0xFF7F78AF),
-                    style: BorderStyle.solid,
-                  ),
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoRow(
-                      icon: Icons.local_shipping,
-                      text:
-                          "Nom du port : ${widget.harbor.name ?? 'Non spécifié'}",
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.maps_home_work,
-                      text:
-                          "Adresse : ${widget.harbor.location ?? 'Non spécifiée'}",
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.calendar_month,
-                      text: "Date de création : $formattedDate",
-                    ),
-                    _buildInfoRow(
-                      icon: Icons.numbers,
-                      text:
-                          "Nombre de conteneur : ${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0}",
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        TextButton.icon(
-                          onPressed: () {},
-                          label: const Text("Modifier"),
-                          icon: const Icon(Icons.edit),
-                        ),
-                        TextButton.icon(
-                          onPressed: () {},
-                          label: const Text(
-                            "Supprimer",
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.delete_forever,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ]),
-    );
-  }
-
-  Widget _buildInfoRow({required IconData icon, required String text}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: const Color(0xFF7F78AF)),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text)),
         ],
       ),
     );
@@ -330,39 +402,110 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.harbor.containers?.isNotEmpty ?? false)
+              if (widget.harbor.containers?.isNotEmpty ?? false) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const TextButton(
-                      onPressed: null,
-                      child: Text(
-                        "La liste des conteneurs",
-                        style: TextStyle(color: Colors.black),
+                    const Text(
+                      "Liste des conteneurs",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     TextButton.icon(
                       onPressed: _isLoading ? null : _handleAddContainers,
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFF7F78AF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       label: const Text("Embarquer"),
                       icon: const Icon(Icons.add),
                     ),
                   ],
                 ),
-              const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher un conteneur...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (widget.harbor.containers == null ||
                   widget.harbor.containers!.isEmpty)
                 _buildEmptyContainersState()
+              else if (_searchQuery.isNotEmpty && _filteredContainers.isEmpty)
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 48,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Aucun conteneur trouvé",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Aucun conteneur ne correspond à votre recherche",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[500],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
               else
                 Column(
-                  children:
-                      widget.harbor.containers!
-                          .where(
-                            (element) =>
-                                element.status != Status.DELETE &&
-                                element.status != Status.RETRIEVE,
-                          )
-                          .map((item) => _buildContainerItem(item))
-                          .toList(),
+                  children: _filteredContainers
+                      .map((item) => _buildContainerItem(item))
+                      .toList(),
                 ),
             ],
           ),
@@ -373,99 +516,159 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
 
   Widget _buildEmptyContainersState() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text("Pas de conteneurs pour ce port."),
-          const SizedBox(height: 10),
-          ElevatedButton.icon(
-            onPressed: _isLoading ? null : _handleAddContainers,
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              "Embarquer un conteneur",
-              style: TextStyle(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7F78AF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.height * 0.2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Pas de conteneurs pour ce port."),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _handleAddContainers,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                "Embarquer un conteneur",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7F78AF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildContainerItem(Containers item) {
-    return Dismissible(
-      key: Key(item.id?.toString() ?? DateTime.now().toString()),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        padding: const EdgeInsets.only(right: 16),
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        child: const Icon(Icons.delete, color: Colors.white, size: 30),
-      ),
-      confirmDismiss: (_) => _handleContainerDismiss(item),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () => _showContainerDetails(item),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Dismissible(
+        key: Key(item.id?.toString() ?? DateTime.now().toString()),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          padding: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(
+            color: Colors.red,
             borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[200]!, width: 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      color: Colors.green[50]!,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Iconify(
-                      Carbon.container_registry,
-                      color:
-                          item.isAvailable == true ? Colors.green : Colors.grey,
-                    ),
+          ),
+          alignment: Alignment.centerRight,
+          child: const Icon(Icons.delete, color: Colors.white, size: 30),
+        ),
+        confirmDismiss: (_) => _handleContainerDismiss(item),
+        child: InkWell(
+          onTap: () => _showContainerDetails(item),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12.0),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50]!,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.reference ?? 'Sans référence',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          "Nombre de colis: ${item.packages?.where((c) => c.status != Status.DELETE && c.status != Status.DELETE_ON_CONTAINER).length ?? 0}",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        Text(
-                          "Dimensions: ${item.size} pieds",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: Iconify(
+                    Carbon.container_registry,
+                    size: 24,
+                    color:
+                        item.isAvailable == true ? Colors.green : Colors.grey,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.reference ?? 'Sans référence',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.inventory,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${item.packages?.where((c) => c.status != Status.DELETE && c.status != Status.DELETE_ON_CONTAINER).length ?? 0} colis",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(
+                            Icons.straighten,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${item.size} pieds",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person_3,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.supplier_id != null
+                                ? '${item.supplierName ?? ""} | ${item.supplierPhone ?? ""}'
+                                : 'BBD Limited',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey[400],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-        ],
+        ),
       ),
     );
   }
@@ -475,7 +678,7 @@ class _ContainerDetailsModal extends StatelessWidget {
   final Containers item;
 
   const _ContainerDetailsModal({required this.item, Key? key})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -551,14 +754,13 @@ class _ContainerDetailsModal extends StatelessWidget {
   }
 
   Widget _buildPackagesSection() {
-    final packages =
-        item.packages
-            ?.where(
-              (p) =>
-                  p.status != Status.DELETE &&
-                  p.status != Status.DELETE_ON_CONTAINER,
-            )
-            .toList();
+    final packages = item.packages
+        ?.where(
+          (p) =>
+              p.status != Status.DELETE &&
+              p.status != Status.DELETE_ON_CONTAINER,
+        )
+        .toList();
 
     return Padding(
       padding: const EdgeInsets.all(16),

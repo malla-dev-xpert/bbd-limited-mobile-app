@@ -110,7 +110,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                 children: [
                   Row(
                     children: [
-                      Expanded(
+                      const Expanded(
                         child: Text(
                           "Ajouter un colis",
                           style: TextStyle(
@@ -282,7 +282,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     flex: 1,
                                     child: IconButton(
                                       onPressed: _showCreateClientBottomSheet,
-                                      icon: Icon(Icons.add),
+                                      icon: const Icon(Icons.add),
                                     ),
                                   ),
                                 ],
@@ -298,12 +298,12 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                 showCountryPicker(
                                   context: context,
                                   showPhoneCode: true,
-                                  countryListTheme: CountryListThemeData(
+                                  countryListTheme: const CountryListThemeData(
                                     flagSize: 25,
                                     backgroundColor: Colors.white,
-                                    textStyle: const TextStyle(fontSize: 16),
+                                    textStyle: TextStyle(fontSize: 16),
                                     bottomSheetHeight: 300,
-                                    borderRadius: const BorderRadius.only(
+                                    borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(20),
                                       topRight: Radius.circular(20),
                                     ),
@@ -368,12 +368,12 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                 showCountryPicker(
                                   context: context,
                                   showPhoneCode: true,
-                                  countryListTheme: CountryListThemeData(
+                                  countryListTheme: const CountryListThemeData(
                                     flagSize: 25,
                                     backgroundColor: Colors.white,
-                                    textStyle: const TextStyle(fontSize: 16),
+                                    textStyle: TextStyle(fontSize: 16),
                                     bottomSheetHeight: 300,
-                                    borderRadius: const BorderRadius.only(
+                                    borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(20),
                                       topRight: Radius.circular(20),
                                     ),
@@ -502,7 +502,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         ),
                                       ),
                                     ),
-                                    icon: Icon(Icons.add),
+                                    icon: const Icon(Icons.add),
                                   ),
                                 ),
                               ],
@@ -551,7 +551,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         ),
                                       ),
                                     ),
-                                    icon: Icon(Icons.add),
+                                    icon: const Icon(Icons.add),
                                   ),
                                 ),
                               ],

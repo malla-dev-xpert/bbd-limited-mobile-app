@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:bbd_limited/models/items.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -7,7 +7,7 @@ class ItemServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<List<Item>> findByPackageId(int packageId) async {
+  Future<List<Items>> findByPackageId(int packageId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/items/package/$packageId'),
     );
@@ -16,7 +16,7 @@ class ItemServices {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
       );
-      return jsonBody.map((e) => Item.fromJson(e)).toList();
+      return jsonBody.map((e) => Items.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des articles");
     }
@@ -47,7 +47,7 @@ class ItemServices {
     }
   }
 
-  Future<bool> updateItem(int id, int? packageId, Item dto) async {
+  Future<bool> updateItem(int id, int? packageId, Items dto) async {
     try {
       final url = Uri.parse('$baseUrl/items/update/$id?packageId=$packageId');
       final headers = {'Content-Type': 'application/json'};
