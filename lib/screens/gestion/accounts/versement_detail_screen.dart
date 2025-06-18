@@ -512,10 +512,21 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       );
 
       if (result.isSuccess) {
+        for (var achat in widget.versement.achats ?? []) {
+          for (var item in achat.items ?? []) {
+            if (item.id?.toString() == itemId) {
+              item.status = Status.RECEIVED;
+              break;
+            }
+          }
+        }
+
         setState(() {
           _confirmedArticles.add(itemId);
         });
-        showSuccessTopSnackBar(context, "Article confirmé avec succès");
+        showSuccessTopSnackBar(context, "Article reçu avec succès");
+
+        widget.onVersementUpdated?.call();
       } else {
         showErrorTopSnackBar(
             context, result.errorMessage ?? "Erreur lors de la confirmation");
