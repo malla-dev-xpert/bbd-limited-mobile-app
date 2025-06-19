@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
+import 'customer_purchases_dialog.dart';
 
 class CustomersWithPurchasesBottomSheet extends StatefulWidget {
   final Function(Partner)? onCustomerSelected;
@@ -103,6 +104,18 @@ class _CustomersWithPurchasesBottomSheetState
       }
     }
     return total;
+  }
+
+  void _showCustomerPurchasesDialog(Partner customer) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomerPurchasesDialog(
+          customer: customer,
+          onCustomerSelected: widget.onCustomerSelected,
+        );
+      },
+    );
   }
 
   @override
@@ -246,8 +259,7 @@ class _CustomersWithPurchasesBottomSheetState
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(16),
                                 onTap: () {
-                                  widget.onCustomerSelected?.call(customer);
-                                  Navigator.pop(context);
+                                  _showCustomerPurchasesDialog(customer);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
@@ -327,6 +339,12 @@ class _CustomersWithPurchasesBottomSheetState
                                           ],
                                         ),
                                       ),
+
+                                      const SizedBox(width: 16),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 14,
+                                      )
                                     ],
                                   ),
                                 ),
