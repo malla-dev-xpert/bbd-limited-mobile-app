@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'historique_achats_screen.dart';
 import 'widgets/customers_with_purchases_bottom_sheet.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'widgets/purchase_wizard_dialog.dart';
 
 class SalesHomeScreen extends StatelessWidget {
   const SalesHomeScreen({super.key});
@@ -105,7 +106,12 @@ class SalesHomeScreen extends StatelessWidget {
                       context,
                       'Nouveau achat',
                       Icons.add_shopping_cart,
-                      () {},
+                      () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const PurchaseWizardDialog(),
+                        );
+                      },
                       Colors.blue,
                     ),
                     _buildActionCard(
