@@ -10,16 +10,19 @@ class VersementServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<List<Versement>> getByClient(int cliendId, {int page = 0}) async {
+  Future<List<Versement>> getByClient(int clientId, {int page = 0}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/versements?cliendId=$cliendId&page=$page'),
+      Uri.parse('$baseUrl/versements?page=$page'),
     );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
       );
-      return jsonBody.map((e) => Versement.fromJson(e)).toList();
+      return jsonBody
+          .map((e) => Versement.fromJson(e))
+          .where((v) => v.partnerId == clientId)
+          .toList();
     } else {
       throw Exception("Erreur lors du chargement des versements");
     }

@@ -269,19 +269,21 @@ class _SelectCustomerAndVersementStepState
               if (_selectedCustomer != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: DropDownCustom<Versement>(
-                    items: _versements,
-                    selectedItem: _selectedVersement,
-                    onChanged: (versement) {
-                      setState(() {
-                        _selectedVersement = versement;
-                      });
-                    },
-                    itemToString: (v) =>
-                        'Ref: ${v.reference ?? ''} - Montant: ${v.montantVerser?.toStringAsFixed(0) ?? ''}',
-                    hintText: 'Choisir un versement',
-                    prefixIcon: Icons.account_balance_wallet,
-                  ),
+                  child: isLoadingVersements
+                      ? const Center(child: CircularProgressIndicator())
+                      : DropDownCustom<Versement>(
+                          items: _versements,
+                          selectedItem: _selectedVersement,
+                          onChanged: (versement) {
+                            setState(() {
+                              _selectedVersement = versement;
+                            });
+                          },
+                          itemToString: (v) =>
+                              '${v.reference ?? ''} -  ${v.montantVerser?.toStringAsFixed(0) ?? ''}',
+                          hintText: 'Choisir un versement',
+                          prefixIcon: Icons.account_balance_wallet,
+                        ),
                 ),
               const SizedBox(height: 22),
               Row(

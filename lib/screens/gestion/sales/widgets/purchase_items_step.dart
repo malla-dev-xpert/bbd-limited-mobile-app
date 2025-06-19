@@ -9,6 +9,7 @@ import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/services/partner_services.dart';
 
 class PurchaseItemsStep extends StatefulWidget {
   final Partner customer;
@@ -36,6 +37,8 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
   List<Map<String, dynamic>> _items = [];
   bool _isLoading = false;
+  List<Partner> _suppliers = [];
+  bool _isSuppliersLoading = true;
   final AchatServices achatServices = AchatServices();
   final AuthService authService = AuthService();
 
@@ -43,6 +46,23 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
   void initState() {
     super.initState();
     _items = List<Map<String, dynamic>>.from(widget.initialItems);
+    _loadSuppliers();
+  }
+
+  Future<void> _loadSuppliers() async {
+    try {
+      final suppliers = await PartnerServices().findSuppliers();
+      setState(() {
+        _suppliers = suppliers;
+        _isSuppliersLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isSuppliersLoading = false;
+      });
+      showErrorTopSnackBar(
+          context, "Erreur lors du chargement des fournisseurs");
+    }
   }
 
   void _addItem(
@@ -140,6 +160,9 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isSuppliersLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -161,17 +184,18 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
         const SizedBox(height: 12),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(0.0),
+            padding: const EdgeInsets.only(top: 20.0),
             child: Column(
               children: [
                 PackageItemForm(
                   onAddItem: _addItem,
+                  suppliers: _suppliers,
                 ),
                 const SizedBox(height: 10),
                 Expanded(
                   child: PackageItemsList(
                     items: _items,
-                    suppliers: [], // Les fournisseurs sont gérés dans chaque item
+                    suppliers: _suppliers,
                     onRemoveItem: _removeItem,
                     onDuplicateItem: _duplicateItem,
                     onEditItem: _editItem,

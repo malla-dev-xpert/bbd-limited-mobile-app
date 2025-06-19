@@ -15,10 +15,12 @@ class PackageItemForm extends StatefulWidget {
     String supplierName,
     String invoiceNumber,
   ) onAddItem;
+  final List<Partner> suppliers;
 
   const PackageItemForm({
     Key? key,
     required this.onAddItem,
+    required this.suppliers,
   }) : super(key: key);
 
   @override
@@ -34,29 +36,13 @@ class _PackageItemFormState extends State<PackageItemForm> {
   final PartnerServices partnerServices = PartnerServices();
   ValueKey _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
 
-  List<Partner> suppliers = [];
+  List<Partner> get suppliers => widget.suppliers;
   Partner? selectedSupplier;
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSupplier();
-  }
-
-  Future<void> _loadSupplier() async {
-    setState(() => isLoading = true);
-    try {
-      final supplierData = await partnerServices.findSuppliers(page: 0);
-
-      setState(() {
-        suppliers = supplierData;
-        isLoading = false;
-      });
-    } catch (_) {
-      setState(() => isLoading = false);
-      showErrorTopSnackBar(context, "Erreur lors du chargement des données");
-    }
   }
 
   @override
@@ -100,14 +86,14 @@ class _PackageItemFormState extends State<PackageItemForm> {
                       builder: (context) => CreateSupplierBottomSheet(
                         onSupplierCreated: () async {
                           // Recharger la liste des fournisseurs
-                          await _loadSupplier();
+                          // await _loadSupplier();
                         },
                       ),
                     );
 
                     if (result == true) {
                       // Le fournisseur a été créé avec succès
-                      await _loadSupplier();
+                      // await _loadSupplier();
                     }
                   },
                   icon: Icon(Icons.add, color: Colors.grey[500]),

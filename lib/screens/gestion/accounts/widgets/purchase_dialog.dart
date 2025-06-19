@@ -247,6 +247,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                                 invoiceNumber,
                               );
                             },
+                            suppliers: suppliers,
                           ),
                           const SizedBox(height: 10),
                           PackageItemsList(
