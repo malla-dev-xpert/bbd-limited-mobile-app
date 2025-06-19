@@ -3,9 +3,57 @@ import 'historique_achats_screen.dart';
 import 'widgets/customers_with_purchases_bottom_sheet.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'widgets/purchase_wizard_dialog.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:intl/intl.dart';
 
-class SalesHomeScreen extends StatelessWidget {
+class SalesHomeScreen extends StatefulWidget {
   const SalesHomeScreen({super.key});
+
+  @override
+  State<SalesHomeScreen> createState() => _SalesHomeScreenState();
+}
+
+class _SalesHomeScreenState extends State<SalesHomeScreen> {
+  int achatsDuMoisCount = 0;
+  double chiffreAffaires = 0;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    setState(() => isLoading = true);
+    try {
+      final achats = await AchatServices().findAll();
+      final now = DateTime.now();
+      // Filtrer les achats du mois courant
+      final achatsDuMois = achats
+          .where((achat) =>
+              achat.createdAt != null &&
+              achat.createdAt!.year == now.year &&
+              achat.createdAt!.month == now.month)
+          .toList();
+
+      final int count = achatsDuMois.length;
+      final double total = achatsDuMois.fold(
+          0.0, (sum, achat) => sum + (achat.montantTotal ?? 0.0));
+
+      setState(() {
+        achatsDuMoisCount = count;
+        chiffreAffaires = total;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        achatsDuMoisCount = 0;
+        chiffreAffaires = 0;
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,22 +100,19 @@ class SalesHomeScreen extends StatelessWidget {
                           children: [
                             _buildStatItem(
                               context,
-                              'Ventes du jour',
-                              '0',
-                              Icons.today,
-                              Colors.white,
-                            ),
-                            _buildStatItem(
-                              context,
-                              'Ventes du mois',
-                              '0',
+                              'Achats du mois',
+                              isLoading ? '...' : achatsDuMoisCount.toString(),
                               Icons.calendar_month,
                               Colors.white,
                             ),
                             _buildStatItem(
                               context,
                               'Chiffre d\'affaires',
-                              '0',
+                              isLoading
+                                  ? '...'
+                                  : NumberFormat.currency(
+                                          locale: 'fr_FR', symbol: '¥')
+                                      .format(chiffreAffaires),
                               Icons.currency_yen,
                               Colors.white,
                             ),
@@ -269,10 +314,8 @@ class SalesHomeScreen extends StatelessWidget {
         builder: (context, scrollController) =>
             CustomersWithPurchasesBottomSheet(
           onCustomerSelected: (Partner customer) {
-            // Ici vous pouvez ajouter la logique pour gérer la sélection du client
-            // Par exemple, naviguer vers une page de détails ou ouvrir un formulaire
             print(
-                'Client sélectionné: ${customer.firstName} ${customer.lastName}');
+                'Client sélectionné: [200m${customer.firstName} ${customer.lastName}[0m');
           },
         ),
       ),
