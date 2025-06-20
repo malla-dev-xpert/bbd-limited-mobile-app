@@ -9,6 +9,8 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
+import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/models/versement.dart';
 
 enum OperationType { versements, expeditions }
 
@@ -30,6 +32,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   OperationType _selectedOperationType = OperationType.versements;
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
   double _totalVersementsUSD = 0.0;
+  VersementType? _selectedVersementType;
 
   @override
   void initState() {
@@ -107,6 +110,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           final reference = expedition.ref?.toLowerCase() ?? '';
           final searchLower = query.toLowerCase();
           return reference.contains(searchLower);
+        }).toList();
+      }
+      if (_selectedVersementType != null) {
+        _filteredVersements = _filteredVersements?.where((versement) {
+          return versement.type ==
+              _selectedVersementType!.toString().split('.').last;
         }).toList();
       }
       _sortVersementsByDate();
@@ -191,7 +200,34 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           const SizedBox(height: 30),
           _buildOperationTypeSelector(),
           const SizedBox(height: 16),
-          _buildSearchBar(),
+          Row(
+            children: [
+              Expanded(flex: 3, child: _buildSearchBar()),
+              if (_selectedOperationType == OperationType.versements)
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    child: DropDownCustom<VersementType?>(
+                      items: [null, ...VersementType.values],
+                      selectedItem: _selectedVersementType,
+                      onChanged: (type) {
+                        setState(() {
+                          _selectedVersementType = type;
+                        });
+                        _filterOperations(_searchController.text);
+                      },
+                      itemToString: (type) => type == null
+                          ? 'Tous les types'
+                          : type.toString().split('.').last,
+                      hintText: 'Trier par',
+                      // prefixIcon: Icons.category,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
           Expanded(child: _buildOperationsList(currencyFormat, context)),
         ],
@@ -266,7 +302,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.only(left: 14),
       child: TextField(
         controller: _searchController,
         onChanged: _filterOperations,
@@ -279,7 +315,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           ),
           filled: true,
           fillColor: Colors.grey[50],
-          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(vertical: 18),
         ),
       ),
     );
@@ -497,8 +533,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
           final versementCurrencyFormat = NumberFormat.currency(
             locale: 'fr_FR',
-            symbol: versement.deviseCode ?? 'USD',
+            symbol: versement.deviseCode ?? 'CNY',
           );
+
+          String typeLabel = versement.type != null
+              ? versement.type!.substring(0, 1).toUpperCase() +
+                  versement.type!.substring(1)
+              : 'Type inconnu';
 
           return Container(
             padding: const EdgeInsets.all(0),
@@ -527,7 +568,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
-                spacing: 5,
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,

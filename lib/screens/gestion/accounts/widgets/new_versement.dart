@@ -33,8 +33,6 @@ class NewVersementModal extends StatefulWidget {
   State<NewVersementModal> createState() => _NewVersementModalState();
 }
 
-enum VersementType { general, dette, commande, compteBancaire, autres }
-
 class _NewVersementModalState extends State<NewVersementModal>
     with SingleTickerProviderStateMixin {
   int currentStep = 0;
