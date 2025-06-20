@@ -135,7 +135,7 @@ class _LoginState extends State<Login> {
               ),
               width: double.infinity,
               constraints: BoxConstraints(
-                minHeight: isSmallScreen ? 250 : 350,
+                minHeight: screenHeight * 0.8,
                 maxHeight: screenHeight * 0.8,
               ),
               decoration: const BoxDecoration(
