@@ -1,76 +1,75 @@
 import 'package:flutter/material.dart';
 
 class ReportCard extends StatelessWidget {
-  final IconData icon;
   final String title;
-  final int quantity;
+  final String value;
+  final Color backgroundColor;
+  final Color textColor;
+  final IconData? icon;
 
   const ReportCard({
     super.key,
-    required this.icon,
     required this.title,
-    required this.quantity,
+    required this.value,
+    required this.backgroundColor,
+    required this.textColor,
+    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      color: const Color(0xFF13084F),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.only(
-          top: 20,
-          bottom: 20,
-          left: 16,
-          right: 30,
-        ),
-        child: Row(
-          spacing: 10,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 30,
-                  color: const Color(0xFF13084F), // 🔥 icône en blanc
-                ),
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.55,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 5,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.22),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                color: textColor.withOpacity(0.85),
+                size: 20,
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    letterSpacing: -1,
-                  ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.85),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
                 ),
-                Text(
-                  quantity.toString(),
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

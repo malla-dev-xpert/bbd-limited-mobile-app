@@ -109,9 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               horizontal: 3.0,
                             ),
                             child: ReportCard(
-                              icon: data.icon,
                               title: data.title,
-                              quantity: data.quantity,
+                              value: data.value,
+                              backgroundColor: data.backgroundColor,
+                              textColor: data.textColor,
+                              icon: data.icon,
                             ),
                           );
                         }).toList(),

@@ -2,31 +2,34 @@
 import 'package:flutter/material.dart';
 
 class ReportCardData {
-  final IconData icon;
   final String title;
-  final int quantity;
+  final String value;
+  final Color backgroundColor;
+  final Color textColor;
+  final IconData? icon;
 
   ReportCardData({
-    required this.icon,
     required this.title,
-    required this.quantity,
+    required this.value,
+    required this.backgroundColor,
+    required this.textColor,
+    this.icon,
   });
 }
 
 List<ReportCardData> reportCardDataList = [
   ReportCardData(
-    icon: Icons.monetization_on_rounded,
-    title: 'Total des partenaires',
-    quantity: 100,
+    title: 'Balance Actuelle',
+    value: '4 1260.50',
+    backgroundColor: Colors.amber[800]!, // Orange
+    textColor: Colors.white,
+    icon: Icons.wallet,
   ),
   ReportCardData(
-    icon: Icons.warehouse,
-    title: 'Total des transporteurs',
-    quantity: 200,
-  ),
-  ReportCardData(
-    icon: Icons.monetization_on_rounded,
-    title: 'Total des ports',
-    quantity: 300,
+    title: 'Total des dettes',
+    value: '4 320.50',
+    backgroundColor: const Color(0xFF1A1E49), // Blue
+    textColor: Colors.white,
+    icon: Icons.currency_yen_rounded,
   ),
 ];
