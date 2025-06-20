@@ -28,8 +28,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   List<Versement> _allVersements = [];
   List<Versement> _filteredVersements = [];
-  List<Devise> _devises = [];
-  String? _currentFilter;
+  final List<VersementType> _types = VersementType.values;
+  VersementType? _currentTypeFilter;
   double _totalVersementsUSD = 0.0;
 
   bool _isLoading = false;
@@ -46,7 +46,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void initState() {
     super.initState();
     fetchPaiements();
-    _loadDevises();
     _refreshController.stream.listen((_) {
       fetchPaiements(reset: true);
     });
@@ -56,17 +55,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void dispose() {
     _refreshController.close();
     super.dispose();
-  }
-
-  Future<void> _loadDevises() async {
-    try {
-      final devises = await _deviseServices.findAllDevises();
-      setState(() {
-        _devises = devises;
-      });
-    } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors du chargement des devises");
-    }
   }
 
   Future<void> _calculateTotalVersementsUSD() async {
@@ -137,22 +125,19 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         final searchPackage = pmt.reference!.toLowerCase().contains(
               query.toLowerCase(),
             );
-
-        bool deviseMatch = true;
-        if (_currentFilter != null) {
-          deviseMatch = pmt.deviseCode == _currentFilter;
+        bool typeMatch = true;
+        if (_currentTypeFilter != null) {
+          typeMatch = pmt.type == _currentTypeFilter!.name;
         }
-
-        return searchPackage && deviseMatch;
+        return searchPackage && typeMatch;
       }).toList();
     });
   }
 
-  void handleStatusFilter(String? value) {
+  void handleTypeFilter(VersementType? value) {
     setState(() {
-      _currentFilter = value;
+      _currentTypeFilter = value;
     });
-
     filterPackages(searchController.text);
   }
 
@@ -264,6 +249,21 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         context,
         "Erreur lors de la suppression: ${e.toString()}",
       );
+    }
+  }
+
+  String _typeToLabel(VersementType type) {
+    switch (type) {
+      case VersementType.general:
+        return "Général";
+      case VersementType.dette:
+        return "Dette";
+      case VersementType.commande:
+        return "Commande";
+      case VersementType.compteBancaire:
+        return "Compte Bancaire";
+      case VersementType.autres:
+        return "Autres";
     }
   }
 
@@ -391,9 +391,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FiltreDropdown(
-                  onSelected: handleStatusFilter,
-                  devises: _devises,
+                FiltreTypeDropdown(
+                  onSelected: handleTypeFilter,
+                  types: _types,
                 ),
               ],
             ),
@@ -402,18 +402,18 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "La liste des versements${_currentFilter == null ? '' : _currentFilter == 'client' ? ' clients' : _currentFilter == 'supplier' ? ' fournisseurs' : ''}",
-                  style: const TextStyle(
+                const Text(
+                  "La liste des versements",
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (_currentFilter != null)
+                if (_currentTypeFilter != null)
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        _currentFilter = null;
+                        _currentTypeFilter = null;
                         _filteredVersements = _allVersements;
                         if (searchController.text.isNotEmpty) {
                           filterPackages(searchController.text);
@@ -499,32 +499,27 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   }
 }
 
-class FiltreDropdown extends StatelessWidget {
-  final Function(String?) onSelected;
-  final List<Devise> devises;
+class FiltreTypeDropdown extends StatelessWidget {
+  final Function(VersementType?) onSelected;
+  final List<VersementType> types;
 
-  const FiltreDropdown({
+  const FiltreTypeDropdown({
     super.key,
     required this.onSelected,
-    required this.devises,
+    required this.types,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.35,
-      child: Container(
-        padding: const EdgeInsets.all(0),
-        child: DropDownCustom<Devise>(
-          items: devises,
-          selectedItem: null,
-          onChanged: (devise) {
-            onSelected(devise?.code);
-          },
-          itemToString: (devise) => devise.code,
-          hintText: 'Filtrer',
-          prefixIcon: Icons.filter_list,
-        ),
+      child: DropDownCustom<VersementType>(
+        items: types,
+        selectedItem: null,
+        onChanged: onSelected,
+        itemToString: (type) => type.name,
+        hintText: 'Filtrer par type',
+        prefixIcon: Icons.filter_list,
       ),
     );
   }
