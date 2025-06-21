@@ -28,6 +28,7 @@ class CreateItemDto {
   final double unitPrice;
   final String invoiceNumber;
   final int supplierId;
+  final double salesRate;
 
   CreateItemDto({
     required this.description,
@@ -35,6 +36,7 @@ class CreateItemDto {
     required this.unitPrice,
     required this.invoiceNumber,
     required this.supplierId,
+    required this.salesRate,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +46,7 @@ class CreateItemDto {
       'unitPrice': unitPrice,
       'invoiceNumber': invoiceNumber,
       'supplierId': supplierId,
+      'salesRate': salesRate,
     };
   }
 }

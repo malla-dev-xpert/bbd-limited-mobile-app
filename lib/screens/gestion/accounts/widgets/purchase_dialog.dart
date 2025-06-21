@@ -87,6 +87,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
     int supplierId,
     String supplierName,
     String invoiceNumber,
+    double salesRate,
   ) {
     setState(() {
       localItems.add({
@@ -96,6 +97,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
         'supplierId': supplierId,
         'supplier': supplierName,
         'invoiceNumber': invoiceNumber,
+        'salesRate': salesRate,
       });
     });
   }
@@ -142,6 +144,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
                 invoiceNumber: item['invoiceNumber']?.toString() ?? '',
                 supplierId: item['supplierId']?.toInt() ?? 0,
+                salesRate: (item['salesRate'] as num?)?.toDouble() ?? 0.0,
               ),
             )
             .toList(),
@@ -157,21 +160,20 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       if (result.isSuccess) {
         // Créer un nouvel achat avec les données locales
-        final newAchat = Achat(
-          items: localItems
-              .map((item) => Items(
-                    description: item['description']?.toString(),
-                    quantity: item['quantity'] as int?,
-                    unitPrice: item['unitPrice'] as double?,
-                    supplierId: item['supplierId'] as int?,
-                    supplierName: item['supplier']?.toString(),
-                    status: Status.PENDING,
-                  ))
-              .toList(),
-        );
+        // final newAchat = Achat(
+        //   items: localItems
+        //       .map((item) => Items(
+        //             description: item['description']?.toString(),
+        //             quantity: item['quantity'] as int?,
+        //             unitPrice: item['unitPrice'] as double?,
+        //             supplierId: item['supplierId'] as int?,
+        //             status: Status.PENDING,
+        //           ))
+        //       .toList(),
+        // );
 
         Navigator.pop(context, true);
-        widget.onPurchaseComplete(newAchat);
+        // widget.onPurchaseComplete(newAchat);
         showSuccessTopSnackBar(context, "Achat créé avec succès !");
       } else {
         String message = result.errorMessage ?? "Erreur inconnue";
@@ -237,6 +239,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                               supplierId,
                               supplierName,
                               invoiceNumber,
+                              salesRate,
                             ) {
                               _addItem(
                                 description,
@@ -245,6 +248,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                                 supplierId,
                                 supplierName,
                                 invoiceNumber,
+                                salesRate,
                               );
                             },
                             suppliers: suppliers,

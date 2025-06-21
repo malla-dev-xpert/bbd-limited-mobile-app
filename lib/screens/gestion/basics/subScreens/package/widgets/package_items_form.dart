@@ -14,6 +14,7 @@ class PackageItemForm extends StatefulWidget {
     int supplierId,
     String supplierName,
     String invoiceNumber,
+    double salesRate,
   ) onAddItem;
   final List<Partner> suppliers;
 
@@ -32,6 +33,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
   final _descriptionController = TextEditingController();
   final _quantityController = TextEditingController();
   final _unitPriceController = TextEditingController();
+  final _salesRateController = TextEditingController();
   final _invoiceNumberController = TextEditingController();
   final PartnerServices partnerServices = PartnerServices();
   ValueKey _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
@@ -140,11 +142,20 @@ class _PackageItemFormState extends State<PackageItemForm> {
             },
           ),
           const SizedBox(height: 10),
-          buildTextField(
-            controller: _unitPriceController,
-            label: "Prix Unitaire",
-            keyboardType: TextInputType.number,
-            icon: Icons.attach_money,
+          Row(
+            children: [
+              buildTextField(
+                controller: _unitPriceController,
+                label: "Prix Unitaire",
+                keyboardType: TextInputType.number,
+                icon: Icons.attach_money,
+              ),
+              buildTextField(
+                controller: _salesRateController,
+                label: "Taux d'achat",
+                icon: Icons.percent,
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Row(
@@ -194,6 +205,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
         selectedSupplier!.id,
         '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
         _invoiceNumberController.text,
+        double.parse(_salesRateController.text),
       );
 
       // Reset form
@@ -211,6 +223,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
     _quantityController.dispose();
     _unitPriceController.dispose();
     _invoiceNumberController.dispose();
+    _salesRateController.dispose();
     super.dispose();
   }
 }
