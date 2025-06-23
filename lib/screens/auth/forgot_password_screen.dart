@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../widgets/rounded_button.dart';
-import '../../widgets/responsive_container.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -41,8 +40,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           ),
         ),
         Scaffold(
-          backgroundColor:
-              Colors.transparent, // Important pour laisser voir le fond
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
             backgroundColor: Colors.transparent, // AppBar transparente
             elevation: 0,
@@ -102,7 +100,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
                 // Card blanche
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(

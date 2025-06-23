@@ -7,7 +7,7 @@ class ResponsiveContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    double horizontalPadding = width > 600 ? width * 0.2 : 24;
+    double horizontalPadding = width > 600 ? width * 0.2 : 12;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: child,

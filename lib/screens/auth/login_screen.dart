@@ -35,7 +35,7 @@ class _LoginViewState extends State<_LoginView> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1E49),
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           // Fond
@@ -74,7 +74,7 @@ class _LoginViewState extends State<_LoginView> {
                             fontSize: 38,
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
+                            letterSpacing: 0.5,
                             shadows: [
                               Shadow(
                                 color: Colors.black45,
@@ -87,11 +87,12 @@ class _LoginViewState extends State<_LoginView> {
                         const SizedBox(height: 8),
                         const Text(
                           "Connectez-vous pour gérer vos livraisons",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w400,
-                            letterSpacing: 1,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
