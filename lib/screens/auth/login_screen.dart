@@ -90,18 +90,20 @@ class _LoginState extends State<Login> {
       child: SafeArea(
         child: Column(
           children: [
+            // Header section - make it more compact on small screens
             Padding(
-              padding: EdgeInsets.all(isSmallScreen ? 12.0 : 24.0),
+              padding: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
                     child: SvgPicture.asset(
                       'assets/images/hero.svg',
-                      width: isSmallScreen ? 120 : 250,
-                      height: isSmallScreen ? 120 : 250,
+                      width: isSmallScreen ? 80 : 200,
+                      height: isSmallScreen ? 80 : 200,
                     ),
                   ),
+                  const SizedBox(height: 8),
                   Center(
                     child: Text(
                       'Bienvenue sur BBD-LIMITED',
@@ -110,7 +112,7 @@ class _LoginState extends State<Login> {
                           .headlineMedium
                           ?.copyWith(
                               fontWeight: FontWeight.w800,
-                              fontSize: isSmallScreen ? 18 : 24,
+                              fontSize: isSmallScreen ? 16 : 22,
                               color: Colors.black87),
                     ),
                   ),
@@ -120,197 +122,195 @@ class _LoginState extends State<Login> {
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.grey[600],
-                            fontSize: isSmallScreen ? 12 : 16,
+                            fontSize: isSmallScreen ? 11 : 14,
                           ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Formulaire
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen ? 12 : 24,
-                vertical: isSmallScreen ? 16 : 32,
-              ),
-              width: double.infinity,
-              constraints: BoxConstraints(
-                minHeight: screenHeight * 0.8,
-                maxHeight: screenHeight * 0.8,
-              ),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1A1E49),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(34),
-                  topRight: Radius.circular(34),
+            // Formulaire - remove fixed height constraints and make it flexible
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSmallScreen ? 12 : 24,
+                  vertical: isSmallScreen ? 16 : 24,
                 ),
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Champ Username
-                    TextFormField(
-                      controller: _usernameController,
-                      autocorrect: false,
-                      decoration: InputDecoration(
-                        labelText: 'Nom d\'utilisateur',
-                        hintStyle: TextStyle(color: Colors.grey[600]),
-                        prefixIcon: const Icon(
-                          Icons.person_outline,
-                          color: Colors.black,
-                        ),
-                        fillColor:
-                            Colors.white, // Set background color to white
-                        filled: true, // Enable filled background
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade300,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1A1E49),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(34),
+                    topRight: Radius.circular(34),
+                  ),
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Champ Username
+                        TextFormField(
+                          controller: _usernameController,
+                          autocorrect: false,
+                          decoration: InputDecoration(
+                            labelText: 'Nom d\'utilisateur',
+                            hintStyle: TextStyle(color: Colors.grey[600]),
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: Colors.black,
+                            ),
+                            fillColor: Colors.white,
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez entrer votre nom d\'utilisateur';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Champ Mot de passe
-                    TextFormField(
-                      controller: _passwordController,
-                      autocorrect: false,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Mot de passe',
-                        prefixIcon: const Icon(
-                          Icons.lock_outline,
-                          color: Colors.black,
-                        ),
-                        hintStyle: TextStyle(color: Colors.grey[600]),
-                        fillColor:
-                            Colors.white, // Set background color to white
-                        filled: true,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez entrer votre nom d\'utilisateur';
+                            }
+                            return null;
                           },
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez entrer votre mot de passe';
-                        }
-                        return null;
-                      },
-                    ),
+                        const SizedBox(height: 16),
 
-                    // Mot de passe oublié
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/forgot-password');
-                        },
-                        child: const Text(
-                          'Mot de passe oublié ?',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Afficher les erreur de connexion
-                    if (_errorMessage != null)
-                      Center(
-                        child: Text(
-                          _errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-
-                    const SizedBox(height: 20),
-                    // Bouton de connexion
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _login();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7F78AF),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              )
-                            : const Text(
-                                'Se connecter',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        // Champ Mot de passe
+                        TextFormField(
+                          controller: _passwordController,
+                          autocorrect: false,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Mot de passe',
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.black,
+                            ),
+                            hintStyle: TextStyle(color: Colors.grey[600]),
+                            fillColor: Colors.white,
+                            filled: true,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                               ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Lien d'inscription
-                    const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Vous ne disposez pas d\'un compte ?',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        Text(
-                          textAlign: TextAlign.center,
-                          'Veuillez contacter l\'administrateur pour toute assistance.',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez entrer votre mot de passe';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        // Mot de passe oublié
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/forgot-password');
+                            },
+                            child: const Text(
+                              'Mot de passe oublié ?',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Afficher les erreur de connexion
+                        if (_errorMessage != null)
+                          Center(
+                            child: Text(
+                              _errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+
+                        const SizedBox(height: 16),
+                        // Bouton de connexion
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                _login();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF7F78AF),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  )
+                                : const Text(
+                                    'Se connecter',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Lien d'inscription
+                        const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Vous ne disposez pas d\'un compte ?',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              textAlign: TextAlign.center,
+                              'Veuillez contacter l\'administrateur pour toute assistance.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -322,12 +322,7 @@ class _LoginState extends State<Login> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: isKeyboardVisible
-          ? SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
-              child: pageContent,
-            )
-          : pageContent,
+      body: pageContent,
     );
   }
 }

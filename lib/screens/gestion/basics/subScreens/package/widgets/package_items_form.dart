@@ -144,16 +144,21 @@ class _PackageItemFormState extends State<PackageItemForm> {
           const SizedBox(height: 10),
           Row(
             children: [
-              buildTextField(
-                controller: _unitPriceController,
-                label: "Prix Unitaire",
-                keyboardType: TextInputType.number,
-                icon: Icons.attach_money,
+              Expanded(
+                child: buildTextField(
+                  controller: _unitPriceController,
+                  label: "Prix Unitaire",
+                  keyboardType: TextInputType.number,
+                  icon: Icons.attach_money,
+                ),
               ),
-              buildTextField(
-                controller: _salesRateController,
-                label: "Taux d'achat",
-                icon: Icons.percent,
+              const SizedBox(width: 10),
+              Expanded(
+                child: buildTextField(
+                  controller: _salesRateController,
+                  label: "Taux d'achat",
+                  icon: Icons.percent,
+                ),
               ),
             ],
           ),

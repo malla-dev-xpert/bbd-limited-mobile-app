@@ -72,6 +72,7 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
     int supplierId,
     String supplierName,
     String invoiceNumber,
+    double salesRate,
   ) {
     setState(() {
       _items.add({
@@ -81,6 +82,7 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
         'supplierId': supplierId,
         'supplier': supplierName,
         'invoiceNumber': invoiceNumber,
+        'salesRate': salesRate,
       });
       widget.onItemsChanged(_items);
     });
@@ -130,6 +132,7 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
                   unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
                   invoiceNumber: item['invoiceNumber']?.toString() ?? '',
                   supplierId: item['supplierId']?.toInt() ?? 0,
+                  salesRate: (item['salesRate'] as num?)?.toDouble() ?? 0.0,
                 ))
             .toList(),
       );
