@@ -254,15 +254,15 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   String _typeToLabel(VersementType type) {
     switch (type) {
-      case VersementType.general:
+      case VersementType.General:
         return "Général";
-      case VersementType.dette:
+      case VersementType.Dette:
         return "Dette";
-      case VersementType.commande:
+      case VersementType.Commande:
         return "Commande";
-      case VersementType.compteBancaire:
+      case VersementType.CompteBancaire:
         return "Compte Bancaire";
-      case VersementType.autres:
+      case VersementType.Autres:
         return "Autres";
     }
   }

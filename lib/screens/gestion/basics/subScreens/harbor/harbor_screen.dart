@@ -203,7 +203,7 @@ class _HarborScreen extends State<HarborScreen> {
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF1A1E49)),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(32),
                     borderSide: const BorderSide(
                       color: Colors.grey,
                       width: 2,

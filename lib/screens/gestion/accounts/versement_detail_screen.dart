@@ -452,19 +452,19 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       hintText: 'Rechercher un article...',
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(32),
                         borderSide: BorderSide(
                           color: Colors.grey[300]!,
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(32),
                         borderSide: BorderSide(
                           color: Colors.grey[300]!,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(32),
                         borderSide: const BorderSide(
                           color: Color(0xFF1A1E49),
                         ),

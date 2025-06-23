@@ -327,7 +327,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF1A1E49)),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(1322),
                   ),
                 ),
               ),

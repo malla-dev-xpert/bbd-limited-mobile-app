@@ -310,7 +310,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           hintText: 'Rechercher...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(32),
             borderSide: BorderSide(color: Colors.grey[300]!),
           ),
           filled: true,

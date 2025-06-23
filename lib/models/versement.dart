@@ -1,7 +1,7 @@
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 
-enum VersementType { general, dette, commande, compteBancaire, autres }
+enum VersementType { General, Dette, Commande, CompteBancaire, Autres }
 
 class Versement {
   final int? id;

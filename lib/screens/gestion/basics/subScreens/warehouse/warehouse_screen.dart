@@ -111,16 +111,15 @@ class _WarehouseState extends State<WarehouseScreen> {
     if (_allWarehouses == []) return;
 
     setState(() {
-      _filteredWarehouse =
-          _allWarehouses.where((warehouse) {
-            final adresse = warehouse.adresse?.toLowerCase() ?? '';
-            final name = warehouse.name?.toLowerCase() ?? '';
-            final storageType = warehouse.storageType?.toLowerCase() ?? '';
+      _filteredWarehouse = _allWarehouses.where((warehouse) {
+        final adresse = warehouse.adresse?.toLowerCase() ?? '';
+        final name = warehouse.name?.toLowerCase() ?? '';
+        final storageType = warehouse.storageType?.toLowerCase() ?? '';
 
-            return name.contains(query) ||
-                adresse.contains(query) ||
-                storageType.contains(query);
-          }).toList();
+        return name.contains(query) ||
+            adresse.contains(query) ||
+            storageType.contains(query);
+      }).toList();
     });
   }
 
@@ -216,9 +215,8 @@ class _WarehouseState extends State<WarehouseScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
         tooltip: 'Add New warehouse',
@@ -227,14 +225,14 @@ class _WarehouseState extends State<WarehouseScreen> {
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             builder: (BuildContext context) {
               return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setModalState) {
                   return Container(
-                    padding: EdgeInsets.all(30),
+                    padding: const EdgeInsets.all(30),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -244,10 +242,10 @@ class _WarehouseState extends State<WarehouseScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
+                              const Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: const Text(
+                                  padding: EdgeInsets.only(right: 8.0),
+                                  child: Text(
                                     'Ajouter un nouveau entrepôt',
                                     style: TextStyle(
                                       fontSize: 25,
@@ -375,7 +373,6 @@ class _WarehouseState extends State<WarehouseScreen> {
         },
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -385,9 +382,9 @@ class _WarehouseState extends State<WarehouseScreen> {
               autocorrect: false,
               decoration: InputDecoration(
                 labelText: 'Rechercher un entrepôt...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(32),
                 ),
               ),
             ),
@@ -471,16 +468,15 @@ class _WarehouseState extends State<WarehouseScreen> {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (context) => WarehouseDetailPage(
-                                    warehouseId: warehouse.id,
-                                    name: warehouse.name,
-                                    adresse: warehouse.adresse,
-                                    storageType: warehouse.storageType,
-                                    onWarehouseUpdated: () {
-                                      loadWarehouses(reset: true);
-                                    },
-                                  ),
+                              builder: (context) => WarehouseDetailPage(
+                                warehouseId: warehouse.id,
+                                name: warehouse.name,
+                                adresse: warehouse.adresse,
+                                storageType: warehouse.storageType,
+                                onWarehouseUpdated: () {
+                                  loadWarehouses(reset: true);
+                                },
+                              ),
                             ),
                           );
 
