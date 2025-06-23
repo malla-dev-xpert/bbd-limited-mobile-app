@@ -38,175 +38,177 @@ class _LoginViewState extends State<_LoginView> {
       backgroundColor: const Color(0xFF1A1E49),
       body: Stack(
         children: [
-          // SVG en fond de toute la page avec opacité réduite
-          Opacity(
-            opacity: 0.15,
-            child: Image.asset(
-              'assets/images/bg.jpeg',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
+          // Fond
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.15,
+              child: Image.asset(
+                'assets/images/bg.jpeg',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          // Contenu principal
-          Column(
-            children: [
-              // Header text centré
-              SizedBox(
-                height: size.height * 0.32,
-                child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 40),
-                      Text(
-                        "BBD-LIMITED",
-                        style: TextStyle(
-                          fontFamily: 'Pacifico',
-                          fontSize: 38,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black45,
-                              blurRadius: 8,
-                              offset: Offset(2, 2),
-                            ),
-                          ],
+          // Contenu principal scrollable
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Header text centré
+                SizedBox(
+                  height: size.height * 0.55,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/hero.svg',
+                          width: 200,
+                          height: 200,
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "Connectez-vous pour gérer vos livraisons",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 1,
+                        const SizedBox(height: 20),
+                        const Text(
+                          "BIENVENUE",
+                          style: TextStyle(
+                            fontFamily: 'Pacifico',
+                            fontSize: 38,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black45,
+                                blurRadius: 8,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Connectez-vous pour gérer vos livraisons",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              // Le reste de la page (Expanded pour la card)
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ResponsiveContainer(
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 32, horizontal: 24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 24,
-                            offset: Offset(0, 8),
+                // Card blanche
+                ResponsiveContainer(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 32, horizontal: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 24,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          buildTextField(
+                            controller: controller.usernameController,
+                            label: "Nom d'utilisateur",
+                            icon: Icons.person_outline,
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Veuillez entrer votre nom d'utilisateur"
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: controller.passwordController,
+                            obscureText: _obscurePassword,
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Veuillez entrer votre mot de passe"
+                                : null,
+                            decoration: InputDecoration(
+                              labelText: "Mot de passe",
+                              prefixIcon: const Icon(Icons.lock_outline,
+                                  color: Colors.black),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(32)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(32),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.black,
+                                ),
+                                onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword),
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () => Navigator.pushNamed(
+                                  context, '/forgot-password'),
+                              child: const Text("Mot de passe oublié ?",
+                                  style: TextStyle(color: Color(0xFF7F78AF))),
+                            ),
+                          ),
+                          if (controller.errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                controller.errorMessage!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          RoundedButton(
+                            text: "Connexion",
+                            loading: controller.isLoading,
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                final success = await controller.login();
+                                if (success && context.mounted) {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/welcome');
+                                }
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          const Text("Vous n'avez pas de compte ?",
+                              style: TextStyle(color: Colors.black54)),
+                          const SizedBox(height: 8),
+                          const Text(
+                            textAlign: TextAlign.center,
+                            'Veuillez contacter l\'administrateur pour toute assistance.',
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12),
                           ),
                         ],
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            buildTextField(
-                              controller: controller.usernameController,
-                              label: "Nom d'utilisateur",
-                              icon: Icons.person_outline,
-                              validator: (v) => v == null || v.isEmpty
-                                  ? "Veuillez entrer votre nom d'utilisateur"
-                                  : null,
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: controller.passwordController,
-                              obscureText: _obscurePassword,
-                              validator: (v) => v == null || v.isEmpty
-                                  ? "Veuillez entrer votre mot de passe"
-                                  : null,
-                              decoration: InputDecoration(
-                                labelText: "Mot de passe",
-                                prefixIcon: const Icon(Icons.lock_outline,
-                                    color: Colors.black),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(32)),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    color: Colors.black,
-                                  ),
-                                  onPressed: () => setState(() =>
-                                      _obscurePassword = !_obscurePassword),
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () => Navigator.pushNamed(
-                                    context, '/forgot-password'),
-                                child: const Text("Mot de passe oublié ?",
-                                    style: TextStyle(color: Color(0xFF7F78AF))),
-                              ),
-                            ),
-                            if (controller.errorMessage != null)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
-                                child: Text(
-                                  controller.errorMessage!,
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            const SizedBox(height: 8),
-                            RoundedButton(
-                              text: "Connexion",
-                              loading: controller.isLoading,
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  final success = await controller.login();
-                                  if (success && context.mounted) {
-                                    Navigator.pushReplacementNamed(
-                                        context, '/welcome');
-                                  }
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            const Text("Vous n'avez pas de compte ?",
-                                style: TextStyle(color: Colors.black54)),
-                            const SizedBox(height: 8),
-                            const Text(
-                              textAlign: TextAlign.center,
-                              'Veuillez contacter l\'administrateur pour toute assistance.',
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
