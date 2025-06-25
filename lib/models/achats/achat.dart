@@ -8,6 +8,7 @@ class Achat {
   final List<Items>? items;
   final double? montantTotal;
   final DateTime? createdAt;
+  final bool? isDebt;
   Status? status;
 
   Achat copyWith({
@@ -18,6 +19,7 @@ class Achat {
     List<Items>? items,
     double? montantTotal,
     DateTime? createdAt,
+    bool? isDebt,
     Status? status,
   }) {
     return Achat(
@@ -28,6 +30,7 @@ class Achat {
       items: items ?? this.items,
       montantTotal: montantTotal ?? this.montantTotal,
       createdAt: createdAt ?? this.createdAt,
+      isDebt: isDebt ?? this.isDebt,
       status: status ?? this.status,
     );
   }
@@ -40,6 +43,7 @@ class Achat {
     this.items,
     this.montantTotal,
     this.createdAt,
+    this.isDebt,
     this.status,
   });
 
@@ -52,6 +56,7 @@ class Achat {
       'items': items?.map((ligne) => ligne.toJson()).toList(),
       'montantTotal': montantTotal,
       'createdAt': createdAt,
+      'isDebt': isDebt,
       'status': status?.name,
     };
   }
@@ -84,6 +89,7 @@ class Achat {
           : null,
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      isDebt: json['isDebt'] as bool?,
       status: status,
     );
   }
