@@ -16,7 +16,7 @@ Widget buildTextField({
       prefixIcon: Icon(icon, color: Colors.black),
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(32)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(32),
         borderSide: BorderSide(color: Colors.grey.shade300),
