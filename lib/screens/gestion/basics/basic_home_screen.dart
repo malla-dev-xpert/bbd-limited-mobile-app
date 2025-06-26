@@ -147,11 +147,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     return CustomCard(
                       icon: data.icon,
                       title: data.title,
-                      description: data.description,
                       backgroundColor: data.backgroundColor,
                       iconColor: data.iconColor,
                       titleColor: data.titleColor,
-                      descriptionColor: data.descriptionColor,
                       onPressed: data.onPressed,
                     );
                   }).toList(),
