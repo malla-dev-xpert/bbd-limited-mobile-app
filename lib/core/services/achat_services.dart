@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
@@ -26,37 +27,65 @@ class AchatServices {
         body: jsonEncode(dto.toJson()),
       );
 
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
+
       final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       final apiResponse = ApiResponse<String>.fromJson(responseBody);
 
-      if (response.statusCode == 200) {
-        return ApiResult.success(
-            apiResponse.data ?? "ACHAT_CREATED_SUCCESSFULLY");
-      } else {
-        return ApiResult.failure(
-          errorMessage: apiResponse.message ?? 'Operation failed',
-          errorCode: response.statusCode,
-          errors: apiResponse.errors ?? [],
-        );
+      switch (response.statusCode) {
+        case 200:
+          final successMessage =
+              apiResponse.data == "ACHAT_CREATED_AS_DEBT_SUCCESSFULLY"
+                  ? "Achat créé avec succès (enregistré comme dette)"
+                  : "Achat créé avec succès";
+          return ApiResult.success(apiResponse.data.toString());
+
+        case 400:
+          // Bad Request (BusinessException ou validation errors)
+          final errorMessage = apiResponse.errors?.isNotEmpty == true
+              ? apiResponse.errors!.join(', ')
+              : apiResponse.message ?? 'Requête invalide';
+          return ApiResult.failure(
+            errorMessage: errorMessage,
+            errorCode: response.statusCode,
+            errors: apiResponse.errors ?? [],
+          );
+
+        case 404:
+          // Not Found (EntityNotFoundException)
+          return ApiResult.failure(
+            errorMessage: apiResponse.message ?? 'Ressource non trouvée',
+            errorCode: response.statusCode,
+            errors: apiResponse.errors ?? [],
+          );
+
+        default:
+          return ApiResult.failure(
+            errorMessage: apiResponse.message ?? 'Erreur serveur',
+            errorCode: response.statusCode,
+            errors: apiResponse.errors ?? [],
+          );
       }
     } on SocketException {
       return ApiResult.failure(
-        errorMessage: 'No Internet connection',
+        errorMessage: 'Pas de connexion Internet',
         errorCode: 0,
       );
     } on FormatException {
       return ApiResult.failure(
-        errorMessage: 'Invalid server response format',
+        errorMessage: 'Format de réponse du serveur invalide',
         errorCode: 0,
       );
     } on http.ClientException catch (e) {
       return ApiResult.failure(
-        errorMessage: 'Network error: ${e.message}',
+        errorMessage: 'Erreur réseau: ${e.message}',
         errorCode: 0,
       );
     } catch (e) {
+      log('Erreur inattendue: $e');
       return ApiResult.failure(
-        errorMessage: 'Unexpected error: ${e.toString()}',
+        errorMessage: 'Erreur inattendue: ${e.toString()}',
         errorCode: 0,
       );
     }

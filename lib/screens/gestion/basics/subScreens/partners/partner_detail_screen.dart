@@ -11,8 +11,12 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 
-enum OperationType { versements, expeditions }
+enum OperationType { versements, expeditions, debts }
 
 class PartnerDetailScreen extends StatefulWidget {
   final Partner partner;
@@ -29,6 +33,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<dynamic>? _filteredVersements;
   List<Packages>? _filteredPackages;
+  List<Achat>? _filteredDebts;
   OperationType _selectedOperationType = OperationType.versements;
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
   double _totalVersementsUSD = 0.0;
@@ -40,9 +45,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _partner = widget.partner;
     _filteredVersements = _partner.versements;
     _filteredPackages = _partner.packages;
+    _filteredDebts = [];
     _sortVersementsByDate();
     _sortExpeditionsByDate();
     _initializeData();
+    _loadDebts();
   }
 
   Future<void> _initializeData() async {
@@ -50,6 +57,16 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  Future<void> _loadDebts() async {
+    final achats = await AchatServices().findAll();
+    setState(() {
+      _filteredDebts = achats
+          .where(
+              (a) => a.isDebt == true && a.clientPhone == _partner.phoneNumber)
+          .toList();
+    });
   }
 
   void _sortVersementsByDate() {
@@ -74,7 +91,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
   Future<void> _refreshData() async {
     try {
-      // Obtenir de nouvelles données des clients
       final partnerServices = PartnerServices();
       final partners = await partnerServices.findCustomers(page: 0);
       final freshPartner = partners.firstWhere(
@@ -86,9 +102,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         _partner = freshPartner;
         _filteredVersements = _partner.versements;
         _filteredPackages = _partner.packages;
+        _filteredDebts = [];
         _sortVersementsByDate();
         _sortExpeditionsByDate();
       });
+
+      await _loadDebts();
     } catch (e) {
       print('Error refreshing data: $e');
     }
@@ -181,14 +200,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           onPressed: () {
             if (_selectedOperationType == OperationType.versements) {
               _showCreateVersementBottomSheet(context);
-            } else {
+            } else if (_selectedOperationType == OperationType.expeditions) {
               _showCreateExpeditionBottomSheet(context);
+            } else {
+              _showCreateDebtBottomSheet(context);
             }
           },
           label: Text(
             _selectedOperationType == OperationType.versements
                 ? 'Nouveau versement'
-                : 'Nouveau colis',
+                : _selectedOperationType == OperationType.expeditions
+                    ? 'Nouveau colis'
+                    : 'Nouvelle dette',
             style: const TextStyle(color: Colors.white),
           ),
           icon: const Icon(Icons.add, color: Colors.white),
@@ -247,12 +270,20 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               Icons.payments_outlined,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 5),
           Expanded(
             child: _buildOperationTypeButton(
               OperationType.expeditions,
               'Colis',
               Icons.inventory_2,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: _buildOperationTypeButton(
+              OperationType.debts,
+              'Dettes',
+              Icons.money_off_csred,
             ),
           ),
         ],
@@ -276,7 +307,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF7F78AF) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -327,8 +358,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   ) {
     if (_selectedOperationType == OperationType.versements) {
       return _buildVersementsList(currencyFormat, context);
-    } else {
+    } else if (_selectedOperationType == OperationType.expeditions) {
       return _buildExpeditionsList(context);
+    } else {
+      return _buildDebtsList(context);
     }
   }
 
@@ -603,6 +636,97 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
   }
 
+  Widget _buildDebtsList(BuildContext context) {
+    if (_filteredDebts == null || _filteredDebts!.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height * 0.2,
+        ),
+        child: Center(
+          child: Text(
+            'Aucune dette trouvée.',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100, left: 10, right: 10),
+        itemCount: _filteredDebts?.length ?? 0,
+        itemBuilder: (context, index) {
+          final achat = _filteredDebts![index];
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ListTile(
+              onTap: () => _showAchatDetails(context, achat),
+              leading: CircleAvatar(
+                backgroundColor: Colors.orange[200],
+                child: const Icon(Icons.warning_amber_rounded,
+                    color: Colors.white),
+              ),
+              title: Text(
+                achat.referenceVersement ?? 'Dette sans référence',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              subtitle: Text(
+                achat.createdAt != null
+                    ? DateFormat('dd/MM/yyyy').format(achat.createdAt!)
+                    : 'Date inconnue',
+                style: const TextStyle(fontSize: 12),
+              ),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY')
+                        .format(achat.montantTotal ?? 0),
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.deepOrange),
+                  ),
+                  Text(
+                    achat.status?.name ?? '',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showAchatDetails(BuildContext context, Achat achat) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return AchatDetailsSheet(achat: achat);
+      },
+    );
+  }
+
   Future<void> _showCreateExpeditionBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
@@ -647,6 +771,23 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     if (result == true) {
       await _refreshData();
+    }
+  }
+
+  Future<void> _showCreateDebtBottomSheet(BuildContext context) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => DebtPurchaseDialog(
+        clientId: _partner.id,
+        onDebtCreated: () async {
+          await _loadDebts();
+          setState(() {});
+        },
+      ),
+    );
+    if (result == true) {
+      await _loadDebts();
+      setState(() {});
     }
   }
 

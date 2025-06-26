@@ -1,8 +1,8 @@
 class CreateAchatDto {
-  final int versementId;
+  final int? versementId;
   final List<CreateItemDto> items;
 
-  CreateAchatDto({required this.versementId, required this.items});
+  CreateAchatDto({this.versementId, required this.items});
 
   Map<String, dynamic> toJson() {
     return {
