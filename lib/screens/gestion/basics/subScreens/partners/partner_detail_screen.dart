@@ -38,6 +38,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
   double _totalVersementsUSD = 0.0;
   VersementType? _selectedVersementType;
+  final GlobalKey _filterIconKey = GlobalKey();
 
   @override
   void initState() {
@@ -228,24 +229,93 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               Expanded(flex: 3, child: _buildSearchBar()),
               if (_selectedOperationType == OperationType.versements)
                 Expanded(
-                  flex: 2,
+                  flex: 1,
                   child: Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    child: DropDownCustom<VersementType?>(
-                      items: [null, ...VersementType.values],
-                      selectedItem: _selectedVersementType,
-                      onChanged: (type) {
-                        setState(() {
-                          _selectedVersementType = type;
-                        });
-                        _filterOperations(_searchController.text);
-                      },
-                      itemToString: (type) => type == null
-                          ? 'Tous les types'
-                          : type.toString().split('.').last,
-                      hintText: 'Trier par',
-                      // prefixIcon: Icons.category,
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey[300]!),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.08),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () async {
+                              final RenderBox button = _filterIconKey
+                                  .currentContext!
+                                  .findRenderObject() as RenderBox;
+                              final RenderBox overlay = Overlay.of(context)
+                                  .context
+                                  .findRenderObject() as RenderBox;
+                              final Offset position = button.localToGlobal(
+                                  Offset.zero,
+                                  ancestor: overlay);
+
+                              final selected = await showMenu<VersementType?>(
+                                context: context,
+                                position: RelativeRect.fromLTRB(
+                                  position.dx,
+                                  position.dy + button.size.height,
+                                  position.dx + button.size.width,
+                                  overlay.size.height -
+                                      (position.dy + button.size.height),
+                                ),
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                items: [
+                                  const PopupMenuItem<VersementType?>(
+                                    value: null,
+                                    child: Text(
+                                      'Tous les types',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  ...VersementType.values.map(
+                                    (type) => PopupMenuItem<VersementType?>(
+                                      value: type,
+                                      child: Text(
+                                        type.toString().split('.').last,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                              if (selected != null || selected == null) {
+                                setState(() {
+                                  _selectedVersementType = selected;
+                                });
+                                _filterOperations(_searchController.text);
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(14.0),
+                              child: Icon(
+                                Icons.filter_list,
+                                key: _filterIconKey,
+                                size: 26,
+                                color: const Color(0xFF1A1E49),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -304,7 +374,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        constraints: const BoxConstraints(minWidth: 0),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF7F78AF) : Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
@@ -318,11 +389,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               size: 20,
             ),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[600],
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
@@ -666,7 +744,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withOpacity(0.08),
+                  color: Colors.grey.withOpacity(0.08),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

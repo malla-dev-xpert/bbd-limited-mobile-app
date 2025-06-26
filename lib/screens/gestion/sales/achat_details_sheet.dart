@@ -35,9 +35,9 @@ class AchatDetailsSheet extends StatelessWidget {
               const Text(
                 'Détails de l\'achat',
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5),
               ),
               IconButton(
                 icon: const Icon(Icons.close),
