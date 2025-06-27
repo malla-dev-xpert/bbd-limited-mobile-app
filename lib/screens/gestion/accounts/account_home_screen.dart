@@ -42,6 +42,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
 
+  final GlobalKey _filterIconKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -132,13 +134,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         return searchPackage && typeMatch;
       }).toList();
     });
-  }
-
-  void handleTypeFilter(VersementType? value) {
-    setState(() {
-      _currentTypeFilter = value;
-    });
-    filterPackages(searchController.text);
   }
 
   Future<void> _openNewVersementBottomSheet(BuildContext context) async {
@@ -382,18 +377,95 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
-                      labelText: 'Rechercher un paiement...',
+                      hintText: 'Rechercher...',
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                FiltreTypeDropdown(
-                  onSelected: handleTypeFilter,
-                  types: _types,
+                Material(
+                  color: Colors.transparent,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey[300]!),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.08),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: InkWell(
+                      key: _filterIconKey,
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () async {
+                        final RenderBox button = _filterIconKey.currentContext!
+                            .findRenderObject() as RenderBox;
+                        final RenderBox overlay = Overlay.of(context)
+                            .context
+                            .findRenderObject() as RenderBox;
+                        final Offset position = button
+                            .localToGlobal(Offset.zero, ancestor: overlay);
+                        final selected = await showMenu<VersementType?>(
+                          context: context,
+                          position: RelativeRect.fromLTRB(
+                            position.dx,
+                            position.dy + button.size.height,
+                            position.dx + button.size.width,
+                            overlay.size.height -
+                                (position.dy + button.size.height),
+                          ),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          items: [
+                            const PopupMenuItem<VersementType?>(
+                              value: null,
+                              child: Text(
+                                'Tous les types',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            ..._types.map(
+                              (type) => PopupMenuItem<VersementType?>(
+                                value: type,
+                                child: Text(
+                                  _typeToLabel(type),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                        if (selected != null || selected == null) {
+                          setState(() {
+                            _currentTypeFilter = selected;
+                          });
+                          filterPackages(searchController.text);
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Icon(
+                          Icons.filter_list,
+                          size: 26,
+                          color: const Color(0xFF1A1E49),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -494,32 +566,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class FiltreTypeDropdown extends StatelessWidget {
-  final Function(VersementType?) onSelected;
-  final List<VersementType> types;
-
-  const FiltreTypeDropdown({
-    super.key,
-    required this.onSelected,
-    required this.types,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.35,
-      child: DropDownCustom<VersementType>(
-        items: types,
-        selectedItem: null,
-        onChanged: onSelected,
-        itemToString: (type) => type.name,
-        hintText: 'Filtrer par type',
-        prefixIcon: Icons.filter_list,
       ),
     );
   }
