@@ -1,10 +1,23 @@
+import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 
-class AchatDetailsSheet extends StatelessWidget {
+class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
 
   const AchatDetailsSheet({super.key, required this.achat});
+
+  @override
+  State<AchatDetailsSheet> createState() => _AchatDetailsSheetState();
+}
+
+class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
+  bool isLoading = false;
+  final Set<String> confirmedArticles = {};
+  final AchatServices achatServices = AchatServices();
 
   String _formatAmount(double? amount) {
     if (amount == null) return "0,00";
@@ -17,8 +30,46 @@ class AchatDetailsSheet extends StatelessWidget {
         .replaceAll('.', ',');
   }
 
+  Future<void> confirmArticle(String itemId) async {
+    if (isLoading) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        return;
+      }
+      final result = await achatServices.confirmDelivery(
+        itemIds: [int.parse(itemId)],
+        userId: user.id,
+      );
+
+      if (result.isSuccess) {
+        setState(() {
+          confirmedArticles.add(itemId);
+        });
+        showSuccessTopSnackBar(context, "Article reçu avec succès");
+      } else {
+        showErrorTopSnackBar(
+            context, result.errorMessage ?? "Erreur lors de la confirmation");
+      }
+    } catch (e) {
+      showErrorTopSnackBar(
+          context, "Une erreur est survenue lors de la confirmation");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final achat = widget.achat;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -89,7 +140,7 @@ class AchatDetailsSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (achat.items != null && achat.items!.isNotEmpty)
-            ...achat.items!.map((item) => _buildItemCard(item))
+            ...achat.items!.map((item) => _buildItemCard(item, achat))
           else
             const Center(
               child: Padding(
@@ -128,7 +179,8 @@ class AchatDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildItemCard(Items item) {
+  Widget _buildItemCard(Items item, Achat achat) {
+    final isConfirmed = confirmedArticles.contains(item.id?.toString());
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -140,12 +192,57 @@ class AchatDetailsSheet extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.description ?? "N/A",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.description ?? "N/A",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (!isConfirmed && item.status != Status.RECEIVED)
+                ElevatedButton.icon(
+                  onPressed: () => confirmArticle(item.id?.toString() ?? ''),
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: Text(isLoading ? "Chargement..." : "Confirmer"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A1E49),
+                    foregroundColor: Colors.white,
+                  ),
+                )
+              else if (isConfirmed || item.status == Status.RECEIVED)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.green[700],
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Reçu',
+                        style: TextStyle(
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Row(

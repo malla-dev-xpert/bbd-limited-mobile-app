@@ -299,17 +299,20 @@ class _NewVersementModalState extends State<NewVersementModal>
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    currentStep == 0
-                        ? "Informations du versement"
-                        : currentStep == 1
-                            ? "Informations du commissionnaire"
-                            : "Note additionnelle",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+                  Expanded(
+                    child: Text(
+                      currentStep == 0
+                          ? "Informations du versement"
+                          : currentStep == 1
+                              ? "Informations du commissionnaire"
+                              : "Note additionnelle",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                   IconButton(

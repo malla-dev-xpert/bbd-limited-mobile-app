@@ -112,6 +112,9 @@ class AchatServices {
 
       final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       final apiResponse = ApiResponse<void>.fromJson(responseBody);
+      log('Response status: ${response.statusCode}');
+      log('Response body: $responseBody');
+      log('Api Response: $apiResponse');
 
       if (response.statusCode == 200) {
         return ApiResult.success(null);
