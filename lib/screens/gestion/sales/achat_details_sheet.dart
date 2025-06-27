@@ -32,12 +32,35 @@ class AchatDetailsSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Détails de l\'achat',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Détails de l\'achat',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5),
+                  ),
+                  const SizedBox(height: 4),
+                  if (achat.isDebt == true)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7F78AF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF7F78AF)),
+                      ),
+                      child: const Text(
+                        'Dette',
+                        style: TextStyle(
+                          color: Color(0xFF7F78AF),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                ],
               ),
               IconButton(
                 icon: const Icon(Icons.close),
@@ -46,7 +69,11 @@ class AchatDetailsSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildInfoRow('Référence', achat.referenceVersement ?? "N/A"),
+          _buildInfoRow(
+              achat.isDebt == true ? 'Identifiant' : 'Référence',
+              achat.isDebt == true
+                  ? achat.id.toString()
+                  : (achat.referenceVersement ?? "N/A")),
           _buildInfoRow('Client', achat.client ?? "N/A"),
           if (achat.clientPhone != null)
             _buildInfoRow('Téléphone', achat.clientPhone!),

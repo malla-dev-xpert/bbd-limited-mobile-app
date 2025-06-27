@@ -289,7 +289,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: color.withOpacity(0.8),
                 ),

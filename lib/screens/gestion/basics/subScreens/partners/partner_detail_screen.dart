@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
@@ -9,7 +10,6 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
-import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
@@ -737,50 +737,122 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         itemCount: _filteredDebts?.length ?? 0,
         itemBuilder: (context, index) {
           final achat = _filteredDebts![index];
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ListTile(
-              onTap: () => _showAchatDetails(context, achat),
-              leading: CircleAvatar(
-                backgroundColor: Colors.orange[200],
-                child: const Icon(Icons.warning_amber_rounded,
-                    color: Colors.white),
-              ),
-              title: Text(
-                achat.referenceVersement ?? 'Dette sans référence',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              subtitle: Text(
-                achat.createdAt != null
-                    ? DateFormat('dd/MM/yyyy').format(achat.createdAt!)
-                    : 'Date inconnue',
-                style: const TextStyle(fontSize: 12),
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY')
-                        .format(achat.montantTotal ?? 0),
-                    style:
-                        const TextStyle(fontSize: 14, color: Colors.deepOrange),
+          return InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => _showAchatDetails(context, achat),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[300]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  Text(
-                    achat.status?.name ?? '',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Identifiant: ${achat.id ?? "N/A"}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(achat.status).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          (achat.status == Status.COMPLETED
+                              ? "Complété"
+                              : achat.status == Status.PENDING
+                                  ? "En attente"
+                                  : (achat.status != null
+                                      ? achat.status.toString().split('.').last
+                                      : "N/A")),
+                          style: TextStyle(
+                            color: _getStatusColor(achat.status),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        size: 16,
+                        color: Colors.grey[700]!,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          achat.client ?? "N/A",
+                          style: TextStyle(
+                            color: Colors.grey[700]!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (achat.clientPhone != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.phone_outlined,
+                          size: 16,
+                          color: Colors.grey[700]!,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          achat.clientPhone!,
+                          style: TextStyle(
+                            color: Colors.grey[700]!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Montant total',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '${achat.montantTotal?.toStringAsFixed(2) ?? "0.00"} ¥',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1E49),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -789,6 +861,17 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         },
       ),
     );
+  }
+
+  Color _getStatusColor(status) {
+    final statusStr = status != null ? status.toString().split('.').last : "";
+    if (statusStr == "COMPLETED") {
+      return Colors.green;
+    } else if (statusStr == "PENDING") {
+      return Colors.orange;
+    } else {
+      return Colors.grey;
+    }
   }
 
   void _showAchatDetails(BuildContext context, Achat achat) {

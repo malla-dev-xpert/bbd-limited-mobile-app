@@ -212,14 +212,52 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Expanded(
-                                              child: Text(
-                                                'Réf. V: ${achat.referenceVersement ?? "N/A"}',
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    achat.isDebt == true
+                                                        ? 'Identifiant: ${achat.id ?? "N/A"}'
+                                                        : 'Réf. V: ${achat.referenceVersement ?? "N/A"}',
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  if (achat.isDebt == true)
+                                                    Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(
+                                                                0xFF7F78AF)
+                                                            .withOpacity(0.1),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        border: Border.all(
+                                                            color: const Color(
+                                                                0xFF7F78AF)),
+                                                      ),
+                                                      child: const Text(
+                                                        'Dette',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xFF7F78AF),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    )
+                                                ],
                                               ),
                                             ),
                                             Container(
