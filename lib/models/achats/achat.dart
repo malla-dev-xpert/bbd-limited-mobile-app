@@ -103,6 +103,7 @@ class Items {
   final double? totalPrice;
   final int? supplierId;
   final String? supplierName;
+  final int? packageId;
   final String? supplierPhone;
   Status? status;
 
@@ -115,6 +116,7 @@ class Items {
     this.supplierId,
     this.supplierName,
     this.supplierPhone,
+    this.packageId,
     this.status,
   });
 
@@ -128,6 +130,7 @@ class Items {
       'supplierId': supplierId,
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
+      'packageId': packageId,
       'status': status?.name,
     };
   }
@@ -158,6 +161,7 @@ class Items {
       supplierId: json['supplierId'] as int?,
       supplierName: json['supplierName'] as String?,
       supplierPhone: json['supplierPhone'] as String?,
+      packageId: json['packageId'] as int?,
       status: status,
     );
   }

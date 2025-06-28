@@ -39,6 +39,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
+  final GlobalKey _filterIconKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -355,74 +357,111 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                         labelText: 'Rechercher un colis...',
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(32),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButton<ExpeditionStatus>(
-                      value: selectedStatus,
-                      underline: const SizedBox(),
-                      icon: const Icon(Icons.arrow_drop_down),
-                      dropdownColor: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      items: const [
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.all,
-                          child: Row(
-                            children: [
-                              Icon(Icons.filter_list, color: Colors.blue),
-                              SizedBox(width: 8),
-                              Text("Tous"),
+                  Material(
+                    color: Colors.transparent,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.08),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: InkWell(
+                        key: _filterIconKey,
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () async {
+                          final RenderBox button =
+                              _filterIconKey.currentContext!.findRenderObject()
+                                  as RenderBox;
+                          final RenderBox overlay = Overlay.of(context)
+                              .context
+                              .findRenderObject() as RenderBox;
+                          final Offset position = button
+                              .localToGlobal(Offset.zero, ancestor: overlay);
+                          final selected = await showMenu<ExpeditionStatus>(
+                            context: context,
+                            position: RelativeRect.fromLTRB(
+                              position.dx,
+                              position.dy + button.size.height,
+                              position.dx + button.size.width,
+                              overlay.size.height -
+                                  (position.dy + button.size.height),
+                            ),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            items: [
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.all,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.filter_list, color: Colors.blue),
+                                    SizedBox(width: 8),
+                                    Text("Tous"),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.received,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.check_circle,
+                                        color: Colors.green),
+                                    SizedBox(width: 8),
+                                    Text("Livrée"),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.inTransit,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.local_shipping,
+                                        color: Colors.orange),
+                                    SizedBox(width: 8),
+                                    Text("En transit"),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.pending,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.hourglass_empty,
+                                        color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text("En attente"),
+                                  ],
+                                ),
+                              ),
                             ],
+                          );
+                          if (selected != null) {
+                            _onStatusSelected(selected);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.all(14.0),
+                          child: Icon(
+                            Icons.filter_list,
+                            size: 26,
+                            color: Color(0xFF1A1E49),
                           ),
                         ),
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.received,
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text("Livrée"),
-                            ],
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.inTransit,
-                          child: Row(
-                            children: [
-                              Icon(Icons.local_shipping, color: Colors.orange),
-                              SizedBox(width: 8),
-                              Text("En transit"),
-                            ],
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.pending,
-                          child: Row(
-                            children: [
-                              Icon(Icons.hourglass_empty, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text("En attente"),
-                            ],
-                          ),
-                        ),
-                      ],
-                      onChanged: (ExpeditionStatus? newValue) {
-                        if (newValue != null) {
-                          _onStatusSelected(newValue);
-                        }
-                      },
+                      ),
                     ),
                   ),
                 ],

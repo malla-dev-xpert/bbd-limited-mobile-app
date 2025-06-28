@@ -51,5 +51,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+<string>Cette application a besoin d'accéder au réseau local pour le débogage et la communication avec d'autres appareils sur le même réseau.</string>
+
+<key>NSBonjourServices</key>
+<array>
+  <string>_dartVmService._tcp</string>
+</array>
+
 </dict>
 </plist>

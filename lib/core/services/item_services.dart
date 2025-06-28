@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,6 +20,34 @@ class ItemServices {
       return jsonBody.map((e) => Items.fromJson(e)).toList();
     } else {
       throw Exception("Erreur lors du chargement des articles");
+    }
+  }
+
+  Future<List<Items>> findItemsByClient(int clientId) async {
+    try {
+      final url = Uri.parse('$baseUrl/items/customer?clientId=$clientId');
+      print("Appel API: $url");
+
+      final response = await http.get(url);
+
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonBody =
+            json.decode(utf8.decode(response.bodyBytes));
+        print("JSON décodé: $jsonBody");
+        final items = jsonBody.map((e) => Items.fromJson(e)).toList();
+        print("Items créés: ${items.length}");
+        return items;
+      } else {
+        print("Erreur HTTP: ${response.statusCode} - ${response.body}");
+        throw Exception(
+            "Erreur lors du chargement des articles éligibles (${response.statusCode}): ${response.body}");
+      }
+    } catch (e) {
+      print("Exception dans findItemsByClient: $e");
+      rethrow;
     }
   }
 

@@ -17,6 +17,8 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 
 class CreateExpeditionForm extends StatefulWidget {
   final bool isPackageScreen;
@@ -62,6 +64,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   Containers? _selectedContainer;
   Warehouses? _selectedWarehouse;
 
+  List<Items> _eligibleItems = [];
+  Set<int> _selectedItemIds = {};
+  bool _isLoadingItems = false;
+
   @override
   void initState() {
     super.initState();
@@ -89,6 +95,39 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
     setState(() {
       _warehouses = warehouses;
     });
+  }
+
+  Future<void> _loadEligibleItems(int clientId) async {
+    setState(() => _isLoadingItems = true);
+    try {
+      _eligibleItems = await ItemServices().findItemsByClient(clientId);
+      _selectedItemIds.clear();
+    } catch (e) {
+      setState(() {
+        _eligibleItems = [];
+        _selectedItemIds.clear();
+      });
+      showErrorTopSnackBar(
+          context, "Erreur lors du chargement des items: ${e.toString()}");
+    } finally {
+      setState(() => _isLoadingItems = false);
+    }
+  }
+
+  void _onClientSelected(Partner? client) {
+    setState(() {
+      _selectedClient = client;
+    });
+    if (client != null && client.id != null) {
+      print(
+          "Client sélectionné: ${client.firstName} ${client.lastName} (ID: ${client.id})");
+      _loadEligibleItems(client.id!);
+    } else {
+      setState(() {
+        _eligibleItems = [];
+        _selectedItemIds.clear();
+      });
+    }
   }
 
   @override
@@ -132,7 +171,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                     child: IndexedStack(
                       index: currentStep,
                       children: [
-                        // Step 1
+                        // Étape 1 : Infos de base + sélection client
                         ListView(
                           children: [
                             // Type d'expédition
@@ -267,11 +306,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     child: DropDownCustom<Partner>(
                                       items: _clients,
                                       selectedItem: _selectedClient,
-                                      onChanged: (client) {
-                                        setState(() {
-                                          _selectedClient = client;
-                                        });
-                                      },
+                                      onChanged: _onClientSelected,
                                       itemToString: (client) =>
                                           '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
                                       hintText: 'Choisir un client...',
@@ -289,7 +324,9 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                               ),
                           ],
                         ),
-                        // Step 2
+                        // Étape 2 : Sélection des items
+                        _buildItemSelectionStep(),
+                        // Étape 3
                         ListView(
                           children: [
                             // Pays de départ
@@ -455,7 +492,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             ),
                           ],
                         ),
-                        // Step 3 - Container and Warehouse Selection
+                        // Step 4 - Container and Warehouse Selection
                         ListView(
                           children: [
                             const SizedBox(height: 20),
@@ -584,30 +621,50 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   }
 
   void _goToNextStep() {
-    if (currentStep == 0 && !_formKey.currentState!.validate()) {
+    if (currentStep == 0 && widget.isPackageScreen && _selectedClient == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un client.");
       return;
     }
-
-    if (currentStep == 1) {
-      if (_departureCountry == null ||
-          _arrivalCountry == null ||
-          _startDate == null ||
-          _estimatedArrivalDate == null) {
-        showErrorTopSnackBar(context, "Veuillez remplir tous les champs");
-        return;
-      }
+    if (currentStep == 1 &&
+        _eligibleItems.isNotEmpty &&
+        _selectedItemIds.isEmpty) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner au moins un item.");
+      return;
     }
-
     if (currentStep == 2) {
-      if (_selectedContainer == null || _selectedWarehouse == null) {
+      // Validation pour l'étape 3 (pays et dates)
+      if (_departureCountry == null) {
         showErrorTopSnackBar(
-          context,
-          "Veuillez sélectionner un container et un entrepôt",
-        );
+            context, "Veuillez sélectionner le pays de départ.");
+        return;
+      }
+      if (_arrivalCountry == null) {
+        showErrorTopSnackBar(
+            context, "Veuillez sélectionner le pays d'arrivée.");
+        return;
+      }
+      if (_startDate == null) {
+        showErrorTopSnackBar(
+            context, "Veuillez sélectionner la date de départ.");
+        return;
+      }
+      if (_estimatedArrivalDate == null) {
+        showErrorTopSnackBar(
+            context, "Veuillez sélectionner la date d'arrivée estimée.");
         return;
       }
     }
-
+    if (currentStep == 3) {
+      // Validation pour l'étape 4 (conteneur et entrepôt)
+      if (_selectedContainer == null) {
+        showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur.");
+        return;
+      }
+      if (_selectedWarehouse == null) {
+        showErrorTopSnackBar(context, "Veuillez sélectionner un entrepôt.");
+        return;
+      }
+    }
     setState(() => currentStep++);
   }
 
@@ -616,6 +673,24 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   }
 
   Future<void> _submitForm() async {
+    // Validation finale avant soumission
+    if (_selectedContainer == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur.");
+      return;
+    }
+    if (_selectedWarehouse == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un entrepôt.");
+      return;
+    }
+    if (_departureCountry == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner le pays de départ.");
+      return;
+    }
+    if (_arrivalCountry == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner le pays d'arrivée.");
+      return;
+    }
+
     setState(() => isLoading = true);
     try {
       final user = await authService.getUserInfo();
@@ -632,10 +707,12 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       if (_expeditionType == "Avion") {
         if (weight == null) {
           showErrorTopSnackBar(context, "Le poids est invalid");
+          return;
         }
       } else if (_expeditionType == "Bateau") {
         if (cbn == null) {
           showErrorTopSnackBar(context, "Le cbn est invalid");
+          return;
         }
       }
 
@@ -652,6 +729,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         "destinationCountry": _arrivalCountry!.name,
         "containerId": _selectedContainer?.id,
         "warehouseId": _selectedWarehouse?.id,
+        "itemIds": _selectedItemIds.toList(),
       });
 
       // Appel au service avec les IDs corrects
@@ -694,7 +772,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         icon: Icons.arrow_forward_ios,
         subLabel: "Chargement...",
       );
-    } else if (currentStep == 2) {
+    } else if (currentStep == 3) {
       return Row(
         children: [
           Expanded(
@@ -786,5 +864,32 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
     ).then((_) {
       _loadWarehouses(); // Recharger la liste des entrepôts après la création
     });
+  }
+
+  Widget _buildItemSelectionStep() {
+    if (_isLoadingItems) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_eligibleItems.isEmpty) {
+      return const Center(child: Text("Aucun item éligible pour ce client."));
+    }
+    return ListView(
+      children: _eligibleItems.map((item) {
+        return CheckboxListTile(
+          value: _selectedItemIds.contains(item.id),
+          onChanged: (selected) {
+            setState(() {
+              if (selected == true) {
+                _selectedItemIds.add(item.id!);
+              } else {
+                _selectedItemIds.remove(item.id);
+              }
+            });
+          },
+          title: Text(item.description ?? "Sans description"),
+          subtitle: Text("Quantité: " + (item.quantity?.toString() ?? "-")),
+        );
+      }).toList(),
+    );
   }
 }
