@@ -8,6 +8,8 @@ class CustomCard extends StatelessWidget {
   final Color iconColor;
   final Color titleColor;
   final void Function(BuildContext context)? onPressed;
+  final bool isTablet;
+  final String? description;
 
   const CustomCard({
     super.key,
@@ -17,6 +19,8 @@ class CustomCard extends StatelessWidget {
     this.iconColor = Colors.blue,
     this.titleColor = Colors.white,
     this.onPressed,
+    this.isTablet = false,
+    this.description,
   });
 
   @override
@@ -81,21 +85,35 @@ class CustomCard extends StatelessWidget {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                               ),
-                              padding: const EdgeInsets.all(16),
-                              child: Icon(icon, size: 26, color: iconColor),
+                              padding: EdgeInsets.all(isTablet ? 22 : 16),
+                              child: Icon(icon,
+                                  size: isTablet ? 36 : 26, color: iconColor),
                             ),
                             const SizedBox(height: 18),
                             AutoSizeText(
                               title,
                               textAlign: TextAlign.start,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: isTablet ? 20 : 16,
                                 color: titleColor,
                                 fontWeight: FontWeight.w500,
                                 letterSpacing: -0.5,
                               ),
                               minFontSize: 8,
                             ),
+                            if (isTablet && description != null) ...[
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: Text(
+                                  description!,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: titleColor.withOpacity(0.7),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

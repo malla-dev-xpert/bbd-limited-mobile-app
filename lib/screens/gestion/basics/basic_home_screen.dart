@@ -34,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final bool isTablet = width > 800;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -140,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 0,
                 ),
                 sliver: SliverGrid.count(
-                  crossAxisCount: 2,
+                  crossAxisCount: isTablet ? 4 : 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
                   children: cardDataList.map((data) {
@@ -151,6 +153,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       iconColor: data.iconColor,
                       titleColor: data.titleColor,
                       onPressed: data.onPressed,
+                      isTablet: isTablet,
+                      description: data.description,
                     );
                   }).toList(),
                 ),

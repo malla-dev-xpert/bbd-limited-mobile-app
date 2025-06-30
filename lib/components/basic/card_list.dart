@@ -9,6 +9,7 @@ class CardData {
   final Color iconColor;
   final Color titleColor;
   final void Function(BuildContext context) onPressed;
+  final String? description;
 
   CardData({
     required this.icon,
@@ -17,6 +18,7 @@ class CardData {
     required this.iconColor,
     required this.titleColor,
     required this.onPressed,
+    this.description,
   });
 }
 
@@ -30,6 +32,7 @@ List<CardData> cardDataList = [
     onPressed: (context) {
       Navigator.of(context).pushNamed('/package');
     },
+    description: 'Consultez, ajoutez et gérez tous les colis de vos clients.',
   ),
   CardData(
     icon: Icons.person_3_rounded,
@@ -40,6 +43,7 @@ List<CardData> cardDataList = [
     onPressed: (context) {
       Navigator.of(context).pushNamed('/partners');
     },
+    description: 'Accédez aux informations et opérations des clients.',
   ),
   CardData(
     icon: Icons.warehouse,
@@ -50,6 +54,7 @@ List<CardData> cardDataList = [
     onPressed: (context) {
       Navigator.of(context).pushNamed('/warehouse');
     },
+    description: 'Visualisez et organisez vos entrepôts de stockage.',
   ),
   CardData(
     icon: Icons.monetization_on_rounded,
@@ -60,6 +65,7 @@ List<CardData> cardDataList = [
     onPressed: (context) {
       Navigator.of(context).pushNamed('/devises');
     },
+    description: 'Ajoutez ou modifiez les devises utilisées dans le système.',
   ),
   CardData(
     icon: Icons.info,
@@ -70,6 +76,8 @@ List<CardData> cardDataList = [
     onPressed: (context) {
       Navigator.of(context).pushNamed('/harbor');
     },
+    description:
+        'Référencez et gérez les ports d’embarquement et de livraison.',
   ),
   CardData(
     icon: Icons.view_quilt,
@@ -80,5 +88,6 @@ List<CardData> cardDataList = [
     onPressed: (context) {
       Navigator.of(context).pushNamed('/container');
     },
+    description: 'Suivez et administrez vos conteneurs de transport.',
   ),
 ];

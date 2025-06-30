@@ -286,6 +286,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -310,19 +311,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Text(
-              note,
-              style: const TextStyle(
-                color: Color(0xFF1A1E49),
-                fontSize: 14,
-              ),
+          Text(
+            note,
+            style: const TextStyle(
+              color: Color(0xFF1A1E49),
+              fontSize: 14,
             ),
           ),
         ],
@@ -365,6 +358,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildDetailRow("Référence", widget.versement.reference),
                   _buildDetailRow("Type", widget.versement.type),
