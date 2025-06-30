@@ -8,11 +8,11 @@ import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/warehouses.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package_to_warehouse.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 
 class WarehouseDetailPage extends StatefulWidget {
   final int warehouseId;
@@ -715,7 +715,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                 ),
                                 child: PackageListItem(
                                   packages: pkg,
-                                  onTap: () => _openPackageDetailsBottomSheet(
+                                  onTap: () => _openPackageDetailsScreen(
                                     context,
                                     pkg,
                                   ),
@@ -731,19 +731,14 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
     );
   }
 
-  Future<void> _openPackageDetailsBottomSheet(
+  Future<void> _openPackageDetailsScreen(
     BuildContext context,
     Packages package,
   ) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return PackageDetailsBottomSheet(
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageDetailsScreen(
           packages: package,
           onStart: (updatedExpedition) {
             fetchPackages(reset: true);
@@ -786,10 +781,9 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
           onDelete: (updatedExpedition) {
             fetchPackages(reset: true);
           },
-        );
-      },
+        ),
+      ),
     );
-
     if (result == true) {
       fetchPackages(reset: true);
     }

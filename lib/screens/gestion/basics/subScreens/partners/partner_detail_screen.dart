@@ -3,7 +3,6 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart'
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/packages.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
@@ -15,6 +14,7 @@ import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 
 enum OperationType { versements, expeditions, debts }
 
@@ -479,16 +479,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
   }
 
-  void _showPackageDetails(BuildContext context, Packages package) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return PackageDetailsBottomSheet(
+  void _showPackageDetails(BuildContext context, Packages package) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageDetailsScreen(
           packages: package,
           onStart: (updatedExpedition) {
             _refreshData();
@@ -499,9 +494,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           onDelete: (updatedExpedition) {
             _refreshData();
           },
-        );
-      },
+        ),
+      ),
     );
+    if (result == true) {
+      _refreshData();
+    }
   }
 
   Widget _buildBalanceCard(NumberFormat currencyFormat, BuildContext context) {
