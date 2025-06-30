@@ -64,8 +64,7 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
       text: widget.packages.itemQuantity?.toString(),
     );
     _startDate = widget.packages.startDate ?? DateTime.now();
-    _arrivalDate =
-        widget.packages.arrivalDate ??
+    _arrivalDate = widget.packages.arrivalDate ??
         DateTime.now().add(const Duration(days: 7));
     _expeditionType = (widget.packages.expeditionType ?? 'avion').toLowerCase();
     _startCountry = widget.packages.startCountry ?? '';
@@ -146,12 +145,13 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                 children: [
                   Row(
                     children: [
-                      Expanded(
+                      const Expanded(
                         child: Text(
                           "Modifier l'expédition",
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ),
@@ -222,11 +222,9 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                               controller: _refController,
                               label: "Référence de l'expédition",
                               icon: Icons.numbers,
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? 'Ce champ est requis'
-                                          : null,
+                              validator: (value) => value?.isEmpty ?? true
+                                  ? 'Ce champ est requis'
+                                  : null,
                             ),
                             const SizedBox(height: 20),
                             Row(
@@ -234,49 +232,47 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Expanded(
-                                  child:
-                                      _expeditionType == 'avion'
-                                          ? buildTextField(
-                                            controller: _weightController,
-                                            label: "Poids (kg)",
-                                            icon: Icons.scale,
-                                            keyboardType: TextInputType.number,
-                                            validator: (value) {
-                                              if (value?.isEmpty ?? true) {
-                                                return 'Ce champ est requis';
-                                              }
-                                              if (double.tryParse(value!) ==
-                                                  null) {
-                                                return 'Veuillez entrer un nombre valide';
-                                              }
-                                              return null;
-                                            },
-                                          )
-                                          : buildTextField(
-                                            controller: _cbnController,
-                                            label: "CBN",
-                                            icon: Icons.monitor_weight,
-                                            keyboardType: TextInputType.number,
-                                            validator: (value) {
-                                              if (value?.isEmpty ?? true) {
-                                                return 'Ce champ est requis';
-                                              }
-                                              if (double.tryParse(value!) ==
-                                                  null) {
-                                                return 'Veuillez entrer un nombre valide';
-                                              }
-                                              return null;
-                                            },
-                                          ),
+                                  child: _expeditionType == 'avion'
+                                      ? buildTextField(
+                                          controller: _weightController,
+                                          label: "Poids (kg)",
+                                          icon: Icons.scale,
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            if (value?.isEmpty ?? true) {
+                                              return 'Ce champ est requis';
+                                            }
+                                            if (double.tryParse(value!) ==
+                                                null) {
+                                              return 'Veuillez entrer un nombre valide';
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                      : buildTextField(
+                                          controller: _cbnController,
+                                          label: "CBN",
+                                          icon: Icons.monitor_weight,
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            if (value?.isEmpty ?? true) {
+                                              return 'Ce champ est requis';
+                                            }
+                                            if (double.tryParse(value!) ==
+                                                null) {
+                                              return 'Veuillez entrer un nombre valide';
+                                            }
+                                            return null;
+                                          },
+                                        ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: buildTextField(
                                     controller: _itemQuantityController,
                                     label: "Nombre de carton",
-                                    icon:
-                                        Icons
-                                            .production_quantity_limits_outlined,
+                                    icon: Icons
+                                        .production_quantity_limits_outlined,
                                     keyboardType: TextInputType.number,
                                     validator: (value) {
                                       if (value?.isEmpty ?? true) {
@@ -300,9 +296,8 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                                   _selectedClient = client;
                                 });
                               },
-                              itemToString:
-                                  (client) =>
-                                      '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                              itemToString: (client) =>
+                                  '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
                               hintText:
                                   clientFullname ?? 'Choisir un client...',
                               prefixIcon: Icons.person,

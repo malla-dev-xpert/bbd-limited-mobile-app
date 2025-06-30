@@ -105,6 +105,7 @@ class Items {
   final String? supplierName;
   final int? packageId;
   final String? supplierPhone;
+  final double? salesRate;
   Status? status;
 
   Items({
@@ -117,6 +118,7 @@ class Items {
     this.supplierName,
     this.supplierPhone,
     this.packageId,
+    this.salesRate,
     this.status,
   });
 
@@ -131,6 +133,7 @@ class Items {
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
       'packageId': packageId,
+      'salesRate': salesRate,
       'status': status?.name,
     };
   }
@@ -162,6 +165,9 @@ class Items {
       supplierName: json['supplierName'] as String?,
       supplierPhone: json['supplierPhone'] as String?,
       packageId: json['packageId'] as int?,
+      salesRate: json['salesRate'] != null
+          ? (json['salesRate'] as num).toDouble()
+          : null,
       status: status,
     );
   }

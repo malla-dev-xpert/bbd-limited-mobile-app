@@ -345,8 +345,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     ),
               ),
               const SizedBox(height: 12),
+              // items lists section
               _buildItemsSection(),
               const SizedBox(height: 24),
+              // actions buttons
               Row(
                 children: [
                   if (widget.packages.status == Status.PENDING) ...[
@@ -368,7 +370,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        icon: Icon(Icons.delete, color: Colors.white),
+                        icon: const Icon(Icons.delete, color: Colors.white),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -382,15 +384,15 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: Text(
-                          'Démarer l\'expédition',
+                        label: const Text(
+                          'Expédier',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.check_circle_outline_outlined,
                           color: Colors.white,
                         ),
@@ -408,7 +410,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: Text(
+                        label: const Text(
                           'Arrivée à destination',
                           style: TextStyle(
                             fontSize: 12,
@@ -416,7 +418,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        icon: Icon(Icons.local_shipping, color: Colors.white),
+                        icon: const Icon(Icons.local_shipping,
+                            color: Colors.white),
                       ),
                     ),
                   ] else if (widget.packages.status == Status.DELIVERED) ...[
@@ -431,7 +434,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: Text(
+                        label: const Text(
                           'Confirmer la livraison',
                           style: TextStyle(
                             fontSize: 12,
@@ -439,7 +442,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        icon: Icon(Icons.verified, color: Colors.white),
+                        icon: const Icon(Icons.verified, color: Colors.white),
                       ),
                     ),
                   ],
@@ -581,10 +584,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   const Text('Confirmation'),
                 ],
               ),
-              content: Column(
+              content: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Êtes-vous sûr de vouloir démarrer l\'expédition du colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
@@ -679,10 +682,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   const Text('Confirmation'),
                 ],
               ),
-              content: Column(
+              content: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Êtes-vous sûr de vouloir confirmer l\'arrivée de ce Colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
@@ -777,10 +780,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   const Text('Confirmation'),
                 ],
               ),
-              content: Column(
+              content: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Êtes-vous sûr de vouloir confirmer la livraison de ce Colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
@@ -920,7 +923,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   Widget _buildItemsSection() {
     if (_isLoadingItems) {
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.grey[50],
           borderRadius: BorderRadius.circular(12),
@@ -953,7 +956,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
@@ -967,9 +970,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
 
   Widget _buildItemRow(Items item) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.all(0.0),
       child: Container(
         padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
@@ -1000,7 +1004,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Qté:  24{item.quantity ?? 0}',
+                    'Qté: ${item.quantity ?? 0}',
                     style: TextStyle(
                       color: Colors.blue[700],
                       fontWeight: FontWeight.bold,
@@ -1020,11 +1024,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     color: Colors.grey[600],
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    'Fournisseur:  24{item.supplierName}',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
+                  Expanded(
+                    child: Text(
+                      '${item.supplierName} | ${item.supplierPhone}',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -1041,7 +1047,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Prix unitaire:  24{item.unitPrice!.toStringAsFixed(2)} €',
+                    'Prix unitaire: ${item.unitPrice!.toStringAsFixed(2)} ¥',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,
@@ -1050,26 +1056,42 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 ],
               ),
             ],
-            if (item.totalPrice != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.receipt,
-                    size: 14,
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.assignment_outlined,
+                  size: 14,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Prix total: ${item.totalPrice!.toStringAsFixed(2)} ¥',
+                  style: TextStyle(
                     color: Colors.grey[600],
+                    fontSize: 12,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Prix total:  24{item.totalPrice!.toStringAsFixed(2)} €',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.percent,
+                  size: 14,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Taux d\'achat: ${item.salesRate} ¥',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
