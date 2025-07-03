@@ -5,10 +5,9 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:iconify_flutter/iconify_flutter.dart';
-import 'package:iconify_flutter/icons/majesticons.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
+import 'widgets/cash_withdrawal_form.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -33,6 +32,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   bool _isArticlesExpanded = false;
   late NumberFormat currencyFormat;
   final Set<String> _confirmedArticles = {};
+  bool showOperationButtons = false;
 
   @override
   void initState() {
@@ -538,6 +538,23 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     }
   }
 
+  void _handleWithdrawal() {
+    showDialog(
+      context: context,
+      builder: (context) => CashWithdrawalForm(
+        partnerId: widget.versement.partnerId!,
+        versementId: widget.versement.id!,
+        deviseCode: widget.versement.deviseCode ?? 'CNY',
+        onSubmit: (montant, note) async {
+          // Exemple :
+          // await CashWithdrawalService().createWithdrawal(...);
+          showSuccessTopSnackBar(context, "Retrait enregistré !");
+          widget.onVersementUpdated?.call();
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -553,18 +570,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handlePurchase,
-        backgroundColor: const Color(0xFF1A1E49),
-        icon: const Iconify(
-          Majesticons.money_hand_line,
-          color: Colors.white,
-        ),
-        label: const Text(
-          'Effectuer un achat',
-          style: TextStyle(color: Colors.white),
-        ),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -582,6 +587,89 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 ),
               ),
             ),
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) {
+              final offsetAnimation = Tween<Offset>(
+                begin: const Offset(0, 0.3),
+                end: Offset.zero,
+              ).animate(animation);
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: offsetAnimation,
+                  child: child,
+                ),
+              );
+            },
+            child: showOperationButtons
+                ? Padding(
+                    key: const ValueKey('operationButtons'),
+                    padding: const EdgeInsets.only(bottom: 90.0, right: 0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7F78AF),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              showOperationButtons = false;
+                            });
+                            _handlePurchase();
+                          },
+                          icon: const Icon(Icons.shopping_cart_outlined),
+                          label: const Text('Effectuer un achat'),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              showOperationButtons = false;
+                            });
+                            _handleWithdrawal();
+                          },
+                          icon: const Icon(Icons.money_off_csred_outlined),
+                          label: const Text("Retrait d'argent"),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          FloatingActionButton.extended(
+            onPressed: () {
+              setState(() {
+                showOperationButtons = !showOperationButtons;
+              });
+            },
+            backgroundColor: const Color(0xFF1A1E49),
+            icon: const Icon(Icons.more_horiz, color: Colors.white),
+            label: const Text(
+              'Effectuer une opération',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
