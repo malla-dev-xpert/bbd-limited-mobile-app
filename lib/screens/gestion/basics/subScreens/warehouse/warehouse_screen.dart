@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
@@ -9,6 +10,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({super.key});
@@ -411,11 +413,11 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   Widget _buildWarehouseList() {
     if (_allWarehouses == null) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_filteredWarehouse.isEmpty) {
-      return Center(child: Text("Aucun entrepôt trouvé"));
+      return const Center(child: Text("Aucun entrepôt trouvé"));
     }
 
     return RefreshIndicator(
@@ -425,13 +427,17 @@ class _WarehouseState extends State<WarehouseScreen> {
       displacement: 40,
       color: Theme.of(context).primaryColor,
       backgroundColor: Colors.white,
-      child: ListView.builder(
-        physics: AlwaysScrollableScrollPhysics(),
+      child: MasonryGridView.count(
+        controller: _scrollController,
+        crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 3 : 1,
+        mainAxisSpacing: 28,
+        crossAxisSpacing: 28,
+        padding: const EdgeInsets.only(bottom: 32),
         itemCount:
             _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _filteredWarehouse.length) {
-            return Center(
+            return const Center(
               child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: CircularProgressIndicator(),
@@ -442,97 +448,176 @@ class _WarehouseState extends State<WarehouseScreen> {
           final formattedDate = DateFormat.yMMMMEEEEd().format(
             warehouse.createdAt!,
           );
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: Container(
-              padding: const EdgeInsets.all(16),
+          final gradient = index % 2 == 0
+              ? const LinearGradient(
+                  colors: [Color(0xFF1A1E49), Color(0xFF4F8FFF)])
+              : const LinearGradient(
+                  colors: [Color(0xFFFFA726), Color(0xFFFFD280)]);
+          final textColor = index % 2 == 0 ? Colors.white : Colors.black87;
+          return GestureDetector(
+            onTapDown: (_) => {}, // Pour effet tap si besoin
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 228, 229, 247),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildTag(warehouse.storageType ?? ''),
-                      // warehous detail
-                      IconButton(
-                        icon: Icon(
-                          Icons.info,
-                          size: 30,
-                          color: Colors.grey[500],
-                        ),
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WarehouseDetailPage(
-                                warehouseId: warehouse.id,
-                                name: warehouse.name,
-                                adresse: warehouse.adresse,
-                                storageType: warehouse.storageType,
-                                onWarehouseUpdated: () {
-                                  loadWarehouses(reset: true);
-                                },
-                              ),
-                            ),
-                          );
-
-                          // Si result est true, l'entrepôt a été supprimé
-                          if (result == true) {
-                            // Rafraîchir la liste des entrepôts
-                            setState(() {
-                              loadWarehouses(reset: true);
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    warehouse.name!,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.map_rounded, size: 18, color: Colors.grey),
-                      SizedBox(width: 5),
-                      Text(warehouse.adresse!),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_month, size: 18, color: Colors.grey),
-                      SizedBox(width: 5),
-                      Text(formattedDate),
-                    ],
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(36),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.13),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
                   ),
                 ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(36),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Text(
+                                warehouse.storageType ?? '',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.18),
+                                  foregroundColor: textColor,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 8),
+                                ),
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WarehouseDetailPage(
+                                        warehouseId: warehouse.id,
+                                        name: warehouse.name,
+                                        adresse: warehouse.adresse,
+                                        storageType: warehouse.storageType,
+                                        onWarehouseUpdated: () {
+                                          loadWarehouses(reset: true);
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    setState(() {
+                                      loadWarehouses(reset: true);
+                                    });
+                                  }
+                                },
+                                label: const Text('Voir'),
+                                icon: const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 18),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.white.withOpacity(0.18),
+                              radius: 22,
+                              child: Icon(Icons.warehouse_rounded,
+                                  color: textColor, size: 28),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                warehouse.name ?? '',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                  letterSpacing: -1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Divider(
+                          color: textColor.withOpacity(0.13),
+                          thickness: 1.1,
+                          height: 18,
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.map_rounded,
+                                size: 18, color: textColor.withOpacity(0.7)),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                warehouse.adresse ?? '',
+                                style: TextStyle(
+                                  color: textColor.withOpacity(0.85),
+                                  fontSize: 15,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.calendar_month,
+                                size: 18, color: textColor.withOpacity(0.7)),
+                            const SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                color: textColor.withOpacity(0.85),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildTag(String label) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF7F78AF),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
       ),
     );
   }
