@@ -8,6 +8,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'widgets/cash_withdrawal_form.dart';
+import 'package:bbd_limited/core/services/versement_services.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -257,6 +258,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   }
 
   void _handlePurchase() {
+    setState(() {
+      isLoading = true;
+    });
     if (widget.versement.partnerId == null || widget.versement.id == null) {
       showErrorTopSnackBar(
         context,
@@ -278,6 +282,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       widget.versement.id!,
       widget.versement.reference ?? '',
     );
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Widget _buildNoteField(String? note) {
@@ -546,10 +553,49 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         versementId: widget.versement.id!,
         deviseCode: widget.versement.deviseCode ?? 'CNY',
         onSubmit: (montant, note) async {
-          // Exemple :
-          // await CashWithdrawalService().createWithdrawal(...);
-          showSuccessTopSnackBar(context, "Retrait enregistré !");
-          widget.onVersementUpdated?.call();
+          if (widget.versement.deviseId == null) {
+            showErrorTopSnackBar(
+                context, "Devise non trouvée pour ce versement");
+            return;
+          }
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) =>
+                const Center(child: CircularProgressIndicator()),
+          );
+          try {
+            setState(() {
+              isLoading = true;
+            });
+            final user = await AuthService().getUserInfo();
+            if (user == null) {
+              Navigator.of(context).pop();
+              showErrorTopSnackBar(context, "Utilisateur non connecté");
+              return;
+            }
+            final result = await VersementServices().createRetraitArgent(
+              partnerId: widget.versement.partnerId!,
+              versementId: widget.versement.id!,
+              deviseId: widget.versement.deviseId!,
+              montant: montant,
+              note: note,
+              userId: user.id,
+            );
+
+            if (result == 'SUCCESS') {
+              Navigator.of(context).pop();
+              showSuccessTopSnackBar(context, "Retrait effectué avec succès !");
+              widget.onVersementUpdated?.call();
+            }
+          } catch (e) {
+            Navigator.of(context).pop();
+            showErrorTopSnackBar(context, e.toString());
+          } finally {
+            setState(() {
+              isLoading = false;
+            });
+          }
         },
       ),
     );

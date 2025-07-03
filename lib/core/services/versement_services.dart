@@ -58,9 +58,6 @@ class VersementServices {
           )
           .timeout(const Duration(seconds: 30));
 
-      log('Response status: ${response.statusCode}');
-      log('Response body: ${response.body}');
-
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "CREATED";
       } else {
@@ -119,6 +116,54 @@ class VersementServices {
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
+
+  Future<String?> createRetraitArgent({
+    required int partnerId,
+    required int versementId,
+    required int deviseId,
+    required double montant,
+    required String note,
+    required int userId,
+  }) async {
+    final url = Uri.parse('$baseUrl/versement/retrait');
+    final Map<String, dynamic> body = {
+      'partnerId': partnerId,
+      'versementId': versementId,
+      'deviseId': deviseId,
+      'montant': montant,
+      'note': note,
+      'userId': userId,
+    };
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else {
+        // On tente d'extraire le message d'erreur du backend
+        String errorMsg;
+        try {
+          final decoded = jsonDecode(response.body);
+          errorMsg = decoded['message'] ?? response.body;
+        } catch (_) {
+          errorMsg = response.body;
+        }
+        throw Exception(errorMsg);
+      }
+    } on SocketException {
+      throw Exception("Pas de connexion internet");
+    } on TimeoutException {
+      throw Exception("Timeout - Serveur non disponible");
+    } catch (e) {
+      throw Exception(e.toString());
     }
   }
 }
