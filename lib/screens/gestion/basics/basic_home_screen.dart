@@ -142,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 0,
                 ),
                 sliver: SliverGrid.count(
-                  crossAxisCount: isTablet ? 4 : 2,
+                  crossAxisCount: isTablet ? 3 : 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
                   children: cardDataList.map((data) {

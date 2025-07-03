@@ -429,7 +429,7 @@ class _WarehouseState extends State<WarehouseScreen> {
       backgroundColor: Colors.white,
       child: MasonryGridView.count(
         controller: _scrollController,
-        crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 3 : 1,
+        crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 2 : 1,
         mainAxisSpacing: 28,
         crossAxisSpacing: 28,
         padding: const EdgeInsets.only(bottom: 32),
