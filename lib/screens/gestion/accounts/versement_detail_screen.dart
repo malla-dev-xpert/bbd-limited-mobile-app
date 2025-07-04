@@ -621,7 +621,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       code: widget.versement.deviseCode ?? '',
                     ),
                     user: user,
-                    status: Status.RECEIVED,
+                    status: Status.CREATE,
                   ),
                 );
               });
@@ -730,7 +730,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: w.status == Status.RECEIVED
+                                      color: w.status == Status.CREATE
                                           ? Colors.green[100]
                                           : Colors.orange[100],
                                       borderRadius: BorderRadius.circular(20),
@@ -738,21 +738,21 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                     child: Row(
                                       children: [
                                         Icon(
-                                          w.status == Status.RECEIVED
+                                          w.status == Status.CREATE
                                               ? Icons.check_circle
                                               : Icons.timelapse,
-                                          color: w.status == Status.RECEIVED
+                                          color: w.status == Status.CREATE
                                               ? Colors.green[700]
                                               : Colors.orange[700],
                                           size: 16,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          w.status == Status.RECEIVED
+                                          w.status == Status.CREATE
                                               ? 'Validé'
                                               : 'En attente',
                                           style: TextStyle(
-                                            color: w.status == Status.RECEIVED
+                                            color: w.status == Status.CREATE
                                                 ? Colors.green[700]
                                                 : Colors.orange[700],
                                             fontWeight: FontWeight.w500,
@@ -776,11 +776,18 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                           size: 18, color: Color(0xFF7F78AF)),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}'
-                                                .trim()
-                                                .isEmpty
-                                            ? w.user.username
-                                            : '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}',
+                                        (w.userName != null &&
+                                                w.userName!.trim().isNotEmpty)
+                                            ? w.userName!
+                                            : ((w.user.firstName ?? '')
+                                                        .trim()
+                                                        .isNotEmpty ||
+                                                    (w.user.lastName ?? '')
+                                                        .trim()
+                                                        .isNotEmpty)
+                                                ? '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}'
+                                                    .trim()
+                                                : (w.user.username ?? ''),
                                         style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
@@ -837,8 +844,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         ),
       ),
     );
-    return const SizedBox
-        .shrink(); // Pour éviter l'erreur de complétion normale
   }
 
   @override

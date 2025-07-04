@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,6 +14,9 @@ class PartnerServices {
         '$baseUrl/partners/customer?page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
       ),
     );
+
+    log(response.body);
+    log(response.statusCode.toString());
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
@@ -30,6 +34,8 @@ class PartnerServices {
         '$baseUrl/partners/supplier?page=$page&query=${query ?? ''}&includeVersements=true&includeAchats=true',
       ),
     );
+    log(response.body);
+    log(response.statusCode.toString());
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(

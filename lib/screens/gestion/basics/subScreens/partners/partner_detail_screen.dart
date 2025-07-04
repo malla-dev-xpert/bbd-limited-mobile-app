@@ -177,7 +177,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
 
     final partnerName =
-        "${_partner.firstName} ${_partner.lastName} | ${_partner.phoneNumber}";
+        "${_partner.firstName} ${_partner.lastName} ${_partner.lastName.isNotEmpty ? '|' : ''} ${_partner.phoneNumber}";
 
     return Scaffold(
       appBar: AppBar(

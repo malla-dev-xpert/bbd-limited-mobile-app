@@ -72,7 +72,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
                     }
                   },
                   itemToString: (supplier) =>
-                      '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
+                      '${supplier.firstName}  ${supplier.lastName} ${supplier.lastName.isNotEmpty ? '|' : ''} ${supplier.phoneNumber}',
                   hintText: 'Choisir un fournisseur...',
                   prefixIcon: Icons.person_add,
                 ),
