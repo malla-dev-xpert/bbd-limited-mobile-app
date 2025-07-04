@@ -54,7 +54,7 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
     }
   }
 
-  Future<bool> createDevise({
+  Future<String> createDevise({
     required String name,
     required String code,
     double? rate,
@@ -67,14 +67,12 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
         rate: rate,
         userId: userId,
       );
-
       if (result == "SUCCESS") {
         await loadDevises(reset: true);
-        return true;
       }
-      return false;
+      return result;
     } catch (e) {
-      return false;
+      return 'ERROR';
     }
   }
 

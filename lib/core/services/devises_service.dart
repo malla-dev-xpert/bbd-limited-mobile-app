@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,7 +11,7 @@ class DeviseServices {
   Future<String> create({
     required String name,
     required String code,
-    double? rate, // Rend le taux nullable
+    double? rate,
     required int userId,
   }) async {
     try {
@@ -23,6 +24,9 @@ class DeviseServices {
           "rate": rate,
         }),
       );
+
+      log(response.body);
+      log(response.statusCode.toString());
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "SUCCESS";

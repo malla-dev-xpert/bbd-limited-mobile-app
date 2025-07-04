@@ -145,10 +145,16 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                           userId: user.id,
                         );
 
-                    if (success) {
+                    if (success == "SUCCESS") {
                       Navigator.pop(context);
                       showSuccessTopSnackBar(
                           context, 'Devise créée avec succès!');
+                    } else if (success == "NAME_EXIST") {
+                      showErrorTopSnackBar(
+                          context, 'Le nom de devise existe déjà');
+                    } else if (success == "CODE_EXIST") {
+                      showErrorTopSnackBar(
+                          context, 'Le code de devise existe déjà');
                     } else {
                       showErrorTopSnackBar(
                           context, 'Erreur lors de la création de la devise');

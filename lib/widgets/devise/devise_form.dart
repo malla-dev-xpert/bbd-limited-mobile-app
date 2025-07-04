@@ -1,6 +1,7 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/devises.dart';
+import 'package:bbd_limited/components/text_input.dart';
 
 class DeviseForm extends StatefulWidget {
   final Devise? devise;
@@ -104,49 +105,27 @@ class _DeviseFormState extends State<DeviseForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextFormField(
+          buildTextField(
             controller: _nameController,
-            decoration: InputDecoration(
-              labelText: 'Nom de la devise',
-              hintText: 'Ex: Dollar US',
-              prefixIcon:
-                  const Icon(Icons.attach_money, color: Color(0xFF1A1E49)),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            label: 'Nom de la devise',
+            icon: Icons.attach_money,
             validator: _validateName,
-            textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 16),
-          TextFormField(
+          buildTextField(
             controller: _codeController,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(
-              labelText: 'Code',
-              hintText: 'Ex: USD, EUR, GBP',
-              prefixIcon: const Icon(Icons.abc, color: Color(0xFF1A1E49)),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            label: 'Code',
+            icon: Icons.abc,
             validator: _validateCode,
-            textInputAction: TextInputAction.next,
+            keyboardType: TextInputType.text,
           ),
           const SizedBox(height: 16),
-          TextFormField(
+          buildTextField(
             controller: _rateController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Taux de change',
-              hintText: 'Ex: 0.85',
-              prefixIcon: const Icon(Icons.percent, color: Color(0xFF1A1E49)),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            label: 'Taux de change',
+            icon: Icons.percent,
             validator: _validateRate,
-            textInputAction: TextInputAction.done,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 24),
           SizedBox(
