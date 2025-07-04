@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
@@ -49,11 +50,15 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
     _keyboardSubscription =
         _keyboardVisibilityController.onChange.listen((visible) {
       if (!visible) {
-        _scrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              0.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
       }
     });
 
@@ -136,7 +141,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                       return;
                     }
 
-                    final success = await ref
+                    final result = await ref
                         .read(deviseListProvider.notifier)
                         .createDevise(
                           name: name,
@@ -145,19 +150,30 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                           userId: user.id,
                         );
 
-                    if (success == "SUCCESS") {
+                    log("Résultat création devise from devices screen: $result");
+
+                    if (result == "SUCCESS") {
                       Navigator.pop(context);
                       showSuccessTopSnackBar(
                           context, 'Devise créée avec succès!');
-                    } else if (success == "NAME_EXIST") {
+                    } else if (result == "NAME_EXIST") {
                       showErrorTopSnackBar(
                           context, 'Le nom de devise existe déjà');
-                    } else if (success == "CODE_EXIST") {
+                    } else if (result == "CODE_EXIST") {
                       showErrorTopSnackBar(
                           context, 'Le code de devise existe déjà');
-                    } else {
+                    } else if (result == "RATE_NOT_FOUND") {
                       showErrorTopSnackBar(
-                          context, 'Erreur lors de la création de la devise');
+                          context, 'Taux de conversion non trouvé');
+                    } else if (result == "RATE_SERVICE_ERROR") {
+                      showErrorTopSnackBar(
+                          context, 'Erreur du service de taux');
+                    } else if (result == "CONNECTION_ERROR") {
+                      showErrorTopSnackBar(context, 'Erreur de connexion');
+                    } else {
+                      // Affiche le message d'erreur tel quel s'il provient du backend
+                      showErrorTopSnackBar(
+                          context, result ?? 'Erreur inconnue');
                     }
                   } catch (e) {
                     showErrorTopSnackBar(

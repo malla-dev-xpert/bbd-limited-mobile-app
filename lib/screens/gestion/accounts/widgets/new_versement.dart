@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
@@ -446,92 +447,112 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   }
 
   void _showAddDeviseDialog() {
+    String? nameError;
+    String? codeError;
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: Colors.white,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            width: MediaQuery.of(context).size.width * 0.95,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              backgroundColor: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                width: MediaQuery.of(context).size.width * 0.95,
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Expanded(
-                      child: Text(
-                        'Ajouter une nouvelle devise',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1E49),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Ajouter une nouvelle devise',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1E49),
+                            ),
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
+                    const SizedBox(height: 24),
+                    DeviseForm(
+                      isLoading: _isLoading,
+                      isEditing: false,
+                      nameError: nameError,
+                      codeError: codeError,
+                      onSubmit: (name, code, rate) async {
+                        setState(() => _isLoading = true);
+                        try {
+                          final user = await authService.getUserInfo();
+                          if (user == null) {
+                            showErrorTopSnackBar(
+                                context, 'Session utilisateur invalide');
+                            return;
+                          }
+
+                          final result = await ref
+                              .read(deviseListProvider.notifier)
+                              .createDevise(
+                                name: name,
+                                code: code,
+                                rate: rate,
+                                userId: user.id,
+                              );
+
+                          log("Résultat création devise: $result");
+
+                          if (result == "SUCCESS") {
+                            Navigator.pop(context);
+                            showSuccessTopSnackBar(
+                                context, 'Devise créée avec succès!');
+                          } else if (result == "NAME_EXIST") {
+                            showErrorTopSnackBar(
+                                context, 'Le nom de devise existe déjà');
+                          } else if (result == "CODE_EXIST") {
+                            showErrorTopSnackBar(
+                                context, 'Le code de devise existe déjà');
+                          } else if (result == "RATE_NOT_FOUND") {
+                            showErrorTopSnackBar(
+                                context, 'Taux de conversion non trouvé');
+                          } else if (result == "RATE_SERVICE_ERROR") {
+                            showErrorTopSnackBar(
+                                context, 'Erreur du service de taux');
+                          } else if (result == "CONNECTION_ERROR") {
+                            showErrorTopSnackBar(
+                                context, 'Erreur de connexion');
+                          } else {
+                            // Affiche le message d'erreur tel quel s'il provient du backend
+                            showErrorTopSnackBar(
+                                context, result ?? 'Erreur inconnue');
+                          }
+                        } catch (e) {
+                          showErrorTopSnackBar(
+                              context, 'Erreur serveur: ${e.toString()}');
+                        } finally {
+                          setState(() => _isLoading = false);
+                        }
+                      },
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                DeviseForm(
-                  isLoading: _isLoading,
-                  isEditing: false,
-                  onSubmit: (name, code, rate) async {
-                    setState(() => _isLoading = true);
-                    try {
-                      final user = await authService.getUserInfo();
-                      if (user == null) {
-                        showErrorTopSnackBar(
-                            context, 'Session utilisateur invalide');
-                        return;
-                      }
-
-                      final success = await ref
-                          .read(deviseListProvider.notifier)
-                          .createDevise(
-                            name: name,
-                            code: code,
-                            rate: rate,
-                            userId: user.id,
-                          );
-
-                      if (success == "SUCCESS") {
-                        Navigator.pop(context);
-                        showSuccessTopSnackBar(
-                            context, 'Devise créée avec succès!');
-                      } else if (success == "NAME_EXIST") {
-                        showErrorTopSnackBar(
-                            context, 'Le nom de devise existe déjà');
-                      } else if (success == "CODE_EXIST") {
-                        showErrorTopSnackBar(
-                            context, 'Le code de devise existe déjà');
-                      } else {
-                        showErrorTopSnackBar(
-                            context, 'Erreur lors de la création de la devise');
-                      }
-                    } catch (e) {
-                      showErrorTopSnackBar(
-                          context, 'Erreur serveur: ${e.toString()}');
-                    } finally {
-                      setState(() => _isLoading = false);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

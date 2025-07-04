@@ -8,6 +8,8 @@ class DeviseForm extends StatefulWidget {
   final Function(String name, String code, double? rate) onSubmit;
   final bool isLoading;
   final bool isEditing;
+  final String? nameError;
+  final String? codeError;
 
   const DeviseForm({
     Key? key,
@@ -15,6 +17,8 @@ class DeviseForm extends StatefulWidget {
     required this.onSubmit,
     this.isLoading = false,
     this.isEditing = false,
+    this.nameError,
+    this.codeError,
   }) : super(key: key);
 
   @override
@@ -110,6 +114,8 @@ class _DeviseFormState extends State<DeviseForm> {
             label: 'Nom de la devise',
             icon: Icons.attach_money,
             validator: _validateName,
+            errorText:
+                widget.nameError, // Ajout pour afficher l'erreur spécifique
           ),
           const SizedBox(height: 16),
           buildTextField(
@@ -118,6 +124,8 @@ class _DeviseFormState extends State<DeviseForm> {
             icon: Icons.abc,
             validator: _validateCode,
             keyboardType: TextInputType.text,
+            errorText:
+                widget.codeError, // Ajout pour afficher l'erreur spécifique
           ),
           const SizedBox(height: 16),
           buildTextField(

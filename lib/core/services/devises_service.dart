@@ -28,27 +28,36 @@ class DeviseServices {
       log(response.body);
       log(response.statusCode.toString());
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return "SUCCESS";
-      } else if (response.statusCode == 409) {
-        // Gestion des différents messages d'erreur
-        final responseBody = response.body;
-        if (responseBody.contains("Nom de devise déjà utilisé")) {
-          return "NAME_EXIST";
-        } else if (responseBody.contains("Code déjà utilisé")) {
-          return "CODE_EXIST";
-        } else if (responseBody.contains("Le taux de conversion")) {
-          return "RATE_NOT_FOUND";
-        } else if (responseBody.contains("Le service de taux")) {
-          return "RATE_SERVICE_ERROR";
-        } else {
+      if (response.statusCode == 409) {
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body);
+          final String? message = errorData['message'] as String?;
+          if (message != null) {
+            // Modification ici pour rendre la vérification plus flexible
+            if (message.toLowerCase().contains("nom de devise")) {
+              return "NAME_EXIST";
+            } else if (message.toLowerCase().contains("code")) {
+              return "CODE_EXIST";
+            } else if (message.toLowerCase().contains("taux de conversion")) {
+              return "RATE_NOT_FOUND";
+            } else if (message.toLowerCase().contains("service de taux")) {
+              return "RATE_SERVICE_ERROR";
+            } else {
+              return message; // Retourne le message original
+            }
+          } else {
+            return "GENERAL_ERROR";
+          }
+        } catch (_) {
           return "GENERAL_ERROR";
         }
+      }
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return "SUCCESS";
       } else {
         return "GENERAL_ERROR";
       }
     } catch (e) {
-      // Gestion des erreurs de connexion
       return "CONNECTION_ERROR";
     }
   }

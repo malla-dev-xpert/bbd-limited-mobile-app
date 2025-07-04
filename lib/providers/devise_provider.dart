@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
@@ -54,7 +55,7 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
     }
   }
 
-  Future<String> createDevise({
+  Future<String?> createDevise({
     required String name,
     required String code,
     double? rate,
@@ -69,10 +70,12 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
       );
       if (result == "SUCCESS") {
         await loadDevises(reset: true);
+        return "SUCCESS";
+      } else {
+        return result; // Retourne le message exact du service
       }
-      return result;
     } catch (e) {
-      return 'ERROR';
+      return e.toString();
     }
   }
 
