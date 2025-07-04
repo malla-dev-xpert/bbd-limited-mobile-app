@@ -126,12 +126,12 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         showCountryPicker(
                           context: context,
                           showPhoneCode: true,
-                          countryListTheme: CountryListThemeData(
+                          countryListTheme: const CountryListThemeData(
                             flagSize: 25,
                             backgroundColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 16),
-                            bottomSheetHeight: 300,
-                            borderRadius: const BorderRadius.only(
+                            textStyle: TextStyle(fontSize: 16),
+                            bottomSheetHeight: 500,
+                            borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20),
                             ),
@@ -155,15 +155,15 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                           children: [
                             _selectedCountry != null
                                 ? Row(
-                                  children: [
-                                    Text(
-                                      _selectedCountry!.flagEmoji,
-                                      style: const TextStyle(fontSize: 24),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(_selectedCountry!.name),
-                                  ],
-                                )
+                                    children: [
+                                      Text(
+                                        _selectedCountry!.flagEmoji,
+                                        style: const TextStyle(fontSize: 24),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(_selectedCountry!.name),
+                                    ],
+                                  )
                                 : const Text('Choisir un pays'),
                             const Icon(Icons.arrow_drop_down),
                           ],
@@ -171,31 +171,16 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Container(
-                    //   decoration: BoxDecoration(
-                    //     border: Border.all(color: Colors.grey[300]!),
-                    //     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    //   ),
-                    //   child: CustomDropdown<String>(
-                    //     hintText: 'Type de partenaire',
-                    //     items: _accountTypeList,
-                    //     onChanged: (value) {
-                    //       setState(() {
-                    //         _acccountType = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
                     const SizedBox(height: 24),
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : confirmationButton(
-                          isLoading: isFormLoading,
-                          onPressed: _savePartner,
-                          label: "Enregistrer",
-                          icon: Icons.check_circle_rounded,
-                          subLabel: "Enregistrement...",
-                        ),
+                            isLoading: isFormLoading,
+                            onPressed: _savePartner,
+                            label: "Enregistrer",
+                            icon: Icons.check_circle_rounded,
+                            subLabel: "Enregistrement...",
+                          ),
                   ],
                 ),
               ),
@@ -223,36 +208,15 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         return;
       }
 
-      if (_lastNameController.text.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez entrer un prénom");
-        return;
-      }
-
-      if (_phoneController.text.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez entrer un numéro de téléphone");
-        return;
-      }
-
-      if (_selectedCountry!.name.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un pays");
-        return;
-      }
-
-      // if (_acccountType!.toString().isEmpty) {
-      //   showErrorTopSnackBar(
-      //     context,
-      //     "Veuillez sélectionner un type de partenaire",
-      //   );
-      //   return;
-      // }
-
       final success = await _partnerServices.create(
         _firstNameController.text.trim(),
-        _lastNameController.text.trim(),
-        _phoneController.text.trim(),
-        _emailController.text.trim(),
-        _selectedCountry!.name,
-        _adresseController.text.trim(),
+        _lastNameController.text.trim(), // Peut être vide
+        _phoneController.text.trim(), // Peut être vide
+        _emailController.text.trim(), // Peut être vide
+        _selectedCountry != null
+            ? _selectedCountry!.name
+            : '', // Peut être vide
+        _adresseController.text.trim(), // Peut être vide
         'CLIENT',
         user.id,
       );
@@ -284,9 +248,7 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de l\'enregistrement')),
-      );
+      showErrorTopSnackBar(context, "Erreur lors de l'enregistrement");
     } finally {
       setState(() => isFormLoading = false);
     }

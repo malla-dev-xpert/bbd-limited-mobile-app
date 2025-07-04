@@ -10,7 +10,7 @@ class CreateSupplierBottomSheet extends StatefulWidget {
   final Function()? onSupplierCreated;
 
   const CreateSupplierBottomSheet({Key? key, this.onSupplierCreated})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<CreateSupplierBottomSheet> createState() =>
@@ -64,7 +64,7 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                   ),
                   IconButton(
                     onPressed: () => {Navigator.pop(context)},
-                    icon: Icon(Icons.close),
+                    icon: const Icon(Icons.close),
                   ),
                 ],
               ),
@@ -125,12 +125,12 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         showCountryPicker(
                           context: context,
                           showPhoneCode: true,
-                          countryListTheme: CountryListThemeData(
+                          countryListTheme: const CountryListThemeData(
                             flagSize: 25,
                             backgroundColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 16),
                             bottomSheetHeight: 300,
-                            borderRadius: const BorderRadius.only(
+                            borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20),
                             ),
@@ -154,15 +154,15 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                           children: [
                             _selectedCountry != null
                                 ? Row(
-                                  children: [
-                                    Text(
-                                      _selectedCountry!.flagEmoji,
-                                      style: const TextStyle(fontSize: 24),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(_selectedCountry!.name),
-                                  ],
-                                )
+                                    children: [
+                                      Text(
+                                        _selectedCountry!.flagEmoji,
+                                        style: const TextStyle(fontSize: 24),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(_selectedCountry!.name),
+                                    ],
+                                  )
                                 : const Text('Choisir un pays'),
                             const Icon(Icons.arrow_drop_down),
                           ],
@@ -173,12 +173,12 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : confirmationButton(
-                          isLoading: isFormLoading,
-                          onPressed: _saveSupplier,
-                          label: "Enregistrer",
-                          icon: Icons.check_circle_rounded,
-                          subLabel: "Enregistrement...",
-                        ),
+                            isLoading: isFormLoading,
+                            onPressed: _saveSupplier,
+                            label: "Enregistrer",
+                            icon: Icons.check_circle_rounded,
+                            subLabel: "Enregistrement...",
+                          ),
                   ],
                 ),
               ),
@@ -206,28 +206,15 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
         return;
       }
 
-      if (_lastNameController.text.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez entrer un prénom");
-        return;
-      }
-
-      if (_phoneController.text.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez entrer un numéro de téléphone");
-        return;
-      }
-
-      if (_selectedCountry == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un pays");
-        return;
-      }
-
       final success = await _partnerServices.create(
         _firstNameController.text.trim(),
-        _lastNameController.text.trim(),
-        _phoneController.text.trim(),
-        _emailController.text.trim(),
-        _selectedCountry!.name,
-        _adresseController.text.trim(),
+        _lastNameController.text.trim(), // Peut être vide
+        _phoneController.text.trim(), // Peut être vide
+        _emailController.text.trim(), // Peut être vide
+        _selectedCountry != null
+            ? _selectedCountry!.name
+            : '', // Peut être vide
+        _adresseController.text.trim(), // Peut être vide
         'FOURNISSEUR',
         user.id,
       );
@@ -262,9 +249,7 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de l\'enregistrement')),
-      );
+      showErrorTopSnackBar(context, "Erreur lors de l'enregistrement");
     } finally {
       setState(() => isFormLoading = false);
     }
