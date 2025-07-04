@@ -9,6 +9,9 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'widgets/cash_withdrawal_form.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/models/cashWithdrawal.dart';
+import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/models/devises.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -31,6 +34,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   bool isLoading = false;
   bool _isInfoExpanded = true;
   bool _isArticlesExpanded = false;
+  bool _isWithdrawalsExpanded = false;
   late NumberFormat currencyFormat;
   final Set<String> _confirmedArticles = {};
   bool showOperationButtons = false;
@@ -586,6 +590,41 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             if (result == 'SUCCESS') {
               Navigator.of(context).pop();
               showSuccessTopSnackBar(context, "Retrait effectué avec succès !");
+              // Ajout dynamique du retrait à la liste
+              setState(() {
+                widget.versement.cashWithdrawalDtoList ??= [];
+                widget.versement.cashWithdrawalDtoList!.add(
+                  CashWithdrawal(
+                    id: null, // L'id réel n'est pas connu
+                    montant: montant,
+                    dateRetrait: DateTime.now(),
+                    note: note,
+                    partner: Partner(
+                      id: widget.versement.partnerId ?? 0,
+                      firstName:
+                          widget.versement.partnerName?.split(' ').first ?? '',
+                      lastName: widget.versement.partnerName
+                              ?.split(' ')
+                              .skip(1)
+                              .join(' ') ??
+                          '',
+                      phoneNumber: widget.versement.partnerPhone ?? '',
+                      email: '',
+                      country: '',
+                      adresse: '',
+                      accountType: widget.versement.partnerAccountType ?? '',
+                    ),
+                    versement: widget.versement,
+                    devise: Devise(
+                      id: widget.versement.deviseId,
+                      name: widget.versement.deviseCode ?? '',
+                      code: widget.versement.deviseCode ?? '',
+                    ),
+                    user: user,
+                    status: Status.RECEIVED,
+                  ),
+                );
+              });
               widget.onVersementUpdated?.call();
             }
           } catch (e) {
@@ -599,6 +638,207 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildCollapsibleWithdrawals() {
+    final withdrawals = widget.versement.cashWithdrawalDtoList ?? [];
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: _isWithdrawalsExpanded,
+          onExpansionChanged: (expanded) {
+            setState(() {
+              _isWithdrawalsExpanded = expanded;
+            });
+          },
+          title: const Text(
+            "Liste des retraits d'achat",
+            style: TextStyle(
+              color: Color(0xFF1A1E49),
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: withdrawals.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "Aucun retrait effectué pour ce versement.",
+                        style: TextStyle(fontSize: 15, color: Colors.grey),
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: withdrawals.length,
+                      separatorBuilder: (context, i) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final w = withdrawals[index];
+                        final currencyFormat = NumberFormat.currency(
+                          locale: 'fr_FR',
+                          symbol: w.devise.code,
+                        );
+                        return Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.08),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.money_outlined,
+                                      color: Colors.orange[700], size: 28),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      currencyFormat.format(w.montant),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                        color: Color(0xFF1A1E49),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: w.status == Status.RECEIVED
+                                          ? Colors.green[100]
+                                          : Colors.orange[100],
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          w.status == Status.RECEIVED
+                                              ? Icons.check_circle
+                                              : Icons.timelapse,
+                                          color: w.status == Status.RECEIVED
+                                              ? Colors.green[700]
+                                              : Colors.orange[700],
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          w.status == Status.RECEIVED
+                                              ? 'Validé'
+                                              : 'En attente',
+                                          style: TextStyle(
+                                            color: w.status == Status.RECEIVED
+                                                ? Colors.green[700]
+                                                : Colors.orange[700],
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 8,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.person,
+                                          size: 18, color: Color(0xFF7F78AF)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}'
+                                                .trim()
+                                                .isEmpty
+                                            ? w.user.username
+                                            : '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}',
+                                        style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.calendar_today,
+                                          size: 16, color: Colors.blueGrey),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        w.dateRetrait != null
+                                            ? DateFormat('dd/MM/yyyy – HH:mm')
+                                                .format(DateTime.parse(
+                                                    w.dateRetrait.toString()))
+                                            : 'Date inconnue',
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.black87),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              if (w.note != null &&
+                                  w.note!.trim().isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(Icons.sticky_note_2_outlined,
+                                        size: 16, color: Colors.orange),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        w.note!,
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.black87),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return const SizedBox
+        .shrink(); // Pour éviter l'erreur de complétion normale
   }
 
   @override
@@ -628,6 +868,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     _buildCollapsibleInfo(),
                     const SizedBox(height: 16),
                     _buildCollapsibleArticles(),
+                    const SizedBox(height: 16),
+                    _buildCollapsibleWithdrawals(),
                     const SizedBox(height: 80), // Space for FAB
                   ],
                 ),

@@ -10,6 +10,7 @@ class CashWithdrawal {
   final DateTime? dateRetrait;
   final String? note;
   final Partner partner;
+  final String? partnerName;
   final Versement versement;
   final Devise devise;
   final User user;
@@ -21,6 +22,7 @@ class CashWithdrawal {
     this.dateRetrait,
     this.note,
     required this.partner,
+    this.partnerName,
     required this.versement,
     required this.devise,
     required this.user,
@@ -45,6 +47,7 @@ class CashWithdrawal {
       dateRetrait: json['dateRetrait'],
       note: json['note'],
       partner: Partner.fromJson(json['partner']),
+      partnerName: json['partnerName'],
       versement: Versement.fromJson(json['versement']),
       devise: Devise.fromJson(json['devise']),
       user: User.fromJson(json['user']),
@@ -59,6 +62,7 @@ class CashWithdrawal {
       'dateRetrait': dateRetrait,
       'note': note,
       'partner': partner.toJson(),
+      'partnerName': partnerName,
       'versement': versement.toJson(),
       'devise': devise.toJson(),
       'user': user.toJson(),
