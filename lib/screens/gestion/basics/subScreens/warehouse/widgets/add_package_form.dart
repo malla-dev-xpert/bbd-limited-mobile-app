@@ -382,7 +382,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
               provider.selectedClient = client;
             },
             itemToString: (client) =>
-                '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
             hintText: 'Choisir un client...',
             prefixIcon: Icons.person,
           ),

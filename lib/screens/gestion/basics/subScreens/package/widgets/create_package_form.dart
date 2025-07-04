@@ -308,7 +308,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                       selectedItem: _selectedClient,
                                       onChanged: _onClientSelected,
                                       itemToString: (client) =>
-                                          '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                          '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
                                       hintText: 'Choisir un client...',
                                       prefixIcon: Icons.person,
                                     ),
