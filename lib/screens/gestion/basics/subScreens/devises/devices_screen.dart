@@ -37,10 +37,6 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
-  // Constants for validation
-  static const int _maxNameLength = 50;
-  static const String _currencyCodePattern = r'^[A-Z]{3}$';
-
   @override
   void initState() {
     super.initState();
@@ -69,10 +65,6 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
 
   void _initialLoad() {
     ref.read(deviseListProvider.notifier).loadDevises();
-  }
-
-  void _showError(String message) {
-    _errorStreamController.add(message);
   }
 
   @override
