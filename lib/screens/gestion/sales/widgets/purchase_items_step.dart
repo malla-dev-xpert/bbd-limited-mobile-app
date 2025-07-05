@@ -13,7 +13,8 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 
 class PurchaseItemsStep extends StatefulWidget {
   final Partner customer;
-  final Versement versement;
+  final Versement? versement;
+  final bool isDebtPurchase;
   final List<Map<String, dynamic>> initialItems;
   final void Function(List<Map<String, dynamic>>) onItemsChanged;
   final VoidCallback onBack;
@@ -23,6 +24,7 @@ class PurchaseItemsStep extends StatefulWidget {
     Key? key,
     required this.customer,
     required this.versement,
+    required this.isDebtPurchase,
     required this.initialItems,
     required this.onItemsChanged,
     required this.onBack,
@@ -115,6 +117,27 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
       showErrorTopSnackBar(context, "Ajoutez au moins un article.");
       return;
     }
+
+    // Validation supplémentaire pour les achats en dette
+    if (widget.isDebtPurchase) {
+      // Vérifier que le client a des informations valides
+      if (widget.customer.id <= 0) {
+        showErrorTopSnackBar(context, "Informations du client invalides.");
+        return;
+      }
+
+      // Vérifier que les articles ont des prix valides
+      for (int i = 0; i < _items.length; i++) {
+        final item = _items[i];
+        final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
+        if (unitPrice <= 0) {
+          showErrorTopSnackBar(context,
+              "Le prix unitaire de l'article ${i + 1} doit être supérieur à 0.");
+          return;
+        }
+      }
+    }
+
     setState(() => _isLoading = true);
     try {
       final user = await authService.getUserInfo();
@@ -123,8 +146,19 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
         setState(() => _isLoading = false);
         return;
       }
+
+      // Log des informations pour debug
+      print('=== CRÉATION ACHAT ===');
+      print('Client ID: ${widget.customer.id}');
+      print(
+          'Client nom: ${widget.customer.firstName} ${widget.customer.lastName}');
+      print('Client téléphone: ${widget.customer.phoneNumber}');
+      print('Versement ID: ${widget.versement?.id}');
+      print('Is Debt Purchase: ${widget.isDebtPurchase}');
+      print('Nombre d\'articles: ${_items.length}');
+
       final createAchatDto = CreateAchatDto(
-        versementId: widget.versement.id!,
+        versementId: widget.versement?.id,
         items: _items
             .map((item) => CreateItemDto(
                   description: item['description']?.toString() ?? '',
@@ -136,25 +170,48 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
                 ))
             .toList(),
       );
-      final result = await achatServices.createAchatForClient(
-        clientId: widget.customer.id,
-        userId: user!.id,
-        dto: createAchatDto,
-      );
+
+      // Utiliser la méthode appropriée selon le type d'achat
+      final result = widget.isDebtPurchase
+          ? await achatServices.createDebtPurchase(
+              clientId: widget.customer.id,
+              userId: user!.id,
+              dto: createAchatDto,
+            )
+          : await achatServices.createAchatForClient(
+              clientId: widget.customer.id,
+              userId: user!.id,
+              dto: createAchatDto,
+            );
       if (!mounted) return;
       if (result.isSuccess) {
         widget.onFinish();
-        showSuccessTopSnackBar(context, "Achat créé avec succès !");
+        final message = widget.isDebtPurchase
+            ? "Dette créée avec succès !"
+            : "Achat créé avec succès !";
+        showSuccessTopSnackBar(context, message);
       } else {
         String message = result.errorMessage ?? "Erreur inconnue";
         if (result.errors != null && result.errors!.isNotEmpty) {
           message = result.errors!.join('\n');
         }
+
+        // Message spécial pour les erreurs de dette
+        if (widget.isDebtPurchase && message.contains('getTotalDebt()')) {
+          message =
+              "Erreur lors de la création de la dette. Le client pourrait avoir des informations manquantes. Veuillez vérifier les données du client et réessayer.";
+        }
+
         showErrorTopSnackBar(context, message);
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur: \\${e.toString()}");
+        String errorMessage = "Erreur: ${e.toString()}";
+        if (widget.isDebtPurchase) {
+          errorMessage =
+              "Erreur lors de la création de la dette. Veuillez réessayer.";
+        }
+        showErrorTopSnackBar(context, errorMessage);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -163,80 +220,193 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isSuppliersLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.shopping_cart,
-                    color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                const Text('Ajouter les articles',
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ],
+        // Header
+        Container(
+          padding:
+              const EdgeInsets.only(top: 18, left: 0, right: 0, bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: widget.onBack,
+                    icon: const Icon(Icons.arrow_back),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Articles',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).primaryColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            if (widget.isDebtPurchase) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color(0xFF7F78AF).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: const Color(0xFF7F78AF)),
+                                ),
+                                child: const Text(
+                                  'Dette',
+                                  style: TextStyle(
+                                    color: Color(0xFF7F78AF),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${widget.customer.firstName} ${widget.customer.lastName}',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (widget.versement != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'Versement: ${widget.versement!.reference ?? ''}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 18),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
+                // Formulaire d'ajout d'article
                 PackageItemForm(
-                  onAddItem: _addItem,
                   suppliers: _suppliers,
+                  onAddItem: _addItem,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
+                // Liste des articles
                 Expanded(
                   child: PackageItemsList(
                     items: _items,
-                    suppliers: _suppliers,
                     onRemoveItem: _removeItem,
                     onDuplicateItem: _duplicateItem,
                     onEditItem: _editItem,
+                    suppliers: _suppliers,
                   ),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        Column(
-          spacing: 12,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-                "Total: ${currencyFormat.format(_items.fold<double>(0, (sum, item) => sum + (item['quantity'] * item['unitPrice'])))}",
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton.icon(
-                  onPressed: widget.onBack,
-                  icon: const Icon(Icons.arrow_back, color: Colors.grey),
-                  label: const Text('Retour',
-                      style: TextStyle(color: Colors.grey)),
+        // Footer avec bouton de validation
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.10),
+                blurRadius: 16,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          child: Column(
+            children: [
+              if (_items.isNotEmpty) ...[
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        currencyFormat.format(
+                          _items.fold<double>(
+                            0,
+                            (sum, item) =>
+                                sum + (item['quantity'] * item['unitPrice']),
+                          ),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1E49),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Expanded(
-                  child: confirmationButton(
-                      isLoading: _isLoading,
-                      onPressed: _submit,
-                      label: 'Valider',
-                      icon: Icons.verified_outlined,
-                      subLabel: 'Enregistrement...'),
-                ),
+                const SizedBox(height: 10),
               ],
-            ),
-          ],
+              confirmationButton(
+                isLoading: _isLoading,
+                onPressed: _submit,
+                label: widget.isDebtPurchase ? 'Créer la dette' : 'Valider',
+                icon: widget.isDebtPurchase
+                    ? Icons.credit_card
+                    : Icons.verified_outlined,
+                subLabel: 'Enregistrement...',
+              ),
+            ],
+          ),
         ),
       ],
     );

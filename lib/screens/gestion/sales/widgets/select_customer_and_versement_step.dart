@@ -7,7 +7,7 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 
 class SelectCustomerAndVersementStep extends StatefulWidget {
-  final void Function(Partner, Versement) onNext;
+  final void Function(Partner, Versement?) onNext;
   final VoidCallback onCancel;
   const SelectCustomerAndVersementStep(
       {Key? key, required this.onNext, required this.onCancel})
@@ -32,6 +32,7 @@ class _SelectCustomerAndVersementStepState
   Versement? _selectedVersement;
   bool _isLoadingCustomers = true;
   bool isLoadingVersements = false;
+  bool _isDebtPurchase = false;
   late final AnimationController _fadeController;
   late final Animation<double> fadeAnim;
 
@@ -70,12 +71,17 @@ class _SelectCustomerAndVersementStepState
       isLoadingVersements = true;
       _versements = [];
       _selectedVersement = null;
+      _isDebtPurchase = false;
     });
     try {
       final versements = await _versementServices.getByClient(customerId);
       setState(() {
         _versements = versements;
         isLoadingVersements = false;
+        // Si pas de versements, proposer automatiquement l'achat en dette
+        if (versements.isEmpty) {
+          _isDebtPurchase = true;
+        }
       });
       _fadeController.forward(from: 0);
     } catch (_) {
@@ -101,6 +107,12 @@ class _SelectCustomerAndVersementStepState
       }
     });
     _fadeController.forward(from: 0);
+  }
+
+  bool get _canProceed {
+    if (_selectedCustomer == null) return false;
+    if (_versements.isEmpty) return _isDebtPurchase;
+    return _selectedVersement != null || _isDebtPurchase;
   }
 
   @override
@@ -266,25 +278,136 @@ class _SelectCustomerAndVersementStepState
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Column(
             children: [
-              if (_selectedCustomer != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: isLoadingVersements
-                      ? const Center(child: CircularProgressIndicator())
-                      : DropDownCustom<Versement>(
-                          items: _versements,
-                          selectedItem: _selectedVersement,
-                          onChanged: (versement) {
-                            setState(() {
-                              _selectedVersement = versement;
-                            });
-                          },
-                          itemToString: (v) =>
-                              '${v.reference ?? ''} -  ${v.montantVerser?.toStringAsFixed(0) ?? ''}',
-                          hintText: 'Choisir un versement',
-                          prefixIcon: Icons.account_balance_wallet,
+              if (_selectedCustomer != null) ...[
+                // Section des versements
+                if (_versements.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: isLoadingVersements
+                        ? const Center(child: CircularProgressIndicator())
+                        : DropDownCustom<Versement>(
+                            items: _versements,
+                            selectedItem: _selectedVersement,
+                            onChanged: (versement) {
+                              setState(() {
+                                _selectedVersement = versement;
+                                _isDebtPurchase = false;
+                              });
+                            },
+                            itemToString: (v) =>
+                                '${v.reference ?? ''} -  ${v.montantVerser?.toStringAsFixed(0) ?? ''}',
+                            hintText: 'Choisir un versement',
+                            prefixIcon: Icons.account_balance_wallet,
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Option pour achat en dette
+                  Container(
+                    decoration: BoxDecoration(
+                      color: _isDebtPurchase
+                          ? const Color(0xFF7F78AF).withOpacity(0.1)
+                          : Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _isDebtPurchase
+                            ? const Color(0xFF7F78AF)
+                            : Colors.grey[300]!,
+                      ),
+                    ),
+                    child: CheckboxListTile(
+                      title: Row(
+                        children: [
+                          Icon(
+                            Icons.credit_card,
+                            color: _isDebtPurchase
+                                ? const Color(0xFF7F78AF)
+                                : Colors.grey[600],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Achat en dette',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: _isDebtPurchase
+                                  ? const Color(0xFF7F78AF)
+                                  : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        'Créer un achat sans versement (sera enregistré comme dette)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _isDebtPurchase
+                              ? const Color(0xFF7F78AF)
+                              : Colors.grey[600],
                         ),
-                ),
+                      ),
+                      value: _isDebtPurchase,
+                      onChanged: (value) {
+                        setState(() {
+                          _isDebtPurchase = value ?? false;
+                          if (_isDebtPurchase) {
+                            _selectedVersement = null;
+                          }
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                    ),
+                  ),
+                ] else if (!isLoadingVersements) ...[
+                  // Message quand pas de versements
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7F78AF).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF7F78AF).withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: const Color(0xFF7F78AF),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Aucun versement disponible',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF7F78AF),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Ce client n\'a pas de versement. L\'achat sera créé en dette.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color:
+                                      const Color(0xFF7F78AF).withOpacity(0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
               const SizedBox(height: 22),
               Row(
                 children: [
@@ -305,10 +428,9 @@ class _SelectCustomerAndVersementStepState
                   Expanded(
                     child: confirmationButton(
                         isLoading: false,
-                        onPressed: _selectedCustomer != null &&
-                                _selectedVersement != null
-                            ? () => widget.onNext(
-                                _selectedCustomer!, _selectedVersement!)
+                        onPressed: _canProceed
+                            ? () => widget.onNext(_selectedCustomer!,
+                                _isDebtPurchase ? null : _selectedVersement)
                             : () {},
                         label: 'Suivant',
                         icon: Icons.arrow_forward,

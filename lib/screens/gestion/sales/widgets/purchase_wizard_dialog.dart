@@ -15,14 +15,16 @@ class _PurchaseWizardDialogState extends State<PurchaseWizardDialog> {
   int _currentStep = 0;
   Partner? _selectedCustomer;
   Versement? _selectedVersement;
+  bool _isDebtPurchase = false;
 
   // Pour la deuxième étape
   List<Map<String, dynamic>> _items = [];
 
-  void _onCustomerAndVersementSelected(Partner customer, Versement versement) {
+  void _onCustomerAndVersementSelected(Partner customer, Versement? versement) {
     setState(() {
       _selectedCustomer = customer;
       _selectedVersement = versement;
+      _isDebtPurchase = versement == null;
       _currentStep = 1;
     });
   }
@@ -66,7 +68,8 @@ class _PurchaseWizardDialogState extends State<PurchaseWizardDialog> {
               )
             : PurchaseItemsStep(
                 customer: _selectedCustomer!,
-                versement: _selectedVersement!,
+                versement: _selectedVersement,
+                isDebtPurchase: _isDebtPurchase,
                 initialItems: _items,
                 onItemsChanged: _onItemsChanged,
                 onBack: () => setState(() => _currentStep = 0),
