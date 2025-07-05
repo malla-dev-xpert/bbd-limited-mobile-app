@@ -61,13 +61,22 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Future<void> _loadDebts() async {
-    final achats = await AchatServices().findAll();
-    setState(() {
-      _filteredDebts = achats
+    try {
+      final achats = await AchatServices().findAll();
+      final filteredDebts = achats
           .where(
               (a) => a.isDebt == true && a.clientPhone == _partner.phoneNumber)
           .toList();
-    });
+
+      setState(() {
+        _filteredDebts = filteredDebts;
+      });
+    } catch (e) {
+      print('Erreur lors du chargement des dettes: $e');
+      setState(() {
+        _filteredDebts = [];
+      });
+    }
   }
 
   void _sortVersementsByDate() {

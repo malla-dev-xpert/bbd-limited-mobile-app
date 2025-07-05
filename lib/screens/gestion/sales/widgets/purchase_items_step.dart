@@ -172,17 +172,11 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
       );
 
       // Utiliser la méthode appropriée selon le type d'achat
-      final result = widget.isDebtPurchase
-          ? await achatServices.createDebtPurchase(
-              clientId: widget.customer.id,
-              userId: user!.id,
-              dto: createAchatDto,
-            )
-          : await achatServices.createAchatForClient(
-              clientId: widget.customer.id,
-              userId: user!.id,
-              dto: createAchatDto,
-            );
+      final result = await achatServices.createAchatForClient(
+        clientId: widget.customer.id,
+        userId: user!.id,
+        dto: createAchatDto,
+      );
       if (!mounted) return;
       if (result.isSuccess) {
         widget.onFinish();
