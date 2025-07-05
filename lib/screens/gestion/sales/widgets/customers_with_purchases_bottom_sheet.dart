@@ -282,7 +282,7 @@ class _CustomersWithPurchasesBottomSheetState
                                         ),
                                         child: Center(
                                           child: Text(
-                                            '${customer.firstName[0]}${customer.lastName[0]}'
+                                            '${customer.firstName.isNotEmpty ? customer.firstName[0] : ''}${customer.lastName.isNotEmpty ? customer.lastName[0] : ''}'
                                                 .toUpperCase(),
                                             style: const TextStyle(
                                               color: Colors.white,
