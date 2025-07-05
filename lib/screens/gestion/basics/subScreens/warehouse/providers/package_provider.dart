@@ -28,6 +28,9 @@ class PackageProvider extends ChangeNotifier {
   DateTime? _startDate;
   DateTime? _estimatedArrivalDate;
 
+  // Items
+  Set<int> _selectedItemIds = {};
+
   // Getters
   List<Partner> get clients => _clients;
   List<Containers> get container => _container;
@@ -40,6 +43,7 @@ class PackageProvider extends ChangeNotifier {
   Country? get arrivalCountry => _arrivalCountry;
   DateTime? get startDate => _startDate;
   DateTime? get estimatedArrivalDate => _estimatedArrivalDate;
+  Set<int> get selectedItemIds => _selectedItemIds;
 
   // Setters
   set selectedClient(Partner? value) {
@@ -79,6 +83,26 @@ class PackageProvider extends ChangeNotifier {
 
   set estimatedArrivalDate(DateTime? value) {
     _estimatedArrivalDate = value;
+    notifyListeners();
+  }
+
+  set selectedItemIds(Set<int> value) {
+    _selectedItemIds = value;
+    notifyListeners();
+  }
+
+  void addSelectedItemId(int itemId) {
+    _selectedItemIds.add(itemId);
+    notifyListeners();
+  }
+
+  void removeSelectedItemId(int itemId) {
+    _selectedItemIds.remove(itemId);
+    notifyListeners();
+  }
+
+  void clearSelectedItemIds() {
+    _selectedItemIds.clear();
     notifyListeners();
   }
 
@@ -160,7 +184,13 @@ class PackageProvider extends ChangeNotifier {
         "expeditionType": _expeditionType,
         "startCountry": _departureCountry!.name,
         "destinationCountry": _arrivalCountry!.name,
+        "containerId": containerId,
+        "warehouseId": warehouseId,
+        "itemIds": _selectedItemIds.toList(),
       });
+
+      print('Creating package with DTO: ${dto.toJson()}');
+      print('Selected item IDs: ${_selectedItemIds.toList()}');
 
       final result = await _packageServices.create(
         dto: dto,
@@ -173,8 +203,16 @@ class PackageProvider extends ChangeNotifier {
       if (result == "SUCCESS") {
         showSuccessTopSnackBar(context, "Colis créé avec succès !");
         return true;
+      } else if (result != null && result.startsWith("ERROR:")) {
+        showErrorTopSnackBar(
+            context, "Erreur serveur: ${result!.substring(6)}");
+        return false;
+      } else if (result == "NETWORK_ERROR") {
+        showErrorTopSnackBar(context, "Erreur de connexion réseau");
+        return false;
       } else {
-        showErrorTopSnackBar(context, "Une erreur inattendue s'est produite");
+        showErrorTopSnackBar(
+            context, "Une erreur inattendue s'est produite: $result");
         return false;
       }
     } catch (e) {
@@ -196,6 +234,7 @@ class PackageProvider extends ChangeNotifier {
     _arrivalCountry = null;
     _startDate = null;
     _estimatedArrivalDate = null;
+    _selectedItemIds.clear();
     notifyListeners();
   }
 }

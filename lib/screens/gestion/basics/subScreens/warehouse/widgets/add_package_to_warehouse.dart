@@ -40,7 +40,6 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
 
   // Items
   List<dynamic> _eligibleItems = [];
-  Set<int> _selectedItemIds = {};
   bool _isLoadingItems = false;
 
   // Pays/dates
@@ -78,12 +77,14 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     setState(() => _isLoadingItems = true);
     try {
       _eligibleItems = await ItemServices().findItemsByClient(clientId);
-      _selectedItemIds.clear();
+      final provider = context.read<PackageProvider>();
+      provider.clearSelectedItemIds();
     } catch (e) {
       setState(() {
         _eligibleItems = [];
-        _selectedItemIds.clear();
       });
+      final provider = context.read<PackageProvider>();
+      provider.clearSelectedItemIds();
       showErrorTopSnackBar(
           context, "Erreur lors du chargement des items: " + e.toString());
     } finally {
@@ -100,8 +101,9 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     } else {
       setState(() {
         _eligibleItems = [];
-        _selectedItemIds.clear();
       });
+      final provider = context.read<PackageProvider>();
+      provider.clearSelectedItemIds();
     }
   }
 
@@ -121,7 +123,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     }
     if (currentStep == 1 &&
         _eligibleItems.isNotEmpty &&
-        _selectedItemIds.isEmpty) {
+        context.read<PackageProvider>().selectedItemIds.isEmpty) {
       showErrorTopSnackBar(context, "Veuillez sélectionner au moins un item.");
       return;
     }
@@ -398,15 +400,15 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     return ListView(
       children: _eligibleItems.map((item) {
         return CheckboxListTile(
-          value: _selectedItemIds.contains(item.id),
+          value:
+              context.read<PackageProvider>().selectedItemIds.contains(item.id),
           onChanged: (selected) {
-            setState(() {
-              if (selected == true) {
-                _selectedItemIds.add(item.id!);
-              } else {
-                _selectedItemIds.remove(item.id);
-              }
-            });
+            final provider = context.read<PackageProvider>();
+            if (selected == true) {
+              provider.addSelectedItemId(item.id!);
+            } else {
+              provider.removeSelectedItemId(item.id!);
+            }
           },
           title: Text(item.description ?? "Sans description"),
           subtitle: Text("Quantité: ${item.quantity?.toString() ?? "-"}"),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:math';
 import 'package:bbd_limited/models/embarquement.dart';
@@ -43,14 +44,20 @@ class PackageServices {
         body: jsonEncode(dto.toJson()),
       );
 
-      print(response.body);
+      print('Response body: ${response.body}');
+      print('Response status code: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "SUCCESS";
+      } else {
+        print('Error response body: ${response.body}');
+        return "ERROR: ${response.statusCode} - ${response.body}";
       }
     } on http.ClientException catch (e) {
+      print('Network error: $e');
       return 'NETWORK_ERROR';
     } catch (e) {
+      print('Unexpected error: $e');
       throw Exception('Erreur inattendue: ${e.toString()}');
     }
   }
