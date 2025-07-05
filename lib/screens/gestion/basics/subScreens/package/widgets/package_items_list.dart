@@ -24,7 +24,7 @@ class PackageItemsList extends StatefulWidget {
 }
 
 class _PackageItemsListState extends State<PackageItemsList> {
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
   int? editingIndex;
   final Map<String, TextEditingController> controllers = {};
   Partner? selectedSupplier;

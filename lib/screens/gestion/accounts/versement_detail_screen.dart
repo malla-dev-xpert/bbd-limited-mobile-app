@@ -12,6 +12,7 @@ import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/cashWithdrawal.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/devises.dart';
+import 'package:bbd_limited/core/services/devises_service.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -30,6 +31,7 @@ class VersementDetailScreen extends StatefulWidget {
 class _VersementDetailScreenState extends State<VersementDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   final AchatServices _achatServices = AchatServices();
+  final DeviseServices _deviseServices = DeviseServices();
   String _searchQuery = '';
   bool isLoading = false;
   bool _isInfoExpanded = true;
@@ -261,7 +263,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  void _handlePurchase() {
+  void _handlePurchase() async {
     setState(() {
       isLoading = true;
     });
@@ -271,6 +273,29 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         "Informations du versement incomplètes",
       );
       return;
+    }
+
+    // Récupérer la devise complète si deviseId est disponible
+    Devise? devise;
+    if (widget.versement.deviseId != null) {
+      try {
+        final allDevises = await _deviseServices.findAllDevises(page: 0);
+        devise = allDevises.firstWhere(
+          (d) => d.id == widget.versement.deviseId,
+          orElse: () => Devise(
+            id: widget.versement.deviseId,
+            name: widget.versement.deviseCode ?? 'CNY',
+            code: widget.versement.deviseCode ?? 'CNY',
+          ),
+        );
+      } catch (e) {
+        // En cas d'erreur, créer une devise basique avec les informations disponibles
+        devise = Devise(
+          id: widget.versement.deviseId,
+          name: widget.versement.deviseCode ?? 'CNY',
+          code: widget.versement.deviseCode ?? 'CNY',
+        );
+      }
     }
 
     PurchaseDialog.show(
@@ -285,6 +310,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       widget.versement.partnerId!,
       widget.versement.id!,
       widget.versement.reference ?? '',
+      devise: devise,
+      tauxChange: devise?.rate,
     );
     setState(() {
       isLoading = false;

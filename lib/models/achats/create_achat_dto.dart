@@ -15,6 +15,7 @@ class CreateAchatDto {
               'unitPrice': item.unitPrice,
               'invoiceNumber': item.invoiceNumber,
               'supplierId': item.supplierId,
+              'salesRate': item.salesRate,
             },
           )
           .toList(),

@@ -6,29 +6,42 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_items_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_items_list.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert'; // Added for jsonEncode
 
 class PurchaseDialog extends StatefulWidget {
   final Function(Achat) onPurchaseComplete;
   final int clientId;
   final int versementId;
   final String invoiceNumber;
+  final Devise? devise;
+  final double? tauxChange;
 
   const PurchaseDialog(
       {Key? key,
       required this.onPurchaseComplete,
       required this.clientId,
       required this.versementId,
-      required this.invoiceNumber})
+      required this.invoiceNumber,
+      this.devise,
+      this.tauxChange})
       : super(key: key);
 
-  static void show(BuildContext context, Function(Achat) onPurchaseComplete,
-      int clientId, int versementId, String invoiceNumber) {
+  static void show(
+    BuildContext context,
+    Function(Achat) onPurchaseComplete,
+    int clientId,
+    int versementId,
+    String invoiceNumber, {
+    Devise? devise,
+    double? tauxChange,
+  }) {
     showDialog(
       context: context,
       builder: (context) => PurchaseDialog(
@@ -36,6 +49,8 @@ class PurchaseDialog extends StatefulWidget {
         clientId: clientId,
         versementId: versementId,
         invoiceNumber: invoiceNumber,
+        devise: devise,
+        tauxChange: tauxChange,
       ),
     );
   }
@@ -46,7 +61,7 @@ class PurchaseDialog extends StatefulWidget {
 
 class _PurchaseDialogState extends State<PurchaseDialog> {
   final _formKey = GlobalKey<FormState>();
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  late NumberFormat currencyFormat;
   final List<Map<String, dynamic>> localItems = [];
   bool isLoading = false;
   final AuthService authService = AuthService();
@@ -59,6 +74,9 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
   @override
   void initState() {
     super.initState();
+    // Utiliser la devise du versement si disponible, sinon CNY par défaut
+    final deviseCode = widget.devise?.code ?? 'CNY';
+    currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: deviseCode);
     _loadSuppliers();
   }
 
@@ -124,6 +142,41 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       return;
     }
 
+    // Validation supplémentaire pour les achats avec versement
+    if (widget.versementId != null && widget.devise == null) {
+      showErrorTopSnackBar(
+          context, "La devise du versement doit être spécifiée");
+      return;
+    }
+
+    // Validation des données des articles
+    for (int i = 0; i < localItems.length; i++) {
+      final item = localItems[i];
+      if (item['description']?.toString().isEmpty ?? true) {
+        showErrorTopSnackBar(
+            context, "La description de l'article ${i + 1} est requise.");
+        return;
+      }
+      final quantity = (item['quantity'] as num?)?.toInt() ?? 0;
+      if (quantity <= 0) {
+        showErrorTopSnackBar(context,
+            "La quantité de l'article ${i + 1} doit être supérieure à 0.");
+        return;
+      }
+      final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
+      if (unitPrice <= 0) {
+        showErrorTopSnackBar(context,
+            "Le prix unitaire de l'article ${i + 1} doit être supérieur à 0.");
+        return;
+      }
+      final supplierId = (item['supplierId'] as num?)?.toInt() ?? 0;
+      if (supplierId <= 0) {
+        showErrorTopSnackBar(
+            context, "Le fournisseur de l'article ${i + 1} est requis.");
+        return;
+      }
+    }
+
     setState(() => isLoading = true);
 
     try {
@@ -133,25 +186,55 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
         return;
       }
 
+      // Log des données avant création
+      log("Création achat - Client ID: ${widget.clientId}");
+      log("Création achat - User ID: ${user!.id}");
+      log("Création achat - Versement ID: ${widget.versementId}");
+      log("Création achat - Devise: ${widget.devise?.code}");
+      log("Création achat - Taux de change: ${widget.tauxChange}");
+      log("Création achat - Nombre d'articles: ${localItems.length}");
+
       final createAchatDto = CreateAchatDto(
         versementId: widget.versementId,
-        items: localItems
-            .map(
-              (item) => CreateItemDto(
-                description: item['description']?.toString() ?? '',
-                quantity: (item['quantity'] as num?)?.toInt() ?? 0,
-                unitPrice: (item['unitPrice'] as num?)?.toDouble() ?? 0.0,
-                invoiceNumber: item['invoiceNumber']?.toString() ?? '',
-                supplierId: item['supplierId']?.toInt() ?? 0,
-                salesRate: (item['salesRate'] as num?)?.toDouble() ?? 0.0,
-              ),
-            )
-            .toList(),
+        items: localItems.map((item) {
+          // Pour les achats avec versement dans une devise étrangère,
+          // convertissez le prix unitaire si nécessaire
+          double unitPrice = item['unitPrice'];
+          if (widget.versementId != null &&
+              widget.devise != null &&
+              widget.devise!.code != 'CNY' &&
+              widget.tauxChange != null) {
+            unitPrice = item['unitPrice'] * widget.tauxChange!;
+          }
+
+          final createItemDto = CreateItemDto(
+            description: item['description']?.toString() ?? '',
+            quantity: (item['quantity'] as num?)?.toInt() ?? 0,
+            unitPrice: unitPrice,
+            invoiceNumber:
+                item['invoiceNumber']?.toString() ?? widget.invoiceNumber,
+            supplierId: item['supplierId']?.toInt() ?? 0,
+            salesRate: (item['salesRate'] as num?)?.toDouble() ?? 0.0,
+          );
+
+          // Log de chaque article
+          log("Article - Description: ${createItemDto.description}");
+          log("Article - Quantité: ${createItemDto.quantity}");
+          log("Article - Prix unitaire: ${createItemDto.unitPrice}");
+          log("Article - Numéro facture: ${createItemDto.invoiceNumber}");
+          log("Article - ID fournisseur: ${createItemDto.supplierId}");
+          log("Article - Taux de vente: ${createItemDto.salesRate}");
+
+          return createItemDto;
+        }).toList(),
       );
+
+      // Log du DTO complet
+      log("DTO JSON: ${jsonEncode(createAchatDto.toJson())}");
 
       final result = await achatServices.createAchatForClient(
         clientId: widget.clientId,
-        userId: user!.id,
+        userId: user.id,
         dto: createAchatDto,
       );
 
@@ -159,7 +242,6 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       if (result.isSuccess) {
         Navigator.pop(context, true);
-        // widget.onPurchaseComplete(newAchat);
         showSuccessTopSnackBar(context, "Achat créé avec succès !");
       } else {
         String message = result.errorMessage ?? "Erreur inconnue";
@@ -170,9 +252,10 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+        showErrorTopSnackBar(
+            context, "Erreur lors de la création de l'achat: ${e.toString()}");
       }
-      log(e.toString());
+      log("Erreur création achat: ${e.toString()}");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -337,7 +420,7 @@ class DebtPurchaseDialog extends StatefulWidget {
 
 class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
   final _formKey = GlobalKey<FormState>();
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
+  late NumberFormat currencyFormat;
   final List<Map<String, dynamic>> localItems = [];
   bool isLoading = false;
   final AuthService authService = AuthService();
@@ -350,6 +433,8 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
   @override
   void initState() {
     super.initState();
+    // Pour les dettes, utiliser CNY par défaut car il n'y a pas de devise spécifique
+    currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
     _loadSuppliers();
   }
 
