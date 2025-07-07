@@ -76,25 +76,27 @@ class ItemServices {
     }
   }
 
-  Future<bool> updateItem(int id, int? packageId, Items dto) async {
-    try {
-      final url = Uri.parse('$baseUrl/items/update/$id?packageId=$packageId');
-      final headers = {'Content-Type': 'application/json'};
+  Future<String> updateItem({
+    required int itemId,
+    required int userId,
+    required int clientId,
+    required Items item,
+  }) async {
+    final url = Uri.parse('$baseUrl/items/update/$itemId?userId=$userId');
+    final headers = {'Content-Type': 'application/json'};
+    final body = item.toJson();
+    body['clientId'] = clientId;
 
-      final response = await http.put(
-        url,
-        headers: headers,
-        body: jsonEncode(dto.toJson()),
-      );
+    final response = await http.put(
+      url,
+      headers: headers,
+      body: jsonEncode(body),
+    );
 
-      if (response.statusCode == 201) {
-        return true;
-      } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
-      }
-    } catch (e) {
-      rethrow;
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.body;
+    } else {
+      throw Exception('Erreur lors de la modification : ${response.body}');
     }
   }
 }
