@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -127,12 +125,14 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Ajouter des colis',
-                style: TextStyle(
-                  fontSize: 20,
-                  letterSpacing: -1,
-                  fontWeight: FontWeight.bold,
+              const Expanded(
+                child: Text(
+                  'Ajouter des colis',
+                  style: TextStyle(
+                    fontSize: 20,
+                    letterSpacing: -1,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               IconButton(

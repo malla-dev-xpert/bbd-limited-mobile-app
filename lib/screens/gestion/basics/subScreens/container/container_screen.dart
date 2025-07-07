@@ -252,7 +252,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                       labelText: 'Rechercher un conteneur...',
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(32),
                       ),
                     ),
                   ),

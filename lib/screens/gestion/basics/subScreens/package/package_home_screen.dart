@@ -4,11 +4,12 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 
 enum ExpeditionType { all, plane, boat }
 
@@ -38,6 +39,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
 
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
+
+  final GlobalKey _filterIconKey = GlobalKey();
 
   @override
   void initState() {
@@ -202,19 +205,14 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
     }
   }
 
-  Future<void> _openPackageDetailsBottomSheet(
+  Future<void> _openPackageDetailsScreen(
     BuildContext context,
     Packages package,
   ) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return PackageDetailsBottomSheet(
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageDetailsScreen(
           packages: package,
           onStart: (updatedExpedition) {
             fetchPackages(reset: true);
@@ -256,8 +254,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
           onDelete: (updatedExpedition) {
             fetchPackages(reset: true);
           },
-        );
-      },
+        ),
+      ),
     );
 
     if (result == true) {
@@ -328,17 +326,17 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                     "Tous",
                   ),
                   _buildTypeFilter(
-                    ExpeditionType.plane,
-                    Icons.airplanemode_active,
-                    Colors.amber,
-                    "Avion",
-                  ),
-                  _buildTypeFilter(
                     ExpeditionType.boat,
                     Icons.directions_boat,
                     Colors.deepPurple,
                     "Bateau",
                   ),
+                  _buildTypeFilter(
+                    ExpeditionType.plane,
+                    Icons.airplanemode_active,
+                    Colors.amber,
+                    "Avion",
+                  )
                 ],
               ),
               const SizedBox(height: 20),
@@ -355,74 +353,111 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                         labelText: 'Rechercher un colis...',
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(32),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButton<ExpeditionStatus>(
-                      value: selectedStatus,
-                      underline: const SizedBox(),
-                      icon: const Icon(Icons.arrow_drop_down),
-                      dropdownColor: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      items: const [
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.all,
-                          child: Row(
-                            children: [
-                              Icon(Icons.filter_list, color: Colors.blue),
-                              SizedBox(width: 8),
-                              Text("Tous"),
+                  Material(
+                    color: Colors.transparent,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.08),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: InkWell(
+                        key: _filterIconKey,
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () async {
+                          final RenderBox button =
+                              _filterIconKey.currentContext!.findRenderObject()
+                                  as RenderBox;
+                          final RenderBox overlay = Overlay.of(context)
+                              .context
+                              .findRenderObject() as RenderBox;
+                          final Offset position = button
+                              .localToGlobal(Offset.zero, ancestor: overlay);
+                          final selected = await showMenu<ExpeditionStatus>(
+                            context: context,
+                            position: RelativeRect.fromLTRB(
+                              position.dx,
+                              position.dy + button.size.height,
+                              position.dx + button.size.width,
+                              overlay.size.height -
+                                  (position.dy + button.size.height),
+                            ),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            items: [
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.all,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.filter_list, color: Colors.blue),
+                                    SizedBox(width: 8),
+                                    Text("Tous"),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.received,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.check_circle,
+                                        color: Colors.green),
+                                    SizedBox(width: 8),
+                                    Text("Livrée"),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.inTransit,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.local_shipping,
+                                        color: Colors.orange),
+                                    SizedBox(width: 8),
+                                    Text("En transit"),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem<ExpeditionStatus>(
+                                value: ExpeditionStatus.pending,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.hourglass_empty,
+                                        color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text("En attente"),
+                                  ],
+                                ),
+                              ),
                             ],
+                          );
+                          if (selected != null) {
+                            _onStatusSelected(selected);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.all(14.0),
+                          child: Icon(
+                            Icons.filter_list,
+                            size: 26,
+                            color: Color(0xFF1A1E49),
                           ),
                         ),
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.received,
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text("Livrée"),
-                            ],
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.inTransit,
-                          child: Row(
-                            children: [
-                              Icon(Icons.local_shipping, color: Colors.orange),
-                              SizedBox(width: 8),
-                              Text("En transit"),
-                            ],
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: ExpeditionStatus.pending,
-                          child: Row(
-                            children: [
-                              Icon(Icons.hourglass_empty, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text("En attente"),
-                            ],
-                          ),
-                        ),
-                      ],
-                      onChanged: (ExpeditionStatus? newValue) {
-                        if (newValue != null) {
-                          _onStatusSelected(newValue);
-                        }
-                      },
+                      ),
                     ),
                   ),
                 ],
@@ -466,13 +501,12 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
 
                                   final package = filteredPackages[index];
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
+                                    padding: const EdgeInsets.all(
+                                      0.0,
                                     ),
                                     child: PackageListItem(
                                       packages: package,
-                                      onTap: () =>
-                                          _openPackageDetailsBottomSheet(
+                                      onTap: () => _openPackageDetailsScreen(
                                         context,
                                         package,
                                       ),
@@ -495,6 +529,207 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
         backgroundColor: const Color(0xFF1A1E49),
         heroTag: 'expedition_fab',
         child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value.isNotEmpty ? value : 'N/A',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ItemRow extends StatelessWidget {
+  final Items item;
+  const _ItemRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    item.description ?? 'Sans description',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Qté: ${item.quantity ?? 0}',
+                    style: TextStyle(
+                      color: Colors.blue[700],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (item.supplierName != null && item.supplierName!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.business,
+                    size: 14,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Fournisseur: ${item.supplierName}',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (item.unitPrice != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.attach_money,
+                    size: 14,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Prix unitaire: ${item.unitPrice!.toStringAsFixed(2)} €',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (item.totalPrice != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.receipt,
+                    size: 14,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Prix total: ${item.totalPrice!.toStringAsFixed(2)} €',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ItemsSection extends StatelessWidget {
+  final bool isLoading;
+  final List<Items> items;
+  const _ItemsSection({required this.isLoading, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (items.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: const Center(
+          child: Text(
+            'Aucun article dans ce colis',
+            style: TextStyle(
+              color: Colors.grey,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        children: items.map((item) => _ItemRow(item: item)).toList(),
       ),
     );
   }

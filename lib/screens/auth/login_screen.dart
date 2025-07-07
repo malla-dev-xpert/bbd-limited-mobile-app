@@ -1,322 +1,217 @@
-import 'dart:async';
-
-import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'login_controller.dart';
+import '../../widgets/rounded_button.dart';
+import '../../widgets/responsive_container.dart';
+import '../../components/text_input.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
-
-  @override
-  State<Login> createState() => _LoginState();
-}
-
-class _LoginState extends State<Login> {
-  final _formKey = GlobalKey<FormState>();
-  bool _obscurePassword = true;
-
-  final AuthService authService = AuthService();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  final ScrollController _scrollController = ScrollController();
-  late final KeyboardVisibilityController _keyboardVisibilityController;
-  late final StreamSubscription<bool> _keyboardSubscription;
-
-  bool _isLoading = false;
-  String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _keyboardVisibilityController = KeyboardVisibilityController();
-
-    _keyboardSubscription = _keyboardVisibilityController.onChange.listen((
-      visible,
-    ) {
-      if (!visible) {
-        // Si le clavier se ferme, on revient en haut du scroll
-        _scrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _keyboardSubscription.cancel();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _login() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    bool success = await authService.login(
-      _usernameController.text,
-      _passwordController.text,
-    );
-
-    setState(() {
-      _isLoading = false;
-      if (success) {
-        _usernameController.clear();
-        _passwordController.clear();
-        Navigator.pushReplacementNamed(context, '/welcome');
-      } else {
-        _errorMessage = "Identifiants incorrects. Réessayez.";
-      }
-    });
-  }
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    return ChangeNotifierProvider(
+      create: (_) => LoginController(),
+      child: const _LoginView(),
+    );
+  }
+}
+
+class _LoginView extends StatefulWidget {
+  const _LoginView();
+
+  @override
+  State<_LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<_LoginView> {
+  bool _obscurePassword = true;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<LoginController>();
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        physics: keyboardVisible
-            ? const BouncingScrollPhysics()
-            : const NeverScrollableScrollPhysics(),
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-        child: GestureDetector(
-          onTap: () => FocusScope.of(
-            context,
-          ).unfocus(), //fermer le clavier si on tape sur n'importe quel partie de la page
-          child: SafeArea(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Fond
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.15,
+              child: Image.asset(
+                'assets/images/bg.jpeg',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Contenu principal scrollable
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Logo et Titre
-                      Center(
-                        child: SvgPicture.asset(
-                          'assets/images/hero.svg', // Chemin vers ton fichier SVG
-                          width:
-                              250, // Ajuste la largeur pour agrandir (par exemple, 100 au lieu de 80)
-                          height: 250, // Applique la couleur du thème si désiré
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          'Bienvenue sur BBD-LIMITED',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          'Connectez-vous pour gérer vos livraisons',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                //Formulaire
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 32,
-                  ),
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1A1E49),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(34),
-                      topRight: Radius.circular(34),
-                    ),
-                  ),
-                  child: Form(
-                    key: _formKey,
+                // Header text centré
+                SizedBox(
+                  height: size.height * 0.55,
+                  child: Center(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Champ Username
-                        TextFormField(
-                          controller: _usernameController,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            labelText: 'Nom d\'utilisateur',
-                            prefixIcon: const Icon(
-                              Icons.person_outline,
-                              color: Colors.black,
-                            ), // Change icon color to black
-                            fillColor:
-                                Colors.white, // Set background color to white
-                            filled: true, // Enable filled background
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer votre nom d\'utilisateur';
-                            }
-                            return null;
-                          },
+                        SvgPicture.asset(
+                          'assets/images/hero.svg',
+                          width: 200,
+                          height: 200,
                         ),
                         const SizedBox(height: 20),
-
-                        // Champ Mot de passe
-                        TextFormField(
-                          controller: _passwordController,
-                          autocorrect: false,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: 'Mot de passe',
-                            prefixIcon: const Icon(
-                              Icons.lock_outline,
-                              color: Colors.black,
-                            ),
-                            fillColor:
-                                Colors.white, // Set background color to white
-                            filled: true,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+                        const Text(
+                          "BIENVENUE",
+                          style: TextStyle(
+                            fontFamily: 'Pacifico',
+                            fontSize: 38,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black45,
+                                blurRadius: 8,
+                                offset: Offset(2, 2),
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer votre mot de passe';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        // Mot de passe oublié
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/forgot-password');
-                            },
-                            child: const Text(
-                              'Mot de passe oublié ?',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            ],
                           ),
                         ),
-
-                        // Afficher les erreur de connexion
-                        if (_errorMessage != null)
-                          Center(
-                            child: Text(
-                              _errorMessage!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.red),
-                            ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Connectez-vous pour gérer vos livraisons",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
                           ),
-
-                        const SizedBox(height: 20),
-                        // Bouton de connexion
-                        SizedBox(
-                          width: double.infinity,
-                          height: 55,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _login();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7F78AF),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  )
-                                : const Text(
-                                    'Se connecter',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Lien d'inscription
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Vous ne disposez pas d\'un compte ?',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              textAlign: TextAlign.center,
-                              'Veuillez contacter l\'administrateur pour toute assistance.',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
                         ),
                       ],
+                    ),
+                  ),
+                ),
+                // Card blanche
+                ResponsiveContainer(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 32, horizontal: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 24,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          buildTextField(
+                            controller: controller.usernameController,
+                            label: "Nom d'utilisateur",
+                            icon: Icons.person_outline,
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Veuillez entrer votre nom d'utilisateur"
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: controller.passwordController,
+                            obscureText: _obscurePassword,
+                            validator: (v) => v == null || v.isEmpty
+                                ? "Veuillez entrer votre mot de passe"
+                                : null,
+                            decoration: InputDecoration(
+                              labelText: "Mot de passe",
+                              prefixIcon: const Icon(Icons.lock_outline,
+                                  color: Colors.black),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(32)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(32),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.black,
+                                ),
+                                onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword),
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () => Navigator.pushNamed(
+                                  context, '/forgot-password'),
+                              child: const Text("Mot de passe oublié ?",
+                                  style: TextStyle(color: Color(0xFF7F78AF))),
+                            ),
+                          ),
+                          if (controller.errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                controller.errorMessage!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          RoundedButton(
+                            text: "Connexion",
+                            loading: controller.isLoading,
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                final success = await controller.login();
+                                if (success && context.mounted) {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/welcome');
+                                }
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          const Text("Vous n'avez pas de compte ?",
+                              style: TextStyle(color: Colors.black54)),
+                          const SizedBox(height: 8),
+                          const Text(
+                            textAlign: TextAlign.center,
+                            'Veuillez contacter l\'administrateur pour toute assistance.',
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

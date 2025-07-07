@@ -17,21 +17,20 @@ class DatePickerField extends StatelessWidget {
     return TextFormField(
       readOnly: true,
       controller: TextEditingController(
-        text:
-            selectedDate != null
-                ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                : '',
+        text: selectedDate != null
+            ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
+            : '',
       ),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: const Icon(Icons.calendar_month),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(32),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(32),
         ),
       ),
       onTap: () async {

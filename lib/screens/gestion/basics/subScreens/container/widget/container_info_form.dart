@@ -164,7 +164,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                     });
                   },
                   itemToString: (client) =>
-                      '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                      '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
                   hintText: 'Choisir un fournisseur...',
                   prefixIcon: Icons.person,
                 ),
@@ -182,7 +182,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey[300]!),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              borderRadius: const BorderRadius.all(Radius.circular(32)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             child: Row(

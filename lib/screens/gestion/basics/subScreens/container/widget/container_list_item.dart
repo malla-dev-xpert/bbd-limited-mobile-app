@@ -210,7 +210,7 @@ class ContainerListItem extends StatelessWidget {
                         Expanded(
                           child: Text(
                             container.supplier_id != null
-                                ? '${container.supplierName ?? ""} | ${container.supplierPhone ?? ""}'
+                                ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
                                 : 'BBD Limited',
                             style: TextStyle(
                               fontSize: 14,

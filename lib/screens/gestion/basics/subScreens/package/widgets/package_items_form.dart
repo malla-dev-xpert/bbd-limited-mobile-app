@@ -14,11 +14,14 @@ class PackageItemForm extends StatefulWidget {
     int supplierId,
     String supplierName,
     String invoiceNumber,
+    double salesRate,
   ) onAddItem;
+  final List<Partner> suppliers;
 
   const PackageItemForm({
     Key? key,
     required this.onAddItem,
+    required this.suppliers,
   }) : super(key: key);
 
   @override
@@ -30,33 +33,18 @@ class _PackageItemFormState extends State<PackageItemForm> {
   final _descriptionController = TextEditingController();
   final _quantityController = TextEditingController();
   final _unitPriceController = TextEditingController();
+  final _salesRateController = TextEditingController();
   final _invoiceNumberController = TextEditingController();
   final PartnerServices partnerServices = PartnerServices();
   ValueKey _dropdownKey = ValueKey(DateTime.now().millisecondsSinceEpoch);
 
-  List<Partner> suppliers = [];
+  List<Partner> get suppliers => widget.suppliers;
   Partner? selectedSupplier;
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSupplier();
-  }
-
-  Future<void> _loadSupplier() async {
-    setState(() => isLoading = true);
-    try {
-      final supplierData = await partnerServices.findSuppliers(page: 0);
-
-      setState(() {
-        suppliers = supplierData;
-        isLoading = false;
-      });
-    } catch (_) {
-      setState(() => isLoading = false);
-      showErrorTopSnackBar(context, "Erreur lors du chargement des données");
-    }
   }
 
   @override
@@ -84,7 +72,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
                     }
                   },
                   itemToString: (supplier) =>
-                      '${supplier.firstName}  ${supplier.lastName} | ${supplier.phoneNumber}',
+                      '${supplier.firstName}  ${supplier.lastName} ${supplier.lastName.isNotEmpty ? '|' : ''} ${supplier.phoneNumber}',
                   hintText: 'Choisir un fournisseur...',
                   prefixIcon: Icons.person_add,
                 ),
@@ -100,14 +88,14 @@ class _PackageItemFormState extends State<PackageItemForm> {
                       builder: (context) => CreateSupplierBottomSheet(
                         onSupplierCreated: () async {
                           // Recharger la liste des fournisseurs
-                          await _loadSupplier();
+                          // await _loadSupplier();
                         },
                       ),
                     );
 
                     if (result == true) {
                       // Le fournisseur a été créé avec succès
-                      await _loadSupplier();
+                      // await _loadSupplier();
                     }
                   },
                   icon: Icon(Icons.add, color: Colors.grey[500]),
@@ -154,11 +142,25 @@ class _PackageItemFormState extends State<PackageItemForm> {
             },
           ),
           const SizedBox(height: 10),
-          buildTextField(
-            controller: _unitPriceController,
-            label: "Prix Unitaire",
-            keyboardType: TextInputType.number,
-            icon: Icons.attach_money,
+          Row(
+            children: [
+              Expanded(
+                child: buildTextField(
+                  controller: _unitPriceController,
+                  label: "Prix Unitaire",
+                  keyboardType: TextInputType.number,
+                  icon: Icons.attach_money,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: buildTextField(
+                  controller: _salesRateController,
+                  label: "Taux d'achat",
+                  icon: Icons.percent,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Row(
@@ -208,6 +210,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
         selectedSupplier!.id,
         '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
         _invoiceNumberController.text,
+        double.parse(_salesRateController.text),
       );
 
       // Reset form
@@ -225,6 +228,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
     _quantityController.dispose();
     _unitPriceController.dispose();
     _invoiceNumberController.dispose();
+    _salesRateController.dispose();
     super.dispose();
   }
 }

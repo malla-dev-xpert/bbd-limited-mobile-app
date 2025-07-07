@@ -13,6 +13,7 @@ class Partner {
   final double? balance;
   List<Versement>? versements;
   List<Packages>? packages;
+  final double? totalDebt;
 
   Partner({
     required this.id,
@@ -26,6 +27,7 @@ class Partner {
     this.balance,
     this.versements,
     this.packages,
+    this.totalDebt,
   });
 
   // Convertir Partner en Map (pour JSON)
@@ -41,6 +43,7 @@ class Partner {
       'country': country,
       'balance': balance,
       'versements': versements,
+      'totalDebt': totalDebt,
       'packages': packages,
     };
   }
@@ -50,10 +53,9 @@ class Partner {
     List<Packages> packagesList = [];
 
     if (json['versements'] != null) {
-      versementList =
-          (json['versements'] as List)
-              .map((v) => Versement.fromJson(v))
-              .toList();
+      versementList = (json['versements'] as List)
+          .map((v) => Versement.fromJson(v))
+          .toList();
     }
 
     if (json['packages'] != null) {
@@ -72,6 +74,9 @@ class Partner {
       balance:
           json['balance'] != null ? (json['balance'] as num).toDouble() : null,
       versements: versementList,
+      totalDebt: json['totalDebt'] != null
+          ? (json['totalDebt'] as num).toDouble()
+          : null,
       packages: packagesList,
     );
   }

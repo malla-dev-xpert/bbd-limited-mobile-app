@@ -28,8 +28,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   List<Versement> _allVersements = [];
   List<Versement> _filteredVersements = [];
-  List<Devise> _devises = [];
-  String? _currentFilter;
+  final List<VersementType> _types = VersementType.values;
+  VersementType? _currentTypeFilter;
   double _totalVersementsUSD = 0.0;
 
   bool _isLoading = false;
@@ -42,11 +42,12 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
 
+  final GlobalKey _filterIconKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     fetchPaiements();
-    _loadDevises();
     _refreshController.stream.listen((_) {
       fetchPaiements(reset: true);
     });
@@ -56,17 +57,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void dispose() {
     _refreshController.close();
     super.dispose();
-  }
-
-  Future<void> _loadDevises() async {
-    try {
-      final devises = await _deviseServices.findAllDevises();
-      setState(() {
-        _devises = devises;
-      });
-    } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors du chargement des devises");
-    }
   }
 
   Future<void> _calculateTotalVersementsUSD() async {
@@ -137,23 +127,13 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         final searchPackage = pmt.reference!.toLowerCase().contains(
               query.toLowerCase(),
             );
-
-        bool deviseMatch = true;
-        if (_currentFilter != null) {
-          deviseMatch = pmt.deviseCode == _currentFilter;
+        bool typeMatch = true;
+        if (_currentTypeFilter != null) {
+          typeMatch = pmt.type == _currentTypeFilter!.name;
         }
-
-        return searchPackage && deviseMatch;
+        return searchPackage && typeMatch;
       }).toList();
     });
-  }
-
-  void handleStatusFilter(String? value) {
-    setState(() {
-      _currentFilter = value;
-    });
-
-    filterPackages(searchController.text);
   }
 
   Future<void> _openNewVersementBottomSheet(BuildContext context) async {
@@ -264,6 +244,21 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         context,
         "Erreur lors de la suppression: ${e.toString()}",
       );
+    }
+  }
+
+  String _typeToLabel(VersementType type) {
+    switch (type) {
+      case VersementType.General:
+        return "Général";
+      case VersementType.Dette:
+        return "Dette";
+      case VersementType.Commande:
+        return "Commande";
+      case VersementType.CompteBancaire:
+        return "Compte Bancaire";
+      case VersementType.Autres:
+        return "Autres";
     }
   }
 
@@ -382,18 +377,95 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
-                      labelText: 'Rechercher un paiement...',
+                      hintText: 'Rechercher...',
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                FiltreDropdown(
-                  onSelected: handleStatusFilter,
-                  devises: _devises,
+                Material(
+                  color: Colors.transparent,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey[300]!),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.08),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: InkWell(
+                      key: _filterIconKey,
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () async {
+                        final RenderBox button = _filterIconKey.currentContext!
+                            .findRenderObject() as RenderBox;
+                        final RenderBox overlay = Overlay.of(context)
+                            .context
+                            .findRenderObject() as RenderBox;
+                        final Offset position = button
+                            .localToGlobal(Offset.zero, ancestor: overlay);
+                        final selected = await showMenu<VersementType?>(
+                          context: context,
+                          position: RelativeRect.fromLTRB(
+                            position.dx,
+                            position.dy + button.size.height,
+                            position.dx + button.size.width,
+                            overlay.size.height -
+                                (position.dy + button.size.height),
+                          ),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          items: [
+                            const PopupMenuItem<VersementType?>(
+                              value: null,
+                              child: Text(
+                                'Tous les types',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            ..._types.map(
+                              (type) => PopupMenuItem<VersementType?>(
+                                value: type,
+                                child: Text(
+                                  _typeToLabel(type),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                        if (selected != null || selected == null) {
+                          setState(() {
+                            _currentTypeFilter = selected;
+                          });
+                          filterPackages(searchController.text);
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Icon(
+                          Icons.filter_list,
+                          size: 26,
+                          color: const Color(0xFF1A1E49),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -402,18 +474,18 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "La liste des versements${_currentFilter == null ? '' : _currentFilter == 'client' ? ' clients' : _currentFilter == 'supplier' ? ' fournisseurs' : ''}",
-                  style: const TextStyle(
+                const Text(
+                  "La liste des versements",
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (_currentFilter != null)
+                if (_currentTypeFilter != null)
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        _currentFilter = null;
+                        _currentTypeFilter = null;
                         _filteredVersements = _allVersements;
                         if (searchController.text.isNotEmpty) {
                           filterPackages(searchController.text);
@@ -493,37 +565,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class FiltreDropdown extends StatelessWidget {
-  final Function(String?) onSelected;
-  final List<Devise> devises;
-
-  const FiltreDropdown({
-    super.key,
-    required this.onSelected,
-    required this.devises,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.35,
-      child: Container(
-        padding: const EdgeInsets.all(0),
-        child: DropDownCustom<Devise>(
-          items: devises,
-          selectedItem: null,
-          onChanged: (devise) {
-            onSelected(devise?.code);
-          },
-          itemToString: (devise) => devise.code,
-          hintText: 'Filtrer',
-          prefixIcon: Icons.filter_list,
         ),
       ),
     );

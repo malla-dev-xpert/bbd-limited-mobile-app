@@ -1,8 +1,8 @@
 class CreateAchatDto {
-  final int versementId;
+  final int? versementId;
   final List<CreateItemDto> items;
 
-  CreateAchatDto({required this.versementId, required this.items});
+  CreateAchatDto({this.versementId, required this.items});
 
   Map<String, dynamic> toJson() {
     return {
@@ -15,6 +15,7 @@ class CreateAchatDto {
               'unitPrice': item.unitPrice,
               'invoiceNumber': item.invoiceNumber,
               'supplierId': item.supplierId,
+              'salesRate': item.salesRate,
             },
           )
           .toList(),
@@ -28,6 +29,7 @@ class CreateItemDto {
   final double unitPrice;
   final String invoiceNumber;
   final int supplierId;
+  final double salesRate;
 
   CreateItemDto({
     required this.description,
@@ -35,6 +37,7 @@ class CreateItemDto {
     required this.unitPrice,
     required this.invoiceNumber,
     required this.supplierId,
+    required this.salesRate,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +47,7 @@ class CreateItemDto {
       'unitPrice': unitPrice,
       'invoiceNumber': invoiceNumber,
       'supplierId': supplierId,
+      'salesRate': salesRate,
     };
   }
 }

@@ -107,7 +107,7 @@ void showContainerDetailsBottomSheet(BuildContext context, Containers container,
               _detailRow(
                   "Fournisseur",
                   container.supplier_id != null
-                      ? '${container.supplierName ?? ""} | ${container.supplierPhone ?? ""}'
+                      ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
                       : 'BBD Limited'),
               _detailRow(
                 "Date de reception",

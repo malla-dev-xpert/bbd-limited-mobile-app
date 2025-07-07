@@ -1,16 +1,22 @@
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/packages.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_details_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
+import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 
-enum OperationType { versements, expeditions }
+enum OperationType { versements, expeditions, debts }
 
 class PartnerDetailScreen extends StatefulWidget {
   final Partner partner;
@@ -27,9 +33,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<dynamic>? _filteredVersements;
   List<Packages>? _filteredPackages;
+  List<Achat>? _filteredDebts;
   OperationType _selectedOperationType = OperationType.versements;
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
   double _totalVersementsUSD = 0.0;
+  VersementType? _selectedVersementType;
+  final GlobalKey _filterIconKey = GlobalKey();
 
   @override
   void initState() {
@@ -37,15 +46,36 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _partner = widget.partner;
     _filteredVersements = _partner.versements;
     _filteredPackages = _partner.packages;
+    _filteredDebts = [];
     _sortVersementsByDate();
     _sortExpeditionsByDate();
     _initializeData();
+    _loadDebts();
   }
 
   Future<void> _initializeData() async {
     await _calculateTotalVersementsUSD();
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> _loadDebts() async {
+    try {
+      final achats = await AchatServices().findAll();
+      final filteredDebts = achats
+          .where(
+              (a) => a.isDebt == true && a.clientPhone == _partner.phoneNumber)
+          .toList();
+
+      setState(() {
+        _filteredDebts = filteredDebts;
+      });
+    } catch (e) {
+      print('Erreur lors du chargement des dettes: $e');
+      setState(() {
+        _filteredDebts = [];
+      });
     }
   }
 
@@ -71,7 +101,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
   Future<void> _refreshData() async {
     try {
-      // Obtenir de nouvelles données des clients
       final partnerServices = PartnerServices();
       final partners = await partnerServices.findCustomers(page: 0);
       final freshPartner = partners.firstWhere(
@@ -83,9 +112,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         _partner = freshPartner;
         _filteredVersements = _partner.versements;
         _filteredPackages = _partner.packages;
+        _filteredDebts = [];
         _sortVersementsByDate();
         _sortExpeditionsByDate();
       });
+
+      await _loadDebts();
     } catch (e) {
       print('Error refreshing data: $e');
     }
@@ -107,6 +139,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           final reference = expedition.ref?.toLowerCase() ?? '';
           final searchLower = query.toLowerCase();
           return reference.contains(searchLower);
+        }).toList();
+      }
+      if (_selectedVersementType != null) {
+        _filteredVersements = _filteredVersements?.where((versement) {
+          return versement.type ==
+              _selectedVersementType!.toString().split('.').last;
         }).toList();
       }
       _sortVersementsByDate();
@@ -148,7 +186,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
 
     final partnerName =
-        "${_partner.firstName} ${_partner.lastName} | ${_partner.phoneNumber}";
+        "${_partner.firstName} ${_partner.lastName} ${_partner.lastName.isNotEmpty ? '|' : ''} ${_partner.phoneNumber}";
 
     return Scaffold(
       appBar: AppBar(
@@ -172,14 +210,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           onPressed: () {
             if (_selectedOperationType == OperationType.versements) {
               _showCreateVersementBottomSheet(context);
-            } else {
+            } else if (_selectedOperationType == OperationType.expeditions) {
               _showCreateExpeditionBottomSheet(context);
+            } else {
+              _showCreateDebtBottomSheet(context);
             }
           },
           label: Text(
             _selectedOperationType == OperationType.versements
                 ? 'Nouveau versement'
-                : 'Nouveau colis',
+                : _selectedOperationType == OperationType.expeditions
+                    ? 'Nouveau colis'
+                    : 'Nouvelle dette',
             style: const TextStyle(color: Colors.white),
           ),
           icon: const Icon(Icons.add, color: Colors.white),
@@ -191,7 +233,103 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           const SizedBox(height: 30),
           _buildOperationTypeSelector(),
           const SizedBox(height: 16),
-          _buildSearchBar(),
+          Row(
+            children: [
+              Expanded(flex: 3, child: _buildSearchBar()),
+              if (_selectedOperationType == OperationType.versements)
+                Expanded(
+                  flex: 1,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey[300]!),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.08),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () async {
+                              final RenderBox button = _filterIconKey
+                                  .currentContext!
+                                  .findRenderObject() as RenderBox;
+                              final RenderBox overlay = Overlay.of(context)
+                                  .context
+                                  .findRenderObject() as RenderBox;
+                              final Offset position = button.localToGlobal(
+                                  Offset.zero,
+                                  ancestor: overlay);
+
+                              final selected = await showMenu<VersementType?>(
+                                context: context,
+                                position: RelativeRect.fromLTRB(
+                                  position.dx,
+                                  position.dy + button.size.height,
+                                  position.dx + button.size.width,
+                                  overlay.size.height -
+                                      (position.dy + button.size.height),
+                                ),
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                items: [
+                                  const PopupMenuItem<VersementType?>(
+                                    value: null,
+                                    child: Text(
+                                      'Tous les types',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  ...VersementType.values.map(
+                                    (type) => PopupMenuItem<VersementType?>(
+                                      value: type,
+                                      child: Text(
+                                        type.toString().split('.').last,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                              if (selected != null || selected == null) {
+                                setState(() {
+                                  _selectedVersementType = selected;
+                                });
+                                _filterOperations(_searchController.text);
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(14.0),
+                              child: Icon(
+                                Icons.filter_list,
+                                key: _filterIconKey,
+                                size: 26,
+                                color: const Color(0xFF1A1E49),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
           Expanded(child: _buildOperationsList(currencyFormat, context)),
         ],
@@ -211,12 +349,20 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               Icons.payments_outlined,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 5),
           Expanded(
             child: _buildOperationTypeButton(
               OperationType.expeditions,
               'Colis',
               Icons.inventory_2,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: _buildOperationTypeButton(
+              OperationType.debts,
+              'Dettes',
+              Icons.money_off_csred,
             ),
           ),
         ],
@@ -237,10 +383,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        constraints: const BoxConstraints(minWidth: 0),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF7F78AF) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -251,11 +398,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               size: 20,
             ),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[600],
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
@@ -266,7 +420,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.only(left: 14),
       child: TextField(
         controller: _searchController,
         onChanged: _filterOperations,
@@ -274,12 +428,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           hintText: 'Rechercher...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(32),
             borderSide: BorderSide(color: Colors.grey[300]!),
           ),
           filled: true,
           fillColor: Colors.grey[50],
-          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(vertical: 18),
         ),
       ),
     );
@@ -291,8 +445,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   ) {
     if (_selectedOperationType == OperationType.versements) {
       return _buildVersementsList(currencyFormat, context);
-    } else {
+    } else if (_selectedOperationType == OperationType.expeditions) {
       return _buildExpeditionsList(context);
+    } else {
+      return _buildDebtsList(context);
     }
   }
 
@@ -332,16 +488,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
   }
 
-  void _showPackageDetails(BuildContext context, Packages package) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return PackageDetailsBottomSheet(
+  void _showPackageDetails(BuildContext context, Packages package) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PackageDetailsScreen(
           packages: package,
           onStart: (updatedExpedition) {
             _refreshData();
@@ -352,9 +503,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           onDelete: (updatedExpedition) {
             _refreshData();
           },
-        );
-      },
+        ),
+      ),
     );
+    if (result == true) {
+      _refreshData();
+    }
   }
 
   Widget _buildBalanceCard(NumberFormat currencyFormat, BuildContext context) {
@@ -497,8 +651,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
           final versementCurrencyFormat = NumberFormat.currency(
             locale: 'fr_FR',
-            symbol: versement.deviseCode ?? 'USD',
+            symbol: versement.deviseCode ?? 'CNY',
           );
+
+          String typeLabel = versement.type != null
+              ? versement.type!.substring(0, 1).toUpperCase() +
+                  versement.type!.substring(1)
+              : 'Type inconnu';
 
           return Container(
             padding: const EdgeInsets.all(0),
@@ -527,7 +686,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
-                spacing: 5,
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -561,6 +719,202 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildDebtsList(BuildContext context) {
+    if (_filteredDebts == null || _filteredDebts!.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height * 0.2,
+        ),
+        child: Center(
+          child: Text(
+            'Aucune dette trouvée.',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100, left: 10, right: 10),
+        itemCount: _filteredDebts?.length ?? 0,
+        itemBuilder: (context, index) {
+          final achat = _filteredDebts![index];
+          return InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => _showAchatDetails(context, achat),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[300]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Identifiant: ${achat.id ?? "N/A"}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(achat.status).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          (achat.status == Status.COMPLETED
+                              ? "Complété"
+                              : achat.status == Status.PENDING
+                                  ? "En attente"
+                                  : (achat.status != null
+                                      ? achat.status.toString().split('.').last
+                                      : "N/A")),
+                          style: TextStyle(
+                            color: _getStatusColor(achat.status),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        size: 16,
+                        color: Colors.grey[700]!,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          achat.client ?? "N/A",
+                          style: TextStyle(
+                            color: Colors.grey[700]!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (achat.clientPhone != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.phone_outlined,
+                          size: 16,
+                          color: Colors.grey[700]!,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          achat.clientPhone!,
+                          style: TextStyle(
+                            color: Colors.grey[700]!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (achat.createdAt != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Colors.grey[700]!,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Acheté le ${DateFormat('dd/MM/yyyy').format(achat.createdAt!)}',
+                          style: TextStyle(
+                            color: Colors.grey[700]!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Montant total',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '${achat.montantTotal?.toStringAsFixed(2) ?? "0.00"} ¥',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1E49),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Color _getStatusColor(status) {
+    final statusStr = status != null ? status.toString().split('.').last : "";
+    if (statusStr == "COMPLETED") {
+      return Colors.green;
+    } else if (statusStr == "PENDING") {
+      return Colors.orange;
+    } else {
+      return Colors.grey;
+    }
+  }
+
+  void _showAchatDetails(BuildContext context, Achat achat) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return AchatDetailsSheet(achat: achat);
+      },
+    );
+    if (result == true) {
+      await _refreshData();
+    }
   }
 
   Future<void> _showCreateExpeditionBottomSheet(BuildContext context) async {
@@ -607,6 +961,23 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     if (result == true) {
       await _refreshData();
+    }
+  }
+
+  Future<void> _showCreateDebtBottomSheet(BuildContext context) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => DebtPurchaseDialog(
+        clientId: _partner.id,
+        onDebtCreated: () async {
+          await _loadDebts();
+          setState(() {});
+        },
+      ),
+    );
+    if (result == true) {
+      await _loadDebts();
+      setState(() {});
     }
   }
 

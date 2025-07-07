@@ -11,7 +11,7 @@ Widget confirmationButton({
     style: ElevatedButton.styleFrom(
       minimumSize: const Size(double.infinity, 50),
       backgroundColor: Colors.green,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
     ),
     icon: isLoading
         ? const SizedBox(
@@ -25,7 +25,7 @@ Widget confirmationButton({
         : Icon(icon, color: Colors.white),
     label: Text(
       isLoading ? subLabel : label,
-      style: TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white),
     ),
     onPressed: isLoading ? null : onPressed,
   );

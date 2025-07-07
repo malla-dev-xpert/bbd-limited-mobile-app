@@ -3,31 +3,37 @@ import 'package:bbd_limited/core/enums/status.dart';
 class Achat {
   final int? id;
   final String? referenceVersement;
-  final double? montantVerser;
-  final double? montantRestant;
   final String? client;
   final String? clientPhone;
   final List<Items>? items;
+  final double? montantTotal;
+  final DateTime? createdAt;
+  final bool? isDebt;
+  final int? clientId;
   Status? status;
 
   Achat copyWith({
     int? id,
     String? referenceVersement,
-    double? montantVerser,
-    double? montantRestant,
     String? client,
     String? clientPhone,
     List<Items>? items,
+    double? montantTotal,
+    DateTime? createdAt,
+    bool? isDebt,
+    int? clientId,
     Status? status,
   }) {
     return Achat(
       id: id ?? this.id,
       referenceVersement: referenceVersement ?? this.referenceVersement,
-      montantVerser: montantVerser ?? this.montantVerser,
-      montantRestant: montantRestant ?? this.montantRestant,
       client: client ?? this.client,
       clientPhone: clientPhone ?? this.clientPhone,
       items: items ?? this.items,
+      montantTotal: montantTotal ?? this.montantTotal,
+      createdAt: createdAt ?? this.createdAt,
+      isDebt: isDebt ?? this.isDebt,
+      clientId: clientId ?? this.clientId,
       status: status ?? this.status,
     );
   }
@@ -35,11 +41,13 @@ class Achat {
   Achat({
     this.id,
     this.referenceVersement,
-    this.montantVerser,
-    this.montantRestant,
     this.client,
     this.clientPhone,
     this.items,
+    this.montantTotal,
+    this.createdAt,
+    this.isDebt,
+    this.clientId,
     this.status,
   });
 
@@ -47,11 +55,13 @@ class Achat {
     return {
       'id': id,
       'referenceVersement': referenceVersement,
-      'montantVerser': montantVerser,
-      'montantRestant': montantRestant,
       'client': client,
       'clientPhone': clientPhone,
       'items': items?.map((ligne) => ligne.toJson()).toList(),
+      'montantTotal': montantTotal,
+      'createdAt': createdAt,
+      'isDebt': isDebt,
+      'clientId': clientId,
       'status': status?.name,
     };
   }
@@ -72,12 +82,6 @@ class Achat {
     return Achat(
       id: json['id'] as int?,
       referenceVersement: json['referenceVersement'] as String?,
-      montantVerser: json['montantVerser'] != null
-          ? (json['montantVerser'] as num).toDouble()
-          : null,
-      montantRestant: json['montantRestant'] != null
-          ? (json['montantRestant'] as num).toDouble()
-          : null,
       client: json['client'] as String?,
       clientPhone: json['clientPhone'] as String?,
       items: json['items'] != null
@@ -85,6 +89,13 @@ class Achat {
               .map((ligne) => Items.fromJson(ligne))
               .toList()
           : null,
+      montantTotal: json['montantTotal'] != null
+          ? (json['montantTotal'] as num).toDouble()
+          : null,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      isDebt: json['isDebt'] as bool?,
+      clientId: json['clientId'] as int?,
       status: status,
     );
   }
@@ -98,7 +109,9 @@ class Items {
   final double? totalPrice;
   final int? supplierId;
   final String? supplierName;
+  final int? packageId;
   final String? supplierPhone;
+  final double? salesRate;
   Status? status;
 
   Items({
@@ -110,8 +123,38 @@ class Items {
     this.supplierId,
     this.supplierName,
     this.supplierPhone,
+    this.packageId,
+    this.salesRate,
     this.status,
   });
+
+  Items copyWith({
+    int? id,
+    String? description,
+    int? quantity,
+    double? unitPrice,
+    double? totalPrice,
+    int? supplierId,
+    String? supplierName,
+    String? supplierPhone,
+    int? packageId,
+    double? salesRate,
+    Status? status,
+  }) {
+    return Items(
+      id: id ?? this.id,
+      description: description ?? this.description,
+      quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice ?? this.unitPrice,
+      totalPrice: totalPrice ?? this.totalPrice,
+      supplierId: supplierId ?? this.supplierId,
+      supplierName: supplierName ?? this.supplierName,
+      supplierPhone: supplierPhone ?? this.supplierPhone,
+      packageId: packageId ?? this.packageId,
+      salesRate: salesRate ?? this.salesRate,
+      status: status ?? this.status,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -123,6 +166,8 @@ class Items {
       'supplierId': supplierId,
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
+      'packageId': packageId,
+      'salesRate': salesRate,
       'status': status?.name,
     };
   }
@@ -153,6 +198,10 @@ class Items {
       supplierId: json['supplierId'] as int?,
       supplierName: json['supplierName'] as String?,
       supplierPhone: json['supplierPhone'] as String?,
+      packageId: json['packageId'] as int?,
+      salesRate: json['salesRate'] != null
+          ? (json['salesRate'] as num).toDouble()
+          : null,
       status: status,
     );
   }

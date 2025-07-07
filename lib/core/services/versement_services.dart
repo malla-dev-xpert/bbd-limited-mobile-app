@@ -10,16 +10,19 @@ class VersementServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
-  Future<List<Versement>> getByClient(int cliendId, {int page = 0}) async {
+  Future<List<Versement>> getByClient(int clientId, {int page = 0}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/versements?cliendId=$cliendId&page=$page'),
+      Uri.parse('$baseUrl/versements?page=$page'),
     );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
       );
-      return jsonBody.map((e) => Versement.fromJson(e)).toList();
+      return jsonBody
+          .map((e) => Versement.fromJson(e))
+          .where((v) => v.partnerId == clientId)
+          .toList();
     } else {
       throw Exception("Erreur lors du chargement des versements");
     }
@@ -54,9 +57,6 @@ class VersementServices {
             body: jsonEncode(versement.toJson()),
           )
           .timeout(const Duration(seconds: 30));
-
-      log('Response status: ${response.statusCode}');
-      log('Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "CREATED";
@@ -116,6 +116,54 @@ class VersementServices {
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du colis : $e");
+    }
+  }
+
+  Future<String?> createRetraitArgent({
+    required int partnerId,
+    required int versementId,
+    required int deviseId,
+    required double montant,
+    required String note,
+    required int userId,
+  }) async {
+    final url = Uri.parse('$baseUrl/versement/retrait');
+    final Map<String, dynamic> body = {
+      'partnerId': partnerId,
+      'versementId': versementId,
+      'deviseId': deviseId,
+      'montant': montant,
+      'note': note,
+      'userId': userId,
+    };
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else {
+        // On tente d'extraire le message d'erreur du backend
+        String errorMsg;
+        try {
+          final decoded = jsonDecode(response.body);
+          errorMsg = decoded['message'] ?? response.body;
+        } catch (_) {
+          errorMsg = response.body;
+        }
+        throw Exception(errorMsg);
+      }
+    } on SocketException {
+      throw Exception("Pas de connexion internet");
+    } on TimeoutException {
+      throw Exception("Timeout - Serveur non disponible");
+    } catch (e) {
+      throw Exception(e.toString());
     }
   }
 }

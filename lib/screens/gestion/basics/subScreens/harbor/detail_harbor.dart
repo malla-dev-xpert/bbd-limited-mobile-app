@@ -438,7 +438,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey[50]!,
                         spreadRadius: 1,
                         blurRadius: 3,
                         offset: const Offset(0, 1),
@@ -456,7 +456,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       hintText: 'Rechercher un conteneur...',
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(32),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -649,7 +649,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                           const SizedBox(width: 4),
                           Text(
                             item.supplier_id != null
-                                ? '${item.supplierName ?? ""} | ${item.supplierPhone ?? ""}'
+                                ? '${item.supplierName ?? ""} ${item.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${item.supplierPhone ?? ""}'
                                 : 'BBD Limited',
                             style: TextStyle(
                               fontSize: 13,
@@ -766,9 +766,11 @@ class _ContainerDetailsModal extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(
             'Colis (${packages?.length ?? 0})',
+            textAlign: TextAlign.left,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 8),

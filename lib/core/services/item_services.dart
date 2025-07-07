@@ -22,13 +22,44 @@ class ItemServices {
     }
   }
 
-  Future<String?> deleteItem(int id, int? userId, int packageId) async {
+  Future<List<Items>> findItemsByClient(int clientId) async {
+    try {
+      final url = Uri.parse('$baseUrl/items/customer?clientId=$clientId');
+      print("Appel API: $url");
+
+      final response = await http.get(url);
+
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonBody =
+            json.decode(utf8.decode(response.bodyBytes));
+        print("JSON décodé: $jsonBody");
+        final items = jsonBody.map((e) => Items.fromJson(e)).toList();
+        print("Items créés: ${items.length}");
+        return items;
+      } else {
+        print("Erreur HTTP: ${response.statusCode} - ${response.body}");
+        throw Exception(
+            "Erreur lors du chargement des articles éligibles (${response.statusCode}): ${response.body}");
+      }
+    } catch (e) {
+      print("Exception dans findItemsByClient: $e");
+      rethrow;
+    }
+  }
+
+  Future<String?> deleteItem(int id, int? userId, int clientId) async {
     final url = Uri.parse(
-      "$baseUrl/items/delete/$id?userId=$userId&packageId=$packageId",
+      "$baseUrl/items/delete/$id?userId=$userId&clientId=$clientId",
     );
 
     try {
       final response = await http.delete(url);
+
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
       if (response.statusCode == 201) {
         return "DELETED";
@@ -37,7 +68,7 @@ class ItemServices {
         return "ITEM_NOT_FOUND";
       } else if (response.statusCode == 409 &&
           response.body == "Colis non trouve.") {
-        return "PACKAGE_NOT_FOUND";
+        return "CLIENT_NOT_FOUND_OR_MISMATCH";
       } else if (response.statusCode == 409 &&
           response.body == "Utilisateur non trouve.") {
         return "USER_NOT_FOUND";
@@ -47,25 +78,27 @@ class ItemServices {
     }
   }
 
-  Future<bool> updateItem(int id, int? packageId, Items dto) async {
-    try {
-      final url = Uri.parse('$baseUrl/items/update/$id?packageId=$packageId');
-      final headers = {'Content-Type': 'application/json'};
+  Future<String> updateItem({
+    required int itemId,
+    required int userId,
+    required int clientId,
+    required Items item,
+  }) async {
+    final url = Uri.parse('$baseUrl/items/update/$itemId?userId=$userId');
+    final headers = {'Content-Type': 'application/json'};
+    final body = item.toJson();
+    body['clientId'] = clientId;
 
-      final response = await http.put(
-        url,
-        headers: headers,
-        body: jsonEncode(dto.toJson()),
-      );
+    final response = await http.put(
+      url,
+      headers: headers,
+      body: jsonEncode(body),
+    );
 
-      if (response.statusCode == 201) {
-        return true;
-      } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
-      }
-    } catch (e) {
-      rethrow;
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.body;
+    } else {
+      throw Exception('Erreur lors de la modification : ${response.body}');
     }
   }
 }

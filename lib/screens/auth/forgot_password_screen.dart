@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../widgets/rounded_button.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -10,6 +11,7 @@ class ForgotPassword extends StatefulWidget {
 
 class _ForgotPasswordState extends State<ForgotPassword> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -23,137 +25,145 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+    final size = MediaQuery.of(context).size;
+
+    return Stack(
+      children: [
+        // Fond image en opacité sur toute la page
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.15,
+            child: Image.asset(
+              'assets/images/bg.jpeg',
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
-        child: GestureDetector(
-          onTap:
-              () =>
-                  FocusScope.of(
-                    context,
-                  ).unfocus(), //fermer le clavier si on tape sur n'importe quel partie de la page
-          child: SafeArea(
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent, // AppBar transparente
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.zero,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Logo et Titre
-                      Center(
-                        child: SvgPicture.asset(
+                // Header centré
+                SizedBox(
+                  height: size.height * 0.45,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
                           'assets/images/password.svg',
-                          width: 200,
-                          height: 200,
+                          width: 160,
+                          height: 160,
                         ),
-                      ),
-                      Center(
-                        child: Text(
-                          'Mot de passe oublié !',
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "Mot de passe oublié",
+                          style: TextStyle(
+                            fontSize: 32,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black45,
+                                blurRadius: 8,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Center(
-                        child: Text(
-                          'Entrez votre email pour réinitialiser votre mot de passe.',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Entrez votre email pour réinitialiser votre mot de passe.",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.5,
+                          ),
                           textAlign: TextAlign.center,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                //Formulaire
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 32,
-                  ),
-                  height: MediaQuery.of(context).size.height * 0.8,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1E49),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(34),
-                      topRight: Radius.circular(34),
+                      ],
                     ),
                   ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Champ Email
-                        TextFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Votre email',
-                            prefixIcon: const Icon(
-                              Icons.mail_outline,
-                              color: Colors.black,
+                ),
+                // Card blanche
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Container(
+                        height: size.height * 0.55 - 150,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 32, horizontal: 24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(32),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 24,
+                              offset: Offset(0, 8),
                             ),
-                            fillColor: Colors.white,
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                          ),
-                          validator: _validateEmail,
-                          onChanged: (value) {
-                            setState(() {});
-                          },
+                          ],
                         ),
-                        const SizedBox(height: 40),
-
-                        // Bouton d'envoi
-                        SizedBox(
-                          width: double.infinity,
-                          height: 55,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                // TODO: Implémenter la logique de réinitialisation de mot de passe
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7F78AF),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextFormField(
+                                controller: _emailController,
+                                decoration: InputDecoration(
+                                  labelText: 'Votre email',
+                                  prefixIcon: const Icon(Icons.mail_outline,
+                                      color: Colors.black),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(32),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(32),
+                                    borderSide:
+                                        BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                ),
+                                validator: _validateEmail,
                               ),
-                            ),
-                            child: const Text(
-                              'Envoyer',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                              const SizedBox(height: 24),
+                              RoundedButton(
+                                text: "Envoyer",
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    // TODO: Implémenter la logique de réinitialisation de mot de passe
+                                  }
+                                },
                               ),
-                            ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                "Vous allez recevoir un email de réinitialisation si l'adresse est valide.",
+                                style: TextStyle(
+                                    color: Colors.black54, fontSize: 12),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -161,7 +171,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

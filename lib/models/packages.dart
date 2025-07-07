@@ -19,6 +19,7 @@ class Packages {
   final String? warehouseAddress;
   final int? warehouseId;
   final int? containerId;
+  final List<int>? itemIds;
 
   Packages copyWith({
     int? id,
@@ -39,6 +40,7 @@ class Packages {
     String? warehouseAddress,
     int? warehouseId,
     int? containerId,
+    List<int>? itemIds,
   }) {
     return Packages(
       id: id ?? this.id,
@@ -59,29 +61,31 @@ class Packages {
       warehouseAddress: warehouseAddress ?? this.warehouseAddress,
       warehouseId: warehouseId ?? this.warehouseId,
       containerId: containerId ?? this.containerId,
+      itemIds: itemIds ?? this.itemIds,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'ref': ref,
-    'expeditionType': expeditionType,
-    'startCountry': startCountry,
-    'destinationCountry': destinationCountry,
-    'weight': weight,
-    'itemQuantity': itemQuantity,
-    'cbn': cbn,
-    'clientId': clientId,
-    'clientName': clientName,
-    'clientPhone': clientPhone,
-    'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
-    'startDate': startDate?.toUtc().toIso8601String(),
-    'status': status?.name,
-    'warehouseName': warehouseName,
-    'warehouseAddress': warehouseAddress,
-    'warehouseId': warehouseId,
-    'containerId': containerId,
-  };
+        'id': id,
+        'ref': ref,
+        'expeditionType': expeditionType,
+        'startCountry': startCountry,
+        'destinationCountry': destinationCountry,
+        'weight': weight,
+        'itemQuantity': itemQuantity,
+        'cbn': cbn,
+        'clientId': clientId,
+        'clientName': clientName,
+        'clientPhone': clientPhone,
+        'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
+        'startDate': startDate?.toUtc().toIso8601String(),
+        'status': status?.name,
+        'warehouseName': warehouseName,
+        'warehouseAddress': warehouseAddress,
+        'warehouseId': warehouseId,
+        'containerId': containerId,
+        'itemIds': itemIds,
+      };
 
   Packages({
     this.id,
@@ -102,6 +106,7 @@ class Packages {
     this.warehouseName,
     this.warehouseAddress,
     this.containerId,
+    this.itemIds,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
@@ -134,10 +139,9 @@ class Packages {
       clientId: json['clientId'] as int?,
       clientName: json['clientName'] as String?,
       clientPhone: json['clientPhone'] as String?,
-      arrivalDate:
-          json['arrivalDate'] != null
-              ? DateTime.parse(json['arrivalDate'])
-              : null,
+      arrivalDate: json['arrivalDate'] != null
+          ? DateTime.parse(json['arrivalDate'])
+          : null,
       startDate:
           json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
       status: status,
@@ -145,6 +149,7 @@ class Packages {
       warehouseAddress: json['warehouseAddress'] as String?,
       containerId: parseNullableInt(json['containerId']),
       warehouseId: parseNullableInt(json['warehouseId']),
+      itemIds: json['itemIds'] as List<int>?,
     );
   }
 }

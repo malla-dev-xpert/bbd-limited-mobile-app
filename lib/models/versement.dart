@@ -1,5 +1,8 @@
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/models/cashWithdrawal.dart';
+
+enum VersementType { General, Dette, Commande, CompteBancaire, Autres }
 
 class Versement {
   final int? id;
@@ -14,6 +17,7 @@ class Versement {
   final String? partnerAccountType;
   final int? partnerId;
   List<Achat>? achats;
+  List<CashWithdrawal>? cashWithdrawalDtoList;
   final String? commissionnaireName;
   final String? commissionnairePhone;
   final int? deviseId;
@@ -34,6 +38,7 @@ class Versement {
       String? partnerAccountType,
       int? partnerId,
       List<Achat>? achats,
+      List<CashWithdrawal>? cashWithdrawalDtoList,
       String? commissionnaireName,
       String? commissionnairePhone,
       int? deviseId,
@@ -53,6 +58,8 @@ class Versement {
         partnerAccountType: partnerAccountType ?? this.partnerAccountType,
         partnerId: partnerId ?? this.partnerId,
         achats: achats ?? this.achats,
+        cashWithdrawalDtoList:
+            cashWithdrawalDtoList ?? this.cashWithdrawalDtoList,
         commissionnaireName: commissionnaireName ?? this.commissionnaireName,
         commissionnairePhone: commissionnairePhone ?? this.commissionnairePhone,
         deviseId: deviseId ?? this.deviseId,
@@ -75,6 +82,7 @@ class Versement {
       this.partnerId,
       this.achats,
       this.commissionnaireName,
+      this.cashWithdrawalDtoList,
       this.commissionnairePhone,
       this.deviseId,
       this.deviseCode,
@@ -95,6 +103,8 @@ class Versement {
       'partnerAccountType': partnerAccountType,
       'partnerId': partnerId,
       'achats': achats?.map((item) => item.toJson()).toList(),
+      'cashWithdrawalDtoList':
+          cashWithdrawalDtoList?.map((item) => item.toJson()).toList(),
       'commissionnaireName': commissionnaireName,
       'commissionnairePhone': commissionnairePhone,
       'deviseId': deviseId,
@@ -124,6 +134,12 @@ class Versement {
           .toList();
     }
 
+    List<CashWithdrawal> cashWithdrawalList = [];
+    if (json['cashWithdrawalDtoList'] != null) {
+      cashWithdrawalList = (json['cashWithdrawalDtoList'] as List)
+          .map((cashWithdrawal) => CashWithdrawal.fromJson(cashWithdrawal))
+          .toList();
+    }
     int? parseNullableInt(dynamic value) {
       if (value == null) return null;
       return int.tryParse(value.toString());
@@ -149,6 +165,7 @@ class Versement {
         partnerAccountType: json['partnerAccountType'] as String?,
         partnerId: json['partnerId'] as int?,
         achats: achatList,
+        cashWithdrawalDtoList: cashWithdrawalList,
         commissionnaireName: json['commissionnaireName'] as String?,
         commissionnairePhone: json['commissionnairePhone'] as String?,
         deviseId: json['deviseId'] as int?,

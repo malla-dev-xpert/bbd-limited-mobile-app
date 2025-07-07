@@ -66,14 +66,13 @@ class _PartnerScreenState extends State<PartnerScreen> {
         if (searchQuery == null || searchQuery.isEmpty) {
           _filteredPartners = List.from(_allPartners);
         } else {
-          _filteredPartners =
-              _allPartners
-                  .where(
-                    (partner) => partner.firstName.toLowerCase().contains(
+          _filteredPartners = _allPartners
+              .where(
+                (partner) => partner.firstName.toLowerCase().contains(
                       searchQuery.toLowerCase(),
                     ),
-                  )
-                  .toList();
+              )
+              .toList();
         }
 
         if (result.isEmpty || result.length < 30) {
@@ -96,10 +95,9 @@ class _PartnerScreenState extends State<PartnerScreen> {
     }
 
     // recherche locale
-    final localResults =
-        _allPartners.where((partner) {
-          return partner.firstName.toLowerCase().contains(query.toLowerCase());
-        }).toList();
+    final localResults = _allPartners.where((partner) {
+      return partner.firstName.toLowerCase().contains(query.toLowerCase());
+    }).toList();
 
     if (localResults.isNotEmpty) {
       setState(() => _filteredPartners = localResults);
@@ -162,7 +160,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
                       labelText: 'Recherche...',
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(32),
                       ),
                     ),
                   ),
@@ -240,60 +238,58 @@ class _PartnerScreenState extends State<PartnerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder:
-          (context) => PartnerEditForm(
-            partner: partner,
-            onSubmit: (updatedPartner) async {
-              try {
-                setState(() => _isLoading = true);
-                final success = await _partnerServices.updatePartner(
-                  updatedPartner.id,
-                  updatedPartner,
-                );
+      builder: (context) => PartnerEditForm(
+        partner: partner,
+        onSubmit: (updatedPartner) async {
+          try {
+            setState(() => _isLoading = true);
+            final success = await _partnerServices.updatePartner(
+              updatedPartner.id,
+              updatedPartner,
+            );
 
-                if (success) {
-                  await loadPartners(reset: true);
-                  Navigator.pop(context);
-                  showSuccessTopSnackBar(
-                    context,
-                    "Partenaire modifié avec succès",
-                  );
-                }
-              } catch (e) {
-                showErrorTopSnackBar(context, "Erreur lors de la modification");
-              } finally {
-                setState(() => _isLoading = false);
-              }
-            },
-          ),
+            if (success) {
+              await loadPartners(reset: true);
+              Navigator.pop(context);
+              showSuccessTopSnackBar(
+                context,
+                "Partenaire modifié avec succès",
+              );
+            }
+          } catch (e) {
+            showErrorTopSnackBar(context, "Erreur lors de la modification");
+          } finally {
+            setState(() => _isLoading = false);
+          }
+        },
+      ),
     );
   }
 
   Future<void> _deletePartner(Partner partner) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Confirmer la suppression"),
-            backgroundColor: Colors.white,
-            content: Text(
-              "Supprimer le partenaire ${partner.firstName} ${partner.lastName}?",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context, true),
-                icon: const Icon(Icons.delete, color: Colors.red),
-                label: const Text(
-                  "Supprimer",
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        backgroundColor: Colors.white,
+        content: Text(
+          "Supprimer le partenaire ${partner.firstName} ${partner.lastName}?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Annuler"),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: const Text(
+              "Supprimer",
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed == true) {

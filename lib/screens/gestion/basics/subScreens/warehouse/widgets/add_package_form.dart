@@ -123,14 +123,16 @@ class _AddPackageFormState extends State<AddPackageForm> {
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Ajouter un nouveau colis",
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
+                          const Expanded(
+                            child: Text(
+                              "Ajouter un nouveau colis",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -1,
+                              ),
                             ),
                           ),
                           IconButton(
@@ -153,7 +155,54 @@ class _AddPackageFormState extends State<AddPackageForm> {
                     ],
                   ),
                 ),
-                _buildNavigationButtons(provider),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
+                    child: Row(
+                      children: [
+                        if (provider.currentStep > 0)
+                          Expanded(
+                            child: TextButton.icon(
+                              icon: const Icon(Icons.arrow_back),
+                              onPressed: () {
+                                provider.currentStep--;
+                              },
+                              label: const Text("Retour"),
+                            ),
+                          ),
+                        if (provider.currentStep == 0)
+                          Expanded(
+                            child: confirmationButton(
+                              isLoading: false,
+                              label: "Suivant",
+                              onPressed: () {
+                                if (_validateStep1()) {
+                                  provider.currentStep++;
+                                }
+                              },
+                              icon: Icons.arrow_forward_ios,
+                              subLabel: "Chargement...",
+                            ),
+                          )
+                        else
+                          Expanded(
+                            child: confirmationButton(
+                              isLoading: provider.isLoading,
+                              label: "Enregistrer",
+                              subLabel: "Enregistrement...",
+                              icon: Icons.check,
+                              onPressed: _handleSubmit,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -274,56 +323,6 @@ class _AddPackageFormState extends State<AddPackageForm> {
     );
   }
 
-  Widget _buildNavigationButtons(PackageProvider provider) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-        child: Row(
-          children: [
-            if (provider.currentStep > 0)
-              Expanded(
-                child: TextButton.icon(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {
-                    provider.currentStep--;
-                  },
-                  label: Text("Retour"),
-                ),
-              ),
-            if (provider.currentStep == 0)
-              Expanded(
-                child: confirmationButton(
-                  isLoading: false,
-                  label: "Suivant",
-                  onPressed: () {
-                    if (_validateStep1()) {
-                      provider.currentStep++;
-                    }
-                  },
-                  icon: Icons.arrow_forward_ios,
-                  subLabel: "Chargement...",
-                ),
-              )
-            else
-              Expanded(
-                child: confirmationButton(
-                  isLoading: provider.isLoading,
-                  label: "Enregistrer",
-                  subLabel: "Enregistrement...",
-                  icon: Icons.check,
-                  onPressed: _handleSubmit,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildExpeditionTypeSelector(PackageProvider provider) {
     return Container(
       decoration: BoxDecoration(
@@ -383,7 +382,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
               provider.selectedClient = client;
             },
             itemToString: (client) =>
-                '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
             hintText: 'Choisir un client...',
             prefixIcon: Icons.person,
           ),

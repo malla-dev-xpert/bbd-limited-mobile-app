@@ -6,6 +6,7 @@ Widget buildTextField({
   required IconData icon,
   TextInputType keyboardType = TextInputType.text,
   String? Function(String?)? validator,
+  String? errorText,
 }) {
   return TextFormField(
     controller: controller,
@@ -16,11 +17,12 @@ Widget buildTextField({
       prefixIcon: Icon(icon, color: Colors.black),
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(32)),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(32),
         borderSide: BorderSide(color: Colors.grey.shade300),
       ),
+      errorText: errorText,
     ),
     validator: validator,
   );

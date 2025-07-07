@@ -10,12 +10,15 @@ import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/widgets/devise/devise_form.dart';
+import 'package:bbd_limited/providers/devise_provider.dart';
 
-class NewVersementModal extends StatefulWidget {
+class NewVersementModal extends ConsumerStatefulWidget {
   final Function(DateTime)? onDateChanged;
   final bool isVersementScreen;
   final String? clientId;
@@ -30,16 +33,13 @@ class NewVersementModal extends StatefulWidget {
   });
 
   @override
-  State<NewVersementModal> createState() => _NewVersementModalState();
+  ConsumerState<NewVersementModal> createState() => _NewVersementModalState();
 }
 
-enum VersementType { general, dette, commande, compteBancaire, autres }
-
-class _NewVersementModalState extends State<NewVersementModal>
+class _NewVersementModalState extends ConsumerState<NewVersementModal>
     with SingleTickerProviderStateMixin {
   int currentStep = 0;
   final _formKey = GlobalKey<FormState>();
-  final _deviseFormKey = GlobalKey<FormState>();
   bool isLoading = false;
   DateTime? myDate;
 
@@ -62,10 +62,6 @@ class _NewVersementModalState extends State<NewVersementModal>
   final StreamController<String> _errorStreamController =
       StreamController<String>.broadcast();
   Stream<String> get errorStream => _errorStreamController.stream;
-
-  // Constants for validation
-  static const int _maxNameLength = 50;
-  static const String _currencyCodePattern = r'^[A-Z]{3}$';
 
   bool _isLoading = false;
 
@@ -208,59 +204,6 @@ class _NewVersementModalState extends State<NewVersementModal>
     }
   }
 
-  Future<void> _submitDeviseForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final user = await authService.getUserInfo();
-      if (user == null) {
-        showErrorTopSnackBar(context, 'Session utilisateur invalide');
-        return;
-      }
-
-      final success = await deviseServices.create(
-        name: _nameController.text.trim(),
-        code: _codeController.text.trim().toUpperCase(),
-        rate: double.parse(_rateController.text.trim()),
-        userId: user.id,
-      );
-
-      switch (success) {
-        case "NAME_EXIST":
-          showErrorTopSnackBar(
-              context, "Le nom '${_nameController.text}' existe déjà");
-          break;
-        case "CODE_EXIST":
-          showErrorTopSnackBar(
-              context, "Le code '${_codeController.text}' existe déjà");
-          break;
-        case "CREATED":
-          _nameController.clear();
-          _codeController.clear();
-          Navigator.pop(context);
-          showSuccessTopSnackBar(context, 'Devise créée avec succès!');
-          setState(() {
-            _loadDevisesData();
-          });
-          break;
-        default:
-          showErrorTopSnackBar(context, 'Une erreur inattendue est survenue');
-      }
-    } catch (e) {
-      showErrorTopSnackBar(context, 'Erreur serveur: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   bool _validateFirstStep() {
     if (montantVerserController.text.isEmpty) {
       showErrorTopSnackBar(context, "Veuillez entrer un montant");
@@ -302,17 +245,20 @@ class _NewVersementModalState extends State<NewVersementModal>
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    currentStep == 0
-                        ? "Informations du versement"
-                        : currentStep == 1
-                            ? "Informations du commissionnaire"
-                            : "Note additionnelle",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+                  Expanded(
+                    child: Text(
+                      currentStep == 0
+                          ? "Informations du versement"
+                          : currentStep == 1
+                              ? "Informations du commissionnaire"
+                              : "Note additionnelle",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -362,7 +308,7 @@ class _NewVersementModalState extends State<NewVersementModal>
                                 });
                               },
                               itemToString: (client) =>
-                                  '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
+                                  '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
                               hintText: 'Choisir un client...',
                               prefixIcon: Icons.person_3,
                             ),
@@ -439,6 +385,7 @@ class _NewVersementModalState extends State<NewVersementModal>
                   ),
                 ),
               ),
+              const SizedBox(height: 40),
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(
@@ -499,182 +446,113 @@ class _NewVersementModalState extends State<NewVersementModal>
     super.dispose();
   }
 
-  String? _validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Le nom est requis';
-    }
-    if (value.length > _maxNameLength) {
-      return 'Le nom ne doit pas dépasser $_maxNameLength caractères';
-    }
-    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-      return 'Le nom ne doit contenir que des lettres et des espaces';
-    }
-    return null;
-  }
-
-  String? _validateCode(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Le code est requis';
-    }
-    if (!RegExp(_currencyCodePattern).hasMatch(value)) {
-      return 'Le code doit être composé de 3 lettres majuscules';
-    }
-    if (devises.any((devise) => devise.code == value)) {
-      return 'Ce code de devise existe déjà';
-    }
-    return null;
-  }
-
   void _showAddDeviseDialog() {
+    String? nameError;
+    String? codeError;
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: Colors.white,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            width: MediaQuery.of(context).size.width * 0.95,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
-            ),
-            child: Form(
-              key: _deviseFormKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Ajouter une nouvelle devise',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
-                            color: Color(0xFF1A1E49),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _codeController.clear();
-                          _nameController.clear();
-                        },
-                        icon: const Icon(Icons.close_rounded, size: 30),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _nameController,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.attach_money,
-                        color: Color(0xFF1A1E49),
-                      ),
-                      labelText: 'Nom de la devise',
-                      hintText: 'Ex: Dollar US',
-                      fillColor: Colors.white,
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.grey.withOpacity(0.2),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.grey.withOpacity(0.2),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF1A1E49),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    textInputAction: TextInputAction.next,
-                    validator: _validateName,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _codeController,
-                    autocorrect: false,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.abc,
-                        color: Color(0xFF1A1E49),
-                      ),
-                      labelText: 'Code',
-                      hintText: 'Ex: USD, EUR, GBP',
-                      fillColor: Colors.white,
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.grey.withOpacity(0.2),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Colors.grey.withOpacity(0.2),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF1A1E49),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    textInputAction: TextInputAction.done,
-                    validator: _validateCode,
-                  ),
-                  const SizedBox(height: 40),
-                  StreamBuilder<String>(
-                    stream: errorStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                        return Text(
-                          snapshot.data!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  confirmationButton(
-                    isLoading: _isLoading,
-                    onPressed: _submitDeviseForm,
-                    label: "Enregistrer",
-                    icon: Icons.check_circle_outline_outlined,
-                    subLabel: "Enregistrement...",
-                  ),
-                ],
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-          ),
+              backgroundColor: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                width: MediaQuery.of(context).size.width * 0.95,
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Ajouter une nouvelle devise',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1E49),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    DeviseForm(
+                      isLoading: _isLoading,
+                      isEditing: false,
+                      nameError: nameError,
+                      codeError: codeError,
+                      onSubmit: (name, code, rate) async {
+                        setState(() => _isLoading = true);
+                        try {
+                          final user = await authService.getUserInfo();
+                          if (user == null) {
+                            showErrorTopSnackBar(
+                                context, 'Session utilisateur invalide');
+                            return;
+                          }
+
+                          final result = await ref
+                              .read(deviseListProvider.notifier)
+                              .createDevise(
+                                name: name,
+                                code: code,
+                                rate: rate,
+                                userId: user.id,
+                              );
+
+                          log("Résultat création devise: $result");
+
+                          if (result == "SUCCESS") {
+                            Navigator.pop(context);
+                            showSuccessTopSnackBar(
+                                context, 'Devise créée avec succès!');
+                          } else if (result == "NAME_EXIST") {
+                            showErrorTopSnackBar(
+                                context, 'Le nom de devise existe déjà');
+                          } else if (result == "CODE_EXIST") {
+                            showErrorTopSnackBar(
+                                context, 'Le code de devise existe déjà');
+                          } else if (result == "RATE_NOT_FOUND") {
+                            showErrorTopSnackBar(
+                                context, 'Taux de conversion non trouvé');
+                          } else if (result == "RATE_SERVICE_ERROR") {
+                            showErrorTopSnackBar(
+                                context, 'Erreur du service de taux');
+                          } else if (result == "CONNECTION_ERROR") {
+                            showErrorTopSnackBar(
+                                context, 'Erreur de connexion');
+                          } else {
+                            // Affiche le message d'erreur tel quel s'il provient du backend
+                            showErrorTopSnackBar(
+                                context, result ?? 'Erreur inconnue');
+                          }
+                        } catch (e) {
+                          showErrorTopSnackBar(
+                              context, 'Erreur serveur: ${e.toString()}');
+                        } finally {
+                          setState(() => _isLoading = false);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );

@@ -24,7 +24,7 @@ class PackageItemsList extends StatefulWidget {
 }
 
 class _PackageItemsListState extends State<PackageItemsList> {
-  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
+  final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
   int? editingIndex;
   final Map<String, TextEditingController> controllers = {};
   Partner? selectedSupplier;
@@ -48,11 +48,14 @@ class _PackageItemsListState extends State<PackageItemsList> {
       controllers['invoiceNumber'] =
           TextEditingController(text: item['invoiceNumber']);
 
-      // Trouver le fournisseur actuel
-      selectedSupplier = widget.suppliers.firstWhere(
-        (supplier) => supplier.id == item['supplierId'],
-        orElse: () => widget.suppliers.first,
-      );
+      if (widget.suppliers.isNotEmpty) {
+        selectedSupplier = widget.suppliers.firstWhere(
+          (supplier) => supplier.id == item['supplierId'],
+          orElse: () => widget.suppliers.first,
+        );
+      } else {
+        selectedSupplier = null;
+      }
     });
   }
 
@@ -90,148 +93,139 @@ class _PackageItemsListState extends State<PackageItemsList> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        widget.items.isNotEmpty
-            ? SizedBox(
-                height: MediaQuery.of(context).size.height * 0.334,
-                child: ListView.builder(
-                  itemCount: widget.items.length,
-                  itemBuilder: (context, index) {
-                    final item = widget.items[index];
-                    final isEditing = editingIndex == index;
+    if (widget.items.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 50),
+        child: Center(
+          child: Text(
+            "Aucun article ajouté.",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: widget.items.length,
+      itemBuilder: (context, index) {
+        final item = widget.items[index];
+        final isEditing = editingIndex == index;
+
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          color: Colors.grey[50],
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['description'],
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      color: Colors.grey[50],
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isEditing) ...[
+                          IconButton(
+                            icon: const Icon(Icons.check,
+                                color: Colors.green, size: 20),
+                            onPressed: () => _saveChanges(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                color: Colors.red, size: 20),
+                            onPressed: _cancelEditing,
+                          ),
+                        ] else ...[
+                          IconButton(
+                            icon: const Icon(Icons.edit,
+                                color: Colors.blue, size: 20),
+                            onPressed: () => _startEditing(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.copy,
+                                color: Colors.green, size: 20),
+                            onPressed: () => widget.onDuplicateItem(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete,
+                                color: Colors.red, size: 20),
+                            onPressed: () => widget.onRemoveItem(index),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isEditing)
+                        _buildEditFields(item)
+                      else
+                        _buildDisplayFields(item),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.grey[300]!,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    item['description'],
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isEditing) ...[
-                                      IconButton(
-                                        icon: const Icon(Icons.check,
-                                            color: Colors.green, size: 20),
-                                        onPressed: () => _saveChanges(index),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.close,
-                                            color: Colors.red, size: 20),
-                                        onPressed: _cancelEditing,
-                                      ),
-                                    ] else ...[
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue, size: 20),
-                                        onPressed: () => _startEditing(index),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.copy,
-                                            color: Colors.green, size: 20),
-                                        onPressed: () =>
-                                            widget.onDuplicateItem(index),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete,
-                                            color: Colors.red, size: 20),
-                                        onPressed: () =>
-                                            widget.onRemoveItem(index),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
+                            const Text(
+                              "Total :",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (isEditing)
-                                    _buildEditFields(item)
-                                  else
-                                    _buildDisplayFields(item),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[50],
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.grey[300]!,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text(
-                                          "Total :",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        Text(
-                                          currencyFormat.format(
-                                              (item['unitPrice'] as num) *
-                                                  (item['quantity'] as num)),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                            ),
+                            Text(
+                              currencyFormat.format((item['unitPrice'] as num) *
+                                  (item['quantity'] as num)),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Theme.of(context).primaryColor,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              )
-            : const Padding(
-                padding: EdgeInsets.symmetric(vertical: 50),
-                child: Center(
-                  child: Text(
-                    "Aucun article ajouté.",
-                    style: TextStyle(color: Colors.grey),
+                    ],
                   ),
                 ),
-              ),
-      ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
