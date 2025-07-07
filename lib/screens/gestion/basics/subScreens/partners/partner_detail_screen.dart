@@ -900,8 +900,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     }
   }
 
-  void _showAchatDetails(BuildContext context, Achat achat) {
-    showModalBottomSheet(
+  void _showAchatDetails(BuildContext context, Achat achat) async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -912,6 +912,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         return AchatDetailsSheet(achat: achat);
       },
     );
+    if (result == true) {
+      await _refreshData();
+    }
   }
 
   Future<void> _showCreateExpeditionBottomSheet(BuildContext context) async {

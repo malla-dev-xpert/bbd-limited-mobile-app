@@ -375,6 +375,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           widget.achat.items?.remove(item);
         });
         showSuccessTopSnackBar(context, "Article supprimé avec succès");
+        Navigator.of(context).pop(true);
       } else if (result == "ITEM_NOT_FOUND") {
         showErrorTopSnackBar(context, "Article non trouvé.");
       } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
