@@ -9,6 +9,7 @@ class Achat {
   final double? montantTotal;
   final DateTime? createdAt;
   final bool? isDebt;
+  final int? clientId;
   Status? status;
 
   Achat copyWith({
@@ -20,6 +21,7 @@ class Achat {
     double? montantTotal,
     DateTime? createdAt,
     bool? isDebt,
+    int? clientId,
     Status? status,
   }) {
     return Achat(
@@ -31,6 +33,7 @@ class Achat {
       montantTotal: montantTotal ?? this.montantTotal,
       createdAt: createdAt ?? this.createdAt,
       isDebt: isDebt ?? this.isDebt,
+      clientId: clientId ?? this.clientId,
       status: status ?? this.status,
     );
   }
@@ -44,6 +47,7 @@ class Achat {
     this.montantTotal,
     this.createdAt,
     this.isDebt,
+    this.clientId,
     this.status,
   });
 
@@ -57,6 +61,7 @@ class Achat {
       'montantTotal': montantTotal,
       'createdAt': createdAt,
       'isDebt': isDebt,
+      'clientId': clientId,
       'status': status?.name,
     };
   }
@@ -90,6 +95,7 @@ class Achat {
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       isDebt: json['isDebt'] as bool?,
+      clientId: json['clientId'] as int?,
       status: status,
     );
   }

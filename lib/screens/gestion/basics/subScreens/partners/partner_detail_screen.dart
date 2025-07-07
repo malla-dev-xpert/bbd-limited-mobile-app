@@ -840,6 +840,25 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                       ],
                     ),
                   ],
+                  if (achat.createdAt != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Colors.grey[700]!,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Acheté le ${DateFormat('dd/MM/yyyy').format(achat.createdAt!)}',
+                          style: TextStyle(
+                            color: Colors.grey[700]!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

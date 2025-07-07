@@ -4,6 +4,11 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
+import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/components/custom_dropdown.dart';
 
 class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
@@ -60,6 +65,327 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     } catch (e) {
       showErrorTopSnackBar(
           context, "Une erreur est survenue lors de la confirmation");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void _showEditArticleDialog(Items item) async {
+    final descriptionController = TextEditingController(text: item.description);
+    final quantityController =
+        TextEditingController(text: item.quantity?.toString() ?? '');
+    final unitPriceController =
+        TextEditingController(text: item.unitPrice?.toString() ?? '');
+    final salesRateController =
+        TextEditingController(text: item.salesRate?.toString() ?? '');
+    Partner? selectedSupplier;
+    List<Partner> suppliers = [];
+    bool loadingSuppliers = true;
+    String? errorMsg;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateModal) {
+            if (loadingSuppliers) {
+              PartnerServices().findSuppliers().then((list) {
+                setStateModal(() {
+                  suppliers = list;
+                  if (suppliers.isNotEmpty) {
+                    selectedSupplier = suppliers.firstWhere(
+                      (s) => s.id == item.supplierId,
+                      orElse: () => suppliers[0],
+                    );
+                  } else {
+                    selectedSupplier = null;
+                  }
+                  loadingSuppliers = false;
+                });
+              }).catchError((e) {
+                setStateModal(() {
+                  errorMsg = 'Erreur lors du chargement des fournisseurs';
+                  loadingSuppliers = false;
+                });
+              });
+            }
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                  24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+              child: loadingSuppliers
+                  ? const SizedBox(
+                      height: 200,
+                      child: Center(child: CircularProgressIndicator()))
+                  : errorMsg != null
+                      ? Text(errorMsg!)
+                      : SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                "Modifier l'article",
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    letterSpacing: -0.5),
+                              ),
+                              const SizedBox(height: 30),
+                              buildTextField(
+                                controller: descriptionController,
+                                label: 'Description',
+                                icon: Icons.description,
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: buildTextField(
+                                      controller: quantityController,
+                                      label: 'Quantité',
+                                      icon: Icons.numbers,
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: buildTextField(
+                                      controller: unitPriceController,
+                                      label: 'Prix unitaire',
+                                      icon: Icons.attach_money,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              buildTextField(
+                                controller: salesRateController,
+                                label: 'Taux d\'achat',
+                                icon: Icons.percent,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                              ),
+                              const SizedBox(height: 12),
+                              DropDownCustom<Partner>(
+                                items: suppliers,
+                                selectedItem: selectedSupplier,
+                                onChanged: (val) =>
+                                    setStateModal(() => selectedSupplier = val),
+                                itemToString: (p) => ((p.firstName +
+                                        (p.lastName.isNotEmpty
+                                            ? ' ' + p.lastName
+                                            : ''))
+                                    .trim()),
+                                hintText: 'Sélectionner...',
+                                prefixIcon: Icons.person,
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Annuler'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      icon: const Icon(Icons.save),
+                                      label: const Text('Enregistrer'),
+                                      onPressed: () async {
+                                        final user =
+                                            await AuthService().getUserInfo();
+                                        if (user == null) {
+                                          showErrorTopSnackBar(context,
+                                              'Utilisateur non connecté');
+                                          return;
+                                        }
+                                        try {
+                                          final updatedItem = Items(
+                                            id: item.id,
+                                            description:
+                                                descriptionController.text,
+                                            quantity: int.tryParse(
+                                                quantityController.text),
+                                            unitPrice: double.tryParse(
+                                                unitPriceController.text),
+                                            totalPrice: (int.tryParse(
+                                                        quantityController
+                                                            .text) ??
+                                                    0) *
+                                                (double.tryParse(
+                                                        unitPriceController
+                                                            .text) ??
+                                                    0),
+                                            supplierId: selectedSupplier?.id,
+                                            supplierName: ((selectedSupplier
+                                                                ?.firstName ??
+                                                            '') +
+                                                        ((selectedSupplier
+                                                                        ?.lastName ??
+                                                                    '')
+                                                                .isNotEmpty
+                                                            ? ' ' +
+                                                                (selectedSupplier
+                                                                        ?.lastName ??
+                                                                    '')
+                                                            : ''))
+                                                    .trim()
+                                                    .isNotEmpty
+                                                ? ((selectedSupplier
+                                                            ?.firstName ??
+                                                        '') +
+                                                    ((selectedSupplier
+                                                                    ?.lastName ??
+                                                                '')
+                                                            .isNotEmpty
+                                                        ? ' ' +
+                                                            (selectedSupplier
+                                                                    ?.lastName ??
+                                                                '')
+                                                        : ''))
+                                                : null,
+                                            supplierPhone:
+                                                selectedSupplier?.phoneNumber,
+                                            packageId: item.packageId,
+                                            salesRate: double.tryParse(
+                                                salesRateController.text),
+                                            status: item.status,
+                                          );
+                                          final itemServices = ItemServices();
+                                          final result =
+                                              await itemServices.updateItem(
+                                            itemId: item.id!,
+                                            userId: user.id,
+                                            clientId:
+                                                0, // Remplacer par l'ID réel du client si disponible
+                                            item: updatedItem,
+                                          );
+                                          if (result == 'SUCCESS') {
+                                            setState(() {
+                                              final idx = widget.achat.items
+                                                      ?.indexWhere((i) =>
+                                                          i.id == item.id) ??
+                                                  -1;
+                                              if (idx != -1) {
+                                                widget.achat.items![idx] =
+                                                    updatedItem;
+                                              }
+                                            });
+                                            showSuccessTopSnackBar(context,
+                                                'Article modifié avec succès');
+                                            Navigator.pop(context);
+                                          } else if (result ==
+                                              'ITEM_NOT_FOUND') {
+                                            showErrorTopSnackBar(
+                                                context, 'Article non trouvé.');
+                                          } else if (result ==
+                                              'USER_NOT_FOUND') {
+                                            showErrorTopSnackBar(context,
+                                                'Utilisateur non trouvé.');
+                                          } else if (result ==
+                                              'CLIENT_MISMATCH') {
+                                            showErrorTopSnackBar(context,
+                                                'Client ne correspond pas.');
+                                          } else if (result ==
+                                              'SUPPLIER_NOT_FOUND') {
+                                            showErrorTopSnackBar(context,
+                                                'Fournisseur non trouvé.');
+                                          } else {
+                                            showErrorTopSnackBar(
+                                                context, result);
+                                          }
+                                        } catch (e) {
+                                          showErrorTopSnackBar(
+                                              context, 'Erreur : $e');
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteArticle(Items item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer cet article ?'),
+        content: const Text('Cette action est irréversible.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () {
+              _deleteArticle(item);
+              Navigator.pop(context);
+            },
+            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteArticle(Items item) async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+      final itemServices = ItemServices();
+      final result = await itemServices.deleteItem(
+        item.id!,
+        user.id,
+        widget.achat.clientId ?? 0,
+      );
+      if (result == "DELETED") {
+        setState(() {
+          widget.achat.items?.remove(item);
+        });
+        showSuccessTopSnackBar(context, "Article supprimé avec succès");
+      } else if (result == "ITEM_NOT_FOUND") {
+        showErrorTopSnackBar(context, "Article non trouvé.");
+      } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
+        showErrorTopSnackBar(context, "Client non trouvé ou ne correspond pas");
+      } else if (result == "USER_NOT_FOUND") {
+        showErrorTopSnackBar(context, "Utilisateur non trouvé.");
+      } else {
+        showErrorTopSnackBar(context, result?.toString() ?? "Erreur inconnue");
+      }
+    } catch (e) {
+      showErrorTopSnackBar(context, "Erreur lors de la suppression : $e");
     } finally {
       setState(() {
         isLoading = false;
@@ -202,6 +528,16 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                tooltip: 'Modifier',
+                onPressed: () => _showEditArticleDialog(item),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                tooltip: 'Supprimer',
+                onPressed: () => _confirmDeleteArticle(item),
               ),
               if (!isConfirmed && item.status != Status.RECEIVED)
                 ElevatedButton.icon(

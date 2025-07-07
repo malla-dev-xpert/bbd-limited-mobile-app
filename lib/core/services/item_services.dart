@@ -58,6 +58,9 @@ class ItemServices {
     try {
       final response = await http.delete(url);
 
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
       if (response.statusCode == 201) {
         return "DELETED";
       } else if (response.statusCode == 409 &&
