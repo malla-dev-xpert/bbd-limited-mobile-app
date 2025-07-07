@@ -122,6 +122,34 @@ class Items {
     this.status,
   });
 
+  Items copyWith({
+    int? id,
+    String? description,
+    int? quantity,
+    double? unitPrice,
+    double? totalPrice,
+    int? supplierId,
+    String? supplierName,
+    String? supplierPhone,
+    int? packageId,
+    double? salesRate,
+    Status? status,
+  }) {
+    return Items(
+      id: id ?? this.id,
+      description: description ?? this.description,
+      quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice ?? this.unitPrice,
+      totalPrice: totalPrice ?? this.totalPrice,
+      supplierId: supplierId ?? this.supplierId,
+      supplierName: supplierName ?? this.supplierName,
+      supplierPhone: supplierPhone ?? this.supplierPhone,
+      packageId: packageId ?? this.packageId,
+      salesRate: salesRate ?? this.salesRate,
+      status: status ?? this.status,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
