@@ -13,6 +13,7 @@ import 'package:bbd_limited/models/cashWithdrawal.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -40,6 +41,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   late NumberFormat currencyFormat;
   final Set<String> _confirmedArticles = {};
   bool showOperationButtons = false;
+  late List<Achat> _achats = [];
 
   @override
   void initState() {
@@ -48,6 +50,15 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       locale: 'fr_FR',
       symbol: widget.versement.deviseCode ?? 'CNY',
     );
+    _achats = List.from(widget.versement.achats ?? []);
+  }
+
+  @override
+  void didUpdateWidget(covariant VersementDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.versement != widget.versement) {
+      _achats = List.from(widget.versement.achats ?? []);
+    }
   }
 
   @override
@@ -132,8 +143,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   }
 
   Widget _buildArticleList() {
-    final allLignes =
-        widget.versement.achats?.expand((a) => a.items ?? []).toList() ?? [];
+    final allLignes = _achats.expand((a) => a.items ?? []).toList();
     final filteredLignes = _searchQuery.isEmpty
         ? allLignes
         : allLignes.where((ligne) {
@@ -162,7 +172,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       itemBuilder: (context, index) {
         final ligne = filteredLignes[index];
         Achat? achat;
-        for (var a in widget.versement.achats ?? []) {
+        for (var a in _achats) {
           if (a.items?.contains(ligne) ?? false) {
             achat = a;
             break;
@@ -193,6 +203,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                           fontSize: 18,
                         ),
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      tooltip: 'Supprimer',
+                      onPressed: () => _confirmDeleteArticle(ligne),
                     ),
                     const SizedBox(width: 8),
                     if (!isConfirmed && ligne.status != Status.RECEIVED)
@@ -305,8 +320,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       context,
       (achat) {
         setState(() {
-          widget.versement.achats ??= [];
-          widget.versement.achats!.add(achat);
+          _achats = List.from(_achats)..add(achat);
         });
         widget.onVersementUpdated?.call();
       },
@@ -431,10 +445,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   ),
                   _buildDetailRow(
                     "Total des achats",
-                    widget.versement.achats!
-                        .expand((a) => a.items ?? [])
-                        .length
-                        .toString(),
+                    _achats.expand((a) => a.items ?? []).length.toString(),
                   ),
                 ],
               ),
@@ -551,7 +562,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       );
 
       if (result.isSuccess) {
-        for (var achat in widget.versement.achats ?? []) {
+        for (var achat in _achats) {
           for (var item in achat.items ?? []) {
             if (item.id?.toString() == itemId) {
               item.status = Status.RECEIVED;
@@ -875,6 +886,74 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         ),
       ),
     );
+  }
+
+  void _confirmDeleteArticle(dynamic ligne) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer cet article ?'),
+        content: const Text('Cette action est irréversible.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () {
+              _deleteArticle(ligne);
+              Navigator.pop(context);
+            },
+            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteArticle(dynamic ligne) async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+      final itemServices = ItemServices();
+      final result = await itemServices.deleteItem(
+        ligne.id,
+        user.id,
+        widget.versement.partnerId!,
+      );
+      if (result == "DELETED") {
+        setState(() {
+          for (var achat in _achats) {
+            achat.items?.remove(ligne);
+          }
+        });
+        showSuccessTopSnackBar(context, "Article supprimé avec succès");
+        widget.onVersementUpdated?.call();
+      } else if (result == "ITEM_NOT_FOUND") {
+        showErrorTopSnackBar(context, "Article non trouvé.");
+      } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
+        showErrorTopSnackBar(context, "Client non trouvé ou ne correspond pas");
+      } else if (result == "USER_NOT_FOUND") {
+        showErrorTopSnackBar(context, "Utilisateur non trouvé.");
+      } else {
+        showErrorTopSnackBar(context, result?.toString() ?? "Erreur inconnue");
+      }
+    } catch (e) {
+      showErrorTopSnackBar(context, "Erreur lors de la suppression : $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override

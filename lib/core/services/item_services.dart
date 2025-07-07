@@ -51,9 +51,9 @@ class ItemServices {
     }
   }
 
-  Future<String?> deleteItem(int id, int? userId, int packageId) async {
+  Future<String?> deleteItem(int id, int? userId, int clientId) async {
     final url = Uri.parse(
-      "$baseUrl/items/delete/$id?userId=$userId&packageId=$packageId",
+      "$baseUrl/items/delete/$id?userId=$userId&clientId=$clientId",
     );
 
     try {
@@ -66,7 +66,7 @@ class ItemServices {
         return "ITEM_NOT_FOUND";
       } else if (response.statusCode == 409 &&
           response.body == "Colis non trouve.") {
-        return "PACKAGE_NOT_FOUND";
+        return "CLIENT_NOT_FOUND_OR_MISMATCH";
       } else if (response.statusCode == 409 &&
           response.body == "Utilisateur non trouve.") {
         return "USER_NOT_FOUND";
