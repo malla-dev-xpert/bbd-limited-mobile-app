@@ -240,8 +240,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 _buildDetailItem('Quantité', '${ligne.quantity}'),
                 const SizedBox(height: 4),
                 _buildDetailItem('Fournisseur', ligne.supplierName ?? 'N/A'),
+                if (ligne.supplierPhone != null) const SizedBox(height: 4),
+                if (ligne.supplierPhone != null)
+                  _buildDetailItem('Téléphone', ligne.supplierPhone ?? 'N/A'),
                 const SizedBox(height: 4),
-                _buildDetailItem('Téléphone', ligne.supplierPhone ?? 'N/A'),
+                _buildDetailItem('Taux d\'achat', ligne.salesRate.toString()),
                 const SizedBox(height: 4),
                 _buildDetailItem(
                   'Prix Unitaire',
@@ -402,8 +405,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   _buildDetailRow("Type", widget.versement.type),
                   _buildNoteField(widget.versement.note),
                   _buildDetailRow("Client", widget.versement.partnerName),
-                  _buildDetailRow(
-                      "Téléphone", "${widget.versement.partnerPhone}"),
+                  if (widget.versement.partnerPhone != null)
+                    _buildDetailRow(
+                        "Téléphone", "${widget.versement.partnerPhone}"),
                   _buildDetailRow(
                     "Commissionnaire",
                     widget.versement.commissionnaireName ?? 'N/V',
