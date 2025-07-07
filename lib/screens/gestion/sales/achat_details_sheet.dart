@@ -272,7 +272,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                             itemId: item.id!,
                                             userId: user.id,
                                             clientId:
-                                                0, // Remplacer par l'ID réel du client si disponible
+                                                widget.achat.clientId ?? 0,
                                             item: updatedItem,
                                           );
                                           if (result == 'SUCCESS') {
