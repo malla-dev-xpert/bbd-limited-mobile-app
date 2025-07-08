@@ -57,6 +57,14 @@ class ContainerServices {
     bool isAvailable,
     int? userId,
     int? supplierId,
+    double? locationFee,
+    double? localCharge,
+    double? loadingFee,
+    double? overweightFee,
+    double? checkingFee,
+    double? telxFee,
+    double? otherFees,
+    double? margin,
   ) async {
     try {
       String url = '$baseUrl/containers/create?userId=$userId';
@@ -70,6 +78,14 @@ class ContainerServices {
           "reference": reference,
           "size": size,
           "isAvailable": isAvailable,
+          "locationFee": locationFee,
+          "localCharge": localCharge,
+          "loadingFee": loadingFee,
+          "overweightFee": overweightFee,
+          "checkingFee": checkingFee,
+          "telxFee": telxFee,
+          "otherFees": otherFees,
+          "margin": margin,
         }),
       );
 

@@ -15,6 +15,16 @@ class Containers {
   final int? supplier_id;
   final String? supplierName;
   final String? supplierPhone;
+  // Nouveaux champs de frais
+  final double? locationFee;
+  final double? localCharge;
+  final double? loadingFee;
+  final double? overweightFee;
+  final double? checkingFee;
+  final double? telxFee;
+  final double? otherFees;
+  final double? margin;
+  final double? amount;
   // final int? harborId;
   // final String? harborName;
 
@@ -32,6 +42,15 @@ class Containers {
     int? supplier_id,
     String? supplierName,
     String? supplierPhone,
+    double? locationFee,
+    double? localCharge,
+    double? loadingFee,
+    double? overweightFee,
+    double? checkingFee,
+    double? telxFee,
+    double? otherFees,
+    double? margin,
+    double? amount,
   }) {
     return Containers(
       id: id ?? this.id,
@@ -47,6 +66,15 @@ class Containers {
       supplier_id: supplier_id ?? this.supplier_id,
       supplierName: supplierName ?? this.supplierName,
       supplierPhone: supplierPhone ?? this.supplierPhone,
+      locationFee: locationFee ?? this.locationFee,
+      localCharge: localCharge ?? this.localCharge,
+      loadingFee: loadingFee ?? this.loadingFee,
+      overweightFee: overweightFee ?? this.overweightFee,
+      checkingFee: checkingFee ?? this.checkingFee,
+      telxFee: telxFee ?? this.telxFee,
+      otherFees: otherFees ?? this.otherFees,
+      margin: margin ?? this.margin,
+      amount: amount ?? this.amount,
       // harborId: harborId ?? this.harborId,
       // harborName: harborName ?? this.harborName,
     );
@@ -67,6 +95,15 @@ class Containers {
       'supplier_id': supplier_id,
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
+      'locationFee': locationFee,
+      'localCharge': localCharge,
+      'loadingFee': loadingFee,
+      'overweightFee': overweightFee,
+      'checkingFee': checkingFee,
+      'telxFee': telxFee,
+      'otherFees': otherFees,
+      'margin': margin,
+      'amount': amount,
       // 'harborId': harborId,
       // 'harborName': harborName,
     };
@@ -86,6 +123,15 @@ class Containers {
     this.supplier_id,
     this.supplierName,
     this.supplierPhone,
+    this.locationFee,
+    this.localCharge,
+    this.loadingFee,
+    this.overweightFee,
+    this.checkingFee,
+    this.telxFee,
+    this.otherFees,
+    this.margin,
+    this.amount,
     // this.harborId,
     // this.harborName,
   });
@@ -126,6 +172,15 @@ class Containers {
       supplier_id: json['supplier_id'] as int?,
       supplierName: json['supplierName'] as String?,
       supplierPhone: json['supplierPhone'] as String?,
+      locationFee: (json['locationFee'] as num?)?.toDouble(),
+      localCharge: (json['localCharge'] as num?)?.toDouble(),
+      loadingFee: (json['loadingFee'] as num?)?.toDouble(),
+      overweightFee: (json['overweightFee'] as num?)?.toDouble(),
+      checkingFee: (json['checkingFee'] as num?)?.toDouble(),
+      telxFee: (json['telxFee'] as num?)?.toDouble(),
+      otherFees: (json['otherFees'] as num?)?.toDouble(),
+      margin: (json['margin'] as num?)?.toDouble(),
+      amount: (json['amount'] as num?)?.toDouble(),
     );
   }
 }

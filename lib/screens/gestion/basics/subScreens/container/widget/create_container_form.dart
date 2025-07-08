@@ -47,7 +47,11 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
         setState(() => currentStep = 1);
       }
     } else if (currentStep == 1) {
-      setState(() => currentStep = 2);
+      final valid = _mainFeesFormKey.currentState?.validate() ?? false;
+      print('[DEBUG] Validation étape 2: $valid');
+      if (valid) {
+        setState(() => currentStep = 2);
+      }
     }
   }
 
@@ -70,13 +74,31 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       final size = sizeController.text.trim();
       final isAvailable = _containerInfoKey.currentState?.isAvailable ?? false;
       final selectedSupplier = _containerInfoKey.currentState?.selectedSupplier;
-      // TODO: Adapter le service pour accepter ces nouveaux paramètres (frais)
+      // Conversion des champs de frais en double
+      double? parseFee(String text) =>
+          text.trim().isEmpty ? null : double.tryParse(text.trim());
+      final locationFee = parseFee(locationFeeController.text);
+      final localCharge = parseFee(localChargeController.text);
+      final loadingFee = parseFee(loadingFeeController.text);
+      final overweightFee = parseFee(overweightFeeController.text);
+      final checkingFee = parseFee(checkingFeeController.text);
+      final telxFee = parseFee(telxFeeController.text);
+      final otherFees = parseFee(otherFeesController.text);
+      final margin = parseFee(marginController.text);
       final response = await containerService.create(
         reference,
         size,
         isAvailable,
         user.id.toInt(),
         selectedSupplier?.id,
+        locationFee,
+        localCharge,
+        loadingFee,
+        overweightFee,
+        checkingFee,
+        telxFee,
+        otherFees,
+        margin,
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
