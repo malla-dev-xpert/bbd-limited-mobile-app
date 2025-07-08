@@ -35,26 +35,74 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     container = widget.container;
   }
 
-  Widget _detailRow(String label, String? value) {
+  Color _getStatusColor(Status? status) {
+    switch (status) {
+      case Status.PENDING:
+        return Colors.orange;
+      case Status.INPROGRESS:
+        return Colors.purple;
+      case Status.RECEIVED:
+        return Colors.green;
+      case Status.DELIVERED:
+        return Colors.lightGreen;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getStatusText(Status? status) {
+    switch (status) {
+      case Status.PENDING:
+        return 'En attente';
+      case Status.INPROGRESS:
+        return 'En livraison';
+      case Status.RECEIVED:
+        return 'Arrivé à destination';
+      case Status.DELIVERED:
+        return 'Livré';
+      default:
+        return 'Inconnu';
+    }
+  }
+
+  Widget _infoRow(String label, String? value, {IconData? icon}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text("$label :", style: const TextStyle(fontWeight: FontWeight.w500)),
-          Flexible(
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Colors.grey[600]),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+          ),
+          Expanded(
             child: Text(
               value ?? '',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0, top: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+          color: Color(0xFF1A1E49),
+        ),
       ),
     );
   }
@@ -73,530 +121,739 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
       appBar: AppBar(
         title: const Text('Détails du conteneur',
             style: TextStyle(
-              color: Colors.white,
-            )),
-        backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: const IconThemeData(color: Colors.white),
+                color: Color(0xFF1A1E49), fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF1A1E49)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _detailRow("Référence", container.reference),
-            _detailRow("Taille", "${container.size} pieds"),
-            _detailRow(
-              "Disponibilité",
-              container.isAvailable == true ? 'Disponible' : 'Indisponible',
-            ),
-            _detailRow(
-                "Fournisseur",
-                container.supplier_id != null
-                    ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
-                    : 'BBD Limited'),
-            _detailRow(
-              "Date de reception",
-              container.createdAt != null
-                  ? DateFormat.yMMMMEEEEd().format(container.createdAt!)
-                  : '',
-            ),
-            _detailRow(
-              "Frais de location",
-              container.locationFee != null
-                  ? '${container.locationFee} CNY'
-                  : '0.0',
-            ),
-            _detailRow(
-              "Frais de chargement",
-              container.loadingFee != null
-                  ? '${container.loadingFee} CNY'
-                  : '0.0',
-            ),
-            _detailRow(
-              "Charge local",
-              container.localCharge != null
-                  ? '${container.localCharge} CNY'
-                  : '0.0',
-            ),
-            _detailRow(
-              "Frais de surpoids",
-              container.overweightFee != null
-                  ? '${container.overweightFee} CNY'
-                  : '0.0',
-            ),
-            _detailRow(
-              "Frais de checking",
-              container.checkingFee != null
-                  ? '${container.checkingFee} CNY'
-                  : '0.0',
-            ),
-            _detailRow(
-              "Frais de TELX",
-              container.telxFee != null ? '${container.telxFee} CNY' : '0.0',
-            ),
-            _detailRow(
-              "Autres charges",
-              container.otherFees != null
-                  ? '${container.otherFees} CNY'
-                  : '0.0',
-            ),
-            _detailRow(
-              "Marge ajouter",
-              container.margin != null ? '${container.margin} CNY' : '0.0',
-            ),
-            _detailRow(
-              "Total des frais",
-              container.amount != null ? '${container.amount} CNY' : '0.0',
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "La liste des colis",
-                  style: TextStyle(fontWeight: FontWeight.w700),
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Bloc principal infos conteneur
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                container.status == Status.PENDING &&
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          container.reference ?? 'N/A',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(container.status)
+                                .withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                container.status == Status.RECEIVED ||
+                                        container.status == Status.DELIVERED
+                                    ? Icons.check_circle
+                                    : container.status == Status.INPROGRESS
+                                        ? Icons.local_shipping
+                                        : Icons.hourglass_empty,
+                                size: 16,
+                                color: _getStatusColor(container.status),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _getStatusText(container.status),
+                                style: TextStyle(
+                                  color: _getStatusColor(container.status),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _infoRow('Taille', "${container.size} pieds",
+                        icon: Icons.straighten),
+                    _infoRow(
+                        'Disponibilité',
                         container.isAvailable == true
-                    ? TextButton.icon(
-                        onPressed: () async {
-                          final selectedPackages =
-                              await showAddPackagesToContainerDialog(
-                            context,
-                            container.id!,
-                            packageServices,
-                          );
-                          if (selectedPackages != null &&
-                              selectedPackages.isNotEmpty) {
+                            ? 'Disponible'
+                            : 'Indisponible',
+                        icon: Icons.inventory_2),
+                    _infoRow(
+                        'Date de réception',
+                        container.createdAt != null
+                            ? DateFormat.yMMMMEEEEd()
+                                .format(container.createdAt!)
+                            : '',
+                        icon: Icons.calendar_today),
+                  ],
+                ),
+              ),
+              // Bloc fournisseur
+              if (container.supplier_id != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle('Fournisseur'),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.business, color: Color(0xFF1A1E49)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              '${container.supplierName ?? ""}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                          ),
+                          if (container.supplierPhone != null &&
+                              container.supplierPhone!.isNotEmpty)
+                            Row(
+                              children: [
+                                const Icon(Icons.phone,
+                                    color: Colors.green, size: 18),
+                                const SizedBox(width: 4),
+                                Text(container.supplierPhone!,
+                                    style: const TextStyle(fontSize: 14)),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle('Fournisseur'),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.business, color: Color(0xFF1A1E49)),
+                          SizedBox(width: 10),
+                          Text('BBD Limited',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              // Bloc frais
+              _sectionTitle('Frais & Charges'),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Column(
+                  children: [
+                    _infoRow(
+                        'Frais de location',
+                        container.locationFee != null
+                            ? '${container.locationFee} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Frais de chargement',
+                        container.loadingFee != null
+                            ? '${container.loadingFee} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Charge local',
+                        container.localCharge != null
+                            ? '${container.localCharge} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Frais de surpoids',
+                        container.overweightFee != null
+                            ? '${container.overweightFee} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Frais de checking',
+                        container.checkingFee != null
+                            ? '${container.checkingFee} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Frais de TELX',
+                        container.telxFee != null
+                            ? '${container.telxFee} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Autres charges',
+                        container.otherFees != null
+                            ? '${container.otherFees} CNY'
+                            : '0.0'),
+                    _infoRow(
+                        'Marge ajoutée',
+                        container.margin != null
+                            ? '${container.margin} CNY'
+                            : '0.0'),
+                    const Divider(),
+                    _infoRow(
+                        'Total des frais',
+                        container.amount != null
+                            ? '${container.amount} CNY'
+                            : '0.0',
+                        icon: Icons.attach_money),
+                  ],
+                ),
+              ),
+              // Liste des colis
+              _sectionTitle('Colis dans le conteneur'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'La liste des colis',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
+                  if (container.status == Status.PENDING &&
+                      container.isAvailable == true)
+                    TextButton.icon(
+                      onPressed: () async {
+                        final selectedPackages =
+                            await showAddPackagesToContainerDialog(
+                          context,
+                          container.id!,
+                          packageServices,
+                        );
+                        if (selectedPackages != null &&
+                            selectedPackages.isNotEmpty) {
+                          final updatedContainer = await containerServices
+                              .getContainerDetails(container.id!);
+                          setState(() {
+                            container = updatedContainer;
+                          });
+                        }
+                      },
+                      label: const Text("Ajouter des colis"),
+                      icon: const Icon(Icons.add),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 50,
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher un colis...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    fillColor: Colors.white,
+                    filled: true,
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              setState(() {
+                                searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  child: container.packages == null ||
+                          container.packages!.isEmpty
+                      ? const Center(
+                          child: Text("Pas de colis pour ce conteneur."),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
                             final updatedContainer = await containerServices
                                 .getContainerDetails(container.id!);
                             setState(() {
                               container = updatedContainer;
                             });
-                          }
-                        },
-                        label: const Text("Ajouter des colis"),
-                        icon: const Icon(Icons.add),
-                      )
-                    : const Text(""),
-              ],
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 50,
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Rechercher un colis...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () {
-                            setState(() {
-                              searchQuery = '';
-                            });
                           },
-                        )
-                      : null,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: container.packages == null || container.packages!.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Pas de colis pour ce conteneur."),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                        final updatedContainer = await containerServices
-                            .getContainerDetails(container.id!);
-                        setState(() {
-                          container = updatedContainer;
-                        });
-                      },
-                      displacement: 40,
-                      color: Theme.of(context).primaryColor,
-                      backgroundColor: Colors.white,
-                      child: filteredPackages?.isEmpty == true
-                          ? const Center(
-                              child: Text(
-                                "Aucun colis ne correspond à votre recherche",
-                                textAlign: TextAlign.center,
-                              ),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: filteredPackages?.length ?? 0,
-                              itemBuilder: (context, index) {
-                                final pkg = filteredPackages![index];
-
-                                return Dismissible(
-                                  key: Key('${pkg.id}'),
-                                  direction:
-                                      container.status != Status.INPROGRESS
-                                          ? DismissDirection.endToStart
-                                          : DismissDirection.none,
-                                  background: Container(
-                                    padding: const EdgeInsets.only(
-                                      right: 16,
-                                    ),
-                                    color: container.status != Status.RECEIVED
-                                        ? Colors.red
-                                        : Colors.grey,
-                                    alignment: Alignment.centerRight,
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
+                          displacement: 40,
+                          color: Theme.of(context).primaryColor,
+                          backgroundColor: Colors.white,
+                          child: filteredPackages?.isEmpty == true
+                              ? const Center(
+                                  child: Text(
+                                    "Aucun colis ne correspond à votre recherche",
+                                    textAlign: TextAlign.center,
                                   ),
-                                  confirmDismiss: container.status !=
-                                          Status.INPROGRESS
-                                      ? (direction) async {
-                                          final bool confirm = await showDialog(
-                                            context: context,
-                                            builder: (
-                                              BuildContext context,
-                                            ) {
-                                              return AlertDialog(
-                                                backgroundColor: Colors.white,
-                                                title: const Text(
-                                                  "Confirmation",
-                                                ),
-                                                content: const Text(
-                                                  "Voulez-vous vraiment retirer ce colis du conteneur ?",
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(
-                                                      context,
-                                                    ).pop(
-                                                      false,
-                                                    ),
-                                                    child: const Text(
-                                                      "Annuler",
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(
-                                                      context,
-                                                    ).pop(true),
-                                                    child: Text(
-                                                      isLoading
-                                                          ? "Suppression..."
-                                                          : "Confirmer",
-                                                      style: const TextStyle(
-                                                        color: Colors.red,
+                                )
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  itemCount: filteredPackages?.length ?? 0,
+                                  itemBuilder: (context, index) {
+                                    final pkg = filteredPackages![index];
+                                    return Dismissible(
+                                      key: Key('${pkg.id}'),
+                                      direction:
+                                          container.status != Status.INPROGRESS
+                                              ? DismissDirection.endToStart
+                                              : DismissDirection.none,
+                                      background: Container(
+                                        padding:
+                                            const EdgeInsets.only(right: 16),
+                                        color:
+                                            container.status != Status.RECEIVED
+                                                ? Colors.red
+                                                : Colors.grey,
+                                        alignment: Alignment.centerRight,
+                                        child: const Icon(Icons.delete,
+                                            color: Colors.white, size: 30),
+                                      ),
+                                      confirmDismiss: container.status !=
+                                              Status.INPROGRESS
+                                          ? (direction) async {
+                                              final bool confirm =
+                                                  await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                    title: const Text(
+                                                        "Confirmation"),
+                                                    content: const Text(
+                                                        "Voulez-vous vraiment retirer ce colis du conteneur ?"),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(false),
+                                                        child: const Text(
+                                                            "Annuler"),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(true),
+                                                        child: Text(
+                                                            isLoading
+                                                                ? "Suppression..."
+                                                                : "Confirmer",
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .red)),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
                                               );
-                                            },
-                                          );
-
-                                          if (confirm != true) return false;
-
-                                          try {
-                                            final user =
-                                                await authService.getUserInfo();
-                                            setState(() {
-                                              isLoading = true;
-                                            });
-                                            final result = await packageServices
-                                                .removePackageFromContainer(
-                                              packageId: pkg.id!,
-                                              containerId: container.id!,
-                                              userId: user!.id.toInt(),
-                                            );
-
-                                            if (result == "REMOVED") {
-                                              setState(() {
-                                                container.packages!.removeWhere(
-                                                  (p) => p.id == pkg.id,
+                                              if (confirm != true) return false;
+                                              try {
+                                                final user = await authService
+                                                    .getUserInfo();
+                                                setState(() {
+                                                  isLoading = true;
+                                                });
+                                                final result = await packageServices
+                                                    .removePackageFromContainer(
+                                                  packageId: pkg.id!,
+                                                  containerId: container.id!,
+                                                  userId: user!.id.toInt(),
                                                 );
-                                              });
-                                              showSuccessTopSnackBar(
-                                                context,
-                                                "Colis retiré du conteneur",
-                                              );
-                                              return true;
-                                            } else if (result ==
-                                                "PACKAGE_NOT_IN_CONTAINER") {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Le colis n'appartient pas à ce conteneur",
-                                              );
-                                            } else if (result ==
-                                                "CONTAINER_INPROGRESS") {
-                                              showErrorTopSnackBar(
-                                                context,
-                                                "Impossible de retirer un colis d'un conteneur en cours de livraison",
-                                              );
+                                                if (result == "REMOVED") {
+                                                  setState(() {
+                                                    container.packages!
+                                                        .removeWhere((p) =>
+                                                            p.id == pkg.id);
+                                                  });
+                                                  showSuccessTopSnackBar(
+                                                      context,
+                                                      "Colis retiré du conteneur");
+                                                  return true;
+                                                } else if (result ==
+                                                    "PACKAGE_NOT_IN_CONTAINER") {
+                                                  showErrorTopSnackBar(context,
+                                                      "Le colis n'appartient pas à ce conteneur");
+                                                } else if (result ==
+                                                    "CONTAINER_INPROGRESS") {
+                                                  showErrorTopSnackBar(context,
+                                                      "Impossible de retirer un colis d'un conteneur en cours de livraison");
+                                                }
+                                              } catch (e) {
+                                                showErrorTopSnackBar(context,
+                                                    "Erreur lors de la suppression");
+                                              } finally {
+                                                setState(() {
+                                                  isLoading = false;
+                                                });
+                                              }
+                                              return false;
                                             }
-                                          } catch (e) {
-                                            showErrorTopSnackBar(
-                                              context,
-                                              "Erreur lors de la suppression",
-                                            );
-                                          } finally {
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                          }
-                                          return false;
-                                        }
-                                      : null,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                        10,
+                                          : null,
+                                      child: Container(
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 2),
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
+                                              color: Colors.grey[300]!),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.04),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(pkg.ref ?? '',
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15)),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.blue[50],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                  child: Text(
+                                                      pkg.expeditionType ?? '',
+                                                      style: const TextStyle(
+                                                          color: Colors.blue,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 12)),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.person,
+                                                    size: 14,
+                                                    color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                    child: Text(
+                                                        '${pkg.clientName ?? ''} ${pkg.clientPhone != null ? '| ${pkg.clientPhone}' : ''}',
+                                                        style: const TextStyle(
+                                                            fontSize: 13))),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.inventory_2,
+                                                    size: 14,
+                                                    color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                    'Cartons: ${pkg.itemQuantity ?? 0}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.location_on,
+                                                    size: 14,
+                                                    color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                    'Départ: ${pkg.startCountry ?? 'N/A'}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                    'Arrivée: ${pkg.destinationCountry ?? 'N/A'}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.calendar_today,
+                                                    size: 14,
+                                                    color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                    'Départ: ${pkg.startDate != null ? DateFormat('dd/MM/yyyy').format(pkg.startDate!) : ''}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                    'Arrivée: ${pkg.arrivalDate != null ? DateFormat('dd/MM/yyyy').format(pkg.arrivalDate!) : ''}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      color: Colors.grey[50],
-                                      border: Border.all(
-                                        color: Colors.grey[300]!,
-                                      ),
-                                    ),
-                                    padding: const EdgeInsets.all(8),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 5,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        _detailRow("Référence", pkg.ref),
-                                        _detailRow("Type d'expédition",
-                                            pkg.expeditionType),
-                                        _detailRow("Client",
-                                            '${pkg.clientName} ${pkg.clientPhone != null ? '| ${pkg.clientPhone}' : ''}'),
-                                        _detailRow("Nombre de carton",
-                                            pkg.itemQuantity.toString()),
-                                        _detailRow("Port de départ",
-                                            pkg.startCountry ?? 'N/A'),
-                                        _detailRow("Port d'arrivée",
-                                            pkg.destinationCountry ?? 'N/A'),
-                                        _detailRow(
-                                            "Date de départ",
-                                            pkg.startDate != null
-                                                ? DateFormat('dd/MM/yyyy')
-                                                    .format(pkg.startDate!)
-                                                : ''),
-                                        _detailRow(
-                                            "Date d'arrivée estimée",
-                                            pkg.arrivalDate != null
-                                                ? DateFormat('dd/MM/yyyy')
-                                                    .format(pkg.arrivalDate!)
-                                                : ''),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-            ),
-            if (container.packages != null &&
-                container.packages!.isNotEmpty &&
-                container.status == Status.PENDING)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: confirmationButton(
-                  subLabel: "Démarrage...",
-                  icon: Icons.check,
-                  label: "Démarrer la livraison",
-                  isLoading: isLoading,
-                  onPressed: () async {
-                    final bool confirm = await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Confirmer le démarrage"),
-                          backgroundColor: Colors.white,
-                          content: const Text(
-                            "Voulez-vous vraiment démarrer la livraison de ce conteneur ?",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text("Annuler"),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: Text(
-                                isLoading ? "Démarrage..." : "Confirmer",
-                                style: const TextStyle(color: Colors.green),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-
-                    if (confirm != true) return;
-
-                    setState(() {
-                      isLoading = true;
-                    });
-
-                    final user = await authService.getUserInfo();
-
-                    if (user == null) {
-                      showErrorTopSnackBar(
-                        context,
-                        "Erreur: Utilisateur non connecté",
-                      );
-                      setState(() => isLoading = false);
-                      return;
-                    }
-
-                    try {
-                      final result = await containerServices.startDelivery(
-                          container.id!, user.id.toInt());
-
-                      if (result == "SUCCESS") {
-                        final updatedContainer = await containerServices
-                            .getContainerDetails(container.id!);
-                        Navigator.of(context).pop(updatedContainer);
-                        if (widget.onContainerUpdated != null) {
-                          widget.onContainerUpdated!(updatedContainer);
-                        }
-                        showSuccessTopSnackBar(
-                          context,
-                          "Livraison démarrée avec succès !",
-                        );
-                      } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                        showErrorTopSnackBar(
-                          context,
-                          "Impossible de démarrer la livraison, pas de colis dans le conteneur.",
-                        );
-                      }
-                    } catch (e) {
-                      print(e);
-                      showErrorTopSnackBar(
-                        context,
-                        "Erreur lors du démarrage de la livraison",
-                      );
-                    } finally {
-                      setState(() {
-                        isLoading = false;
-                      });
-                    }
-                  },
-                ),
-              )
-            else if (container.status == Status.INPROGRESS)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: confirmationButton(
-                  subLabel: "Changement de statut...",
-                  icon: Icons.check,
-                  label: "Arrivé à destination",
-                  isLoading: isLoading,
-                  onPressed: () async {
-                    final bool confirm = await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Confirmer l'arrivée du conteneur"),
-                          backgroundColor: Colors.white,
-                          content: const Text(
-                            "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text("Annuler"),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: Text(
-                                isLoading
-                                    ? "Changement de statut..."
-                                    : "Confirmer",
-                                style: const TextStyle(color: Colors.green),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-
-                    if (confirm != true) return;
-
-                    setState(() {
-                      isLoading = true;
-                    });
-
-                    final user = await authService.getUserInfo();
-
-                    if (user == null) {
-                      showErrorTopSnackBar(
-                        context,
-                        "Erreur: Utilisateur non connecté",
-                      );
-                      setState(() => isLoading = false);
-                      return;
-                    }
-
-                    try {
-                      final result = await containerServices.confirmReceiving(
-                          container.id!, user.id.toInt());
-
-                      if (result == "SUCCESS") {
-                        final updatedContainer = await containerServices
-                            .getContainerDetails(container.id!);
-                        Navigator.of(context).pop(updatedContainer);
-                        if (widget.onContainerUpdated != null) {
-                          widget.onContainerUpdated!(updatedContainer);
-                        }
-                        showSuccessTopSnackBar(
-                          context,
-                          "Conteneur confirmé à destination !",
-                        );
-                      } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                        showErrorTopSnackBar(
-                          context,
-                          "Impossible de confirmer la réception, pas de colis dans le conteneur.",
-                        );
-                      } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
-                        showErrorTopSnackBar(
-                          context,
-                          "Le conteneur n'est pas en status INPROGRESS.",
-                        );
-                      }
-                    } catch (e) {
-                      showErrorTopSnackBar(
-                        context,
-                        "Erreur lors de la reception du conteneur",
-                      );
-                    } finally {
-                      setState(() {
-                        isLoading = false;
-                      });
-                    }
-                  },
+                                    );
+                                  },
+                                ),
+                        ),
                 ),
               ),
-          ],
+              // Actions principales
+              if (container.packages != null &&
+                  container.packages!.isNotEmpty &&
+                  container.status == Status.PENDING)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.check, color: Colors.white),
+                      label: Text(
+                          isLoading ? 'Démarrage...' : 'Démarrer la livraison',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () async {
+                        final bool confirm = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text("Confirmer le démarrage"),
+                              backgroundColor: Colors.white,
+                              content: const Text(
+                                  "Voulez-vous vraiment démarrer la livraison de ce conteneur ?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text("Annuler"),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: Text(
+                                      isLoading ? "Démarrage..." : "Confirmer",
+                                      style:
+                                          const TextStyle(color: Colors.green)),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (confirm != true) return;
+                        setState(() {
+                          isLoading = true;
+                        });
+                        final user = await authService.getUserInfo();
+                        if (user == null) {
+                          showErrorTopSnackBar(
+                              context, "Erreur: Utilisateur non connecté");
+                          setState(() => isLoading = false);
+                          return;
+                        }
+                        try {
+                          final result = await containerServices.startDelivery(
+                              container.id!, user.id.toInt());
+                          if (result == "SUCCESS") {
+                            final updatedContainer = await containerServices
+                                .getContainerDetails(container.id!);
+                            Navigator.of(context).pop(updatedContainer);
+                            if (widget.onContainerUpdated != null) {
+                              widget.onContainerUpdated!(updatedContainer);
+                            }
+                            showSuccessTopSnackBar(
+                                context, "Livraison démarrée avec succès !");
+                          } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+                            showErrorTopSnackBar(context,
+                                "Impossible de démarrer la livraison, pas de colis dans le conteneur.");
+                          }
+                        } catch (e) {
+                          print(e);
+                          showErrorTopSnackBar(context,
+                              "Erreur lors du démarrage de la livraison");
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                )
+              else if (container.status == Status.INPROGRESS)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[800],
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.flag, color: Colors.white),
+                      label: Text(
+                          isLoading
+                              ? 'Changement de statut...'
+                              : 'Arrivé à destination',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () async {
+                        final bool confirm = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text(
+                                  "Confirmer l'arrivée du conteneur"),
+                              backgroundColor: Colors.white,
+                              content: const Text(
+                                  "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text("Annuler"),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: Text(
+                                      isLoading
+                                          ? "Changement de statut..."
+                                          : "Confirmer",
+                                      style:
+                                          const TextStyle(color: Colors.green)),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (confirm != true) return;
+                        setState(() {
+                          isLoading = true;
+                        });
+                        final user = await authService.getUserInfo();
+                        if (user == null) {
+                          showErrorTopSnackBar(
+                              context, "Erreur: Utilisateur non connecté");
+                          setState(() => isLoading = false);
+                          return;
+                        }
+                        try {
+                          final result = await containerServices
+                              .confirmReceiving(container.id!, user.id.toInt());
+                          if (result == "SUCCESS") {
+                            final updatedContainer = await containerServices
+                                .getContainerDetails(container.id!);
+                            Navigator.of(context).pop(updatedContainer);
+                            if (widget.onContainerUpdated != null) {
+                              widget.onContainerUpdated!(updatedContainer);
+                            }
+                            showSuccessTopSnackBar(
+                                context, "Conteneur confirmé à destination !");
+                          } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+                            showErrorTopSnackBar(context,
+                                "Impossible de confirmer la réception, pas de colis dans le conteneur.");
+                          } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
+                            showErrorTopSnackBar(context,
+                                "Le conteneur n'est pas en status INPROGRESS.");
+                          }
+                        } catch (e) {
+                          showErrorTopSnackBar(context,
+                              "Erreur lors de la reception du conteneur");
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
