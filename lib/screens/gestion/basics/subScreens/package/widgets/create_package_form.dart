@@ -2,9 +2,11 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
+import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/warehouses.dart';
+import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/create_warehouse_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -19,6 +21,7 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 
 class CreateExpeditionForm extends StatefulWidget {
   final bool isPackageScreen;
@@ -40,6 +43,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   final PartnerServices _partnerServices = PartnerServices();
   final ContainerServices _containerServices = ContainerServices();
   final WarehouseServices _warehouseServices = WarehouseServices();
+  final HarborServices _harborServices = HarborServices();
 
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
@@ -50,8 +54,6 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   final TextEditingController _quantityController = TextEditingController();
 
   String _expeditionType = 'Bateau';
-  Country? _departureCountry;
-  Country? _arrivalCountry;
   DateTime? _startDate;
   DateTime? _estimatedArrivalDate;
   List<Partner> _clients = [];
@@ -68,12 +70,17 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   Set<int> _selectedItemIds = {};
   bool _isLoadingItems = false;
 
+  List<Harbor> _harbors = [];
+  Harbor? _selectedDepartureHarbor;
+  Harbor? _selectedArrivalHarbor;
+
   @override
   void initState() {
     super.initState();
     _loadClients();
     _loadContainers();
     _loadWarehouses();
+    _loadHarbors();
   }
 
   Future<void> _loadClients() async {
@@ -114,13 +121,25 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
     }
   }
 
+  Future<void> _loadHarbors() async {
+    final harbors = await _harborServices.findAll(page: 0);
+    setState(() {
+      _harbors = harbors;
+    });
+  }
+
+  void _showCreateHarborModal() async {
+    final result = await showAddHarborModal(context);
+    if (result == true) {
+      await _loadHarbors();
+    }
+  }
+
   void _onClientSelected(Partner? client) {
     setState(() {
       _selectedClient = client;
     });
     if (client != null && client.id != null) {
-      print(
-          "Client sélectionné: ${client.firstName} ${client.lastName} (ID: ${client.id})");
       _loadEligibleItems(client.id!);
     } else {
       setState(() {
@@ -329,145 +348,64 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                         // Étape 3
                         ListView(
                           children: [
-                            // Pays de départ
-                            InkWell(
-                              onTap: () {
-                                showCountryPicker(
-                                  context: context,
-                                  showPhoneCode: true,
-                                  countryListTheme: const CountryListThemeData(
-                                    flagSize: 25,
-                                    backgroundColor: Colors.white,
-                                    textStyle: TextStyle(fontSize: 16),
-                                    bottomSheetHeight: 300,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20),
-                                    ),
+                            // Port de départ
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: DropDownCustom<Harbor>(
+                                    items: _harbors,
+                                    selectedItem: _selectedDepartureHarbor,
+                                    onChanged: (harbor) {
+                                      setState(() {
+                                        _selectedDepartureHarbor = harbor;
+                                      });
+                                    },
+                                    itemToString: (harbor) => harbor.name ?? '',
+                                    hintText: 'Choisir un port de départ...',
+                                    prefixIcon: Icons.sailing,
                                   ),
-                                  onSelect: (Country country) {
-                                    setState(() {
-                                      _departureCountry = country;
-                                    });
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(12),
-                                  color: Colors.white,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Pays de départ',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        _departureCountry != null
-                                            ? Row(
-                                                children: [
-                                                  Text(
-                                                    _departureCountry!
-                                                        .flagEmoji,
-                                                    style: const TextStyle(
-                                                      fontSize: 24,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(_departureCountry!.name),
-                                                ],
-                                              )
-                                            : const Text('Choisir un pays'),
-                                      ],
-                                    ),
-                                    const Icon(Icons.arrow_drop_down),
-                                  ],
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateHarborModal,
+                                    icon: const Icon(Icons.add),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                             const SizedBox(height: 20),
-
-                            // Pays d'arrivée
-                            InkWell(
-                              onTap: () {
-                                showCountryPicker(
-                                  context: context,
-                                  showPhoneCode: true,
-                                  countryListTheme: const CountryListThemeData(
-                                    flagSize: 25,
-                                    backgroundColor: Colors.white,
-                                    textStyle: TextStyle(fontSize: 16),
-                                    bottomSheetHeight: 300,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20),
-                                    ),
+                            // Port d'arrivée
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: DropDownCustom<Harbor>(
+                                    items: _harbors,
+                                    selectedItem: _selectedArrivalHarbor,
+                                    onChanged: (harbor) {
+                                      setState(() {
+                                        _selectedArrivalHarbor = harbor;
+                                      });
+                                    },
+                                    itemToString: (harbor) => harbor.name ?? '',
+                                    hintText: "Choisir un port d'arrivée...",
+                                    prefixIcon: Icons.sailing,
                                   ),
-                                  onSelect: (Country country) {
-                                    setState(() {
-                                      _arrivalCountry = country;
-                                    });
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(12),
-                                  color: Colors.white,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Pays d\'arrivée',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        _arrivalCountry != null
-                                            ? Row(
-                                                children: [
-                                                  Text(
-                                                    _arrivalCountry!.flagEmoji,
-                                                    style: const TextStyle(
-                                                      fontSize: 24,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(_arrivalCountry!.name),
-                                                ],
-                                              )
-                                            : const Text('Choisir un pays'),
-                                      ],
-                                    ),
-                                    const Icon(Icons.arrow_drop_down),
-                                  ],
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateHarborModal,
+                                    icon: const Icon(Icons.add),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                             const SizedBox(height: 20),
-
                             // Date de départ
                             DatePickerField(
                               label: "Date de départ",
@@ -479,7 +417,6 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                               },
                             ),
                             const SizedBox(height: 20),
-
                             // Date d'arrivée estimée
                             DatePickerField(
                               label: "Date d'arrivée estimée",
@@ -632,15 +569,15 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       return;
     }
     if (currentStep == 2) {
-      // Validation pour l'étape 3 (pays et dates)
-      if (_departureCountry == null) {
+      // Validation pour l'étape 3 (ports et dates)
+      if (_selectedDepartureHarbor == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner le pays de départ.");
+            context, "Veuillez sélectionner le port de départ.");
         return;
       }
-      if (_arrivalCountry == null) {
+      if (_selectedArrivalHarbor == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner le pays d'arrivée.");
+            context, "Veuillez sélectionner le port d'arrivée.");
         return;
       }
       if (_startDate == null) {
@@ -682,12 +619,12 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       showErrorTopSnackBar(context, "Veuillez sélectionner un entrepôt.");
       return;
     }
-    if (_departureCountry == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner le pays de départ.");
+    if (_selectedDepartureHarbor == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner le port de départ.");
       return;
     }
-    if (_arrivalCountry == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner le pays d'arrivée.");
+    if (_selectedArrivalHarbor == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner le port d'arrivée.");
       return;
     }
 
@@ -717,20 +654,22 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       }
 
       // Création du DTO
-      final dto = Packages.fromJson({
-        "ref": _refController.text.trim(),
-        "weight": weight,
-        "itemQuantity": quantity,
-        "cbn": cbn,
-        "startDate": _startDate?.toUtc().toIso8601String(),
-        "arrivalDate": _estimatedArrivalDate?.toUtc().toIso8601String(),
-        "expeditionType": _expeditionType,
-        "startCountry": _departureCountry!.name,
-        "destinationCountry": _arrivalCountry!.name,
-        "containerId": _selectedContainer?.id,
-        "warehouseId": _selectedWarehouse?.id,
-        "itemIds": _selectedItemIds.toList(),
-      });
+      final dto = Packages(
+        ref: _refController.text.trim(),
+        weight: weight,
+        itemQuantity: quantity,
+        cbn: cbn,
+        startDate: _startDate,
+        arrivalDate: _estimatedArrivalDate,
+        expeditionType: _expeditionType,
+        startCountry: _selectedDepartureHarbor?.name,
+        destinationCountry: _selectedArrivalHarbor?.name,
+        startHarborId: _selectedDepartureHarbor?.id,
+        destinationHarborId: _selectedArrivalHarbor?.id,
+        containerId: _selectedContainer?.id,
+        warehouseId: _selectedWarehouse?.id,
+        itemIds: _selectedItemIds.toList(),
+      );
 
       // Appel au service avec les IDs corrects
       final result = await packageServices.create(

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:http/http.dart' as http;
@@ -44,20 +43,20 @@ class PackageServices {
         body: jsonEncode(dto.toJson()),
       );
 
-      print('Response body: ${response.body}');
-      print('Response status code: ${response.statusCode}');
+      log('Response body: ${response.body}');
+      log('Response status code: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "SUCCESS";
       } else {
-        print('Error response body: ${response.body}');
+        log('Error response body: ${response.body}');
         return "ERROR: ${response.statusCode} - ${response.body}";
       }
     } on http.ClientException catch (e) {
-      print('Network error: $e');
+      log('Network error: $e');
       return 'NETWORK_ERROR';
     } catch (e) {
-      print('Unexpected error: $e');
+      log('Unexpected error: $e');
       throw Exception('Erreur inattendue: ${e.toString()}');
     }
   }
@@ -184,19 +183,6 @@ class PackageServices {
     }
   }
 
-  // Future<List<Packages>> findAll({int page = 0}) async {
-  //   final response = await http.get(Uri.parse('$baseUrl/packages?page=$page'));
-
-  //   if (response.statusCode == 200) {
-  //     final List<dynamic> jsonBody = json.decode(
-  //       utf8.decode(response.bodyBytes),
-  //     );
-  //     return jsonBody.map((e) => Packages.fromJson(e)).toList();
-  //   } else {
-  //     throw Exception("Erreur lors du chargement des colis");
-  //   }
-  // }
-
   Future<List<Packages>> findAllPackageReceived({int page = 0}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/packages/received?page=$page'),
@@ -282,55 +268,4 @@ class PackageServices {
       return "UNEXPECTED_ERROR: ${e.toString()}";
     }
   }
-
-  // Future<void> addItemsToPackage(
-  //   int packageId,
-  //   List<Map<String, dynamic>> items,
-  //   int userId,
-  // ) async {
-  //   final url = Uri.parse(
-  //     '$baseUrl/packages/$packageId/add-items?userId=$userId',
-  //   );
-
-  //   try {
-  //     final response = await http.post(
-  //       url,
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: json.encode(items),
-  //     );
-
-  //     if (response.statusCode != 200) {
-  //       throw Exception('Failed to add items to package');
-  //     }
-  //   } catch (e) {
-  //     throw Exception('Error adding items to package: $e');
-  //   }
-  // }
-
-  // Future<bool> updatePackage(int id, int? userId, Packages dto) async {
-  //   try {
-  //     final url = Uri.parse('$baseUrl/packages/update/$id?userId=$userId');
-  //     final headers = {'Content-Type': 'application/json'};
-
-  //     final response = await http.put(
-  //       url,
-  //       headers: headers,
-  //       body: jsonEncode(dto.toJson()),
-  //     );
-
-  //     if (response.statusCode == 409 &&
-  //         response.body == 'Nom de colis déjà utilisé !') {
-  //       return false;
-  //     }
-
-  //     if (response.statusCode == 201) {
-  //       return true;
-  //     } else {
-  //       final errorData = jsonDecode(response.body);
-  //       throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
-  //     }
-  //   } catch (e) {
-  //     rethrow;
-  //   }
-  // }
 }

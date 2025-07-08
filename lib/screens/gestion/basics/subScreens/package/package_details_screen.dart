@@ -280,12 +280,12 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 child: Column(
                   children: [
                     _buildInfoRow(
-                      'Pays de départ',
+                      'Port de départ',
                       widget.packages.startCountry ?? 'N/A',
                     ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Pays de destination',
+                      'Port d\'arrivée',
                       widget.packages.destinationCountry ?? 'N/A',
                     ),
                     const SizedBox(height: 12),
@@ -313,11 +313,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     _buildInfoRow(
                         'Client', widget.packages.clientName ?? 'N/A'),
                     const SizedBox(height: 12),
-                    _buildInfoRow(
-                      'Téléphone',
-                      widget.packages.clientPhone ?? 'N/A',
-                    ),
-                    const SizedBox(height: 12),
+                    if (widget.packages.clientPhone != null)
+                      _buildInfoRow(
+                        'Téléphone',
+                        widget.packages.clientPhone ?? 'N/A',
+                      ),
+                    if (widget.packages.clientPhone != null)
+                      const SizedBox(height: 12),
                     _buildInfoRow(
                       'Date de départ',
                       widget.packages.startDate != null

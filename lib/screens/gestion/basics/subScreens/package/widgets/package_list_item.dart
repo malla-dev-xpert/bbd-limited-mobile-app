@@ -91,7 +91,7 @@ class PackageListItem extends StatelessWidget {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(width: _spacing),
-        Text("|"),
+        const Text("|"),
         const SizedBox(width: _spacing),
         Container(
           padding: const EdgeInsets.symmetric(
@@ -123,7 +123,7 @@ class PackageListItem extends StatelessWidget {
       children: [
         const SizedBox(height: 5),
         _buildInfoText(
-          "Client : ${packages.clientName ?? 'Non spécifié'} | ${packages.clientPhone ?? 'Non spécifié'}",
+          "Client : ${packages.clientName ?? 'Non spécifié'} ${packages.clientPhone != null ? '| ${packages.clientPhone}' : ''}",
           maxLines: 1,
         ),
         _buildInfoText(

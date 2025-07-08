@@ -20,6 +20,8 @@ class Packages {
   final int? warehouseId;
   final int? containerId;
   final List<int>? itemIds;
+  final int? startHarborId;
+  final int? destinationHarborId;
 
   Packages copyWith({
     int? id,
@@ -41,6 +43,8 @@ class Packages {
     int? warehouseId,
     int? containerId,
     List<int>? itemIds,
+    int? startHarborId,
+    int? destinationHarborId,
   }) {
     return Packages(
       id: id ?? this.id,
@@ -62,6 +66,8 @@ class Packages {
       warehouseId: warehouseId ?? this.warehouseId,
       containerId: containerId ?? this.containerId,
       itemIds: itemIds ?? this.itemIds,
+      startHarborId: startHarborId ?? this.startHarborId,
+      destinationHarborId: destinationHarborId ?? this.destinationHarborId,
     );
   }
 
@@ -85,6 +91,8 @@ class Packages {
         'warehouseId': warehouseId,
         'containerId': containerId,
         'itemIds': itemIds,
+        'startHarborId': startHarborId,
+        'destinationHarborId': destinationHarborId,
       };
 
   Packages({
@@ -107,6 +115,8 @@ class Packages {
     this.warehouseAddress,
     this.containerId,
     this.itemIds,
+    this.startHarborId,
+    this.destinationHarborId,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
@@ -150,6 +160,8 @@ class Packages {
       containerId: parseNullableInt(json['containerId']),
       warehouseId: parseNullableInt(json['warehouseId']),
       itemIds: json['itemIds'] as List<int>?,
+      startHarborId: parseNullableInt(json['startHarborId']),
+      destinationHarborId: parseNullableInt(json['destinationHarborId']),
     );
   }
 }
