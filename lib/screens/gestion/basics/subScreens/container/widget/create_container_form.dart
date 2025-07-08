@@ -96,170 +96,174 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Builder(
-        builder: (context) {
-          if (currentStep == 0) {
-            return Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Nouveau conteneur",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ContainerInfoForm(
-                    key: _containerInfoKey,
-                    refController: refController,
-                    size: sizeController,
-                    initialAvailability: false,
-                  ),
-                  const SizedBox(height: 24),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 14.0),
-                      child: confirmationButton(
-                        isLoading: false,
-                        onPressed: _goToNextStep,
-                        label: "Suivant",
-                        icon: Icons.arrow_forward,
-                        subLabel: "",
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24),
+        child: Builder(
+          builder: (context) {
+            if (currentStep == 0) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Nouveau conteneur",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ContainerInfoForm(
+                      key: _containerInfoKey,
+                      refController: refController,
+                      size: sizeController,
+                      initialAvailability: false,
+                    ),
+                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 14.0),
+                        child: confirmationButton(
+                          isLoading: false,
+                          onPressed: _goToNextStep,
+                          label: "Suivant",
+                          icon: Icons.arrow_forward,
+                          subLabel: "",
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          } else if (currentStep == 1) {
-            return Form(
-              key: _mainFeesFormKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: _goToPreviousStep,
-                        icon: const Icon(Icons.arrow_back),
-                      ),
-                      const Text(
-                        "Frais principaux",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  MainFeesForm(
-                    locationFeeController: locationFeeController,
-                    localChargeController: localChargeController,
-                    loadingFeeController: loadingFeeController,
-                    getSupplier: () =>
-                        _containerInfoKey.currentState?.selectedSupplier,
-                  ),
-                  const SizedBox(height: 24),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 14.0),
-                      child: confirmationButton(
-                        isLoading: false,
-                        onPressed: _goToNextStep,
-                        label: "Suivant",
-                        icon: Icons.arrow_forward,
-                        subLabel: "",
+                  ],
+                ),
+              );
+            } else if (currentStep == 1) {
+              return Form(
+                key: _mainFeesFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: _goToPreviousStep,
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        const Text(
+                          "Frais principaux",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    MainFeesForm(
+                      locationFeeController: locationFeeController,
+                      localChargeController: localChargeController,
+                      loadingFeeController: loadingFeeController,
+                      getSupplier: () =>
+                          _containerInfoKey.currentState?.selectedSupplier,
+                    ),
+                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 14.0),
+                        child: confirmationButton(
+                          isLoading: false,
+                          onPressed: _goToNextStep,
+                          label: "Suivant",
+                          icon: Icons.arrow_forward,
+                          subLabel: "",
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return Form(
-              key: _extraFeesFormKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: _goToPreviousStep,
-                        icon: const Icon(Icons.arrow_back),
-                      ),
-                      const Text(
-                        "Frais additionnels",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ExtraFeesForm(
-                    overweightFeeController: overweightFeeController,
-                    checkingFeeController: checkingFeeController,
-                    telxFeeController: telxFeeController,
-                    otherFeesController: otherFeesController,
-                    marginController: marginController,
-                    locationFeeController: locationFeeController,
-                    localChargeController: localChargeController,
-                    loadingFeeController: loadingFeeController,
-                  ),
-                  const SizedBox(height: 24),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 14.0),
-                      child: confirmationButton(
-                        isLoading: isLoading,
-                        onPressed: _submitForm,
-                        label: "Enregistrer",
-                        icon: Icons.check_circle_outline_outlined,
-                        subLabel: "Enregistrement...",
+                  ],
+                ),
+              );
+            } else {
+              return Form(
+                key: _extraFeesFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: _goToPreviousStep,
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        const Text(
+                          "Frais additionnels",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ExtraFeesForm(
+                      overweightFeeController: overweightFeeController,
+                      checkingFeeController: checkingFeeController,
+                      telxFeeController: telxFeeController,
+                      otherFeesController: otherFeesController,
+                      marginController: marginController,
+                      locationFeeController: locationFeeController,
+                      localChargeController: localChargeController,
+                      loadingFeeController: loadingFeeController,
+                    ),
+                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 14.0),
+                        child: confirmationButton(
+                          isLoading: isLoading,
+                          onPressed: _submitForm,
+                          label: "Enregistrer",
+                          icon: Icons.check_circle_outline_outlined,
+                          subLabel: "Enregistrement...",
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-        },
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }
