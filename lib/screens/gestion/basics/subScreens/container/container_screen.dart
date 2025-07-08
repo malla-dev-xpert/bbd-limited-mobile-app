@@ -58,13 +58,6 @@ class _ContainerScreen extends State<ContainerScreen> {
     });
   }
 
-  void _onStatusChanged(Status? status) {
-    setState(() {
-      _selectedStatus = status;
-      _onSearchChanged();
-    });
-  }
-
   @override
   void dispose() {
     _refreshController.close();
