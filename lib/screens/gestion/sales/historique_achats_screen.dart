@@ -44,14 +44,24 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     final searchQuery = _searchController.text.toLowerCase();
     setState(() {
       _filteredAchats = _achats.where((achat) {
-        final matchesSearch = searchQuery.isEmpty ||
-            (achat.referenceVersement?.toLowerCase().contains(searchQuery) ??
-                false) ||
-            (achat.client?.toLowerCase().contains(searchQuery) ?? false);
+        bool matchesSearch;
+        if (searchQuery.isEmpty) {
+          matchesSearch = true;
+        } else {
+          // Recherche par référence, client, ou id client si achat en dette
+          final refMatch =
+              (achat.referenceVersement?.toLowerCase().contains(searchQuery) ??
+                  false);
+          final clientMatch =
+              (achat.client?.toLowerCase().contains(searchQuery) ?? false);
+          final clientIdMatch = (achat.isDebt == true && achat.clientId != null)
+              ? achat.clientId.toString().contains(searchQuery)
+              : false;
+          matchesSearch = refMatch || clientMatch || clientIdMatch;
+        }
 
         final matchesStatus =
             _selectedStatus == null || achat.status == _selectedStatus;
-
         return matchesSearch && matchesStatus;
       }).toList();
     });
@@ -302,7 +312,15 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
-                                                achat.client ?? "N/A",
+                                                (achat.client != null &&
+                                                        achat
+                                                            .client!.isNotEmpty)
+                                                    ? achat.client!
+                                                    : (achat.isDebt == true &&
+                                                            achat.clientId !=
+                                                                null)
+                                                        ? 'Client #${achat.clientId}'
+                                                        : "N/A",
                                                 style: TextStyle(
                                                   color: Colors.grey[700]!,
                                                 ),
