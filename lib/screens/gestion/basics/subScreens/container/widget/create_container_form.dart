@@ -78,30 +78,25 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       final isAvailable = _containerInfoKey.currentState?.isAvailable ?? false;
       final selectedSupplier = _containerInfoKey.currentState?.selectedSupplier;
       // Conversion des champs de frais en double
-      double? parseFee(String text) =>
-          text.trim().isEmpty ? null : double.tryParse(text.trim());
-      final locationFee = parseFee(locationFeeController.text);
-      final localCharge = parseFee(localChargeController.text);
-      final loadingFee = parseFee(loadingFeeController.text);
-      final overweightFee = parseFee(overweightFeeController.text);
-      final checkingFee = parseFee(checkingFeeController.text);
-      final telxFee = parseFee(telxFeeController.text);
-      final otherFees = parseFee(otherFeesController.text);
-      final margin = parseFee(marginController.text);
+      double parseFee(String text) {
+        final value = text.trim();
+        return value.isEmpty ? 0.0 : (double.tryParse(value) ?? 0.0);
+      }
+
       final response = await containerService.create(
         reference,
         size,
         isAvailable,
         user.id.toInt(),
         selectedSupplier?.id,
-        locationFee,
-        localCharge,
-        loadingFee,
-        overweightFee,
-        checkingFee,
-        telxFee,
-        otherFees,
-        margin,
+        parseFee(locationFeeController.text),
+        parseFee(localChargeController.text),
+        parseFee(loadingFeeController.text),
+        parseFee(overweightFeeController.text),
+        parseFee(checkingFeeController.text),
+        parseFee(telxFeeController.text),
+        parseFee(otherFeesController.text),
+        parseFee(marginController.text),
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
