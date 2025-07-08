@@ -361,6 +361,24 @@ void showContainerDetailsBottomSheet(BuildContext context, Containers container,
                                             "Nombre de carton",
                                             pkg.itemQuantity.toString(),
                                           ),
+                                          _detailRow(
+                                            "Port de départ",
+                                            pkg.startCountry ?? 'N/A',
+                                          ),
+                                          _detailRow(
+                                            "Port d'arrivée",
+                                            pkg.destinationCountry ?? 'N/A',
+                                          ),
+                                          _detailRow(
+                                            "Date de départ",
+                                            DateFormat('dd/MM/yyyy')
+                                                .format(pkg.startDate!),
+                                          ),
+                                          _detailRow(
+                                            "Date d'arrivée estimée",
+                                            DateFormat('dd/MM/yyyy')
+                                                .format(pkg.arrivalDate!),
+                                          ),
                                         ],
                                       ),
                                     ),
