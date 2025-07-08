@@ -1,3 +1,4 @@
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -203,9 +204,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: ElevatedButton.icon(
-                                      icon: const Icon(Icons.save),
-                                      label: const Text('Enregistrer'),
+                                    child: confirmationButton(
+                                      icon: Icons.save,
+                                      label: 'Enregistrer',
+                                      isLoading: isLoading,
+                                      subLabel: '',
                                       onPressed: () async {
                                         final user =
                                             await AuthService().getUserInfo();
