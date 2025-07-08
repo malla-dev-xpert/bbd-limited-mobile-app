@@ -331,26 +331,42 @@ class _ContainerScreen extends State<ContainerScreen> {
 
                                   return ContainerListItem(
                                     container: container,
-                                    onTap: () =>
-                                        showContainerDetailsBottomSheet(
-                                      context,
-                                      container,
-                                      onContainerUpdated: (updatedContainer) {
+                                    onTap: () async {
+                                      final updatedContainer =
+                                          await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ContainerDetailPage(
+                                            container: container,
+                                            onContainerUpdated: (updated) {
+                                              setState(() {
+                                                final idx = _filteredContainers
+                                                    .indexWhere((c) =>
+                                                        c.id == updated.id);
+                                                if (idx != -1) {
+                                                  _filteredContainers[idx] =
+                                                      updated;
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                      if (updatedContainer != null) {
                                         setState(() {
-                                          final index = _filteredContainers
+                                          final idx = _filteredContainers
                                               .indexWhere((c) =>
                                                   c.id == updatedContainer.id);
-                                          if (index != -1) {
-                                            _filteredContainers[index] =
+                                          if (idx != -1) {
+                                            _filteredContainers[idx] =
                                                 updatedContainer;
                                           }
                                         });
-                                      },
-                                    ),
+                                      }
+                                    },
                                     onEdit: () => _showEditContainerModal(
-                                      context,
-                                      container,
-                                    ),
+                                        context, container),
                                     onDelete: () => _delete(container),
                                   );
                                 },
