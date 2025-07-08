@@ -35,22 +35,6 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     container = widget.container;
   }
 
-  List<Map<String, dynamic>> getFeesToDisplay() {
-    final List<Map<String, dynamic>> fees = [
-      {'label': 'Frais de location', 'value': container.locationFee},
-      {'label': 'Local charge', 'value': container.localCharge},
-      {'label': 'Frais de chargement', 'value': container.loadingFee},
-      {'label': 'Surpoids', 'value': container.overweightFee},
-      {'label': 'Checking', 'value': container.checkingFee},
-      {'label': 'TELX', 'value': container.telxFee},
-      {'label': 'Autres charges', 'value': container.otherFees},
-      {'label': 'Marge', 'value': container.margin},
-    ];
-    return fees
-        .where((fee) => (fee['value'] ?? 0) != 0 && fee['value'] != null)
-        .toList();
-  }
-
   Widget _detailRow(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -116,15 +100,55 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   ? DateFormat.yMMMMEEEEd().format(container.createdAt!)
                   : '',
             ),
+            _detailRow(
+              "Frais de location",
+              container.locationFee != null
+                  ? '${container.locationFee} CNY'
+                  : '0.0',
+            ),
+            _detailRow(
+              "Frais de chargement",
+              container.loadingFee != null
+                  ? '${container.loadingFee} CNY'
+                  : '0.0',
+            ),
+            _detailRow(
+              "Charge local",
+              container.localCharge != null
+                  ? '${container.localCharge} CNY'
+                  : '0.0',
+            ),
+            _detailRow(
+              "Frais de surpoids",
+              container.overweightFee != null
+                  ? '${container.overweightFee} CNY'
+                  : '0.0',
+            ),
+            _detailRow(
+              "Frais de checking",
+              container.checkingFee != null
+                  ? '${container.checkingFee} CNY'
+                  : '0.0',
+            ),
+            _detailRow(
+              "Frais de TELX",
+              container.telxFee != null ? '${container.telxFee} CNY' : '0.0',
+            ),
+            _detailRow(
+              "Autres charges",
+              container.otherFees != null
+                  ? '${container.otherFees} CNY'
+                  : '0.0',
+            ),
+            _detailRow(
+              "Marge ajouter",
+              container.margin != null ? '${container.margin} CNY' : '0.0',
+            ),
+            _detailRow(
+              "Total des frais",
+              container.amount != null ? '${container.amount} CNY' : '0.0',
+            ),
             const Divider(),
-            if (getFeesToDisplay().isNotEmpty) ...[
-              const Text("Frais appliqués",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ...getFeesToDisplay().map(
-                  (fee) => _detailRow(fee['label'], fee['value'].toString())),
-              const Divider(),
-            ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
