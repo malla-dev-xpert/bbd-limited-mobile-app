@@ -43,6 +43,13 @@ class ContainerListItem extends StatelessWidget {
     }
   }
 
+  // Vérifie si tous les colis sont pour le même client
+  bool _allPackagesSameClient() {
+    if (container.packages == null || container.packages!.isEmpty) return true;
+    final firstClientId = container.packages!.first.clientId;
+    return container.packages!.every((p) => p.clientId == firstClientId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -108,14 +115,36 @@ class ContainerListItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            container.reference!,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1E49),
-                              letterSpacing: 0.2,
-                            ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: _allPackagesSameClient()
+                                      ? Colors.blue[50]
+                                      : Colors.deepPurple[50],
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  _allPackagesSameClient()
+                                      ? Icons.person
+                                      : Icons.people,
+                                  size: 20,
+                                  color: Colors.deepPurple[800],
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                container.reference!,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1A1E49),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Container(
