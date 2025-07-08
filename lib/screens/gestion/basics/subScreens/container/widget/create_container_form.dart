@@ -18,7 +18,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
   int currentStep = 0;
   final _formKey = GlobalKey<FormState>();
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
-  final _mainFeesFormKey = GlobalKey<MainFeesFormState>();
+  final _mainFeesFormKey = GlobalKey<FormState>();
   final _extraFeesFormKey = GlobalKey<ExtraFeesFormState>();
 
   final TextEditingController refController = TextEditingController();
@@ -41,10 +41,14 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
 
   void _goToNextStep() {
     if (currentStep == 0) {
+      print('[DEBUG] Avant validation étape 1');
       final valid = _formKey.currentState?.validate() ?? false;
       print('[DEBUG] Validation étape 1: $valid');
       if (valid) {
+        print('[DEBUG] Passage à l\'étape 2');
         setState(() => currentStep = 1);
+      } else {
+        print('[DEBUG] Échec validation étape 1');
       }
     } else if (currentStep == 1) {
       final valid = _mainFeesFormKey.currentState?.validate() ?? false;
@@ -62,7 +66,6 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
   }
 
   Future<void> _submitForm() async {
-    if (!(_extraFeesFormKey.currentState?.validate() ?? false)) return;
     setState(() => isLoading = true);
     try {
       final user = await authService.getUserInfo();
@@ -473,6 +476,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           label: "Prix du surpoids (optionnel)",
           icon: Icons.scale,
           keyboardType: TextInputType.number,
+          validator: null,
         ),
         const SizedBox(height: 16),
         buildTextField(
@@ -480,6 +484,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           label: "Conteneur checking charge (optionnel)",
           icon: Icons.verified,
           keyboardType: TextInputType.number,
+          validator: null,
         ),
         const SizedBox(height: 16),
         buildTextField(
@@ -487,6 +492,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           label: "TELX charge (optionnel)",
           icon: Icons.phone_android,
           keyboardType: TextInputType.number,
+          validator: null,
         ),
         const SizedBox(height: 16),
         buildTextField(
@@ -494,6 +500,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           label: "Autres charges (optionnel)",
           icon: Icons.more_horiz,
           keyboardType: TextInputType.number,
+          validator: null,
         ),
         const SizedBox(height: 16),
         Row(
@@ -516,6 +523,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           label: "Marge à ajouter",
           icon: Icons.add,
           keyboardType: TextInputType.number,
+          validator: null,
         ),
       ],
     );
