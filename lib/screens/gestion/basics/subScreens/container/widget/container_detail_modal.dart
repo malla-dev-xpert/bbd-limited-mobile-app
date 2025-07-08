@@ -355,7 +355,7 @@ void showContainerDetailsBottomSheet(BuildContext context, Containers container,
                                           ),
                                           _detailRow(
                                             "Client",
-                                            '${pkg.clientName} | ${pkg.clientPhone}',
+                                            '${pkg.clientName} ${pkg.clientPhone != null ? '| ${pkg.clientPhone}' : ''}',
                                           ),
                                           _detailRow(
                                             "Nombre de carton",

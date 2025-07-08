@@ -188,6 +188,9 @@ class PackageServices {
       Uri.parse('$baseUrl/packages/received?page=$page'),
     );
 
+    log(response.body);
+    log(response.statusCode.toString());
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
