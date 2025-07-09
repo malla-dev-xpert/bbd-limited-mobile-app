@@ -364,7 +364,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           // Récupérer les IDs des articles déjà dans le colis
                           final alreadyInPackageIds =
                               _items.map((e) => e.id!).toList();
-                          await showModalBottomSheet(
+                          final result = await showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
                             backgroundColor: Colors.white,
@@ -397,6 +397,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                     );
                                     if (result == "SUCCESS") {
                                       await _loadItems();
+                                      Navigator.pop(context, true);
                                       showSuccessTopSnackBar(context,
                                           "Articles ajoutés au colis avec succès");
                                     } else {
@@ -407,6 +408,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                               );
                             },
                           );
+                          if (result == true) {
+                            showSuccessTopSnackBar(context,
+                                "Articles ajoutés au colis avec succès");
+                          }
                         },
                         label: const Text("Ajouter des articles"),
                         icon: const Icon(Icons.add))
