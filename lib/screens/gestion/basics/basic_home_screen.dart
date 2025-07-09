@@ -3,12 +3,9 @@ import 'package:bbd_limited/components/basic/card_list.dart';
 import 'package:bbd_limited/components/basic/report/report_card.dart';
 import 'package:bbd_limited/components/basic/report/report_card_list.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:flutter/material.dart';
 import '../../../models/user.dart';
-import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
-import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 
 class HomeScreen extends StatefulWidget {
