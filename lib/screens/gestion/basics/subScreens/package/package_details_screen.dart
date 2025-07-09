@@ -8,6 +8,7 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/add_items_to_package_modal.dart';
 
 class PackageDetailsScreen extends StatefulWidget {
   final Packages packages;
@@ -339,12 +340,78 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Articles dans le colis (${_items.length})',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1A1E49),
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Articles dans le colis (${_items.length})',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1A1E49),
+                        ),
+                  ),
+                  if (widget.packages.status == Status.PENDING) ...[
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                        onPressed: () async {
+                          final clientId = widget.packages.clientId;
+                          if (clientId == null) {
+                            showErrorTopSnackBar(
+                                context, "Client inconnu pour ce colis");
+                            return;
+                          }
+                          // Récupérer les IDs des articles déjà dans le colis
+                          final alreadyInPackageIds =
+                              _items.map((e) => e.id!).toList();
+                          await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            builder: (context) {
+                              return SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.7,
+                                child: AddItemsToPackageModal(
+                                  clientId: clientId,
+                                  alreadyInPackageIds: alreadyInPackageIds,
+                                  onValidate: (selectedItems) async {
+                                    final user =
+                                        await AuthService().getUserInfo();
+                                    if (user == null || user.id == null) {
+                                      showErrorTopSnackBar(
+                                          context, "Utilisateur non connecté");
+                                      return;
+                                    }
+                                    final result = await PackageServices()
+                                        .addItemsToPackage(
+                                      packageId: widget.packages.id!,
+                                      itemIds: selectedItems
+                                          .map((e) => e.id!)
+                                          .toList(),
+                                      userId: user.id,
+                                    );
+                                    if (result == "SUCCESS") {
+                                      await _loadItems();
+                                      showSuccessTopSnackBar(context,
+                                          "Articles ajoutés au colis avec succès");
+                                    } else {
+                                      showErrorTopSnackBar(context, result);
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        label: const Text("Ajouter des articles"),
+                        icon: const Icon(Icons.add))
+                  ],
+                ],
               ),
               const SizedBox(height: 12),
               // items lists section
@@ -529,7 +596,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             Navigator.pop(context);
                             showSuccessTopSnackBar(
                               context,
-                              "Le colis  24{widget.packages.ref} a été supprimer avec succès.",
+                              "Le colis 24{widget.packages.ref} a été supprimer avec succès.",
                             );
                           }
                         } else {
@@ -625,7 +692,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Expédition du colis  24{widget.packages.ref} démarrée avec succès.",
+                                  "Expédition du colis 24{widget.packages.ref} démarrée avec succès.",
                                 );
                               }
                             } else {
@@ -723,7 +790,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Colis  24{widget.packages.ref} arrivé avec succès.",
+                                  "Colis 24{widget.packages.ref} arrivé avec succès.",
                                 );
                               }
                             } else {
@@ -821,7 +888,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Colis  24{widget.packages.ref} livrée avec succès.",
+                                  "Colis 24{widget.packages.ref} livrée avec succès.",
                                 );
                               }
                             } else {
@@ -894,7 +961,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Navigator.pop(context, true);
                   showSuccessTopSnackBar(
                     context,
-                    "Colis  24{updatedExpedition.ref} mise à jour avec succès.",
+                    "Colis 24{updatedExpedition.ref} mise à jour avec succès.",
                   );
                 }
               } else {

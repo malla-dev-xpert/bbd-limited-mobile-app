@@ -271,4 +271,34 @@ class PackageServices {
       return "UNEXPECTED_ERROR: ${e.toString()}";
     }
   }
+
+  Future<String> addItemsToPackage({
+    required int packageId,
+    required List<int> itemIds,
+    required int userId,
+  }) async {
+    final url = Uri.parse('$baseUrl/packages/$packageId/items');
+    final headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId.toString(),
+    };
+    final body = jsonEncode({
+      'itemIds': itemIds,
+    });
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return "SUCCESS";
+      } else if (response.statusCode == 404) {
+        return response.body;
+      } else if (response.statusCode == 400) {
+        return response.body;
+      } else {
+        return "Erreur serveur: ${response.statusCode} - ${response.body}";
+      }
+    } catch (e) {
+      return "Erreur réseau: ${e.toString()}";
+    }
+  }
 }
