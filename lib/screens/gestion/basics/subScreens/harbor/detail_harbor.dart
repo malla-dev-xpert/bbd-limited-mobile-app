@@ -791,7 +791,7 @@ class _ContainerDetailsModal extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Client: ${p.clientName}'),
-          Text('Téléphone: ${p.clientPhone}'),
+          if (p.clientPhone != null) Text('Téléphone: ${p.clientPhone}'),
           Text('Nombre d\'article: ${p.itemQuantity}'),
         ],
       ),
