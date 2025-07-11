@@ -677,6 +677,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 );
               });
               widget.onVersementUpdated?.call();
+            } else if (result == "INSUFFICIENT_FUNDS") {
+              showErrorTopSnackBar(
+                  context, "Montant supérieur au montant restant du versement");
             }
           } catch (e) {
             Navigator.of(context).pop();

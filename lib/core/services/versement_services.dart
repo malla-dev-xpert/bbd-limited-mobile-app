@@ -143,10 +143,16 @@ class VersementServices {
         body: jsonEncode(body),
       );
 
+      log(".......................................");
       log('Response status: ${response.statusCode}');
       log('Response body: ${response.body}');
+      log(".......................................");
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "SUCCESS";
+      } else if (response.statusCode == 404 &&
+          response.body.contains("Montant supérieur au montant")) {
+        return "INSUFFICIENT_FUNDS";
       } else {
         // On tente d'extraire le message d'erreur du backend
         String errorMsg;
