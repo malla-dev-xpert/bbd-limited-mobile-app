@@ -346,8 +346,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     'La liste des colis',
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                   ),
-                  if (container.status == Status.PENDING &&
-                      container.isAvailable == true)
+                  if (container.status == Status.PENDING)
                     TextButton.icon(
                       onPressed: () async {
                         final selectedPackages =
