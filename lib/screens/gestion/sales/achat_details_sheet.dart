@@ -58,6 +58,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       if (result.isSuccess) {
         setState(() {
           confirmedArticles.add(itemId);
+          // Met à jour le statut de l'article dans la liste locale
+          final idx = widget.achat.items
+                  ?.indexWhere((i) => i.id?.toString() == itemId) ??
+              -1;
+          if (idx != -1) {
+            widget.achat.items![idx].status = Status.RECEIVED;
+          }
         });
         showSuccessTopSnackBar(context, "Article reçu avec succès");
       } else {
