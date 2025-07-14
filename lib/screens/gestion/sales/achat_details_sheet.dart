@@ -26,6 +26,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   final Set<String> confirmedArticles = {};
   final AchatServices achatServices = AchatServices();
 
+  // Ajout pour la recherche
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   String _formatAmount(double? amount) {
     if (amount == null) return "0,00";
     return amount
@@ -408,6 +412,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     final achat = widget.achat;
+    // Filtrage des articles selon la recherche
+    final List<Items> filteredItems = (achat.items ?? []).where((item) {
+      final query = _searchQuery.toLowerCase();
+      final description = (item.description ?? '').toLowerCase();
+      final invoice = (item.invoiceNumber ?? '').toLowerCase();
+      return query.isEmpty ||
+          description.contains(query) ||
+          invoice.contains(query);
+    }).toList();
     return Container(
       // MODIFIE : largeur max
       width: MediaQuery.of(context).size.width,
@@ -460,6 +473,26 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             ],
           ),
           const SizedBox(height: 20),
+          // Champ de recherche ajouté ici
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Rechercher par nom ou facture...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(32),
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+            ),
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
           _buildInfoRow(
               achat.isDebt == true ? 'Identifiant' : 'Référence',
               achat.isDebt == true
@@ -479,8 +512,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          if (achat.items != null && achat.items!.isNotEmpty)
-            ...achat.items!.map((item) => _buildItemCard(item, achat))
+          if (filteredItems.isNotEmpty)
+            ...filteredItems.map((item) => _buildItemCard(item, achat))
           else
             const Center(
               child: Padding(
