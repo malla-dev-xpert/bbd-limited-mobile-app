@@ -6,11 +6,13 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/models/cashWithdrawal.dart';
 
 class VersementPrintService {
   static Future<Uint8List> buildVersementPdfBytes(
     Versement versement,
     List<Achat> achats,
+    List<CashWithdrawal> retraits, // <-- nouveau paramètre
   ) async {
     final pdf = pw.Document();
     final currencyFormat = NumberFormat.currency(
@@ -48,8 +50,9 @@ class VersementPrintService {
                     children: [
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Image(pw.MemoryImage(logoBytes), height: 50),
+                          pw.Image(pw.MemoryImage(logoBytes), width: 100),
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.end,
                             children: [
@@ -60,16 +63,96 @@ class VersementPrintService {
                                       fontWeight: pw.FontWeight.bold,
                                       letterSpacing: 4)),
                               pw.SizedBox(height: 8),
-                              pw.Text(
-                                  'RÉF. DU VERSEMENT : ${versement.reference ?? ''}',
-                                  style: pw.TextStyle(
-                                      fontSize: 12,
-                                      color: PdfColor.fromHex('#1A1E49'))),
-                              pw.Text(
-                                  'DATE : ${dateFormat.format(versement.createdAt ?? DateTime.now())}',
-                                  style: pw.TextStyle(
-                                      fontSize: 12,
-                                      color: PdfColor.fromHex('#1A1E49'))),
+                              pw.Row(children: [
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                  children: [
+                                    pw.Text('RÉF DU VERSEMENT',
+                                        style: pw.TextStyle(
+                                          fontSize: 9,
+                                          color: PdfColors.grey600,
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        )),
+                                    pw.Text(
+                                      versement.reference ?? '',
+                                      style: pw.TextStyle(
+                                        fontSize: 15,
+                                        color: PdfColor.fromHex('#1A1E49'),
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                pw.SizedBox(width: 10),
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                  children: [
+                                    pw.Text('DATE DU VERSEMENT',
+                                        style: pw.TextStyle(
+                                          fontSize: 9,
+                                          color: PdfColors.grey600,
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        )),
+                                    pw.Text(
+                                      dateFormat.format(versement.createdAt ??
+                                          DateTime.now()),
+                                      style: pw.TextStyle(
+                                        fontSize: 15,
+                                        color: PdfColor.fromHex('#1A1E49'),
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]),
+                              pw.SizedBox(height: 8),
+                              pw.Row(children: [
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                  children: [
+                                    pw.Text('MONTANT VERSÉ',
+                                        style: pw.TextStyle(
+                                          fontSize: 9,
+                                          color: PdfColors.grey600,
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        )),
+                                    pw.Text(
+                                      currencyFormat
+                                          .format(versement.montantVerser),
+                                      style: pw.TextStyle(
+                                        fontSize: 15,
+                                        color: PdfColor.fromHex('#1A1E49'),
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                pw.SizedBox(width: 10),
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                  children: [
+                                    pw.Text('MONTANT RESTANT',
+                                        style: pw.TextStyle(
+                                          fontSize: 9,
+                                          color: PdfColors.grey600,
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        )),
+                                    pw.Text(
+                                      currencyFormat
+                                          .format(versement.montantRestant),
+                                      style: pw.TextStyle(
+                                        fontSize: 15,
+                                        color: PdfColor.fromHex('#1A1E49'),
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]),
                             ],
                           ),
                         ],
@@ -125,6 +208,13 @@ class VersementPrintService {
                         ],
                       ),
                       pw.SizedBox(height: 24),
+                      pw.Text("Liste des articles",
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColor.fromHex('#1A1E49'),
+                          )),
+                      pw.SizedBox(height: 8),
                       pw.Container(
                         color: PdfColor.fromHex('#1A1E49'),
                         padding: const pw.EdgeInsets.symmetric(
@@ -219,6 +309,65 @@ class VersementPrintService {
                           ),
                         ],
                       ),
+                      // Ajout du tableau des retraits d'argent si non vide
+                      if (retraits.isNotEmpty) ...[
+                        pw.SizedBox(height: 24),
+                        pw.Text("Liste des retraits d'argent",
+                            style: pw.TextStyle(
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColor.fromHex('#1A1E49'),
+                            )),
+                        pw.SizedBox(height: 8),
+                        pw.Container(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          padding: const pw.EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 12),
+                          child: pw.Row(
+                            children: [
+                              pw.Container(
+                                  width: 100,
+                                  child: pw.Text('Date',
+                                      style: pw.TextStyle(
+                                          color: PdfColors.white,
+                                          fontWeight: pw.FontWeight.bold))),
+                              pw.Container(
+                                  width: 100,
+                                  child: pw.Text('Montant',
+                                      style: pw.TextStyle(
+                                          color: PdfColors.white,
+                                          fontWeight: pw.FontWeight.bold))),
+                              pw.Expanded(
+                                  child: pw.Text('Motif',
+                                      style: pw.TextStyle(
+                                          color: PdfColors.white,
+                                          fontWeight: pw.FontWeight.bold))),
+                            ],
+                          ),
+                        ),
+                        ...retraits.map((r) => pw.Container(
+                              color: PdfColors.grey200,
+                              padding: const pw.EdgeInsets.symmetric(
+                                  vertical: 4, horizontal: 12),
+                              child: pw.Row(
+                                children: [
+                                  pw.Container(
+                                    width: 100,
+                                    child: pw.Text(
+                                      r.dateRetrait != null
+                                          ? dateFormat.format(r.dateRetrait!)
+                                          : 'Date inconnue',
+                                    ),
+                                  ),
+                                  pw.Container(
+                                      width: 100,
+                                      child: pw.Text(
+                                          currencyFormat.format(r.montant))),
+                                  pw.Expanded(child: pw.Text(r.note ?? '')),
+                                ],
+                              ),
+                            )),
+                      ],
                     ],
                   ),
                 ),

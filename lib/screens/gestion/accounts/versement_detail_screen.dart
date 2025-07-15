@@ -1405,11 +1405,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           height: MediaQuery.of(context).size.height * 0.8,
           child: PdfPreview(
             build: (format) => VersementPrintService.buildVersementPdfBytes(
-                widget.versement, _achats),
-            canChangePageFormat: false,
-            canChangeOrientation: false,
-            allowPrinting: false,
-            allowSharing: true,
+                widget.versement,
+                _achats,
+                widget.versement.cashWithdrawalDtoList ?? []),
             pdfFileName: 'recu_${widget.versement.reference ?? ""}.pdf',
           ),
         ),
