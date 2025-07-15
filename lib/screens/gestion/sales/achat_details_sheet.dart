@@ -347,8 +347,24 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer cet article ?'),
-        content: const Text('Cette action est irréversible.'),
+        title: Row(
+          children: [
+            Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: const Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange)),
+            const SizedBox(width: 12),
+            const Text('Attention',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+            'Vous allez supprimer  l\'article "${item.description}" de votre liste d\'achats.\nCette action est irréversible.'),
+        backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -554,191 +570,181 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
 
   Widget _buildItemCard(Items item, Achat achat) {
     final isConfirmed = confirmedArticles.contains(item.id?.toString());
-    return Slidable(
-      key: Key('article_${item.id ?? item.hashCode}'),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => _showEditArticleDialog(item),
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            icon: Icons.edit,
-            label: 'Modifier',
-          ),
-          SlidableAction(
-            onPressed: (_) => _confirmDeleteArticle(item),
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: 'Supprimer',
-            borderRadius:
-                const BorderRadius.horizontal(right: Radius.circular(16)),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.10),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Ligne titre + actions
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Titre
+              Expanded(
+                child: Text(
+                  item.description ?? 'Article sans nom',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Color(0xFF1A1E49),
+                  ),
+                ),
+              ),
+              // Actions éditer/supprimer
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Color(0xFF1976D2)),
+                    tooltip: 'Modifier',
+                    onPressed: () => _showEditArticleDialog(item),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Color(0xFFD32F2F)),
+                    tooltip: 'Supprimer',
+                    onPressed: () => _confirmDeleteArticle(item),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _InfoIconText(
+                icon: Icons.numbers,
+                label: 'Quantité',
+                value: '${item.quantity ?? 0}',
+              ),
+              const SizedBox(width: 16),
+              _InfoIconText(
+                icon: Icons.attach_money,
+                label: 'Prix unitaire',
+                value: _formatAmount(item.unitPrice ?? 0) + ' ¥',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _InfoIconText(
+                icon: Icons.business_outlined,
+                label: 'Fournisseur',
+                value: item.supplierName ?? 'N/A',
+              ),
+              if (item.supplierPhone != null &&
+                  (item.supplierPhone as String).isNotEmpty) ...[
+                const SizedBox(width: 16),
+                _InfoIconText(
+                  icon: Icons.phone,
+                  label: 'Téléphone',
+                  value: item.supplierPhone ?? '',
+                ),
+              ],
+              const SizedBox(width: 16),
+              _InfoIconText(
+                icon: Icons.percent,
+                label: 'Taux achat',
+                value: (item.salesRate?.toString() ?? ''),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _InfoIconText(
+            icon: Icons.calculate,
+            label: 'Total',
+            value: _formatAmount(item.totalPrice ??
+                    (item.quantity ?? 0) * (item.unitPrice ?? 0)) +
+                ' ¥',
+          ),
+          // Statut et actions de confirmation
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (!isConfirmed && item.status != Status.RECEIVED)
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.red[100],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.receipt_long,
+                              color: Colors.red, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.invoiceNumber ?? '',
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: () =>
+                          confirmArticle(item.id?.toString() ?? ''),
+                      icon: const Icon(Icons.check_circle_outline,
+                          color: Colors.white),
+                      label: Text(isLoading ? "Chargement..." : "Confirmer"),
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A1E49),
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              if (item.status == Status.RECEIVED)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.description ?? 'Article sans nom',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Color(0xFF1A1E49),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _InfoIconText(
-                            icon: Icons.numbers,
-                            label: 'Quantité',
-                            value: '${item.quantity ?? 0}',
-                          ),
-                          const SizedBox(width: 16),
-                          _InfoIconText(
-                            icon: Icons.attach_money,
-                            label: 'Prix unitaire',
-                            value: _formatAmount(item.unitPrice ?? 0) + ' ¥',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _InfoIconText(
-                            icon: Icons.business_outlined,
-                            label: 'Fournisseur',
-                            value: item.supplierName ?? 'N/A',
-                          ),
-                          if (item.supplierPhone != null &&
-                              (item.supplierPhone as String).isNotEmpty) ...[
-                            const SizedBox(width: 16),
-                            _InfoIconText(
-                              icon: Icons.phone,
-                              label: 'Téléphone',
-                              value: item.supplierPhone ?? '',
-                            ),
-                          ],
-                          const SizedBox(width: 16),
-                          _InfoIconText(
-                            icon: Icons.percent,
-                            label: 'Taux achat',
-                            value: (item.salesRate?.toString() ?? ''),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      _InfoIconText(
-                        icon: Icons.calculate,
-                        label: 'Total',
-                        value: _formatAmount(item.totalPrice ??
-                                (item.quantity ?? 0) * (item.unitPrice ?? 0)) +
-                            ' ¥',
+                      const Icon(Icons.receipt_long,
+                          color: Colors.green, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        item.invoiceNumber ?? '',
+                        style: TextStyle(
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                if (!isConfirmed && item.status != Status.RECEIVED)
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.red[100],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.receipt_long,
-                                color: Colors.red, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              item.invoiceNumber ?? '',
-                              style: TextStyle(
-                                color: Colors.red[700],
-                                fontWeight: FontWeight.w500,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      TextButton.icon(
-                        onPressed: () =>
-                            confirmArticle(item.id?.toString() ?? ''),
-                        icon: const Icon(Icons.check_circle_outline,
-                            color: Colors.white),
-                        label: Text(isLoading ? "Chargement..." : "Confirmer"),
-                        style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A1E49),
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                if (item.status == Status.RECEIVED)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.receipt_long,
-                            color: Colors.green, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          item.invoiceNumber ?? '',
-                          style: TextStyle(
-                            color: Colors.green[700],
-                            fontWeight: FontWeight.w500,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -1026,8 +1026,24 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer cet article ?'),
-        content: const Text('Cette action est irréversible.'),
+        title: Row(
+          children: [
+            Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: const Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange)),
+            const SizedBox(width: 12),
+            const Text('Attention',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+            'Vous allez supprimer  l\'article "${ligne.description}" de votre liste d\'achats.\nCette action est irréversible.'),
+        backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
