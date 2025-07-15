@@ -19,6 +19,8 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/utils/versement_print_service.dart';
+import 'package:printing/printing.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -116,36 +118,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDetailItem(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: Color(0xFF1A1E49),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 
@@ -1424,6 +1396,27 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     });
   }
 
+  void _showPdfPreviewDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: PdfPreview(
+            build: (format) => VersementPrintService.buildVersementPdfBytes(
+                widget.versement, _achats),
+            canChangePageFormat: false,
+            canChangeOrientation: false,
+            allowPrinting: false,
+            allowSharing: true,
+            pdfFileName: 'recu_${widget.versement.reference ?? ""}.pdf',
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1439,6 +1432,17 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          TextButton.icon(
+            onPressed: () => _showPdfPreviewDialog(context),
+            icon: const Icon(
+              Icons.print,
+              color: Colors.white,
+            ),
+            label:
+                const Text('Imprimer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
