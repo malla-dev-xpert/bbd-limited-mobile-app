@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -27,8 +26,10 @@ class VersementPrintService {
         sousTotal += item.totalPrice ?? 0;
       }
     }
-    double tva = sousTotal * 0.15;
-    double montantTotal = sousTotal + tva;
+    // double tva = sousTotal * 0.15;
+    double montantTotal = sousTotal;
+    // Calcul du total des retraits
+    double totalRetraits = retraits.fold(0, (sum, r) => sum + (r.montant ?? 0));
     pdf.addPage(
       pw.MultiPage(
         margin: pw.EdgeInsets.zero,
@@ -56,7 +57,7 @@ class VersementPrintService {
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.end,
                             children: [
-                              pw.Text('DÉTAILS',
+                              pw.Text('FACTURE',
                                   style: pw.TextStyle(
                                       fontSize: 32,
                                       color: PdfColor.fromHex('#1A1E49'),
@@ -263,27 +264,32 @@ class VersementPrintService {
                               children: [
                                 pw.Expanded(
                                     child: pw.Text(item.description ?? '',
-                                        style: pw.TextStyle(fontSize: 12))),
+                                        style:
+                                            const pw.TextStyle(fontSize: 12))),
                                 pw.Container(
                                     width: 40,
                                     child: pw.Text('${item.quantity ?? ''}',
-                                        style: pw.TextStyle(fontSize: 12))),
+                                        style:
+                                            const pw.TextStyle(fontSize: 12))),
                                 pw.Container(
                                     width: 70,
                                     child: pw.Text('${item.salesRate ?? ''}',
-                                        style: pw.TextStyle(fontSize: 12))),
+                                        style:
+                                            const pw.TextStyle(fontSize: 12))),
                                 pw.Container(
                                     width: 100,
                                     child: pw.Text(
                                         currencyFormat
                                             .format(item.unitPrice ?? 0),
-                                        style: pw.TextStyle(fontSize: 12))),
+                                        style:
+                                            const pw.TextStyle(fontSize: 12))),
                                 pw.Container(
                                     width: 100,
                                     child: pw.Text(
                                         currencyFormat
                                             .format(item.totalPrice ?? 0),
-                                        style: pw.TextStyle(fontSize: 12))),
+                                        style:
+                                            const pw.TextStyle(fontSize: 12))),
                               ],
                             ),
                           ),
@@ -294,12 +300,12 @@ class VersementPrintService {
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.end,
                             children: [
-                              pw.Text(
-                                  'Sous-total : ${currencyFormat.format(sousTotal)}',
-                                  style: pw.TextStyle(fontSize: 12)),
-                              pw.Text(
-                                  'TVA (15%) : ${currencyFormat.format(tva)}',
-                                  style: pw.TextStyle(fontSize: 12)),
+                              // pw.Text(
+                              //     'Sous-total : ${currencyFormat.format(sousTotal)}',
+                              //     style: const pw.TextStyle(fontSize: 12)),
+                              // pw.Text(
+                              //     'TVA (15%) : ${currencyFormat.format(tva)}',
+                              //     style: const pw.TextStyle(fontSize: 12)),
                               pw.Text(
                                   'MONTANT TOTAL : ${currencyFormat.format(montantTotal)}',
                                   style: pw.TextStyle(
@@ -367,6 +373,18 @@ class VersementPrintService {
                                 ],
                               ),
                             )),
+                        // Ajout du total des retraits
+                        pw.SizedBox(height: 8),
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                                'TOTAL DES RETRAITS : ${currencyFormat.format(totalRetraits)}',
+                                style: pw.TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: pw.FontWeight.bold)),
+                          ],
+                        ),
                       ],
                     ],
                   ),
