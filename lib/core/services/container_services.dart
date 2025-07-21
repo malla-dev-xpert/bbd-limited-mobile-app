@@ -89,6 +89,10 @@ class ContainerServices {
         }),
       );
 
+      print("-------------------------------------------");
+      print("Response=================" + response.body);
+      print("-------------------------------------------");
+
       if (response.statusCode == 201) {
         return "CREATED";
       } else if (response.statusCode == 409 &&
@@ -126,11 +130,22 @@ class ContainerServices {
     }
   }
 
-  Future<String?> startDelivery(int id, int? userId) async {
-    final url = Uri.parse("$baseUrl/containers/delivery/$id?userId=$userId");
+  Future<String?> startDelivery(int id, int? userId,
+      [DateTime? deliveryDate]) async {
+    String urlStr = "$baseUrl/containers/delivery/$id?userId=$userId";
+    if (deliveryDate != null) {
+      final formattedDate = deliveryDate.toIso8601String();
+      urlStr += "&deliveryDate=$formattedDate";
+    }
+    final url = Uri.parse(urlStr);
 
     try {
       final response = await http.get(url);
+
+      print("----------------------------------------");
+      print(response.body);
+      print(response.statusCode);
+      print("----------------------------------------");
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "SUCCESS";

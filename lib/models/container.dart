@@ -7,6 +7,8 @@ class Containers {
   final String? size;
   final DateTime? createdAt;
   final DateTime? editedAt;
+  final DateTime? startDeliveryDate;
+  final DateTime? confirmDeliveryDate;
   final bool? isAvailable;
   final Status? status;
   List<Packages>? packages;
@@ -34,6 +36,8 @@ class Containers {
     String? size,
     DateTime? createdAt,
     DateTime? editedAt,
+    DateTime? startDeliveryDate,
+    DateTime? confirmDeliveryDate,
     bool? isAvailable,
     Status? status,
     List<Packages>? packages,
@@ -58,6 +62,8 @@ class Containers {
       size: size ?? this.size,
       createdAt: createdAt ?? this.createdAt,
       editedAt: editedAt ?? this.editedAt,
+      startDeliveryDate: startDeliveryDate ?? this.startDeliveryDate,
+      confirmDeliveryDate: confirmDeliveryDate ?? this.confirmDeliveryDate,
       isAvailable: isAvailable ?? this.isAvailable,
       status: status ?? this.status,
       packages: packages ?? this.packages,
@@ -87,6 +93,8 @@ class Containers {
       'size': size,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
+      'startDeliveryDate': startDeliveryDate?.toIso8601String(),
+      'confirmDeliveryDate': confirmDeliveryDate?.toIso8601String(),
       'isAvailable': isAvailable,
       'status': status?.name,
       'packages': packages?.map((e) => e.toJson()).toList(),
@@ -115,6 +123,8 @@ class Containers {
     this.size,
     this.createdAt,
     this.editedAt,
+    this.startDeliveryDate,
+    this.confirmDeliveryDate,
     this.isAvailable,
     this.status,
     this.packages,
@@ -164,6 +174,12 @@ class Containers {
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       editedAt:
           json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
+      startDeliveryDate: json['startDeliveryDate'] != null
+          ? DateTime.parse(json['startDeliveryDate'])
+          : null,
+      confirmDeliveryDate: json['confirmDeliveryDate'] != null
+          ? DateTime.parse(json['confirmDeliveryDate'])
+          : null,
       isAvailable: json['isAvailable'] as bool?,
       status: status,
       packages: packageList,

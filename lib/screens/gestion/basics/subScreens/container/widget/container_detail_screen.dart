@@ -25,6 +25,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   late Containers container;
   bool isLoading = false;
   String searchQuery = '';
+  DateTime? selectedDeliveryDate; // Ajout pour la date de livraison
   final ContainerServices containerServices = ContainerServices();
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
@@ -202,13 +203,22 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             ? 'Disponible'
                             : 'Indisponible',
                         icon: Icons.inventory_2),
-                    _infoRow(
-                        'Date de réception',
-                        container.createdAt != null
-                            ? DateFormat.yMMMMEEEEd()
-                                .format(container.createdAt!)
-                            : '',
-                        icon: Icons.calendar_today),
+                    if (container.startDeliveryDate != null)
+                      _infoRow(
+                          'Date de debut de livraison',
+                          container.startDeliveryDate != null
+                              ? DateFormat.yMMMMEEEEd()
+                                  .format(container.startDeliveryDate!)
+                              : '',
+                          icon: Icons.calendar_today),
+                    if (container.startDeliveryDate != null)
+                      _infoRow(
+                          'Date de confirmation de livraison',
+                          container.confirmDeliveryDate != null
+                              ? DateFormat.yMMMMEEEEd()
+                                  .format(container.confirmDeliveryDate!)
+                              : '',
+                          icon: Icons.calendar_today),
                   ],
                 ),
               ),
@@ -692,35 +702,96 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
                       onPressed: () async {
+                        DateTime? tempSelectedDate = selectedDeliveryDate;
                         final bool confirm = await showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text("Confirmer le démarrage"),
-                              backgroundColor: Colors.white,
-                              content: const Text(
-                                  "Voulez-vous vraiment démarrer la livraison de ce conteneur ?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: const Text("Annuler"),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: Text(
-                                      isLoading ? "Démarrage..." : "Confirmer",
-                                      style:
-                                          const TextStyle(color: Colors.green)),
-                                ),
-                              ],
+                            return StatefulBuilder(
+                              builder: (context, setStateDialog) {
+                                return AlertDialog(
+                                  title: const Text("Confirmer le démarrage"),
+                                  backgroundColor: Colors.white,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                          "Voulez-vous vraiment démarrer la livraison de ce conteneur ?"),
+                                      const SizedBox(height: 16),
+                                      TextButton.icon(
+                                        icon: const Icon(Icons.date_range),
+                                        label: Text(
+                                          tempSelectedDate != null
+                                              ? 'Date de livraison : '
+                                                  '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
+                                              : 'Choisir la date de livraison (optionnel)',
+                                        ),
+                                        onPressed: () async {
+                                          final now = DateTime.now();
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate:
+                                                tempSelectedDate ?? now,
+                                            firstDate: DateTime(now.year - 1),
+                                            lastDate: DateTime(now.year + 2),
+                                          );
+                                          if (picked != null) {
+                                            setStateDialog(() {
+                                              tempSelectedDate = picked;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      if (tempSelectedDate != null)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            'Date sélectionnée : '
+                                            '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      if (tempSelectedDate == null)
+                                        const Padding(
+                                          padding: EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: const Text("Annuler"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      child: Text(
+                                          isLoading
+                                              ? "Démarrage..."
+                                              : "Confirmer",
+                                          style: const TextStyle(
+                                              color: Colors.green)),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         );
                         if (confirm != true) return;
                         setState(() {
                           isLoading = true;
+                          selectedDeliveryDate = tempSelectedDate;
                         });
                         final user = await authService.getUserInfo();
                         if (user == null) {
@@ -730,8 +801,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           return;
                         }
                         try {
+                          // On passe la date sélectionnée ou la date du jour
+                          final deliveryDate =
+                              selectedDeliveryDate ?? DateTime.now();
                           final result = await containerServices.startDelivery(
-                              container.id!, user.id.toInt());
+                              container.id!, user.id.toInt(), deliveryDate);
                           if (result == "SUCCESS") {
                             final updatedContainer = await containerServices
                                 .getContainerDetails(container.id!);
