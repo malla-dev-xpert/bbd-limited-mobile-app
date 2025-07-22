@@ -10,6 +10,7 @@ class Containers {
   final DateTime? startDeliveryDate;
   final DateTime? confirmDeliveryDate;
   final bool? isAvailable;
+  bool? isTeam;
   final Status? status;
   List<Packages>? packages;
   final int? userId;
@@ -39,6 +40,7 @@ class Containers {
     DateTime? startDeliveryDate,
     DateTime? confirmDeliveryDate,
     bool? isAvailable,
+    bool? isTeam,
     Status? status,
     List<Packages>? packages,
     int? userId,
@@ -65,6 +67,7 @@ class Containers {
       startDeliveryDate: startDeliveryDate ?? this.startDeliveryDate,
       confirmDeliveryDate: confirmDeliveryDate ?? this.confirmDeliveryDate,
       isAvailable: isAvailable ?? this.isAvailable,
+      isTeam: isTeam ?? this.isTeam,
       status: status ?? this.status,
       packages: packages ?? this.packages,
       userId: userId ?? this.userId,
@@ -96,6 +99,7 @@ class Containers {
       'startDeliveryDate': startDeliveryDate?.toIso8601String(),
       'confirmDeliveryDate': confirmDeliveryDate?.toIso8601String(),
       'isAvailable': isAvailable,
+      'isTeam': isTeam,
       'status': status?.name,
       'packages': packages?.map((e) => e.toJson()).toList(),
       'userId': userId,
@@ -126,6 +130,7 @@ class Containers {
     this.startDeliveryDate,
     this.confirmDeliveryDate,
     this.isAvailable,
+    this.isTeam,
     this.status,
     this.packages,
     this.userId,
@@ -181,6 +186,7 @@ class Containers {
           ? DateTime.parse(json['confirmDeliveryDate'])
           : null,
       isAvailable: json['isAvailable'] as bool?,
+      isTeam: json['isTeam'] as bool?,
       status: status,
       packages: packageList,
       userId: json['userId'] as int?,

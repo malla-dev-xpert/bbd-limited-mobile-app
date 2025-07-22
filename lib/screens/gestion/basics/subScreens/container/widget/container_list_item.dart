@@ -123,14 +123,16 @@ class ContainerListItem extends StatelessWidget {
                               Container(
                                 padding: EdgeInsets.all(isTablet ? 8 : 4),
                                 decoration: BoxDecoration(
-                                  color: _allPackagesSameClient()
+                                  color: _allPackagesSameClient() ||
+                                          container.isTeam == true
                                       ? Colors.blue[50]
                                       : Colors.deepPurple[50],
                                   borderRadius:
                                       BorderRadius.circular(isTablet ? 16 : 10),
                                 ),
                                 child: Icon(
-                                  _allPackagesSameClient()
+                                  _allPackagesSameClient() ||
+                                          container.isTeam == true
                                       ? Icons.person
                                       : Icons.people,
                                   size: isTablet ? 24 : 16,

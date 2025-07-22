@@ -108,6 +108,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
+// Vérifie si tous les colis sont pour le même client
+  bool _allPackagesSameClient() {
+    if (container.packages == null || container.packages!.isEmpty) return true;
+    final firstClientId = container.packages!.first.clientId;
+    return container.packages!.every((p) => p.clientId == firstClientId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredPackages = container.packages?.where((pkg) {
@@ -120,14 +127,41 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Détails du conteneur',
-            style: TextStyle(
-                color: Color(0xFF1A1E49), fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1A1E49)),
-      ),
+          title: const Text('Détails du conteneur',
+              style: TextStyle(
+                  color: Color(0xFF1A1E49), fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Color(0xFF1A1E49)),
+          actions: [
+            if (!_allPackagesSameClient() && container.isTeam == false)
+              TextButton.icon(
+                  onPressed: () async {
+                    try {
+                      final user = await AuthService().getUserInfo();
+                      if (user == null) {
+                        showErrorTopSnackBar(
+                            context, "Erreur: Utilisateur non connecté");
+                        return;
+                      }
+                      final dto = Containers.fromJson(container.toJson());
+                      dto.isTeam = true;
+                      final result = await containerServices.update(
+                          container.id!, user.id, dto);
+
+                      if (result == "UPDATED") {
+                        Navigator.of(context).pop();
+                        showSuccessTopSnackBar(
+                            context, "Conteneur mis à jour avec succès");
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
+                  },
+                  label: const Text("Degrouper"),
+                  icon: const Icon(Icons.person))
+          ]),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: SingleChildScrollView(
