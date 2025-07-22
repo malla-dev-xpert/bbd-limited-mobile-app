@@ -14,6 +14,7 @@ class Packages {
   final String? clientPhone;
   final DateTime? arrivalDate;
   final DateTime? startDate;
+  final DateTime? receivedDate;
   Status? status;
   final String? warehouseName;
   final String? warehouseAddress;
@@ -37,6 +38,7 @@ class Packages {
     String? clientPhone,
     DateTime? arrivalDate,
     DateTime? startDate,
+    DateTime? receivedDate,
     Status? status,
     String? warehouseName,
     String? warehouseAddress,
@@ -59,6 +61,7 @@ class Packages {
       clientName: clientName ?? this.clientName,
       clientPhone: clientPhone ?? this.clientPhone,
       arrivalDate: arrivalDate ?? this.arrivalDate,
+      receivedDate: receivedDate ?? this.receivedDate,
       startDate: startDate ?? this.startDate,
       status: status ?? this.status,
       warehouseName: warehouseName ?? this.warehouseName,
@@ -83,7 +86,8 @@ class Packages {
         'clientId': clientId,
         'clientName': clientName,
         'clientPhone': clientPhone,
-        'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
+        'arrivalDate': arrivalDate?.toUtc().toIso8601String() ?? '',
+        'receivedDate': receivedDate?.toUtc().toIso8601String(),
         'startDate': startDate?.toUtc().toIso8601String(),
         'status': status?.name,
         'warehouseName': warehouseName,
@@ -109,6 +113,7 @@ class Packages {
     this.clientPhone,
     this.arrivalDate,
     this.startDate,
+    this.receivedDate,
     this.status,
     this.warehouseId,
     this.warehouseName,
@@ -151,6 +156,9 @@ class Packages {
       clientPhone: json['clientPhone'] as String?,
       arrivalDate: json['arrivalDate'] != null
           ? DateTime.parse(json['arrivalDate'])
+          : null,
+      receivedDate: json['receivedDate'] != null
+          ? DateTime.parse(json['receivedDate'])
           : null,
       startDate:
           json['startDate'] != null ? DateTime.parse(json['startDate']) : null,

@@ -103,16 +103,26 @@ class PackageServices {
     }
   }
 
-  Future<String?> receivedExpedition(int id) async {
-    final url = Uri.parse(
-      "$baseUrl/packages/received-expedition?expeditionId=$id",
-    );
+  Future<String?> receivedExpedition(int id, int? userId,
+      [DateTime? deliveryDate]) async {
+    String urlStr =
+        "$baseUrl/packages/received-expedition?expeditionId=$id&userId=$userId";
+    if (deliveryDate != null) {
+      final formattedDate = deliveryDate.toIso8601String();
+      urlStr += "&deliveryDate=$formattedDate";
+    }
+    final url = Uri.parse(urlStr);
 
     try {
       final response = await http.delete(
         url,
         headers: {"Content-Type": "application/json"},
       );
+
+      print("----------------------------------------");
+      print(response.body);
+      print(response.statusCode);
+      print("----------------------------------------");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "SUCCESS";

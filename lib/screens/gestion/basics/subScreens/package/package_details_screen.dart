@@ -260,6 +260,24 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    if (widget.packages.receivedDate != null)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Livrée le',
+                            style: TextStyle(
+                                color: Colors.grey[600], fontSize: 14),
+                          ),
+                          Text(
+                            DateFormat('dd/MM/yyyy')
+                                .format(widget.packages.receivedDate!),
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -927,9 +945,16 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       : () async {
                           setState(() => _isLoading = true);
                           try {
+                            final deliveryDate =
+                                tempSelectedDate ?? DateTime.now();
                             final expeditionServices = PackageServices();
-                            final result = await expeditionServices
-                                .receivedExpedition(widget.packages.id!);
+                            print("Date==========" + deliveryDate.toString());
+                            final user = await AuthService().getUserInfo();
+                            final result =
+                                await expeditionServices.receivedExpedition(
+                                    widget.packages.id!,
+                                    user!.id,
+                                    deliveryDate);
 
                             if (result == "SUCCESS") {
                               widget.packages.status = Status.DELIVERED;
