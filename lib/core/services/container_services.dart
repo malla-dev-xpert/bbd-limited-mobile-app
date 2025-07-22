@@ -159,9 +159,14 @@ class ContainerServices {
     }
   }
 
-  Future<String?> confirmReceiving(int id, int? userId) async {
-    final url =
-        Uri.parse("$baseUrl/containers/delivery-received/$id?userId=$userId");
+  Future<String?> confirmReceiving(int id, int? userId,
+      [DateTime? confirmDate]) async {
+    String urlStr = "$baseUrl/containers/delivery-received/$id?userId=$userId";
+    if (confirmDate != null) {
+      final formattedDate = confirmDate.toIso8601String();
+      urlStr += "&confirmDate=$formattedDate";
+    }
+    final url = Uri.parse(urlStr);
 
     try {
       final response = await http.get(url);

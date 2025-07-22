@@ -211,7 +211,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                   .format(container.startDeliveryDate!)
                               : '',
                           icon: Icons.calendar_today),
-                    if (container.startDeliveryDate != null)
+                    if (container.confirmDeliveryDate != null)
                       _infoRow(
                           'Date de confirmation de livraison',
                           container.confirmDeliveryDate != null
@@ -854,32 +854,90 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
                       onPressed: () async {
+                        DateTime? tempSelectedConfirmDate;
                         final bool confirm = await showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text(
-                                  "Confirmer l'arrivée du conteneur"),
-                              backgroundColor: Colors.white,
-                              content: const Text(
-                                  "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: const Text("Annuler"),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: Text(
-                                      isLoading
-                                          ? "Changement de statut..."
-                                          : "Confirmer",
-                                      style:
-                                          const TextStyle(color: Colors.green)),
-                                ),
-                              ],
+                            return StatefulBuilder(
+                              builder: (context, setStateDialog) {
+                                return AlertDialog(
+                                  title: const Text(
+                                      "Confirmer l'arrivée du conteneur"),
+                                  backgroundColor: Colors.white,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                          "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?"),
+                                      const SizedBox(height: 16),
+                                      TextButton.icon(
+                                        icon: const Icon(Icons.date_range),
+                                        label: Text(
+                                          tempSelectedConfirmDate != null
+                                              ? 'Date de confirmation : '
+                                                  '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}'
+                                              : 'Choisir la date de confirmation (optionnel)',
+                                        ),
+                                        onPressed: () async {
+                                          final now = DateTime.now();
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate:
+                                                tempSelectedConfirmDate ?? now,
+                                            firstDate: DateTime(now.year - 1),
+                                            lastDate: DateTime(now.year + 2),
+                                          );
+                                          if (picked != null) {
+                                            setStateDialog(() {
+                                              tempSelectedConfirmDate = picked;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      if (tempSelectedConfirmDate != null)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            'Date sélectionnée : '
+                                            '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      if (tempSelectedConfirmDate == null)
+                                        const Padding(
+                                          padding: EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: const Text("Annuler"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      child: Text(
+                                          isLoading
+                                              ? "Changement de statut..."
+                                              : "Confirmer",
+                                          style: const TextStyle(
+                                              color: Colors.green)),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         );
@@ -895,8 +953,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           return;
                         }
                         try {
-                          final result = await containerServices
-                              .confirmReceiving(container.id!, user.id.toInt());
+                          final confirmDate =
+                              tempSelectedConfirmDate ?? DateTime.now();
+                          final result =
+                              await containerServices.confirmReceiving(
+                                  container.id!, user.id.toInt(), confirmDate);
                           if (result == "SUCCESS") {
                             final updatedContainer = await containerServices
                                 .getContainerDetails(container.id!);
