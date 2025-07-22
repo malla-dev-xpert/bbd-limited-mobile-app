@@ -33,6 +33,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   bool _isLoadingItems = false;
   List<Items> _items = [];
   final ItemServices _itemServices = ItemServices();
+  DateTime? selectedDeliveryDate;
 
   @override
   void initState() {
@@ -842,6 +843,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   }
 
   Future<void> _showReceivedConfirmationDialog(BuildContext context) async {
+    DateTime? tempSelectedDate = selectedDeliveryDate;
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -859,13 +862,55 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   const Text('Confirmation'),
                 ],
               ),
-              content: const Column(
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Êtes-vous sûr de vouloir confirmer la livraison de ce Colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    icon: const Icon(Icons.date_range),
+                    label: Text(
+                      tempSelectedDate != null
+                          ? 'Date de livraison : '
+                              '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
+                          : 'Choisir la date de livraison (optionnel)',
+                    ),
+                    onPressed: () async {
+                      final now = DateTime.now();
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: tempSelectedDate ?? now,
+                        firstDate: DateTime(now.year - 1),
+                        lastDate: DateTime(now.year + 2),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          tempSelectedDate = picked;
+                        });
+                      }
+                    },
+                  ),
+                  if (tempSelectedDate != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Date sélectionnée : '
+                        '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  if (tempSelectedDate == null)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
                 ],
               ),
               actions: [
