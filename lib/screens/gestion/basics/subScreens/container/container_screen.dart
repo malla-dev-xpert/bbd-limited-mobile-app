@@ -334,11 +334,21 @@ class _ContainerScreen extends State<ContainerScreen> {
                                             container: container,
                                             onContainerUpdated: (updated) {
                                               setState(() {
+                                                // Mettre à jour dans la liste filtrée
                                                 final idx = _filteredContainers
                                                     .indexWhere((c) =>
                                                         c.id == updated.id);
                                                 if (idx != -1) {
                                                   _filteredContainers[idx] =
+                                                      updated;
+                                                }
+
+                                                // Mettre à jour dans la liste complète
+                                                final allIdx = _allContainers
+                                                    .indexWhere((c) =>
+                                                        c.id == updated.id);
+                                                if (allIdx != -1) {
+                                                  _allContainers[allIdx] =
                                                       updated;
                                                 }
                                               });
@@ -353,6 +363,14 @@ class _ContainerScreen extends State<ContainerScreen> {
                                                   c.id == updatedContainer.id);
                                           if (idx != -1) {
                                             _filteredContainers[idx] =
+                                                updatedContainer;
+                                          }
+
+                                          final allIdx =
+                                              _allContainers.indexWhere((c) =>
+                                                  c.id == updatedContainer.id);
+                                          if (allIdx != -1) {
+                                            _allContainers[allIdx] =
                                                 updatedContainer;
                                           }
                                         });

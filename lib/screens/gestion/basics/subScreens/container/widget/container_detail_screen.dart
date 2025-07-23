@@ -136,31 +136,63 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           iconTheme: const IconThemeData(color: Color(0xFF1A1E49)),
           actions: [
             if (!_allPackagesSameClient() && container.isTeam == false)
-              TextButton.icon(
-                  onPressed: () async {
-                    try {
-                      final user = await AuthService().getUserInfo();
-                      if (user == null) {
-                        showErrorTopSnackBar(
-                            context, "Erreur: Utilisateur non connecté");
-                        return;
-                      }
-                      final dto = Containers.fromJson(container.toJson());
-                      dto.isTeam = true;
-                      final result = await containerServices.update(
-                          container.id!, user.id, dto);
+              isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF1A1E49),
+                      ),
+                    )
+                  : TextButton.icon(
+                      onPressed: () async {
+                        try {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          final user = await AuthService().getUserInfo();
+                          if (user == null) {
+                            showErrorTopSnackBar(
+                                context, "Erreur: Utilisateur non connecté");
+                            return;
+                          }
+                          final dto = Containers.fromJson(container.toJson());
+                          dto.isTeam = true;
+                          final result = await containerServices.update(
+                              container.id!, user.id, dto);
 
-                      if (result == "UPDATED") {
-                        Navigator.of(context).pop();
-                        showSuccessTopSnackBar(
-                            context, "Conteneur mis à jour avec succès");
-                      }
-                    } catch (e) {
-                      print(e);
-                    }
-                  },
-                  label: const Text("Degrouper"),
-                  icon: const Icon(Icons.person))
+                          if (result == "UPDATED") {
+                            // Récupérer les nouvelles données
+                            final updatedContainer = await containerServices
+                                .getContainerDetails(container.id!);
+
+                            // Mettre à jour l'état local
+                            setState(() {
+                              container = updatedContainer;
+                            });
+
+                            // Notifier le parent
+                            if (widget.onContainerUpdated != null) {
+                              widget.onContainerUpdated!(updatedContainer);
+                            }
+
+                            Navigator.of(context).pop(updatedContainer);
+
+                            showSuccessTopSnackBar(
+                                context, "Conteneur dégroupé avec succès");
+                          }
+                        } catch (e) {
+                          print(e);
+                          showErrorTopSnackBar(
+                              context, "Erreur lors du dégroupage");
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                      label: const Text("Degrouper"),
+                      icon: const Icon(Icons.person))
           ]),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
