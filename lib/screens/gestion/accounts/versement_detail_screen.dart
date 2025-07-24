@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildDetailRow.dart';
@@ -24,6 +26,8 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -1355,6 +1359,42 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
+  Future<void> _shareAchatPdf(
+      Achat achat, bool isProforma, bool includeSupplierInfo) async {
+    try {
+      // Générer le PDF
+      final pdfBytes = await VersementPrintService.buildAchatPdfBytes(
+        achat,
+        includeSupplierInfo: includeSupplierInfo && !isProforma,
+        currencyFormat: currencyFormat,
+        isProforma: isProforma,
+      );
+
+      // Créer un nom de fichier approprié
+      final fileName = isProforma
+          ? 'facture_pro_forma_ach${achat.id}.pdf'
+          : 'facture_ach${achat.id}.pdf';
+
+      // Créer un fichier temporaire
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/$fileName');
+      await tempFile.writeAsBytes(pdfBytes);
+
+      // Partager le fichier avec la nouvelle API
+      await Share.shareXFiles(
+        [XFile(tempFile.path)],
+        text: isProforma
+            ? 'Facture pro-forma Achat #${achat.id}'
+            : 'Facture Achat #${achat.id}',
+        subject: isProforma
+            ? 'Facture pro-forma Achat #${achat.id}'
+            : 'Facture Achat #${achat.id}',
+      );
+    } catch (e) {
+      showErrorTopSnackBar(context, "Erreur lors du partage: $e");
+    }
+  }
+
   void _handlePrintAchat(Achat achat) {
     bool includeSupplierInfo = false;
     bool isProforma = false; // Nouvelle variable d'état
@@ -1444,59 +1484,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                         ],
                       ),
                     ),
-              actions: isLoading
-                  ? []
-                  : [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Annuler'),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          setState(() => isLoading = true);
-                          try {
-                            final pdfBytes =
-                                await VersementPrintService.buildAchatPdfBytes(
-                              achat,
-                              includeSupplierInfo:
-                                  includeSupplierInfo && !isProforma,
-                              currencyFormat: currencyFormat,
-                              isProforma: isProforma,
-                            );
-                            await Printing.layoutPdf(
-                              onLayout: (format) => pdfBytes,
-                            );
-                            Navigator.pop(context);
-                          } catch (e) {
-                            showErrorTopSnackBar(
-                                context, "Erreur d'impression: $e");
-                            setState(() => isLoading = false);
-                          }
-                        },
-                        child: const Text('Imprimer'),
-                      ),
-                    ],
             );
           },
         );
       },
     );
-  }
-
-  Future<void> _printAchat(Achat achat, bool includeSupplierInfo) async {
-    try {
-      final pdfBytes = await VersementPrintService.buildAchatPdfBytes(
-        achat,
-        includeSupplierInfo: includeSupplierInfo,
-        currencyFormat: currencyFormat,
-      );
-
-      await Printing.layoutPdf(
-        onLayout: (format) => pdfBytes,
-      );
-    } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de l'impression: $e");
-    }
   }
 
   @override

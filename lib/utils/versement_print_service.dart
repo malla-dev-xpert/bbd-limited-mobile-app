@@ -645,30 +645,6 @@ class VersementPrintService {
                           ),
                         ],
                       ),
-
-                      // Notes
-                      // if (achat.note != null && achat.note!.isNotEmpty) ...[
-                      //   pw.SizedBox(height: 24),
-                      //   pw.Container(
-                      //     padding: const pw.EdgeInsets.all(10),
-                      //     decoration: pw.BoxDecoration(
-                      //       border: pw.Border.all(color: PdfColor.fromHex('#1A1E49')),
-                      //       borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
-                      //     child: pw.Column(
-                      //       crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      //       children: [
-                      //         pw.Text('NOTES',
-                      //             style: pw.TextStyle(
-                      //                 fontSize: 12,
-                      //                 color: PdfColor.fromHex('#1A1E49'),
-                      //                 fontWeight: pw.FontWeight.bold,
-                      //                 letterSpacing: 2)),
-                      //         pw.Text(achat.note!,
-                      //             style: const pw.TextStyle(fontSize: 12)),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ],
                     ],
                   ),
                 ),
