@@ -397,4 +397,269 @@ class VersementPrintService {
     );
     return pdf.save();
   }
+
+  static Future<Uint8List> buildAchatPdfBytes(
+    Achat achat, {
+    required bool includeSupplierInfo,
+    required NumberFormat currencyFormat,
+  }) async {
+    final pdf = pw.Document();
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    final Uint8List logoBytes = await rootBundle
+        .load('assets/images/logo.png')
+        .then((data) => data.buffer.asUint8List());
+
+    // Calcul du montant total
+    double montantTotal =
+        achat.items?.fold(0, (sum, item) => sum! + (item.totalPrice ?? 0)) ?? 0;
+
+    pdf.addPage(
+      pw.MultiPage(
+        margin: pw.EdgeInsets.zero,
+        build: (ctx) => [
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Container(
+                width: 20,
+                height: 800,
+                color: PdfColor.fromHex('#1A1E49'),
+              ),
+              pw.SizedBox(width: 10),
+              pw.Expanded(
+                child: pw.Padding(
+                  padding: const pw.EdgeInsets.all(24),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // En-tête avec logo et informations principales
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Image(pw.MemoryImage(logoBytes), width: 100),
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text('FACTURE D\'ACHAT',
+                                  style: pw.TextStyle(
+                                      fontSize: 32,
+                                      color: PdfColor.fromHex('#1A1E49'),
+                                      fontWeight: pw.FontWeight.bold,
+                                      letterSpacing: 4)),
+                              pw.SizedBox(height: 8),
+                              pw.Row(children: [
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                  children: [
+                                    pw.Text('RÉFÉRENCE',
+                                        style: pw.TextStyle(
+                                          fontSize: 9,
+                                          color: PdfColors.grey600,
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        )),
+                                    pw.Text(
+                                      'ACH-${achat.id}',
+                                      style: pw.TextStyle(
+                                        fontSize: 15,
+                                        color: PdfColor.fromHex('#1A1E49'),
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                pw.SizedBox(width: 10),
+                                pw.Column(
+                                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                  children: [
+                                    pw.Text('DATE',
+                                        style: pw.TextStyle(
+                                          fontSize: 9,
+                                          color: PdfColors.grey600,
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        )),
+                                    pw.Text(
+                                      dateFormat.format(
+                                          achat.createdAt ?? DateTime.now()),
+                                      style: pw.TextStyle(
+                                        fontSize: 15,
+                                        color: PdfColor.fromHex('#1A1E49'),
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]),
+                            ],
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 24),
+
+                      // Informations du fournisseur (si demandé)
+                      if (includeSupplierInfo &&
+                          achat.items?.isNotEmpty == true &&
+                          achat.items?.first.supplierName != null)
+                        pw.Row(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Expanded(
+                              child: pw.Column(
+                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                children: [
+                                  pw.Text('FOURNISSEUR',
+                                      style: pw.TextStyle(
+                                          fontSize: 12,
+                                          color: PdfColor.fromHex('#1A1E49'),
+                                          fontWeight: pw.FontWeight.bold,
+                                          letterSpacing: 2)),
+                                  pw.Text(achat.items!.first.supplierName ?? '',
+                                      style: const pw.TextStyle(fontSize: 12)),
+                                  if (achat.items!.first.supplierPhone != null)
+                                    pw.Text(
+                                        'Tél: ${achat.items!.first.supplierPhone}',
+                                        style:
+                                            const pw.TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      pw.SizedBox(height: 24),
+
+                      // Liste des articles
+                      pw.Text("LISTE DES ARTICLES",
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColor.fromHex('#1A1E49'),
+                          )),
+                      pw.SizedBox(height: 8),
+                      pw.Container(
+                        color: PdfColor.fromHex('#1A1E49'),
+                        padding: const pw.EdgeInsets.symmetric(
+                            vertical: 6, horizontal: 12),
+                        child: pw.Row(
+                          children: [
+                            pw.Expanded(
+                                child: pw.Text('DÉSIGNATION',
+                                    style: pw.TextStyle(
+                                        color: PdfColors.white,
+                                        fontWeight: pw.FontWeight.bold))),
+                            pw.Container(
+                                width: 40,
+                                child: pw.Text('QTÉ',
+                                    style: pw.TextStyle(
+                                        color: PdfColors.white,
+                                        fontWeight: pw.FontWeight.bold))),
+                            pw.Container(
+                                width: 70,
+                                child: pw.Text('TAUX',
+                                    style: pw.TextStyle(
+                                        color: PdfColors.white,
+                                        fontWeight: pw.FontWeight.bold))),
+                            pw.Container(
+                                width: 100,
+                                child: pw.Text('PRIX UNIT.',
+                                    style: pw.TextStyle(
+                                        color: PdfColors.white,
+                                        fontWeight: pw.FontWeight.bold))),
+                            pw.Container(
+                                width: 100,
+                                child: pw.Text('TOTAL',
+                                    style: pw.TextStyle(
+                                        color: PdfColors.white,
+                                        fontWeight: pw.FontWeight.bold))),
+                          ],
+                        ),
+                      ),
+                      for (final item in (achat.items ?? []))
+                        pw.Container(
+                          color: PdfColors.grey200,
+                          padding: const pw.EdgeInsets.symmetric(
+                              vertical: 4, horizontal: 12),
+                          child: pw.Row(
+                            children: [
+                              pw.Expanded(
+                                  child: pw.Text(item.description ?? '',
+                                      style: const pw.TextStyle(fontSize: 12))),
+                              pw.Container(
+                                  width: 40,
+                                  child: pw.Text('${item.quantity ?? ''}',
+                                      style: const pw.TextStyle(fontSize: 12))),
+                              pw.Container(
+                                  width: 70,
+                                  child: pw.Text('${item.salesRate ?? ''}',
+                                      style: const pw.TextStyle(fontSize: 12))),
+                              pw.Container(
+                                  width: 100,
+                                  child: pw.Text(
+                                      currencyFormat
+                                          .format(item.unitPrice ?? 0),
+                                      style: const pw.TextStyle(fontSize: 12))),
+                              pw.Container(
+                                  width: 100,
+                                  child: pw.Text(
+                                      currencyFormat
+                                          .format(item.totalPrice ?? 0),
+                                      style: const pw.TextStyle(fontSize: 12))),
+                            ],
+                          ),
+                        ),
+                      pw.SizedBox(height: 12),
+
+                      // Total
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                  'MONTANT TOTAL : ${currencyFormat.format(montantTotal)}',
+                                  style: pw.TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: pw.FontWeight.bold)),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // Notes
+                      // if (achat.note != null && achat.note!.isNotEmpty) ...[
+                      //   pw.SizedBox(height: 24),
+                      //   pw.Container(
+                      //     padding: const pw.EdgeInsets.all(10),
+                      //     decoration: pw.BoxDecoration(
+                      //       border: pw.Border.all(color: PdfColor.fromHex('#1A1E49')),
+                      //       borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                      //     child: pw.Column(
+                      //       crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      //       children: [
+                      //         pw.Text('NOTES',
+                      //             style: pw.TextStyle(
+                      //                 fontSize: 12,
+                      //                 color: PdfColor.fromHex('#1A1E49'),
+                      //                 fontWeight: pw.FontWeight.bold,
+                      //                 letterSpacing: 2)),
+                      //         pw.Text(achat.note!,
+                      //             style: const pw.TextStyle(fontSize: 12)),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    return pdf.save();
+  }
 }
