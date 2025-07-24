@@ -57,6 +57,14 @@ class ContainerServices {
     bool isAvailable,
     int? userId,
     int? supplierId,
+    double? locationFee,
+    double? localCharge,
+    double? loadingFee,
+    double? overweightFee,
+    double? checkingFee,
+    double? telxFee,
+    double? otherFees,
+    double? margin,
   ) async {
     try {
       String url = '$baseUrl/containers/create?userId=$userId';
@@ -70,8 +78,20 @@ class ContainerServices {
           "reference": reference,
           "size": size,
           "isAvailable": isAvailable,
+          "locationFee": locationFee,
+          "localCharge": localCharge,
+          "loadingFee": loadingFee,
+          "overweightFee": overweightFee,
+          "checkingFee": checkingFee,
+          "telxFee": telxFee,
+          "otherFees": otherFees,
+          "margin": margin,
         }),
       );
+
+      print("-------------------------------------------");
+      print("Response=================" + response.body);
+      print("-------------------------------------------");
 
       if (response.statusCode == 201) {
         return "CREATED";
@@ -110,11 +130,22 @@ class ContainerServices {
     }
   }
 
-  Future<String?> startDelivery(int id, int? userId) async {
-    final url = Uri.parse("$baseUrl/containers/delivery/$id?userId=$userId");
+  Future<String?> startDelivery(int id, int? userId,
+      [DateTime? deliveryDate]) async {
+    String urlStr = "$baseUrl/containers/delivery/$id?userId=$userId";
+    if (deliveryDate != null) {
+      final formattedDate = deliveryDate.toIso8601String();
+      urlStr += "&deliveryDate=$formattedDate";
+    }
+    final url = Uri.parse(urlStr);
 
     try {
       final response = await http.get(url);
+
+      print("----------------------------------------");
+      print(response.body);
+      print(response.statusCode);
+      print("----------------------------------------");
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "SUCCESS";
@@ -128,9 +159,14 @@ class ContainerServices {
     }
   }
 
-  Future<String?> confirmReceiving(int id, int? userId) async {
-    final url =
-        Uri.parse("$baseUrl/containers/delivery-received/$id?userId=$userId");
+  Future<String?> confirmReceiving(int id, int? userId,
+      [DateTime? confirmDate]) async {
+    String urlStr = "$baseUrl/containers/delivery-received/$id?userId=$userId";
+    if (confirmDate != null) {
+      final formattedDate = confirmDate.toIso8601String();
+      urlStr += "&confirmDate=$formattedDate";
+    }
+    final url = Uri.parse(urlStr);
 
     try {
       final response = await http.get(url);

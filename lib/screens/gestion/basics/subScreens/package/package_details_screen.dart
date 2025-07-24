@@ -8,6 +8,7 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/add_items_to_package_modal.dart';
 
 class PackageDetailsScreen extends StatefulWidget {
   final Packages packages;
@@ -32,6 +33,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   bool _isLoadingItems = false;
   List<Items> _items = [];
   final ItemServices _itemServices = ItemServices();
+  DateTime? selectedDeliveryDate;
 
   @override
   void initState() {
@@ -258,6 +260,24 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    if (widget.packages.receivedDate != null)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Livrée le',
+                            style: TextStyle(
+                                color: Colors.grey[600], fontSize: 14),
+                          ),
+                          Text(
+                            DateFormat('dd/MM/yyyy')
+                                .format(widget.packages.receivedDate!),
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -280,12 +300,12 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 child: Column(
                   children: [
                     _buildInfoRow(
-                      'Pays de départ',
+                      'Port de départ',
                       widget.packages.startCountry ?? 'N/A',
                     ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Pays de destination',
+                      'Port d\'arrivée',
                       widget.packages.destinationCountry ?? 'N/A',
                     ),
                     const SizedBox(height: 12),
@@ -313,11 +333,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     _buildInfoRow(
                         'Client', widget.packages.clientName ?? 'N/A'),
                     const SizedBox(height: 12),
-                    _buildInfoRow(
-                      'Téléphone',
-                      widget.packages.clientPhone ?? 'N/A',
-                    ),
-                    const SizedBox(height: 12),
+                    if (widget.packages.clientPhone != null)
+                      _buildInfoRow(
+                        'Téléphone',
+                        widget.packages.clientPhone ?? 'N/A',
+                      ),
+                    if (widget.packages.clientPhone != null)
+                      const SizedBox(height: 12),
                     _buildInfoRow(
                       'Date de départ',
                       widget.packages.startDate != null
@@ -337,12 +359,88 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Articles dans le colis (${_items.length})',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1A1E49),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '(${_items.length}) Articles',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1A1E49),
+                          ),
                     ),
+                  ),
+                  if (widget.packages.status == Status.PENDING) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextButton.icon(
+                          onPressed: () async {
+                            final clientId = widget.packages.clientId;
+                            if (clientId == null) {
+                              showErrorTopSnackBar(
+                                  context, "Client inconnu pour ce colis");
+                              return;
+                            }
+                            // Récupérer les IDs des articles déjà dans le colis
+                            final alreadyInPackageIds =
+                                _items.map((e) => e.id!).toList();
+                            final result = await showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.white,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (context) {
+                                return SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.7,
+                                  child: AddItemsToPackageModal(
+                                    clientId: clientId,
+                                    alreadyInPackageIds: alreadyInPackageIds,
+                                    onValidate: (selectedItems) async {
+                                      final user =
+                                          await AuthService().getUserInfo();
+                                      if (user == null || user.id == null) {
+                                        showErrorTopSnackBar(context,
+                                            "Utilisateur non connecté");
+                                        return;
+                                      }
+                                      final result = await PackageServices()
+                                          .addItemsToPackage(
+                                        packageId: widget.packages.id!,
+                                        itemIds: selectedItems
+                                            .map((e) => e.id!)
+                                            .toList(),
+                                        userId: user.id,
+                                      );
+                                      if (result == "SUCCESS") {
+                                        await _loadItems();
+                                        Navigator.pop(context, true);
+                                        showSuccessTopSnackBar(context,
+                                            "Articles ajoutés au colis avec succès");
+                                      } else {
+                                        showErrorTopSnackBar(context, result);
+                                      }
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                            if (result == true) {
+                              showSuccessTopSnackBar(context,
+                                  "Articles ajoutés au colis avec succès");
+                            }
+                          },
+                          label: const Text("Ajouter des articles",
+                              overflow: TextOverflow.ellipsis),
+                          icon: const Icon(Icons.add)),
+                    )
+                  ],
+                ],
               ),
               const SizedBox(height: 12),
               // items lists section
@@ -527,7 +625,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             Navigator.pop(context);
                             showSuccessTopSnackBar(
                               context,
-                              "Le colis  24{widget.packages.ref} a été supprimer avec succès.",
+                              "Le colis 24{widget.packages.ref} a été supprimer avec succès.",
                             );
                           }
                         } else {
@@ -623,7 +721,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Expédition du colis  24{widget.packages.ref} démarrée avec succès.",
+                                  "Expédition du colis 24{widget.packages.ref} démarrée avec succès.",
                                 );
                               }
                             } else {
@@ -721,7 +819,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Colis  24{widget.packages.ref} arrivé avec succès.",
+                                  "Colis 24{widget.packages.ref} arrivé avec succès.",
                                 );
                               }
                             } else {
@@ -763,6 +861,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   }
 
   Future<void> _showReceivedConfirmationDialog(BuildContext context) async {
+    DateTime? tempSelectedDate = selectedDeliveryDate;
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -780,13 +880,55 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   const Text('Confirmation'),
                 ],
               ),
-              content: const Column(
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Êtes-vous sûr de vouloir confirmer la livraison de ce Colis ?',
                     style: TextStyle(fontSize: 16),
                   ),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    icon: const Icon(Icons.date_range),
+                    label: Text(
+                      tempSelectedDate != null
+                          ? 'Date de livraison : '
+                              '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
+                          : 'Choisir la date de livraison (optionnel)',
+                    ),
+                    onPressed: () async {
+                      final now = DateTime.now();
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: tempSelectedDate ?? now,
+                        firstDate: DateTime(now.year - 1),
+                        lastDate: DateTime(now.year + 2),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          tempSelectedDate = picked;
+                        });
+                      }
+                    },
+                  ),
+                  if (tempSelectedDate != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Date sélectionnée : '
+                        '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  if (tempSelectedDate == null)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
                 ],
               ),
               actions: [
@@ -803,9 +945,16 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       : () async {
                           setState(() => _isLoading = true);
                           try {
+                            final deliveryDate =
+                                tempSelectedDate ?? DateTime.now();
                             final expeditionServices = PackageServices();
-                            final result = await expeditionServices
-                                .receivedExpedition(widget.packages.id!);
+                            print("Date==========" + deliveryDate.toString());
+                            final user = await AuthService().getUserInfo();
+                            final result =
+                                await expeditionServices.receivedExpedition(
+                                    widget.packages.id!,
+                                    user!.id,
+                                    deliveryDate);
 
                             if (result == "SUCCESS") {
                               widget.packages.status = Status.DELIVERED;
@@ -819,7 +968,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Colis  24{widget.packages.ref} livrée avec succès.",
+                                  "Colis 24{widget.packages.ref} livrée avec succès.",
                                 );
                               }
                             } else {
@@ -892,7 +1041,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Navigator.pop(context, true);
                   showSuccessTopSnackBar(
                     context,
-                    "Colis  24{updatedExpedition.ref} mise à jour avec succès.",
+                    "Colis 24{updatedExpedition.ref} mise à jour avec succès.",
                   );
                 }
               } else {

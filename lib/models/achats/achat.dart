@@ -112,6 +112,7 @@ class Items {
   final int? packageId;
   final String? supplierPhone;
   final double? salesRate;
+  final String? invoiceNumber;
   Status? status;
 
   Items({
@@ -125,6 +126,7 @@ class Items {
     this.supplierPhone,
     this.packageId,
     this.salesRate,
+    this.invoiceNumber,
     this.status,
   });
 
@@ -139,6 +141,7 @@ class Items {
     String? supplierPhone,
     int? packageId,
     double? salesRate,
+    String? invoiceNumber,
     Status? status,
   }) {
     return Items(
@@ -152,6 +155,7 @@ class Items {
       supplierPhone: supplierPhone ?? this.supplierPhone,
       packageId: packageId ?? this.packageId,
       salesRate: salesRate ?? this.salesRate,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
     );
   }
@@ -168,6 +172,7 @@ class Items {
       'supplierPhone': supplierPhone,
       'packageId': packageId,
       'salesRate': salesRate,
+      'invoiceNumber': invoiceNumber,
       'status': status?.name,
     };
   }
@@ -202,6 +207,7 @@ class Items {
       salesRate: json['salesRate'] != null
           ? (json['salesRate'] as num).toDouble()
           : null,
+      invoiceNumber: json['invoiceNumber'] as String?,
       status: status,
     );
   }

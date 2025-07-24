@@ -43,10 +43,19 @@ class ContainerListItem extends StatelessWidget {
     }
   }
 
+  // Vérifie si tous les colis sont pour le même client
+  bool _allPackagesSameClient() {
+    if (container.packages == null || container.packages!.isEmpty) return true;
+    final firstClientId = container.packages!.first.clientId;
+    return container.packages!.every((p) => p.clientId == firstClientId);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: isTablet ? 12.0 : 8.0),
       child: Slidable(
         enabled: container.status != Status.INPROGRESS,
         endActionPane: ActionPane(
@@ -85,11 +94,11 @@ class ContainerListItem extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
+                blurRadius: isTablet ? 16 : 10,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -98,9 +107,9 @@ class ContainerListItem extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(isTablet ? 24.0 : 12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -108,24 +117,50 @@ class ContainerListItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            container.reference!,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1E49),
-                              letterSpacing: 0.2,
-                            ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(isTablet ? 8 : 4),
+                                decoration: BoxDecoration(
+                                  color: _allPackagesSameClient() ||
+                                          container.isTeam == true
+                                      ? Colors.blue[50]
+                                      : Colors.deepPurple[50],
+                                  borderRadius:
+                                      BorderRadius.circular(isTablet ? 16 : 10),
+                                ),
+                                child: Icon(
+                                  _allPackagesSameClient() ||
+                                          container.isTeam == true
+                                      ? Icons.person
+                                      : Icons.people,
+                                  size: isTablet ? 24 : 16,
+                                  color: Colors.deepPurple[800],
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 8 : 4),
+                              Text(
+                                container.reference!,
+                                style: TextStyle(
+                                  fontSize: isTablet ? 22 : 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF1A1E49),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 20 : 12,
+                            vertical: isTablet ? 12 : 5,
                           ),
                           decoration: BoxDecoration(
                             color: _getStatusColor().withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius:
+                                BorderRadius.circular(isTablet ? 28 : 20),
                             border: Border.all(
                               color: _getStatusColor().withOpacity(0.3),
                               width: 1,
@@ -135,20 +170,20 @@ class ContainerListItem extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 8,
-                                height: 8,
+                                width: isTablet ? 12 : 8,
+                                height: isTablet ? 12 : 8,
                                 decoration: BoxDecoration(
                                   color: _getStatusColor(),
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: isTablet ? 10 : 6),
                               Text(
                                 _getStatusText(),
                                 style: TextStyle(
                                   color: _getStatusColor(),
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: isTablet ? 16 : 12,
                                 ),
                               ),
                             ],
@@ -156,22 +191,24 @@ class ContainerListItem extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      spacing: 20,
+                    SizedBox(height: isTablet ? 12 : 6),
+                    Wrap(
+                      spacing: isTablet ? 32 : 16,
+                      runSpacing: isTablet ? 12 : 6,
                       children: [
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.inventory_2_outlined,
-                              size: 16,
+                              size: isTablet ? 24 : 16,
                               color: Colors.grey[600],
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: isTablet ? 8 : 4),
                             Text(
                               "${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} colis",
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: isTablet ? 18 : 14,
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -179,17 +216,18 @@ class ContainerListItem extends StatelessWidget {
                           ],
                         ),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.straighten,
-                              size: 16,
+                              size: isTablet ? 24 : 16,
                               color: Colors.grey[600],
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: isTablet ? 8 : 4),
                             Text(
                               "${container.size} pieds",
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: isTablet ? 18 : 14,
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -198,22 +236,22 @@ class ContainerListItem extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: isTablet ? 8 : 4),
                     Row(
                       children: [
                         Icon(
                           Icons.person_3,
-                          size: 16,
+                          size: isTablet ? 24 : 16,
                           color: Colors.grey[600],
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: isTablet ? 8 : 4),
                         Expanded(
                           child: Text(
                             container.supplier_id != null
                                 ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
                                 : 'BBD Limited',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: isTablet ? 18 : 14,
                               color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                             ),

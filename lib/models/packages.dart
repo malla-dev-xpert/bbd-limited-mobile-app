@@ -14,12 +14,15 @@ class Packages {
   final String? clientPhone;
   final DateTime? arrivalDate;
   final DateTime? startDate;
+  final DateTime? receivedDate;
   Status? status;
   final String? warehouseName;
   final String? warehouseAddress;
   final int? warehouseId;
   final int? containerId;
   final List<int>? itemIds;
+  final int? startHarborId;
+  final int? destinationHarborId;
 
   Packages copyWith({
     int? id,
@@ -35,12 +38,15 @@ class Packages {
     String? clientPhone,
     DateTime? arrivalDate,
     DateTime? startDate,
+    DateTime? receivedDate,
     Status? status,
     String? warehouseName,
     String? warehouseAddress,
     int? warehouseId,
     int? containerId,
     List<int>? itemIds,
+    int? startHarborId,
+    int? destinationHarborId,
   }) {
     return Packages(
       id: id ?? this.id,
@@ -55,6 +61,7 @@ class Packages {
       clientName: clientName ?? this.clientName,
       clientPhone: clientPhone ?? this.clientPhone,
       arrivalDate: arrivalDate ?? this.arrivalDate,
+      receivedDate: receivedDate ?? this.receivedDate,
       startDate: startDate ?? this.startDate,
       status: status ?? this.status,
       warehouseName: warehouseName ?? this.warehouseName,
@@ -62,6 +69,8 @@ class Packages {
       warehouseId: warehouseId ?? this.warehouseId,
       containerId: containerId ?? this.containerId,
       itemIds: itemIds ?? this.itemIds,
+      startHarborId: startHarborId ?? this.startHarborId,
+      destinationHarborId: destinationHarborId ?? this.destinationHarborId,
     );
   }
 
@@ -77,7 +86,8 @@ class Packages {
         'clientId': clientId,
         'clientName': clientName,
         'clientPhone': clientPhone,
-        'arrivalDate': arrivalDate?.toUtc().toIso8601String(),
+        'arrivalDate': arrivalDate?.toUtc().toIso8601String() ?? '',
+        'receivedDate': receivedDate?.toUtc().toIso8601String(),
         'startDate': startDate?.toUtc().toIso8601String(),
         'status': status?.name,
         'warehouseName': warehouseName,
@@ -85,6 +95,8 @@ class Packages {
         'warehouseId': warehouseId,
         'containerId': containerId,
         'itemIds': itemIds,
+        'startHarborId': startHarborId,
+        'destinationHarborId': destinationHarborId,
       };
 
   Packages({
@@ -101,12 +113,15 @@ class Packages {
     this.clientPhone,
     this.arrivalDate,
     this.startDate,
+    this.receivedDate,
     this.status,
     this.warehouseId,
     this.warehouseName,
     this.warehouseAddress,
     this.containerId,
     this.itemIds,
+    this.startHarborId,
+    this.destinationHarborId,
   });
 
   factory Packages.fromJson(Map<String, dynamic> json) {
@@ -142,6 +157,9 @@ class Packages {
       arrivalDate: json['arrivalDate'] != null
           ? DateTime.parse(json['arrivalDate'])
           : null,
+      receivedDate: json['receivedDate'] != null
+          ? DateTime.parse(json['receivedDate'])
+          : null,
       startDate:
           json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
       status: status,
@@ -150,6 +168,8 @@ class Packages {
       containerId: parseNullableInt(json['containerId']),
       warehouseId: parseNullableInt(json['warehouseId']),
       itemIds: json['itemIds'] as List<int>?,
+      startHarborId: parseNullableInt(json['startHarborId']),
+      destinationHarborId: parseNullableInt(json['destinationHarborId']),
     );
   }
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/packages.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/harbor_services.dart';
+import 'package:bbd_limited/models/harbor.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 
 class EditPackageBottomSheet extends StatefulWidget {
   final Packages packages;
@@ -32,14 +34,16 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
   late DateTime _startDate;
   late DateTime _arrivalDate;
   late String _expeditionType;
-  late String _startCountry;
-  late String _destinationCountry;
   final _formKey = GlobalKey<FormState>();
   int currentStep = 0;
   bool isLoading = false;
   final PartnerServices _partnerServices = PartnerServices();
   List<Partner> _clients = [];
   Partner? _selectedClient;
+  final HarborServices _harborServices = HarborServices();
+  List<Harbor> _harbors = [];
+  Harbor? _selectedDepartureHarbor;
+  Harbor? _selectedArrivalHarbor;
 
   late String? clientFullname =
       '${widget.packages.clientName ?? ''} | ${widget.packages.clientPhone ?? ''}';
@@ -67,9 +71,37 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
     _arrivalDate = widget.packages.arrivalDate ??
         DateTime.now().add(const Duration(days: 7));
     _expeditionType = (widget.packages.expeditionType ?? 'avion').toLowerCase();
-    _startCountry = widget.packages.startCountry ?? '';
-    _destinationCountry = widget.packages.destinationCountry ?? '';
     _loadClients();
+    _loadHarbors();
+    // Initialiser les ports sélectionnés à partir du colis si possible
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.packages.startHarborId != null) {
+        try {
+          setState(() {
+            _selectedDepartureHarbor = _harbors.firstWhere(
+              (h) => h.id == widget.packages.startHarborId,
+            );
+          });
+        } catch (_) {
+          setState(() {
+            _selectedDepartureHarbor = null;
+          });
+        }
+      }
+      if (widget.packages.destinationHarborId != null) {
+        try {
+          setState(() {
+            _selectedArrivalHarbor = _harbors.firstWhere(
+              (h) => h.id == widget.packages.destinationHarborId,
+            );
+          });
+        } catch (_) {
+          setState(() {
+            _selectedArrivalHarbor = null;
+          });
+        }
+      }
+    });
   }
 
   Future<void> _loadClients() async {
@@ -81,6 +113,20 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
         orElse: () => clients.first,
       );
     });
+  }
+
+  Future<void> _loadHarbors() async {
+    final harbors = await _harborServices.findAll(page: 0);
+    setState(() {
+      _harbors = harbors;
+    });
+  }
+
+  void _showCreateHarborModal() async {
+    final result = await showAddHarborModal(context);
+    if (result == true) {
+      await _loadHarbors();
+    }
   }
 
   @override
@@ -107,8 +153,10 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
       startDate: _startDate,
       arrivalDate: _arrivalDate,
       expeditionType: _expeditionType,
-      startCountry: _startCountry,
-      destinationCountry: _destinationCountry,
+      startCountry: _selectedDepartureHarbor?.name,
+      destinationCountry: _selectedArrivalHarbor?.name,
+      startHarborId: _selectedDepartureHarbor?.id,
+      destinationHarborId: _selectedArrivalHarbor?.id,
       clientName: _selectedClient?.firstName,
       clientPhone: _selectedClient?.phoneNumber,
     );
@@ -307,122 +355,62 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                         // Deuxième étape
                         ListView(
                           children: [
-                            // Pays de départ
-                            InkWell(
-                              onTap: () {
-                                showCountryPicker(
-                                  context: context,
-                                  showPhoneCode: true,
-                                  countryListTheme: CountryListThemeData(
-                                    flagSize: 25,
-                                    backgroundColor: Colors.white,
-                                    textStyle: const TextStyle(fontSize: 16),
-                                    bottomSheetHeight: 300,
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20),
-                                    ),
+                            // Port de départ
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: DropDownCustom<Harbor>(
+                                    items: _harbors,
+                                    selectedItem: _selectedDepartureHarbor,
+                                    onChanged: (harbor) {
+                                      setState(() {
+                                        _selectedDepartureHarbor = harbor;
+                                      });
+                                    },
+                                    itemToString: (harbor) => harbor.name ?? '',
+                                    hintText: 'Choisir un port de départ...',
+                                    prefixIcon: Icons.sailing,
                                   ),
-                                  onSelect: (Country country) {
-                                    setState(() {
-                                      _startCountry = country.name;
-                                    });
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(12),
-                                  color: Colors.white,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Pays de départ',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _startCountry.isNotEmpty
-                                              ? _startCountry
-                                              : 'Choisir un pays',
-                                        ),
-                                      ],
-                                    ),
-                                    const Icon(Icons.arrow_drop_down),
-                                  ],
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateHarborModal,
+                                    icon: const Icon(Icons.add),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                             const SizedBox(height: 20),
-                            // Pays d'arrivée
-                            InkWell(
-                              onTap: () {
-                                showCountryPicker(
-                                  context: context,
-                                  showPhoneCode: true,
-                                  countryListTheme: CountryListThemeData(
-                                    flagSize: 25,
-                                    backgroundColor: Colors.white,
-                                    textStyle: const TextStyle(fontSize: 16),
-                                    bottomSheetHeight: 300,
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20),
-                                    ),
+                            // Port d'arrivée
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: DropDownCustom<Harbor>(
+                                    items: _harbors,
+                                    selectedItem: _selectedArrivalHarbor,
+                                    hintText: "Choisir un port d'arrivée...",
+                                    onChanged: (harbor) {
+                                      setState(() {
+                                        _selectedArrivalHarbor = harbor;
+                                      });
+                                    },
+                                    itemToString: (harbor) => harbor.name ?? '',
+                                    prefixIcon: Icons.sailing,
                                   ),
-                                  onSelect: (Country country) {
-                                    setState(() {
-                                      _destinationCountry = country.name;
-                                    });
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(12),
-                                  color: Colors.white,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Pays d\'arrivée',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _destinationCountry.isNotEmpty
-                                              ? _destinationCountry
-                                              : 'Choisir un pays',
-                                        ),
-                                      ],
-                                    ),
-                                    const Icon(Icons.arrow_drop_down),
-                                  ],
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateHarborModal,
+                                    icon: const Icon(Icons.add),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                             const SizedBox(height: 20),
                             // Date de départ

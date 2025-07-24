@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_detail_modal.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_detail_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
@@ -55,13 +55,6 @@ class _ContainerScreen extends State<ContainerScreen> {
             (container.status != null && container.status == _selectedStatus);
         return matchesSearch && matchesStatus;
       }).toList();
-    });
-  }
-
-  void _onStatusChanged(Status? status) {
-    setState(() {
-      _selectedStatus = status;
-      _onSearchChanged();
     });
   }
 
@@ -331,26 +324,60 @@ class _ContainerScreen extends State<ContainerScreen> {
 
                                   return ContainerListItem(
                                     container: container,
-                                    onTap: () =>
-                                        showContainerDetailsBottomSheet(
-                                      context,
-                                      container,
-                                      onContainerUpdated: (updatedContainer) {
+                                    onTap: () async {
+                                      final updatedContainer =
+                                          await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ContainerDetailPage(
+                                            container: container,
+                                            onContainerUpdated: (updated) {
+                                              setState(() {
+                                                // Mettre à jour dans la liste filtrée
+                                                final idx = _filteredContainers
+                                                    .indexWhere((c) =>
+                                                        c.id == updated.id);
+                                                if (idx != -1) {
+                                                  _filteredContainers[idx] =
+                                                      updated;
+                                                }
+
+                                                // Mettre à jour dans la liste complète
+                                                final allIdx = _allContainers
+                                                    .indexWhere((c) =>
+                                                        c.id == updated.id);
+                                                if (allIdx != -1) {
+                                                  _allContainers[allIdx] =
+                                                      updated;
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                      if (updatedContainer != null) {
                                         setState(() {
-                                          final index = _filteredContainers
+                                          final idx = _filteredContainers
                                               .indexWhere((c) =>
                                                   c.id == updatedContainer.id);
-                                          if (index != -1) {
-                                            _filteredContainers[index] =
+                                          if (idx != -1) {
+                                            _filteredContainers[idx] =
+                                                updatedContainer;
+                                          }
+
+                                          final allIdx =
+                                              _allContainers.indexWhere((c) =>
+                                                  c.id == updatedContainer.id);
+                                          if (allIdx != -1) {
+                                            _allContainers[allIdx] =
                                                 updatedContainer;
                                           }
                                         });
-                                      },
-                                    ),
+                                      }
+                                    },
                                     onEdit: () => _showEditContainerModal(
-                                      context,
-                                      container,
-                                    ),
+                                        context, container),
                                     onDelete: () => _delete(container),
                                   );
                                 },

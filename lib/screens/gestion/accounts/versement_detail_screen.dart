@@ -18,6 +18,9 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/utils/versement_print_service.dart';
+import 'package:printing/printing.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -46,6 +49,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   final Set<String> _confirmedArticles = {};
   bool showOperationButtons = false;
   late List<Achat> _achats = [];
+  // Ajout d'une map pour stocker la recherche par achat
+  final Map<int, String> _searchQueries = {};
 
   @override
   void initState() {
@@ -116,172 +121,168 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  Widget _buildDetailItem(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: Color(0xFF1A1E49),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
+  // Ajout d'une fonction utilitaire pour calculer les totaux de factures
+  Map<String, int> _getFactureStats(Achat achat) {
+    // Map<numeroFacture, List<article>>
+    final Map<String, List<dynamic>> factureMap = {};
+    for (final item in (achat.items ?? [])) {
+      final facture = (item.invoiceNumber ?? '').trim();
+      if (facture.isEmpty) continue;
+      factureMap.putIfAbsent(facture, () => []).add(item);
+    }
+    int totalFactures = factureMap.length;
+    int totalFacturesPayees = factureMap.values
+        .where((articles) => articles.every((a) => a.status == Status.RECEIVED))
+        .length;
+    return {
+      'total': totalFactures,
+      'payees': totalFacturesPayees,
+    };
   }
 
-  Widget _buildArticleList() {
-    final allLignes = _achats.expand((a) => a.items ?? []).toList();
-    final filteredLignes = _searchQuery.isEmpty
-        ? allLignes
-        : allLignes.where((ligne) {
-            final description = (ligne.description ?? '').toLowerCase();
-            final itemId = ligne.id?.toString().toLowerCase() ?? '';
-            final searchLower = _searchQuery.toLowerCase();
-            return description.contains(searchLower) ||
-                itemId.contains(searchLower);
-          }).toList();
-
-    if (allLignes.isEmpty) {
+  Widget _buildAchatList() {
+    if (_achats.isEmpty) {
       return const Center(
-        child: Text("Pas d'articles achetés pour ce versement."),
+        child: Text("Aucun achat trouvé pour ce versement."),
       );
     }
-
-    if (filteredLignes.isEmpty) {
-      return const Center(
-        child: Text("Aucun article trouvé pour cette recherche."),
-      );
-    }
-
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: filteredLignes.length,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _achats.length,
       itemBuilder: (context, index) {
-        final ligne = filteredLignes[index];
-        Achat? achat;
-        for (var a in _achats) {
-          if (a.items?.contains(ligne) ?? false) {
-            achat = a;
-            break;
-          }
-        }
-
-        final isConfirmed = _confirmedArticles.contains(ligne.id?.toString());
-
+        final achat = _achats[index];
+        final factureStats = _getFactureStats(achat);
+        final achatId = achat.id ?? index;
+        final searchQuery = _searchQueries[achatId] ?? '';
+        final items = achat.items ?? [];
+        final filteredItems = searchQuery.isEmpty
+            ? items
+            : items.where((ligne) {
+                final desc = (ligne.description ?? '').toLowerCase();
+                final invoice = (ligne.invoiceNumber ?? '').toLowerCase();
+                final search = searchQuery.toLowerCase();
+                return desc.contains(search) || invoice.contains(search);
+              }).toList();
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.grey[50],
-            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(color: Colors.grey[200]!),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
+          child: Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Achat #${achat.id}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF1A1E49),
+                      ),
+                    ),
+                  ),
+                  if (achat.isDebt == true)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7F78AF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF7F78AF)),
+                      ),
                       child: Text(
-                        ligne.description ?? 'Article sans nom',
-                        style: const TextStyle(
+                        'Dette #${achat.id}',
+                        style: TextStyle(
+                          color: Color(0xFF7F78AF),
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      tooltip: 'Modifier',
-                      onPressed: () => _showEditArticleDialog(ligne),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      tooltip: 'Supprimer',
-                      onPressed: () => _confirmDeleteArticle(ligne),
-                    ),
-                    const SizedBox(width: 8),
-                    if (!isConfirmed && ligne.status != Status.RECEIVED)
-                      ElevatedButton.icon(
-                        onPressed: () =>
-                            _confirmArticle(ligne.id?.toString() ?? ''),
-                        icon: const Icon(Icons.check_circle_outline),
-                        label: Text(isLoading ? "Chargement..." : "Confirmer"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A1E49),
-                          foregroundColor: Colors.white,
-                        ),
-                      )
-                    else if (ligne.status == Status.RECEIVED)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Colors.green[700],
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Reçu',
-                              style: TextStyle(
-                                color: Colors.green[700],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                ],
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Montant: ' +
+                        currencyFormat.format(achat.montantTotal ?? 0),
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.receipt_long,
+                          size: 16, color: Color(0xFF7F78AF)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Factures: ${factureStats['payees']}/${factureStats['total']} payées',
+                        style: const TextStyle(
+                            fontSize: 13, color: Color(0xFF7F78AF)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher un article ou une facture...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide(
+                          color: Colors.grey[300]!,
                         ),
                       ),
-                  ],
-                ),
-                _buildDetailItem('Quantité', '${ligne.quantity}'),
-                const SizedBox(height: 4),
-                _buildDetailItem('Fournisseur', ligne.supplierName ?? 'N/A'),
-                if (ligne.supplierPhone != null) const SizedBox(height: 4),
-                if (ligne.supplierPhone != null)
-                  _buildDetailItem('Téléphone', ligne.supplierPhone ?? 'N/A'),
-                const SizedBox(height: 4),
-                _buildDetailItem('Taux d\'achat', ligne.salesRate.toString()),
-                const SizedBox(height: 4),
-                _buildDetailItem(
-                  'Prix Unitaire',
-                  currencyFormat.format(ligne.unitPrice ?? 0),
-                ),
-                const SizedBox(height: 4),
-                _buildDetailItem(
-                  'Total',
-                  currencyFormat.format(
-                    ligne.totalPrice ??
-                        (ligne.quantity ?? 0) * (ligne.unitPrice ?? 0),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide(
+                          color: Colors.grey[300]!,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF1A1E49),
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQueries[achatId] = value;
+                      });
+                    },
                   ),
                 ),
+                if (filteredItems.isNotEmpty)
+                  ...filteredItems
+                      .map((ligne) => _buildAchatArticleCard(ligne, achat))
+                      .toList()
+                else
+                  const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Text(
+                        "Aucun article pour cet achat ou cette recherche."),
+                  ),
               ],
             ),
           ),
@@ -290,58 +291,196 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  void _handlePurchase() async {
-    setState(() {
-      isLoading = true;
-    });
-    if (widget.versement.partnerId == null || widget.versement.id == null) {
-      showErrorTopSnackBar(
-        context,
-        "Informations du versement incomplètes",
-      );
-      return;
-    }
-
-    // Récupérer la devise complète si deviseId est disponible
-    Devise? devise;
-    if (widget.versement.deviseId != null) {
-      try {
-        final allDevises = await _deviseServices.findAllDevises(page: 0);
-        devise = allDevises.firstWhere(
-          (d) => d.id == widget.versement.deviseId,
-          orElse: () => Devise(
-            id: widget.versement.deviseId,
-            name: widget.versement.deviseCode ?? 'CNY',
-            code: widget.versement.deviseCode ?? 'CNY',
+  Widget _buildAchatArticleCard(dynamic ligne, Achat achat) {
+    final isConfirmed = _confirmedArticles.contains(ligne.id?.toString());
+    return Slidable(
+      key: Key('article_${ligne.id ?? ligne.hashCode}'),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (_) => _showEditArticleDialog(ligne),
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: 'Modifier',
           ),
-        );
-      } catch (e) {
-        // En cas d'erreur, créer une devise basique avec les informations disponibles
-        devise = Devise(
-          id: widget.versement.deviseId,
-          name: widget.versement.deviseCode ?? 'CNY',
-          code: widget.versement.deviseCode ?? 'CNY',
-        );
-      }
-    }
-
-    PurchaseDialog.show(
-      context,
-      (achat) {
-        setState(() {
-          _achats = List.from(_achats)..add(achat);
-        });
-        widget.onVersementUpdated?.call();
-      },
-      widget.versement.partnerId!,
-      widget.versement.id!,
-      widget.versement.reference ?? '',
-      devise: devise,
-      tauxChange: devise?.rate,
+          SlidableAction(
+            onPressed: (_) => _confirmDeleteArticle(ligne),
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Supprimer',
+            borderRadius:
+                const BorderRadius.horizontal(right: Radius.circular(16)),
+          ),
+        ],
+      ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.10),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              ligne.description ?? 'Article sans nom',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                                color: Color(0xFF1A1E49),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _InfoIconText(
+                            icon: Icons.numbers,
+                            label: 'Quantité',
+                            value: '${ligne.quantity ?? 0}',
+                          ),
+                          const SizedBox(width: 16),
+                          _InfoIconText(
+                            icon: Icons.attach_money,
+                            label: 'Prix unitaire',
+                            value: currencyFormat.format(ligne.unitPrice ?? 0),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _InfoIconText(
+                            icon: Icons.business_outlined,
+                            label: 'Fournisseur',
+                            value: ligne.supplierName ?? 'N/A',
+                          ),
+                          if (ligne.supplierPhone != null &&
+                              (ligne.supplierPhone as String).isNotEmpty) ...[
+                            const SizedBox(width: 16),
+                            _InfoIconText(
+                              icon: Icons.phone,
+                              label: 'Téléphone',
+                              value: ligne.supplierPhone ?? '',
+                            ),
+                          ],
+                          const SizedBox(width: 16),
+                          _InfoIconText(
+                            icon: Icons.percent,
+                            label: 'Taux achat',
+                            value: (ligne.salesRate?.toString() ?? ''),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _InfoIconText(
+                        icon: Icons.calculate,
+                        label: 'Total',
+                        value: currencyFormat.format(
+                          ligne.totalPrice ??
+                              (ligne.quantity ?? 0) * (ligne.unitPrice ?? 0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (!isConfirmed && ligne.status != Status.RECEIVED)
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.red[100],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.receipt_long,
+                                color: Colors.red, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              ligne.invoiceNumber ?? '',
+                              style: TextStyle(
+                                color: Colors.red[700],
+                                fontWeight: FontWeight.w500,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        onPressed: () =>
+                            _confirmArticle(ligne.id?.toString() ?? ''),
+                        icon: const Icon(Icons.check_circle_outline,
+                            color: Colors.white),
+                        label: Text(isLoading ? "Chargement..." : "Confirmer"),
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFF1A1E49),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (ligne.status == Status.RECEIVED)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.green[100],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.receipt_long,
+                            color: Colors.green, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          ligne.invoiceNumber ?? '',
+                          style: TextStyle(
+                            color: Colors.green[700],
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
-    setState(() {
-      isLoading = false;
-    });
   }
 
   Widget _buildNoteField(String? note) {
@@ -489,7 +628,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             });
           },
           title: const Text(
-            "La liste des articles achetés",
+            "Liste des achats",
             style: TextStyle(
               color: Color(0xFF1A1E49),
               fontWeight: FontWeight.w600,
@@ -499,52 +638,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Rechercher un article...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                        borderSide: BorderSide(
-                          color: Colors.grey[300]!,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                        borderSide: BorderSide(
-                          color: Colors.grey[300]!,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF1A1E49),
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.5,
-                    ),
-                    child: _buildArticleList(),
-                  ),
-                ],
-              ),
+              child: _buildAchatList(),
             ),
           ],
         ),
@@ -677,6 +771,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 );
               });
               widget.onVersementUpdated?.call();
+            } else if (result == "INSUFFICIENT_FUNDS") {
+              showErrorTopSnackBar(
+                  context, "Montant supérieur au montant restant du versement");
             }
           } catch (e) {
             Navigator.of(context).pop();
@@ -901,8 +998,24 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer cet article ?'),
-        content: const Text('Cette action est irréversible.'),
+        title: Row(
+          children: [
+            Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: const Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange)),
+            const SizedBox(width: 12),
+            const Text('Attention',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+            'Vous allez supprimer  l\'article "${ligne.description}" de votre liste d\'achats.\nCette action est irréversible.'),
+        backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1228,6 +1341,80 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
+  // Remettre la méthode _handlePurchase ici :
+  void _handlePurchase() async {
+    setState(() {
+      isLoading = true;
+    });
+    if (widget.versement.partnerId == null || widget.versement.id == null) {
+      showErrorTopSnackBar(
+        context,
+        "Informations du versement incomplètes",
+      );
+      return;
+    }
+
+    // Récupérer la devise complète si deviseId est disponible
+    Devise? devise;
+    if (widget.versement.deviseId != null) {
+      try {
+        final allDevises = await _deviseServices.findAllDevises(page: 0);
+        devise = allDevises.firstWhere(
+          (d) => d.id == widget.versement.deviseId,
+          orElse: () => Devise(
+            id: widget.versement.deviseId,
+            name: widget.versement.deviseCode ?? 'CNY',
+            code: widget.versement.deviseCode ?? 'CNY',
+          ),
+        );
+      } catch (e) {
+        // En cas d'erreur, créer une devise basique avec les informations disponibles
+        devise = Devise(
+          id: widget.versement.deviseId,
+          name: widget.versement.deviseCode ?? 'CNY',
+          code: widget.versement.deviseCode ?? 'CNY',
+        );
+      }
+    }
+
+    PurchaseDialog.show(
+      context,
+      (achat) {
+        setState(() {
+          _achats = List.from(_achats)..add(achat);
+        });
+        widget.onVersementUpdated?.call();
+      },
+      widget.versement.partnerId!,
+      widget.versement.id!,
+      widget.versement.reference ?? '',
+      devise: devise,
+      tauxChange: devise?.rate,
+    );
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _showPdfPreviewDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: PdfPreview(
+            build: (format) => VersementPrintService.buildVersementPdfBytes(
+                widget.versement,
+                _achats,
+                widget.versement.cashWithdrawalDtoList ?? []),
+            pdfFileName: 'recu_${widget.versement.reference ?? ""}.pdf',
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1243,6 +1430,17 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          TextButton.icon(
+            onPressed: () => _showPdfPreviewDialog(context),
+            icon: const Icon(
+              Icons.print,
+              color: Colors.white,
+            ),
+            label:
+                const Text('Imprimer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -1345,6 +1543,34 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Widget utilitaire pour afficher une info avec icône
+class _InfoIconText extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  const _InfoIconText(
+      {required this.icon, required this.label, required this.value, Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: Colors.grey[600]),
+        const SizedBox(width: 3),
+        Text('$label: ',
+            style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+        Text(value,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: Color(0xFF1A1E49))),
+      ],
     );
   }
 }

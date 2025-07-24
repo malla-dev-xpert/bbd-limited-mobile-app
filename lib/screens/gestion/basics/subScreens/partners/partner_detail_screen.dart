@@ -64,8 +64,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     try {
       final achats = await AchatServices().findAll();
       final filteredDebts = achats
-          .where(
-              (a) => a.isDebt == true && a.clientPhone == _partner.phoneNumber)
+          .where((a) =>
+              a.isDebt == true &&
+              ((a.clientPhone != null &&
+                      a.clientPhone == _partner.phoneNumber) ||
+                  (a.clientId != null && a.clientId == _partner.id)))
           .toList();
 
       setState(() {
@@ -813,7 +816,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          achat.client ?? "N/A",
+                          (achat.client != null && achat.client!.isNotEmpty)
+                              ? achat.client!
+                              : (achat.isDebt == true && achat.clientId != null)
+                                  ? 'Client #${achat.clientId}'
+                                  : "N/A",
                           style: TextStyle(
                             color: Colors.grey[700]!,
                           ),

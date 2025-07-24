@@ -5,6 +5,8 @@ import 'package:bbd_limited/components/basic/report/report_card_list.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import '../../../models/user.dart';
+import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,11 +18,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   User? _user;
+  final ContainerServices _containerServices = ContainerServices();
+  int _expeditionsEnCours = 0;
+  int _totalColisEnTransit = 0;
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadExpeditionsStats();
   }
 
   Future<void> _loadUserInfo() async {
@@ -32,10 +38,55 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _loadExpeditionsStats() async {
+    setState(() {
+      _expeditionsEnCours = 0;
+      _totalColisEnTransit = 0;
+    });
+    try {
+      final containers = await _containerServices.findAll(page: 0);
+      final inProgressContainers =
+          containers.where((c) => c.status == Status.INPROGRESS).toList();
+      int totalPackages = 0;
+      for (final container in inProgressContainers) {
+        totalPackages += container.packages?.length ?? 0;
+      }
+      if (mounted) {
+        setState(() {
+          _expeditionsEnCours = inProgressContainers.length;
+          _totalColisEnTransit = totalPackages;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _expeditionsEnCours = 0;
+          _totalColisEnTransit = 0;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final bool isTablet = width > 800;
+    final List<ReportCardData> dynamicReportCardDataList = [
+      ReportCardData(
+        title: 'Expéditions en cours',
+        value: _expeditionsEnCours.toString(),
+        backgroundColor: Colors.blue[800]!,
+        textColor: Colors.white,
+        icon: Icons.local_shipping,
+      ),
+      ReportCardData(
+        title: 'Colis en transit',
+        value: _totalColisEnTransit.toString(),
+        backgroundColor: Colors.orange[800]!,
+        textColor: Colors.white,
+        icon: Icons.inventory_2_rounded,
+      ),
+    ];
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -105,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
-                        children: reportCardDataList.map((data) {
+                        children: dynamicReportCardDataList.map((data) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 3.0,
