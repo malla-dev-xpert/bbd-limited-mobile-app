@@ -1357,6 +1357,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
 
   void _handlePrintAchat(Achat achat) {
     bool includeSupplierInfo = false;
+    bool isProforma = false; // Nouvelle variable d'état
     bool isLoading = false;
 
     showDialog(
@@ -1369,33 +1370,79 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               backgroundColor: Colors.white,
               content: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CheckboxListTile(
-                          title: const Text(
-                              "Inclure les informations du fournisseur"),
-                          value: includeSupplierInfo,
-                          onChanged: (value) {
-                            setState(() {
-                              includeSupplierInfo = value ?? false;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: MediaQuery.of(context).size.height * 0.7,
-                          child: PdfPreview(
-                            build: (format) =>
-                                VersementPrintService.buildAchatPdfBytes(
-                              achat,
-                              includeSupplierInfo: includeSupplierInfo,
-                              currencyFormat: currencyFormat,
+                  : SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Section type de document
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: const Text("Type de document:"),
+                          ),
+                          Row(
+                            children: [
+                              Radio<bool>(
+                                value: false,
+                                groupValue: isProforma,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isProforma = false;
+                                    if (value != null)
+                                      includeSupplierInfo = value;
+                                  });
+                                },
+                              ),
+                              const Text('Facture réel'),
+                              const SizedBox(width: 20),
+                              Radio<bool>(
+                                value: true,
+                                groupValue: isProforma,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isProforma = true;
+                                    includeSupplierInfo =
+                                        false; // Désactive les infos fournisseur en pro-forma
+                                  });
+                                },
+                              ),
+                              const Text('Pro-forma'),
+                            ],
+                          ),
+
+                          // Option fournisseur (seulement pour facture standard)
+                          if (!isProforma) ...[
+                            const SizedBox(height: 16),
+                            CheckboxListTile(
+                              title: const Text(
+                                  "Inclure les informations du fournisseur"),
+                              value: includeSupplierInfo,
+                              onChanged: (value) {
+                                setState(() {
+                                  includeSupplierInfo = value ?? false;
+                                });
+                              },
+                            ),
+                          ],
+
+                          // Aperçu PDF
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: PdfPreview(
+                              build: (format) =>
+                                  VersementPrintService.buildAchatPdfBytes(
+                                achat,
+                                includeSupplierInfo:
+                                    includeSupplierInfo && !isProforma,
+                                currencyFormat: currencyFormat,
+                                isProforma: isProforma,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
               actions: isLoading
                   ? []
@@ -1411,8 +1458,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                             final pdfBytes =
                                 await VersementPrintService.buildAchatPdfBytes(
                               achat,
-                              includeSupplierInfo: includeSupplierInfo,
+                              includeSupplierInfo:
+                                  includeSupplierInfo && !isProforma,
                               currencyFormat: currencyFormat,
+                              isProforma: isProforma,
                             );
                             await Printing.layoutPdf(
                               onLayout: (format) => pdfBytes,

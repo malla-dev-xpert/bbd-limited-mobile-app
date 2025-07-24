@@ -402,12 +402,16 @@ class VersementPrintService {
     Achat achat, {
     required bool includeSupplierInfo,
     required NumberFormat currencyFormat,
+    bool isProforma = false,
   }) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('dd/MM/yyyy');
     final Uint8List logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+
+    final primaryColor =
+        isProforma ? PdfColor.fromHex('#6c757d') : PdfColor.fromHex('#1A1E49');
 
     // Calcul du montant total
     double montantTotal =
@@ -423,7 +427,9 @@ class VersementPrintService {
               pw.Container(
                 width: 20,
                 height: 800,
-                color: PdfColor.fromHex('#1A1E49'),
+                color: isProforma
+                    ? PdfColors.grey400
+                    : PdfColor.fromHex('#1A1E49'),
               ),
               pw.SizedBox(width: 10),
               pw.Expanded(
@@ -441,7 +447,8 @@ class VersementPrintService {
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.end,
                             children: [
-                              pw.Text('FACTURE D\'ACHAT',
+                              pw.Text(
+                                  isProforma ? 'PRO-FORMA' : 'FACTURE D\'ACHAT',
                                   style: pw.TextStyle(
                                       fontSize: 32,
                                       color: PdfColor.fromHex('#1A1E49'),
@@ -538,7 +545,9 @@ class VersementPrintService {
                           )),
                       pw.SizedBox(height: 8),
                       pw.Container(
-                        color: PdfColor.fromHex('#1A1E49'),
+                        color: isProforma
+                            ? PdfColors.grey100
+                            : PdfColor.fromHex('#1A1E49'),
                         padding: const pw.EdgeInsets.symmetric(
                             vertical: 6, horizontal: 12),
                         child: pw.Row(
@@ -546,31 +555,41 @@ class VersementPrintService {
                             pw.Expanded(
                                 child: pw.Text('DÉSIGNATION',
                                     style: pw.TextStyle(
-                                        color: PdfColors.white,
+                                        color: isProforma
+                                            ? PdfColors.grey500
+                                            : PdfColors.white,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 40,
                                 child: pw.Text('QTÉ',
                                     style: pw.TextStyle(
-                                        color: PdfColors.white,
+                                        color: isProforma
+                                            ? PdfColors.grey500
+                                            : PdfColors.white,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 70,
                                 child: pw.Text('TAUX',
                                     style: pw.TextStyle(
-                                        color: PdfColors.white,
+                                        color: isProforma
+                                            ? PdfColors.grey500
+                                            : PdfColors.white,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 100,
                                 child: pw.Text('PRIX UNIT.',
                                     style: pw.TextStyle(
-                                        color: PdfColors.white,
+                                        color: isProforma
+                                            ? PdfColors.grey500
+                                            : PdfColors.white,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 100,
                                 child: pw.Text('TOTAL',
                                     style: pw.TextStyle(
-                                        color: PdfColors.white,
+                                        color: isProforma
+                                            ? PdfColors.grey500
+                                            : PdfColors.white,
                                         fontWeight: pw.FontWeight.bold))),
                           ],
                         ),
