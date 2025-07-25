@@ -308,6 +308,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         padding: const EdgeInsets.all(16),
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
@@ -1392,7 +1393,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       context: context,
       builder: (context) => Dialog(
         child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
+          width: MediaQuery.of(context).size.width * 0.9,
           height: MediaQuery.of(context).size.height * 0.8,
           child: PdfPreview(
             build: (format) => VersementPrintService.buildVersementPdfBytes(
@@ -1457,7 +1458,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                   });
                                 },
                               ),
-                              const Text('Pro-forma'),
+                              const Expanded(child: Text('Pro-forma')),
                             ],
                           ),
 
@@ -1479,7 +1480,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                           // Aperçu PDF
                           const SizedBox(height: 20),
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.8,
+                            width: MediaQuery.of(context).size.width * 0.9,
                             height: MediaQuery.of(context).size.height * 0.6,
                             child: PdfPreview(
                               build: (format) =>

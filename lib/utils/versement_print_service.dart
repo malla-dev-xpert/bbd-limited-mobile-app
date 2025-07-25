@@ -410,9 +410,6 @@ class VersementPrintService {
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
 
-    final primaryColor =
-        isProforma ? PdfColor.fromHex('#6c757d') : PdfColor.fromHex('#1A1E49');
-
     // Calcul du montant total
     double montantTotal =
         achat.items?.fold(0, (sum, item) => sum! + (item.totalPrice ?? 0)) ?? 0;
@@ -505,37 +502,6 @@ class VersementPrintService {
                       ),
                       pw.SizedBox(height: 24),
 
-                      // Informations du fournisseur (si demandé)
-                      if (includeSupplierInfo &&
-                          achat.items?.isNotEmpty == true &&
-                          achat.items?.first.supplierName != null)
-                        pw.Row(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Expanded(
-                              child: pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text('FOURNISSEUR',
-                                      style: pw.TextStyle(
-                                          fontSize: 12,
-                                          color: PdfColor.fromHex('#1A1E49'),
-                                          fontWeight: pw.FontWeight.bold,
-                                          letterSpacing: 2)),
-                                  pw.Text(achat.items!.first.supplierName ?? '',
-                                      style: const pw.TextStyle(fontSize: 12)),
-                                  if (achat.items!.first.supplierPhone != null)
-                                    pw.Text(
-                                        'Tél: ${achat.items!.first.supplierPhone}',
-                                        style:
-                                            const pw.TextStyle(fontSize: 12)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      pw.SizedBox(height: 24),
-
                       // Liste des articles
                       pw.Text("LISTE DES ARTICLES",
                           style: pw.TextStyle(
@@ -558,7 +524,20 @@ class VersementPrintService {
                                         color: isProforma
                                             ? PdfColors.grey500
                                             : PdfColors.white,
+                                        fontSize: 8,
                                         fontWeight: pw.FontWeight.bold))),
+                            if (includeSupplierInfo &&
+                                achat.items?.isNotEmpty == true &&
+                                achat.items?.first.supplierName != null)
+                              pw.Container(
+                                  width: 100,
+                                  child: pw.Text('FOURNISSEUR',
+                                      style: pw.TextStyle(
+                                          color: isProforma
+                                              ? PdfColors.grey500
+                                              : PdfColors.white,
+                                          fontSize: 8,
+                                          fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 40,
                                 child: pw.Text('QTÉ',
@@ -566,6 +545,7 @@ class VersementPrintService {
                                         color: isProforma
                                             ? PdfColors.grey500
                                             : PdfColors.white,
+                                        fontSize: 8,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 70,
@@ -574,6 +554,7 @@ class VersementPrintService {
                                         color: isProforma
                                             ? PdfColors.grey500
                                             : PdfColors.white,
+                                        fontSize: 8,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 100,
@@ -582,6 +563,7 @@ class VersementPrintService {
                                         color: isProforma
                                             ? PdfColors.grey500
                                             : PdfColors.white,
+                                        fontSize: 8,
                                         fontWeight: pw.FontWeight.bold))),
                             pw.Container(
                                 width: 100,
@@ -590,6 +572,7 @@ class VersementPrintService {
                                         color: isProforma
                                             ? PdfColors.grey500
                                             : PdfColors.white,
+                                        fontSize: 8,
                                         fontWeight: pw.FontWeight.bold))),
                           ],
                         ),
@@ -604,6 +587,14 @@ class VersementPrintService {
                               pw.Expanded(
                                   child: pw.Text(item.description ?? '',
                                       style: const pw.TextStyle(fontSize: 12))),
+                              if (includeSupplierInfo &&
+                                  achat.items?.isNotEmpty == true &&
+                                  item?.supplierName != null)
+                                pw.Container(
+                                  width: 100,
+                                  child: pw.Text(item!.supplierName ?? '',
+                                      style: const pw.TextStyle(fontSize: 12)),
+                                ),
                               pw.Container(
                                   width: 40,
                                   child: pw.Text('${item.quantity ?? ''}',
