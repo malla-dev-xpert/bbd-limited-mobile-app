@@ -26,8 +26,6 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -502,7 +500,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             child: TextButton.icon(
               onPressed: () => _confirmArticle(ligne.id?.toString() ?? ''),
               icon: const Icon(Icons.check_circle_outline, color: Colors.white),
-              label: Text(isLoading ? "Chargement..." : "Confirmer"),
+              label: Text(isLoading ? "Chargement..." : "Confirmer",
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFF1A1E49),
                 foregroundColor: Colors.white,

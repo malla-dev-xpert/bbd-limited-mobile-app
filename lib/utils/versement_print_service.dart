@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:bbd_limited/core/enums/status.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -410,9 +411,17 @@ class VersementPrintService {
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
 
-    // Calcul du montant total
+    // Filtrer les items selon le type de document
+    final filteredItems = isProforma
+        ? achat.items // Pour pro-forma, on prend tous les items
+        : achat.items
+            ?.where((item) => item.status == Status.RECEIVED)
+            .toList(); // Pour facture réelle, seulement les reçus
+
+    // Calcul du montant total sur les items filtrés
     double montantTotal =
-        achat.items?.fold(0, (sum, item) => sum! + (item.totalPrice ?? 0)) ?? 0;
+        filteredItems?.fold(0, (sum, item) => sum! + (item.totalPrice ?? 0)) ??
+            0;
 
     pdf.addPage(
       pw.MultiPage(
@@ -526,9 +535,19 @@ class VersementPrintService {
                                             : PdfColors.white,
                                         fontSize: 8,
                                         fontWeight: pw.FontWeight.bold))),
+                            if (isProforma) // Colonne statut seulement pour pro-forma
+                              pw.Container(
+                                  width: 60,
+                                  child: pw.Text('STATUT',
+                                      style: pw.TextStyle(
+                                          color: isProforma
+                                              ? PdfColors.grey500
+                                              : PdfColors.white,
+                                          fontSize: 8,
+                                          fontWeight: pw.FontWeight.bold))),
                             if (includeSupplierInfo &&
-                                achat.items?.isNotEmpty == true &&
-                                achat.items?.first.supplierName != null)
+                                filteredItems?.isNotEmpty == true &&
+                                filteredItems?.first.supplierName != null)
                               pw.Container(
                                   width: 100,
                                   child: pw.Text('FOURNISSEUR',
@@ -577,7 +596,7 @@ class VersementPrintService {
                           ],
                         ),
                       ),
-                      for (final item in (achat.items ?? []))
+                      for (final item in (filteredItems ?? []))
                         pw.Container(
                           color: PdfColors.grey200,
                           padding: const pw.EdgeInsets.symmetric(
@@ -587,12 +606,28 @@ class VersementPrintService {
                               pw.Expanded(
                                   child: pw.Text(item.description ?? '',
                                       style: const pw.TextStyle(fontSize: 12))),
+                              if (isProforma) // Colonne statut seulement pour pro-forma
+                                pw.Container(
+                                  width: 60,
+                                  child: pw.Text(
+                                    item.status == Status.RECEIVED
+                                        ? 'REÇU'
+                                        : 'EN ATTENTE',
+                                    style: pw.TextStyle(
+                                      fontSize: 10,
+                                      color: item.status == Status.RECEIVED
+                                          ? PdfColors.green
+                                          : PdfColors.orange,
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               if (includeSupplierInfo &&
-                                  achat.items?.isNotEmpty == true &&
-                                  item?.supplierName != null)
+                                  filteredItems?.isNotEmpty == true &&
+                                  item.supplierName != null)
                                 pw.Container(
                                   width: 100,
-                                  child: pw.Text(item!.supplierName ?? '',
+                                  child: pw.Text(item.supplierName ?? '',
                                       style: const pw.TextStyle(fontSize: 12)),
                                 ),
                               pw.Container(
@@ -632,6 +667,14 @@ class VersementPrintService {
                                   style: pw.TextStyle(
                                       fontSize: 14,
                                       fontWeight: pw.FontWeight.bold)),
+                              if (isProforma) // Note seulement pour pro-forma
+                                pw.SizedBox(height: 8),
+                              if (isProforma)
+                                pw.Text(
+                                    '* Montant estimé - sujet à modification',
+                                    style: pw.TextStyle(
+                                        fontSize: 10,
+                                        color: PdfColors.grey600)),
                             ],
                           ),
                         ],
