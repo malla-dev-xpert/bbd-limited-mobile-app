@@ -549,7 +549,7 @@ class VersementPrintService {
                                 filteredItems?.isNotEmpty == true &&
                                 filteredItems?.first.supplierName != null)
                               pw.Container(
-                                  width: 100,
+                                  width: 80,
                                   child: pw.Text('FOURNISSEUR',
                                       style: pw.TextStyle(
                                           color: isProforma
@@ -626,7 +626,7 @@ class VersementPrintService {
                                   filteredItems?.isNotEmpty == true &&
                                   item.supplierName != null)
                                 pw.Container(
-                                  width: 100,
+                                  width: 80,
                                   child: pw.Text(item.supplierName ?? '',
                                       style: const pw.TextStyle(fontSize: 12)),
                                 ),
