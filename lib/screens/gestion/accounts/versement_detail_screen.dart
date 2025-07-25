@@ -254,6 +254,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                         onPressed: () => _handlePrintAchat(achat),
                         icon: const Icon(Icons.print),
                         label: Text('Imprimer',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 color: Colors.grey[700], fontSize: 13)),
                       ),
@@ -304,7 +306,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         ],
       ),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -344,7 +346,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     ],
                   );
                 } else {
-                  // Desktop layout - horizontal row
+                  // Tablet layout - horizontal row
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
