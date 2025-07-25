@@ -321,153 +321,198 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
+            // Article Header Row - Fixed to use Flexible widgets
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 600) {
+                  // Mobile layout - vertical stack
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              ligne.description ?? 'Article sans nom',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Color(0xFF1A1E49),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          InfoIconText(
-                            icon: Icons.numbers,
-                            label: 'Quantité',
-                            value: '${ligne.quantity ?? 0}',
-                          ),
-                          const SizedBox(width: 16),
-                          InfoIconText(
-                            icon: Icons.attach_money,
-                            label: 'Prix unitaire',
-                            value: currencyFormat.format(ligne.unitPrice ?? 0),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          InfoIconText(
-                            icon: Icons.business_outlined,
-                            label: 'Fournisseur',
-                            value: ligne.supplierName ?? 'N/A',
-                          ),
-                          if (ligne.supplierPhone != null &&
-                              (ligne.supplierPhone as String).isNotEmpty) ...[
-                            const SizedBox(width: 16),
-                            InfoIconText(
-                              icon: Icons.phone,
-                              label: 'Téléphone',
-                              value: ligne.supplierPhone ?? '',
-                            ),
-                          ],
-                          const SizedBox(width: 16),
-                          InfoIconText(
-                            icon: Icons.percent,
-                            label: 'Taux achat',
-                            value: (ligne.salesRate?.toString() ?? ''),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      InfoIconText(
-                        icon: Icons.calculate,
-                        label: 'Total',
-                        value: currencyFormat.format(
-                          ligne.totalPrice ??
-                              (ligne.quantity ?? 0) * (ligne.unitPrice ?? 0),
+                      Text(
+                        ligne.description ?? 'Article sans nom',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF1A1E49),
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 8),
+                      _buildStatusWidget(ligne, isConfirmed),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (!isConfirmed && ligne.status != Status.RECEIVED)
-                  Row(
+                  );
+                } else {
+                  // Desktop layout - horizontal row
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.red[100],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.receipt_long,
-                                color: Colors.red, size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              ligne.invoiceNumber ?? '',
-                              style: TextStyle(
-                                color: Colors.red[700],
-                                fontWeight: FontWeight.w500,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          ligne.description ?? 'Article sans nom',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Color(0xFF1A1E49),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      TextButton.icon(
-                        onPressed: () =>
-                            _confirmArticle(ligne.id?.toString() ?? ''),
-                        icon: const Icon(Icons.check_circle_outline,
-                            color: Colors.white),
-                        label: Text(isLoading ? "Chargement..." : "Confirmer"),
-                        style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A1E49),
-                          foregroundColor: Colors.white,
-                        ),
+                      Expanded(
+                        flex: 1,
+                        child: _buildStatusWidget(ligne, isConfirmed),
                       ),
                     ],
-                  ),
-                if (ligne.status == Status.RECEIVED)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.receipt_long,
-                            color: Colors.green, size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          ligne.invoiceNumber ?? '',
-                          style: TextStyle(
-                            color: Colors.green[700],
-                            fontWeight: FontWeight.w500,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            // Article Details - Quantity and Price
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                InfoIconText(
+                  icon: Icons.numbers,
+                  label: 'Quantité',
+                  value: '${ligne.quantity ?? 0}',
+                ),
+                InfoIconText(
+                  icon: Icons.attach_money,
+                  label: 'Prix unitaire',
+                  value: currencyFormat.format(ligne.unitPrice ?? 0),
+                ),
               ],
+            ),
+            const SizedBox(height: 8),
+
+            // Supplier Information
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                InfoIconText(
+                  icon: Icons.business_outlined,
+                  label: 'Fournisseur',
+                  value: ligne.supplierName ?? 'N/A',
+                ),
+                if (ligne.supplierPhone != null &&
+                    (ligne.supplierPhone as String).isNotEmpty)
+                  InfoIconText(
+                    icon: Icons.phone,
+                    label: 'Téléphone',
+                    value: ligne.supplierPhone ?? '',
+                  ),
+                InfoIconText(
+                  icon: Icons.percent,
+                  label: 'Taux achat',
+                  value: (ligne.salesRate?.toString() ?? ''),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Total Price
+            InfoIconText(
+              icon: Icons.calculate,
+              label: 'Total',
+              value: currencyFormat.format(
+                ligne.totalPrice ??
+                    (ligne.quantity ?? 0) * (ligne.unitPrice ?? 0),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+// Widget pour l’affichage du statut
+  Widget _buildStatusWidget(dynamic ligne, bool isConfirmed) {
+    if (ligne.status == Status.RECEIVED) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.green[100],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.receipt_long, color: Colors.green, size: 14),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                ligne.invoiceNumber ?? '',
+                style: TextStyle(
+                  color: Colors.green[700],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!isConfirmed && ligne.status != Status.RECEIVED) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.red[100],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.receipt_long, color: Colors.red, size: 14),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      ligne.invoiceNumber ?? '',
+                      style: TextStyle(
+                        color: Colors.red[700],
+                        fontWeight: FontWeight.w500,
+                        fontSize: 11,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: TextButton.icon(
+              onPressed: () => _confirmArticle(ligne.id?.toString() ?? ''),
+              icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+              label: Text(isLoading ? "Chargement..." : "Confirmer"),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF1A1E49),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildCollapsibleInfo() {
@@ -1357,42 +1402,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _shareAchatPdf(
-      Achat achat, bool isProforma, bool includeSupplierInfo) async {
-    try {
-      // Générer le PDF
-      final pdfBytes = await VersementPrintService.buildAchatPdfBytes(
-        achat,
-        includeSupplierInfo: includeSupplierInfo && !isProforma,
-        currencyFormat: currencyFormat,
-        isProforma: isProforma,
-      );
-
-      // Créer un nom de fichier approprié
-      final fileName = isProforma
-          ? 'facture_pro_forma_ach${achat.id}.pdf'
-          : 'facture_ach${achat.id}.pdf';
-
-      // Créer un fichier temporaire
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/$fileName');
-      await tempFile.writeAsBytes(pdfBytes);
-
-      // Partager le fichier avec la nouvelle API
-      await Share.shareXFiles(
-        [XFile(tempFile.path)],
-        text: isProforma
-            ? 'Facture pro-forma Achat #${achat.id}'
-            : 'Facture Achat #${achat.id}',
-        subject: isProforma
-            ? 'Facture pro-forma Achat #${achat.id}'
-            : 'Facture Achat #${achat.id}',
-      );
-    } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors du partage: $e");
-    }
   }
 
   void _handlePrintAchat(Achat achat) {
