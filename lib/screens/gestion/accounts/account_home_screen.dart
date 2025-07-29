@@ -341,9 +341,12 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   }
 
   Widget _buildDateFilter() {
+    final isTablet =
+        MediaQuery.of(context).size.width > 600; // Seuil pour tablette
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      height: _showDateFilter ? 180 : 0,
+      height: _showDateFilter ? (isTablet ? 180 : 260) : 0,
       padding: _showDateFilter ? const EdgeInsets.all(16) : EdgeInsets.zero,
       margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
@@ -352,71 +355,79 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         border: Border.all(color: Colors.grey[300]!),
       ),
       curve: Curves.easeInOut,
-      child: OverflowBox(
-        maxHeight: 180, // Hauteur maximale
-        alignment: Alignment.topCenter,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _showDateFilter
-              ? SingleChildScrollView(
-                  // Ajout du défilement si nécessaire
-                  physics: const ClampingScrollPhysics(),
-                  child: Column(
-                    key: const ValueKey('date-filter-visible'),
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: _showDateFilter
+            ? SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  key: const ValueKey('date-filter-visible'),
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          'Filtrer par date',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1E49),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Colors.red[600]),
+                          onPressed: _clearDateFilter,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Affichage adaptatif
+                    if (isTablet)
                       Row(
                         children: [
-                          Text(
-                            'Filtrer par date',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).primaryColor,
+                          Expanded(
+                            child: _DatePickerField(
+                              context: context,
+                              controller: _dateDebutController,
+                              label: 'Date début',
+                              onTap: () => _selectDate(context, true),
                             ),
                           ),
-                          const Spacer(),
-                          IconButton(
-                            icon: Icon(Icons.close, color: Colors.grey[600]),
-                            onPressed: _clearDateFilter,
-                            splashRadius: 20,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _DatePickerField(
+                              context: context,
+                              controller: _dateFinController,
+                              label: 'Date fin',
+                              onTap: () => _selectDate(context, false),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          _DatePickerField(
+                            context: context,
+                            controller: _dateDebutController,
+                            label: 'Date début',
+                            onTap: () => _selectDate(context, true),
+                          ),
+                          const SizedBox(height: 12),
+                          _DatePickerField(
+                            context: context,
+                            controller: _dateFinController,
+                            label: 'Date fin',
+                            onTap: () => _selectDate(context, false),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: 80,
-                          maxHeight: MediaQuery.of(context).size.height * 0.3,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _DatePickerField(
-                                context: context,
-                                controller: _dateDebutController,
-                                label: 'Date début',
-                                onTap: () => _selectDate(context, true),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _DatePickerField(
-                                context: context,
-                                controller: _dateFinController,
-                                label: 'Date fin',
-                                onTap: () => _selectDate(context, false),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : const SizedBox.shrink(key: ValueKey('date-filter-hidden')),
-        ),
+                  ],
+                ),
+              )
+            : const SizedBox.shrink(key: ValueKey('date-filter-hidden')),
       ),
     );
   }
@@ -470,7 +481,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
@@ -813,8 +824,8 @@ class _DatePickerField extends StatelessWidget {
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          color: Theme.of(context).hintColor,
+        labelStyle: const TextStyle(
+          color: Colors.grey,
         ),
         filled: true,
         fillColor: Colors.grey[50],
