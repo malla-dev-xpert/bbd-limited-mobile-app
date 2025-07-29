@@ -20,11 +20,14 @@ class DateFilterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet =
+        MediaQuery.of(context).size.width > 600; // Seuil pour tablette
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      height: showDateFilter ? 180 : 0,
+      height: showDateFilter ? (isTablet ? 180 : 260) : 0,
       padding: showDateFilter ? const EdgeInsets.all(16) : EdgeInsets.zero,
-      margin: const EdgeInsets.only(top: 8),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -59,17 +62,43 @@ class DateFilterWidget extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _DatePickerField(
-                      controller: dateDebutController,
-                      label: 'Date début',
-                      onTap: onDateDebutSelected,
-                    ),
-                    const SizedBox(height: 12),
-                    _DatePickerField(
-                      controller: dateFinController,
-                      label: 'Date fin',
-                      onTap: onDateFinSelected,
-                    ),
+                    // Affichage adaptatif
+                    if (isTablet)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DatePickerField(
+                              controller: dateDebutController,
+                              label: 'Date début',
+                              onTap: onDateDebutSelected,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _DatePickerField(
+                              controller: dateFinController,
+                              label: 'Date fin',
+                              onTap: onDateFinSelected,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          _DatePickerField(
+                            controller: dateDebutController,
+                            label: 'Date début',
+                            onTap: onDateDebutSelected,
+                          ),
+                          const SizedBox(height: 12),
+                          _DatePickerField(
+                            controller: dateFinController,
+                            label: 'Date fin',
+                            onTap: onDateFinSelected,
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               )
