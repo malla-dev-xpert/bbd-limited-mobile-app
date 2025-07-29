@@ -2,9 +2,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
-import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/versement.dart';
-import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
@@ -12,7 +10,6 @@ import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dar
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:bbd_limited/components/custom_dropdown.dart';
 
 class AccountHomeScreen extends StatefulWidget {
   @override
@@ -24,7 +21,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final VersementServices _versementServices = VersementServices();
   final AuthService _authService = AuthService();
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
-  final DeviseServices _deviseServices = DeviseServices();
 
   List<Versement> _allVersements = [];
   List<Versement> _filteredVersements = [];
@@ -37,6 +33,14 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   bool _hasMoreData = true;
   int currentPage = 0;
 
+  TextEditingController _montantController = TextEditingController();
+  TextEditingController _dateDebutController = TextEditingController();
+  TextEditingController _dateFinController = TextEditingController();
+
+  DateTime? _selectedDateDebut;
+  DateTime? _selectedDateFin;
+  bool _showDateFilter = false;
+
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
 
@@ -47,6 +51,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   @override
   void initState() {
     super.initState();
+    _montantController = TextEditingController();
+    _dateDebutController = TextEditingController();
+    _dateFinController = TextEditingController();
     fetchPaiements();
     _refreshController.stream.listen((_) {
       fetchPaiements(reset: true);
@@ -55,6 +62,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   @override
   void dispose() {
+    _montantController.dispose();
+    _dateDebutController.dispose();
+    _dateFinController.dispose();
     _refreshController.close();
     super.dispose();
   }
@@ -124,16 +134,81 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void filterPackages(String query) {
     setState(() {
       _filteredVersements = _allVersements.where((pmt) {
-        final searchPackage = pmt.reference!.toLowerCase().contains(
-              query.toLowerCase(),
-            );
-        bool typeMatch = true;
-        if (_currentTypeFilter != null) {
-          typeMatch = pmt.type == _currentTypeFilter!.name;
+        // Filtre par montant si spécifié
+        bool montantMatch = _montantController.text.isEmpty ||
+            (pmt.montantVerser != null &&
+                pmt.montantVerser.toString().contains(_montantController.text));
+        // Filtre par texte (référence ou nom client)
+        final searchText = query.isEmpty ||
+            pmt.reference!.toLowerCase().contains(query.toLowerCase()) ||
+            montantMatch ||
+            (pmt.partnerName?.toLowerCase().contains(query.toLowerCase()) ??
+                false);
+
+        // Filtre par type
+        bool typeMatch =
+            _currentTypeFilter == null || pmt.type == _currentTypeFilter!.name;
+
+        // Filtre par date
+        bool dateMatch = true;
+        if (_selectedDateDebut != null || _selectedDateFin != null) {
+          final datePaiement =
+              pmt.createdAt != null ? DateTime.parse(pmt.partnerName!) : null;
+
+          if (datePaiement == null) {
+            dateMatch = false;
+          } else {
+            if (_selectedDateDebut != null) {
+              dateMatch = dateMatch &&
+                  datePaiement.isAfter(
+                      _selectedDateDebut!.subtract(const Duration(days: 1)));
+            }
+            if (_selectedDateFin != null) {
+              dateMatch = dateMatch &&
+                  datePaiement
+                      .isBefore(_selectedDateFin!.add(const Duration(days: 1)));
+            }
+          }
         }
-        return searchPackage && typeMatch;
+
+        return searchText && typeMatch && montantMatch && dateMatch;
       }).toList();
     });
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: isStartDate
+          ? _selectedDateDebut ?? DateTime.now()
+          : _selectedDateFin ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      setState(() {
+        if (isStartDate) {
+          _selectedDateDebut = picked;
+          _dateDebutController.text = DateFormat('yyyy-MM-dd').format(picked);
+        } else {
+          _selectedDateFin = picked;
+          _dateFinController.text = DateFormat('yyyy-MM-dd').format(picked);
+        }
+      });
+      filterPackages(searchController.text);
+    }
+  }
+
+  void _clearDateFilter() {
+    setState(() {
+      _selectedDateDebut = null;
+      _selectedDateFin = null;
+      _dateDebutController.clear();
+      _dateFinController.clear();
+      _showDateFilter = false;
+    });
+    filterPackages(searchController.text);
   }
 
   Future<void> _openNewVersementBottomSheet(BuildContext context) async {
@@ -262,6 +337,69 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     }
   }
 
+  Widget _buildDateFilter() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: _showDateFilter ? 120 : 0,
+      padding: _showDateFilter ? const EdgeInsets.all(12) : EdgeInsets.zero,
+      margin: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: _showDateFilter
+          ? Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _dateDebutController,
+                        decoration: InputDecoration(
+                          labelText: 'Date début',
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today),
+                            onPressed: () => _selectDate(context, true),
+                          ),
+                        ),
+                        readOnly: true,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: _dateFinController,
+                        decoration: InputDecoration(
+                          labelText: 'Date fin',
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today),
+                            onPressed: () => _selectDate(context, false),
+                          ),
+                        ),
+                        readOnly: true,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: _clearDateFilter,
+                        child: const Text('Effacer'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -366,107 +504,156 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // Search and Filter Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+            // Search and Filter
+            Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: filterPackages,
-                    controller: searchController,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      hintText: 'Rechercher...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Material(
-                  color: Colors.transparent,
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[300]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.08),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: filterPackages,
+                        controller: searchController,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          hintText: 'Rechercher par référence ou client...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(32),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 18),
                         ),
-                      ],
+                      ),
                     ),
-                    child: InkWell(
-                      key: _filterIconKey,
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () async {
-                        final RenderBox button = _filterIconKey.currentContext!
-                            .findRenderObject() as RenderBox;
-                        final RenderBox overlay = Overlay.of(context)
-                            .context
-                            .findRenderObject() as RenderBox;
-                        final Offset position = button
-                            .localToGlobal(Offset.zero, ancestor: overlay);
-                        final selected = await showMenu<VersementType?>(
-                          context: context,
-                          position: RelativeRect.fromLTRB(
-                            position.dx,
-                            position.dy + button.size.height,
-                            position.dx + button.size.width,
-                            overlay.size.height -
-                                (position.dy + button.size.height),
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          items: [
-                            const PopupMenuItem<VersementType?>(
-                              value: null,
-                              child: Text(
-                                'Tous les types',
-                                style: TextStyle(fontWeight: FontWeight.w600),
-                              ),
+                    const SizedBox(width: 8),
+                    Row(
+                      children: [
+                        Material(
+                          color: Colors.transparent,
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[300]!),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.08),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                )
+                              ],
                             ),
-                            ..._types.map(
-                              (type) => PopupMenuItem<VersementType?>(
-                                value: type,
-                                child: Text(
-                                  _typeToLabel(type),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                setState(() {
+                                  _showDateFilter = !_showDateFilter;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(14.0),
+                                child: Icon(
+                                  _showDateFilter
+                                      ? Icons.calendar_today
+                                      : Icons.date_range,
+                                  size: 26,
+                                  color: const Color(0xFF1A1E49),
                                 ),
                               ),
                             ),
-                          ],
-                        );
-                        if (selected != null || selected == null) {
-                          setState(() {
-                            _currentTypeFilter = selected;
-                          });
-                          filterPackages(searchController.text);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(14.0),
-                        child: Icon(
-                          Icons.filter_list,
-                          size: 26,
-                          color: const Color(0xFF1A1E49),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Material(
+                          color: Colors.transparent,
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[300]!),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.08),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: InkWell(
+                              key: _filterIconKey,
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () async {
+                                final RenderBox button = _filterIconKey
+                                    .currentContext!
+                                    .findRenderObject() as RenderBox;
+                                final RenderBox overlay = Overlay.of(context)
+                                    .context
+                                    .findRenderObject() as RenderBox;
+                                final Offset position = button.localToGlobal(
+                                    Offset.zero,
+                                    ancestor: overlay);
+                                final selected = await showMenu<VersementType?>(
+                                  context: context,
+                                  position: RelativeRect.fromLTRB(
+                                    position.dx,
+                                    position.dy + button.size.height,
+                                    position.dx + button.size.width,
+                                    overlay.size.height -
+                                        (position.dy + button.size.height),
+                                  ),
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  items: [
+                                    const PopupMenuItem<VersementType?>(
+                                      value: null,
+                                      child: Text(
+                                        'Tous les types',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                    ..._types.map(
+                                      (type) => PopupMenuItem<VersementType?>(
+                                        value: type,
+                                        child: Text(
+                                          _typeToLabel(type),
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                                if (selected != null || selected == null) {
+                                  setState(() {
+                                    _currentTypeFilter = selected;
+                                  });
+                                  filterPackages(searchController.text);
+                                }
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(14.0),
+                                child: Icon(
+                                  Icons.filter_list,
+                                  size: 26,
+                                  color: Color(0xFF1A1E49),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ],
                 ),
+                _buildDateFilter(),
               ],
             ),
             const SizedBox(height: 12),
