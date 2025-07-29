@@ -316,16 +316,26 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          partnerName,
-          textAlign: TextAlign.left,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.white,
-      ),
+          title: Text(
+            partnerName,
+            textAlign: TextAlign.left,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.white,
+          actions: [
+            TextButton.icon(
+              onPressed: () {
+                _showCreateVersementBottomSheet(context);
+              },
+              icon: const Icon(Icons.print),
+              label: const Text(
+                "Imprimer",
+              ),
+            ),
+          ]),
       floatingActionButton: _buildFloatingActionButton(),
       body: Column(
         children: [
