@@ -398,10 +398,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   Widget _buildSearchAndFilterRow() {
     return Row(
       children: [
-        Expanded(flex: 3, child: _buildSearchBar()),
+        Expanded(child: _buildSearchBar()),
         if (_selectedOperationType == OperationType.versements)
           Expanded(
-            flex: 1,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Align(
