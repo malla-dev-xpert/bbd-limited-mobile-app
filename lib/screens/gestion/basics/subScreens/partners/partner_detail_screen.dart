@@ -398,95 +398,144 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   Widget _buildSearchAndFilterRow() {
     return Row(
       children: [
-        Expanded(child: _buildSearchBar()),
+        Expanded(flex: 4, child: _buildSearchBar()),
+        const SizedBox(width: 8),
+        // Bouton pour filtrer par type (seulement pour les versements)
         if (_selectedOperationType == OperationType.versements)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[300]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.08),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () async {
-                        final RenderBox button = _filterIconKey.currentContext!
-                            .findRenderObject() as RenderBox;
-                        final RenderBox overlay = Overlay.of(context)
-                            .context
-                            .findRenderObject() as RenderBox;
-                        final Offset position = button
-                            .localToGlobal(Offset.zero, ancestor: overlay);
+          _buildFilterTypeButton(),
+        const SizedBox(width: 8),
+        // Bouton pour filtrer par date
+        _buildDateFilterButton(),
+      ],
+    );
+  }
 
-                        final selected = await showMenu<VersementType?>(
-                          context: context,
-                          position: RelativeRect.fromLTRB(
-                            position.dx,
-                            position.dy + button.size.height,
-                            position.dx + button.size.width,
-                            overlay.size.height -
-                                (position.dy + button.size.height),
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          items: [
-                            const PopupMenuItem<VersementType?>(
-                              value: null,
-                              child: Text(
-                                'Tous les types',
-                                style: TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                            ...VersementType.values.map(
-                              (type) => PopupMenuItem<VersementType?>(
-                                value: type,
-                                child: Text(
-                                  type.toString().split('.').last,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                        if (selected != null || selected == null) {
-                          setState(() {
-                            _selectedVersementType = selected;
-                          });
-                          _filterOperations(_searchController.text);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(14.0),
-                        child: Icon(
-                          Icons.filter_list,
-                          key: _filterIconKey,
-                          size: 26,
-                          color: const Color(0xFF1A1E49),
+  Widget _buildFilterTypeButton() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Material(
+            color: Colors.transparent,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[300]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  final RenderBox button = _filterIconKey.currentContext!
+                      .findRenderObject() as RenderBox;
+                  final RenderBox overlay = Overlay.of(context)
+                      .context
+                      .findRenderObject() as RenderBox;
+                  final Offset position =
+                      button.localToGlobal(Offset.zero, ancestor: overlay);
+
+                  final selected = await showMenu<VersementType?>(
+                    context: context,
+                    position: RelativeRect.fromLTRB(
+                      position.dx,
+                      position.dy + button.size.height,
+                      position.dx + button.size.width,
+                      overlay.size.height - (position.dy + button.size.height),
+                    ),
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    items: [
+                      const PopupMenuItem<VersementType?>(
+                        value: null,
+                        child: Text(
+                          'Tous les types',
+                          style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
-                    ),
+                      ...VersementType.values.map(
+                        (type) => PopupMenuItem<VersementType?>(
+                          value: type,
+                          child: Text(
+                            type.toString().split('.').last,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                  if (selected != null || selected == null) {
+                    setState(() {
+                      _selectedVersementType = selected;
+                    });
+                    _filterOperations(_searchController.text);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Icon(
+                    Icons.filter_list,
+                    key: _filterIconKey,
+                    size: 26,
+                    color: const Color(0xFF1A1E49),
                   ),
                 ),
               ),
             ),
           ),
-      ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateFilterButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Material(
+          color: Colors.transparent,
+          child: Ink(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[300]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.08),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                setState(() {
+                  _showDateFilter = !_showDateFilter;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Icon(
+                  _showDateFilter ? Icons.calendar_today : Icons.date_range,
+                  size: 26,
+                  color: const Color(0xFF1A1E49),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
