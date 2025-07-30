@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/utils/partner_print_service.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/partner.dart';
@@ -15,6 +18,7 @@ import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dar
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
+import 'package:printing/printing.dart';
 
 import 'widgets/balance_card_widget.dart';
 import 'widgets/operation_type_selector.dart';
@@ -53,6 +57,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   TextEditingController _dateDebutController = TextEditingController();
   TextEditingController _dateFinController = TextEditingController();
   Timer? _searchTimer;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -327,9 +332,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           backgroundColor: Colors.white,
           actions: [
             TextButton.icon(
-              onPressed: () {
-                _showCreateVersementBottomSheet(context);
-              },
+              onPressed: _showPrintOptionsDialog,
               icon: const Icon(Icons.print),
               label: const Text(
                 "Imprimer",
@@ -372,6 +375,154 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _generateClientReport({DateTimeRange? dateRange}) async {
+    try {
+      final printService = PartnerPrintService(
+        currencyFormat: NumberFormat.currency(locale: 'fr_FR', symbol: ''),
+      );
+
+      final bytes = await printService.buildClientReportPdfBytes(
+        _partner,
+        dateRange: dateRange,
+      );
+
+      await Printing.layoutPdf(
+        onLayout: (_) => bytes,
+      );
+    } catch (e) {
+      showErrorTopSnackBar(
+          context, "Erreur lors de la génération du rapport: $e");
+    }
+  }
+
+  Future<void> _showPrintOptionsDialog() async {
+    DateTimeRange? selectedDateRange;
+    bool printAll = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              titlePadding: const EdgeInsets.fromLTRB(24, 16, 16, 8),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              actionsPadding: const EdgeInsets.all(16),
+              backgroundColor: Colors.white,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Options d'impression",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<bool>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: const Text("Toutes les données"),
+                      value: true,
+                      groupValue: printAll,
+                      onChanged: (value) {
+                        setState(() => printAll = value!);
+                      },
+                    ),
+                    RadioListTile<bool>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: const Text("Filtrer par date"),
+                      value: false,
+                      groupValue: printAll,
+                      onChanged: (value) {
+                        setState(() => printAll = value!);
+                      },
+                    ),
+                    if (!printAll) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListTile(
+                          dense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12),
+                          title: Text(
+                            selectedDateRange == null
+                                ? "Sélectionner une période"
+                                : "${DateFormat('dd/MM/yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(selectedDateRange!.end)}",
+                            style: TextStyle(
+                              color: selectedDateRange == null
+                                  ? Colors.grey[600]
+                                  : Colors.black,
+                            ),
+                          ),
+                          trailing: const Icon(Icons.calendar_today, size: 20),
+                          onTap: () async {
+                            final DateTimeRange? range =
+                                await showDateRangePicker(
+                              context: context,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    dialogBackgroundColor: Colors.white,
+                                    colorScheme: const ColorScheme.light(
+                                      primary: Color(0xFF1A1E49),
+                                    ),
+                                  ),
+                                  child: MediaQuery(
+                                    data: MediaQuery.of(context).copyWith(
+                                      // Empêche le redimensionnement automatique
+                                      textScaleFactor: 1.0,
+                                    ),
+                                    child: child!,
+                                  ),
+                                );
+                              },
+                            );
+                            if (range != null && mounted) {
+                              setState(() => selectedDateRange = range);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                confirmationButton(
+                    isLoading: _isLoading,
+                    icon: Icons.print,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _generateClientReport(
+                        dateRange: printAll ? null : selectedDateRange,
+                      );
+                    },
+                    label: "Générer le rapport",
+                    subLabel: "......"),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
