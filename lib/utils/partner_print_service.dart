@@ -10,8 +10,8 @@ import 'package:bbd_limited/models/packages.dart';
 class PartnerPrintService {
   static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
   static final NumberFormat _currencyFormat = NumberFormat.currency(
-    locale: 'fr_FR',
-    symbol: 'CNY',
+    locale: 'zh_CN', // Locale chinois
+    symbol: '¥ ',
     decimalDigits: 2,
   );
 
