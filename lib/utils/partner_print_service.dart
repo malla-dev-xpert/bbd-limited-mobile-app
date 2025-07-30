@@ -8,12 +8,14 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/packages.dart';
 
 class PartnerPrintService {
-  final NumberFormat currencyFormat;
-  final DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+  static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
+  static final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'fr_FR',
+    symbol: 'CNY',
+    decimalDigits: 2,
+  );
 
-  PartnerPrintService({required this.currencyFormat});
-
-  Future<Uint8List> buildClientReportPdfBytes(
+  static Future<Uint8List> buildClientReportPdfBytes(
     Partner partner, {
     DateTimeRange? dateRange,
   }) async {
@@ -22,7 +24,6 @@ class PartnerPrintService {
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
 
-    // Convertir les Iterable en List explicitement
     final filteredVersements = _filterVersements(partner.versements, dateRange);
     final filteredPackages = _filterPackages(partner.packages, dateRange);
 
@@ -68,33 +69,27 @@ class PartnerPrintService {
     return pdf.save();
   }
 
-  List<Versement> _filterVersements(
-      List<Versement>? versements, DateTimeRange? dateRange) {
+  static List<Versement> _filterVersements(
+      List<Versement>? versements, DateTimeRange? range) {
     if (versements == null) return [];
-    if (dateRange == null) return versements;
-
-    return versements
-        .where((v) =>
-            v.createdAt != null &&
-            v.createdAt!.isAfter(dateRange.start) &&
-            v.createdAt!.isBefore(dateRange.end.add(const Duration(days: 1))))
-        .toList(); // Conversion explicite en List
+    if (range == null) return versements;
+    return versements.where((v) {
+      final date = v.createdAt ?? DateTime(1900);
+      return date.isAfter(range.start) && date.isBefore(range.end);
+    }).toList();
   }
 
-  List<Packages> _filterPackages(
-      List<Packages>? packages, DateTimeRange? dateRange) {
+  static List<Packages> _filterPackages(
+      List<Packages>? packages, DateTimeRange? range) {
     if (packages == null) return [];
-    if (dateRange == null) return packages;
-
-    return packages
-        .where((p) =>
-            p.startDate != null &&
-            p.startDate!.isAfter(dateRange.start) &&
-            p.startDate!.isBefore(dateRange.end.add(const Duration(days: 1))))
-        .toList(); // Conversion explicite en List
+    if (range == null) return packages;
+    return packages.where((p) {
+      final date = p.startDate ?? DateTime(1900);
+      return date.isAfter(range.start) && date.isBefore(range.end);
+    }).toList();
   }
 
-  pw.Widget _buildHeader(Uint8List logoBytes, DateTimeRange? dateRange) {
+  static pw.Widget _buildHeader(Uint8List logoBytes, DateTimeRange? dateRange) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
@@ -111,7 +106,7 @@ class PartnerPrintService {
             pw.Text(
                 dateRange == null
                     ? 'Toutes périodes'
-                    : 'Du ${dateFormat.format(dateRange.start)} au ${dateFormat.format(dateRange.end)}',
+                    : 'Du ${_dateFormat.format(dateRange.start)} au ${_dateFormat.format(dateRange.end)}',
                 style: pw.TextStyle(fontSize: 12)),
           ],
         ),
@@ -119,7 +114,7 @@ class PartnerPrintService {
     );
   }
 
-  pw.Widget _buildClientInfoSection(Partner partner) {
+  static pw.Widget _buildClientInfoSection(Partner partner) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -135,27 +130,32 @@ class PartnerPrintService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 _infoRow('Nom', '${partner.firstName} ${partner.lastName}'),
-                _infoRow('Téléphone', partner.phoneNumber),
-                _infoRow('Email', partner.email),
+                if (partner.phoneNumber != null &&
+                    partner.phoneNumber!.isNotEmpty)
+                  _infoRow('Téléphone', partner.phoneNumber),
+                if (partner.email != null && partner.email!.isNotEmpty)
+                  _infoRow('Email', partner.email),
               ],
             ),
             pw.SizedBox(width: 40),
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                _infoRow('Adresse', partner.adresse),
+                if (partner.adresse != null && partner.adresse!.isNotEmpty)
+                  _infoRow('Adresse', partner.adresse),
                 _infoRow('Type de compte', partner.accountType),
                 _infoRow('Solde',
                     '${partner.balance?.toStringAsFixed(2) ?? '0.00'}'),
               ],
             ),
+            pw.SizedBox(height: 40),
           ],
         ),
       ],
     );
   }
 
-  pw.Widget _infoRow(String label, String? value) {
+  static pw.Widget _infoRow(String label, String? value) {
     return pw.Row(
       children: [
         pw.Text('$label: ',
@@ -166,7 +166,7 @@ class PartnerPrintService {
     );
   }
 
-  pw.Widget _buildSummarySection(
+  static pw.Widget _buildSummarySection(
     List<Versement> versements,
     List<Packages> packages,
   ) {
@@ -210,7 +210,7 @@ class PartnerPrintService {
             children: [
               pw.Expanded(child: pw.Text('Total versements')),
               pw.Expanded(
-                  child: pw.Text(currencyFormat.format(totalVersements))),
+                  child: pw.Text(_currencyFormat.format(totalVersements))),
             ],
           ),
         ),
@@ -220,7 +220,8 @@ class PartnerPrintService {
           child: pw.Row(
             children: [
               pw.Expanded(child: pw.Text('Total retraits')),
-              pw.Expanded(child: pw.Text(currencyFormat.format(totalRetraits))),
+              pw.Expanded(
+                  child: pw.Text(_currencyFormat.format(totalRetraits))),
             ],
           ),
         ),
@@ -238,10 +239,11 @@ class PartnerPrintService {
     );
   }
 
-  pw.Widget _buildVersementsSection(List<Versement> versements) {
+  static pw.Widget _buildVersementsSection(List<Versement> versements) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
+        pw.SizedBox(height: 20),
         pw.Text('VERSEMENTS',
             style: pw.TextStyle(
                 fontSize: 18,
@@ -255,16 +257,20 @@ class PartnerPrintService {
               color: PdfColors.white, fontWeight: pw.FontWeight.bold),
           headerDecoration:
               pw.BoxDecoration(color: PdfColor.fromHex('#1A1E49')),
-          headers: ['Date', 'Référence', 'Montant', 'Type', 'Retraits'],
+          headers: [
+            'Date',
+            'Référence',
+            'Montant verser',
+            'Type',
+            'Montant restant'
+          ],
           data: versements
               .map((v) => [
-                    dateFormat.format(v.createdAt ?? DateTime.now()),
+                    _dateFormat.format(v.createdAt ?? DateTime.now()),
                     v.reference ?? '-',
-                    currencyFormat.format(v.montantVerser ?? 0),
+                    _currencyFormat.format(v.montantVerser ?? 0),
                     v.type ?? '-',
-                    currencyFormat.format(v.cashWithdrawalDtoList?.fold<double>(
-                            0, (sum, r) => sum + (r.montant ?? 0)) ??
-                        0),
+                    _currencyFormat.format(v.montantRestant ?? 0),
                   ])
               .toList(),
         ),
@@ -272,10 +278,11 @@ class PartnerPrintService {
     );
   }
 
-  pw.Widget _buildPackagesSection(List<Packages> packages) {
+  static pw.Widget _buildPackagesSection(List<Packages> packages) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
+        pw.SizedBox(height: 20),
         pw.Text('COLIS',
             style: pw.TextStyle(
                 fontSize: 18,
@@ -290,11 +297,11 @@ class PartnerPrintService {
               children: [
                 pw.Row(
                   children: [
-                    pw.Text('Colis ${package.ref}',
+                    pw.Text('${package.ref}',
                         style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                     pw.SizedBox(width: 10),
                     pw.Text(
-                        '(${dateFormat.format(package.startDate ?? DateTime.now())})'),
+                        '(${_dateFormat.format(package.startDate ?? DateTime.now())})'),
                   ],
                 ),
                 pw.SizedBox(height: 4),
@@ -308,20 +315,30 @@ class PartnerPrintService {
                 pw.SizedBox(height: 4),
                 pw.Text('Statut: ${package.status?.name ?? '-'}'),
                 pw.SizedBox(height: 8),
-                // if (package.items != null && package.items!.isNotEmpty)
-                //   pw.TableHelper.fromTextArray(
-                //     context: null,
-                //     border: pw.TableBorder.all(color: PdfColors.grey300),
-                //     headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                //     headerDecoration: pw.BoxDecoration(color: PdfColors.grey200),
-                //     headers: ['Article', 'Qté', 'Prix unit.', 'Total'],
-                //     data: package.items!.map((item) => [
-                //       item.description ?? '-',
-                //       '${item.quantity}',
-                //       currencyFormat.format(item.unitPrice ?? 0),
-                //       currencyFormat.format(item.totalPrice ?? 0),
-                //     ]).toList(),
-                //   ),
+                if (package.items != null && package.items!.isNotEmpty)
+                  pw.TableHelper.fromTextArray(
+                    context: null,
+                    border: pw.TableBorder.all(color: PdfColors.grey300),
+                    headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    headerDecoration:
+                        const pw.BoxDecoration(color: PdfColors.grey200),
+                    headers: [
+                      'Article',
+                      'Qté',
+                      'Prix unit.',
+                      'Taux d\'echange',
+                      'Total'
+                    ],
+                    data: package.items!
+                        .map((item) => [
+                              item.description ?? '-',
+                              '${item.quantity}',
+                              _currencyFormat.format(item.unitPrice ?? 0),
+                              _currencyFormat.format(item.salesRate ?? 0),
+                              _currencyFormat.format(item.totalPrice ?? 0),
+                            ])
+                        .toList(),
+                  ),
               ],
             ),
           ),

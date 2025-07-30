@@ -378,23 +378,30 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
   }
 
-  Future<void> _generateClientReport({DateTimeRange? dateRange}) async {
+  void _showPdfPreviewDialog(DateTimeRange? dateRange) async {
     try {
-      final printService = PartnerPrintService(
-        currencyFormat: NumberFormat.currency(locale: 'fr_FR', symbol: ''),
-      );
+      // 1. Await the PDF bytes BEFORE passing them to PdfPreview
+      final pdfBytes = await PartnerPrintService.buildClientReportPdfBytes(
+          _partner,
+          dateRange: dateRange);
 
-      final bytes = await printService.buildClientReportPdfBytes(
-        _partner,
-        dateRange: dateRange,
-      );
-
-      await Printing.layoutPdf(
-        onLayout: (_) => bytes,
+      await showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: PdfPreview(
+              // 2. Pass the resolved bytes directly to build.
+              //    The 'format' parameter is still there, but you don't need to use it
+              //    if your buildClientReportPdfBytes function already handles it internally.
+              build: (format) => pdfBytes,
+            ),
+          ),
+        ),
       );
     } catch (e) {
-      showErrorTopSnackBar(
-          context, "Erreur lors de la génération du rapport: $e");
+      showErrorTopSnackBar(context, "Erreur lors de la génération du rapport");
     }
   }
 
@@ -552,8 +559,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                           ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
-                              _generateClientReport(
-                                dateRange: printAll ? null : selectedDateRange,
+                              _showPdfPreviewDialog(
+                                printAll ? null : selectedDateRange,
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -564,11 +571,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.print,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
+                                const Icon(Icons.print,
+                                    size: 18, color: Colors.white),
                                 const SizedBox(width: 8),
                                 const Text(
                                   "Générer le rapport",
@@ -588,7 +592,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                   ),
                               ],
                             ),
-                          ),
+                          )
                         ],
                       ),
                     ),

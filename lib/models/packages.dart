@@ -1,4 +1,5 @@
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 
 class Packages {
   final int? id;
@@ -21,6 +22,7 @@ class Packages {
   final int? warehouseId;
   final int? containerId;
   final List<int>? itemIds;
+  final List<Items>? items;
   final int? startHarborId;
   final int? destinationHarborId;
 
@@ -45,6 +47,7 @@ class Packages {
     int? warehouseId,
     int? containerId,
     List<int>? itemIds,
+    List<Items>? items,
     int? startHarborId,
     int? destinationHarborId,
   }) {
@@ -69,6 +72,7 @@ class Packages {
       warehouseId: warehouseId ?? this.warehouseId,
       containerId: containerId ?? this.containerId,
       itemIds: itemIds ?? this.itemIds,
+      items: items ?? this.items,
       startHarborId: startHarborId ?? this.startHarborId,
       destinationHarborId: destinationHarborId ?? this.destinationHarborId,
     );
@@ -95,6 +99,7 @@ class Packages {
         'warehouseId': warehouseId,
         'containerId': containerId,
         'itemIds': itemIds,
+        'items': items?.map((item) => item.toJson()).toList(),
         'startHarborId': startHarborId,
         'destinationHarborId': destinationHarborId,
       };
@@ -120,6 +125,7 @@ class Packages {
     this.warehouseAddress,
     this.containerId,
     this.itemIds,
+    this.items,
     this.startHarborId,
     this.destinationHarborId,
   });
@@ -168,6 +174,11 @@ class Packages {
       containerId: parseNullableInt(json['containerId']),
       warehouseId: parseNullableInt(json['warehouseId']),
       itemIds: json['itemIds'] as List<int>?,
+      items: json['items'] != null
+          ? (json['items'] as List)
+              .map((ligne) => Items.fromJson(ligne))
+              .toList()
+          : null,
       startHarborId: parseNullableInt(json['startHarborId']),
       destinationHarborId: parseNullableInt(json['destinationHarborId']),
     );
