@@ -380,25 +380,27 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
   void _showPdfPreviewDialog(DateTimeRange? dateRange) async {
     try {
-      // 1. Await the PDF bytes BEFORE passing them to PdfPreview
       final pdfBytes = await PartnerPrintService.buildClientReportPdfBytes(
-          _partner,
-          dateRange: dateRange);
+        _partner,
+        dateRange: dateRange,
+      );
 
       await showDialog(
         context: context,
-        builder: (context) => Dialog(
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
-            height: MediaQuery.of(context).size.height * 0.8,
-            child: PdfPreview(
-              // 2. Pass the resolved bytes directly to build.
-              //    The 'format' parameter is still there, but you don't need to use it
-              //    if your buildClientReportPdfBytes function already handles it internally.
-              build: (format) => pdfBytes,
+        builder: (context) {
+          final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+          final heightFactor = isTablet ? 0.8 : 0.6;
+
+          return Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.height * heightFactor,
+              child: PdfPreview(
+                build: (format) => pdfBytes,
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
     } catch (e) {
       showErrorTopSnackBar(context, "Erreur lors de la génération du rapport");
