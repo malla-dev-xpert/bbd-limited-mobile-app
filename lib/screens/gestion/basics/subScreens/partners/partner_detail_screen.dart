@@ -405,122 +405,198 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              titlePadding: const EdgeInsets.fromLTRB(24, 16, 16, 8),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-              actionsPadding: const EdgeInsets.all(16),
-              backgroundColor: Colors.white,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Options d'impression",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Column(
+        return Dialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    RadioListTile<bool>(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text("Toutes les données"),
-                      value: true,
-                      groupValue: printAll,
-                      onChanged: (value) {
-                        setState(() => printAll = value!);
-                      },
-                    ),
-                    RadioListTile<bool>(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text("Filtrer par date"),
-                      value: false,
-                      groupValue: printAll,
-                      onChanged: (value) {
-                        setState(() => printAll = value!);
-                      },
-                    ),
-                    if (!printAll) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ListTile(
-                          dense: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                          title: Text(
-                            selectedDateRange == null
-                                ? "Sélectionner une période"
-                                : "${DateFormat('dd/MM/yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(selectedDateRange!.end)}",
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 16, 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Options d'impression",
                             style: TextStyle(
-                              color: selectedDateRange == null
-                                  ? Colors.grey[600]
-                                  : Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          trailing: const Icon(Icons.calendar_today, size: 20),
-                          onTap: () async {
-                            final DateTimeRange? range =
-                                await showDateRangePicker(
-                              context: context,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                              builder: (context, child) {
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    dialogBackgroundColor: Colors.white,
-                                    colorScheme: const ColorScheme.light(
-                                      primary: Color(0xFF1A1E49),
-                                    ),
-                                  ),
-                                  child: MediaQuery(
-                                    data: MediaQuery.of(context).copyWith(
-                                      // Empêche le redimensionnement automatique
-                                      textScaleFactor: 1.0,
-                                    ),
-                                    child: child!,
-                                  ),
-                                );
-                              },
-                            );
-                            if (range != null && mounted) {
-                              setState(() => selectedDateRange = range);
-                            }
-                          },
-                        ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 20),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          RadioListTile<bool>(
+                            contentPadding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                            title: const Text("Toutes les données"),
+                            value: true,
+                            groupValue: printAll,
+                            onChanged: (value) {
+                              setState(() => printAll = value!);
+                            },
+                          ),
+                          RadioListTile<bool>(
+                            contentPadding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                            title: const Text("Filtrer par date"),
+                            value: false,
+                            groupValue: printAll,
+                            onChanged: (value) {
+                              setState(() => printAll = value!);
+                            },
+                          ),
+                          if (!printAll) ...[
+                            const SizedBox(height: 12),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () async {
+                                final DateTimeRange? range =
+                                    await showDateRangePicker(
+                                  context: context,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2100),
+                                  currentDate: DateTime.now(),
+                                  initialDateRange: selectedDateRange,
+                                  builder: (context, child) {
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                        dialogTheme: DialogTheme(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          elevation: 4,
+                                        ),
+                                        colorScheme: ColorScheme.fromSwatch(
+                                          primarySwatch: Colors.blue,
+                                        ).copyWith(
+                                          surface: Colors.white,
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (range != null && mounted) {
+                                  setState(() => selectedDateRange = range);
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        selectedDateRange == null
+                                            ? "Sélectionner une période"
+                                            : "${DateFormat('dd/MM/yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(selectedDateRange!.end)}",
+                                        style: TextStyle(
+                                          color: selectedDateRange == null
+                                              ? Colors.grey[600]
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(Icons.calendar_today,
+                                        size: 20, color: Colors.grey),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Annuler"),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _generateClientReport(
+                                dateRange: printAll ? null : selectedDateRange,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.print,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "Générer le rapport",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                if (_isLoading)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 8),
+                                    child: SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
-                ),
-              ),
-              actions: [
-                confirmationButton(
-                    isLoading: _isLoading,
-                    icon: Icons.print,
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _generateClientReport(
-                        dateRange: printAll ? null : selectedDateRange,
-                      );
-                    },
-                    label: "Générer le rapport",
-                    subLabel: "......"),
-              ],
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
     );
