@@ -9,6 +9,8 @@ import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/add_items_to_package_modal.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/core/localization/translation_helper.dart';
 
 class PackageDetailsScreen extends StatefulWidget {
   final Packages packages;
@@ -98,7 +100,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Détails du colis'),
+        title: Text(
+            AppLocalizations.of(context).translate('package_details_title')),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF1A1E49),
@@ -144,12 +147,14 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Référence',
+                          AppLocalizations.of(context)
+                              .translate('package_reference'),
                           style:
                               TextStyle(color: Colors.grey[600], fontSize: 14),
                         ),
                         Text(
-                          widget.packages.ref ?? 'N/A',
+                          widget.packages.ref ??
+                              AppLocalizations.of(context).translate('na'),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -162,7 +167,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Type',
+                          AppLocalizations.of(context)
+                              .translate('package_type'),
                           style:
                               TextStyle(color: Colors.grey[600], fontSize: 14),
                         ),
@@ -196,7 +202,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                widget.packages.expeditionType ?? 'N/A',
+                                widget.packages.expeditionType ??
+                                    AppLocalizations.of(context)
+                                        .translate('na'),
                                 style: TextStyle(
                                   color: widget.packages.expeditionType
                                               ?.toLowerCase() ==
@@ -216,7 +224,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Statut',
+                          AppLocalizations.of(context)
+                              .translate('package_status'),
                           style:
                               TextStyle(color: Colors.grey[600], fontSize: 14),
                         ),
@@ -266,7 +275,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Livrée le',
+                            AppLocalizations.of(context)
+                                .translate('package_delivered_on'),
                             style: TextStyle(
                                 color: Colors.grey[600], fontSize: 14),
                           ),
@@ -283,7 +293,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Informations supplémentaires',
+                AppLocalizations.of(context)
+                    .translate('package_additional_info'),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF1A1E49),
@@ -300,60 +311,74 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 child: Column(
                   children: [
                     _buildInfoRow(
-                      'Port de départ',
-                      widget.packages.startCountry ?? 'N/A',
+                      AppLocalizations.of(context)
+                          .translate('package_start_port'),
+                      widget.packages.startCountry ??
+                          AppLocalizations.of(context).translate('na'),
                     ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Port d\'arrivée',
-                      widget.packages.destinationCountry ?? 'N/A',
+                      AppLocalizations.of(context)
+                          .translate('package_destination_port'),
+                      widget.packages.destinationCountry ??
+                          AppLocalizations.of(context).translate('na'),
                     ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Entrepôt',
+                      AppLocalizations.of(context)
+                          .translate('package_warehouse'),
                       '${widget.packages.warehouseName ?? ''} | ${widget.packages.warehouseAddress ?? ''}'
                           .trim(),
                     ),
                     const SizedBox(height: 12),
                     widget.packages.expeditionType == "Avion"
                         ? _buildInfoRow(
-                            'Poids',
-                            '${widget.packages.weight ?? 'N/A'} kg',
+                            AppLocalizations.of(context)
+                                .translate('package_weight'),
+                            '${widget.packages.weight ?? AppLocalizations.of(context).translate('na')} ${AppLocalizations.of(context).translate('kg')}',
                           )
                         : _buildInfoRow(
-                            'CBN',
-                            '${widget.packages.cbn ?? 'N/A'} m³',
+                            AppLocalizations.of(context)
+                                .translate('package_cbn'),
+                            '${widget.packages.cbn ?? AppLocalizations.of(context).translate('na')} ${AppLocalizations.of(context).translate('m3')}',
                           ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Quantité',
-                      '${widget.packages.itemQuantity ?? 'N/A'}',
+                      AppLocalizations.of(context)
+                          .translate('package_quantity'),
+                      '${widget.packages.itemQuantity ?? AppLocalizations.of(context).translate('na')}',
                     ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                        'Client', widget.packages.clientName ?? 'N/A'),
+                        AppLocalizations.of(context)
+                            .translate('package_client'),
+                        widget.packages.clientName ??
+                            AppLocalizations.of(context).translate('na')),
                     const SizedBox(height: 12),
                     if (widget.packages.clientPhone != null)
                       _buildInfoRow(
-                        'Téléphone',
-                        widget.packages.clientPhone ?? 'N/A',
+                        AppLocalizations.of(context).translate('package_phone'),
+                        widget.packages.clientPhone ??
+                            AppLocalizations.of(context).translate('na'),
                       ),
                     if (widget.packages.clientPhone != null)
                       const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Date de départ',
+                      AppLocalizations.of(context)
+                          .translate('package_start_date'),
                       widget.packages.startDate != null
                           ? DateFormat('dd/MM/yyyy')
                               .format(widget.packages.startDate!)
-                          : 'N/A',
+                          : AppLocalizations.of(context).translate('na'),
                     ),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                      'Date d\'arrivée estimée',
+                      AppLocalizations.of(context)
+                          .translate('package_estimated_arrival_date'),
                       widget.packages.arrivalDate != null
                           ? DateFormat('dd/MM/yyyy')
                               .format(widget.packages.arrivalDate!)
-                          : 'N/A',
+                          : AppLocalizations.of(context).translate('na'),
                     ),
                   ],
                 ),
@@ -365,7 +390,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      '(${_items.length}) Articles',
+                      '(${_items.length}) ${AppLocalizations.of(context).translate('package_items')}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: const Color(0xFF1A1E49),
@@ -380,7 +405,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             final clientId = widget.packages.clientId;
                             if (clientId == null) {
                               showErrorTopSnackBar(
-                                  context, "Client inconnu pour ce colis");
+                                  context,
+                                  AppLocalizations.of(context)
+                                      .translate('unknown_client_for_package'));
                               return;
                             }
                             // Récupérer les IDs des articles déjà dans le colis
@@ -405,8 +432,11 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                       final user =
                                           await AuthService().getUserInfo();
                                       if (user == null || user.id == null) {
-                                        showErrorTopSnackBar(context,
-                                            "Utilisateur non connecté");
+                                        showErrorTopSnackBar(
+                                            context,
+                                            AppLocalizations.of(context)
+                                                .translate(
+                                                    'user_not_logged_in'));
                                         return;
                                       }
                                       final result = await PackageServices()
@@ -420,8 +450,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                       if (result == "SUCCESS") {
                                         await _loadItems();
                                         Navigator.pop(context, true);
-                                        showSuccessTopSnackBar(context,
-                                            "Articles ajoutés au colis avec succès");
+                                        showSuccessTopSnackBar(
+                                            context,
+                                            AppLocalizations.of(context).translate(
+                                                'items_added_to_package_success'));
                                       } else {
                                         showErrorTopSnackBar(context, result);
                                       }
@@ -431,11 +463,15 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                               },
                             );
                             if (result == true) {
-                              showSuccessTopSnackBar(context,
-                                  "Articles ajoutés au colis avec succès");
+                              showSuccessTopSnackBar(
+                                  context,
+                                  AppLocalizations.of(context).translate(
+                                      'items_added_to_package_success'));
                             }
                           },
-                          label: const Text("Ajouter des articles",
+                          label: Text(
+                              AppLocalizations.of(context)
+                                  .translate('add_items'),
                               overflow: TextOverflow.ellipsis),
                           icon: const Icon(Icons.add)),
                     )
@@ -460,9 +496,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: const Text(
-                          'Supprimer',
-                          style: TextStyle(
+                        label: Text(
+                          AppLocalizations.of(context).translate('delete'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -482,9 +518,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: const Text(
-                          'Expédier',
-                          style: TextStyle(
+                        label: Text(
+                          AppLocalizations.of(context).translate('expedite'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -508,9 +544,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: const Text(
-                          'Arrivée à destination',
-                          style: TextStyle(
+                        label: Text(
+                          AppLocalizations.of(context)
+                              .translate('arrive_at_destination'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -532,9 +569,10 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        label: const Text(
-                          'Confirmer la livraison',
-                          style: TextStyle(
+                        label: Text(
+                          AppLocalizations.of(context)
+                              .translate('confirm_delivery'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -588,19 +626,19 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.red[400]),
               const SizedBox(width: 8),
-              const Text('Confirmation'),
+              Text(AppLocalizations.of(context).translate('confirmation')),
             ],
           ),
-          content: const Text(
-            'Êtes-vous sûr de vouloir supprimer ce colis ? Cette action est irréversible.',
-            style: TextStyle(fontSize: 16),
+          content: Text(
+            AppLocalizations.of(context).translate('confirm_delete_package'),
+            style: const TextStyle(fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Annuler',
-                style: TextStyle(color: Colors.grey),
+              child: Text(
+                AppLocalizations.of(context).translate('cancel'),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
             ElevatedButton(
@@ -625,14 +663,18 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             Navigator.pop(context);
                             showSuccessTopSnackBar(
                               context,
-                              "Le colis 24{widget.packages.ref} a été supprimer avec succès.",
+                              TranslationHelper.tWithParams(
+                                  context,
+                                  'expedition_deleted_success',
+                                  {'ref': widget.packages.ref ?? ''}),
                             );
                           }
                         } else {
                           if (context.mounted) {
                             showErrorTopSnackBar(
                               context,
-                              "Erreur de suppression, veuillez réessayer",
+                              AppLocalizations.of(context)
+                                  .translate('delete_error'),
                             );
                             setState(() => _isLoading = false);
                           }
@@ -641,7 +683,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         if (context.mounted) {
                           showErrorTopSnackBar(
                             context,
-                            "Erreur de suppression",
+                            AppLocalizations.of(context)
+                                .translate('delete_error'),
                           );
                           setState(() => _isLoading = false);
                         }
@@ -653,9 +696,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
-                'Supprimer',
-                style: TextStyle(color: Colors.white),
+              child: Text(
+                AppLocalizations.of(context).translate('delete'),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -679,7 +722,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 children: [
                   Icon(Icons.check_circle_outline, color: Colors.green[400]),
                   const SizedBox(width: 8),
-                  const Text('Confirmation'),
+                  Text(AppLocalizations.of(context).translate('confirmation')),
                 ],
               ),
               content: const Column(
@@ -694,9 +737,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
               actions: [
                 TextButton(
                   onPressed: _isLoading ? null : () => Navigator.pop(context),
-                  child: const Text(
-                    'Annuler',
-                    style: TextStyle(color: Colors.grey),
+                  child: Text(
+                    AppLocalizations.of(context).translate('cancel'),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
                 ElevatedButton(
@@ -721,14 +764,18 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Expédition du colis 24{widget.packages.ref} démarrée avec succès.",
+                                  AppLocalizations.of(context)
+                                      .translate('expedition_started_success')
+                                      .replaceAll(
+                                          '{ref}', widget.packages.ref ?? ''),
                                 );
                               }
                             } else {
                               if (context.mounted) {
                                 showErrorTopSnackBar(
                                   context,
-                                  "Erreur de démarrage, veuillez réessayer",
+                                  AppLocalizations.of(context)
+                                      .translate('start_expedition_error'),
                                 );
                                 setState(() => _isLoading = false);
                               }
@@ -737,7 +784,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             if (context.mounted) {
                               showErrorTopSnackBar(
                                 context,
-                                "Erreur de démarrage",
+                                AppLocalizations.of(context)
+                                    .translate('start_expedition_error'),
                               );
                               setState(() => _isLoading = false);
                             }
@@ -750,7 +798,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     ),
                   ),
                   child: Text(
-                    _isLoading ? 'Démarrage...' : 'Démarrer',
+                    _isLoading
+                        ? AppLocalizations.of(context).translate('starting')
+                        : AppLocalizations.of(context).translate('start'),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -777,7 +827,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 children: [
                   Icon(Icons.check_circle_outline, color: Colors.green[400]),
                   const SizedBox(width: 8),
-                  const Text('Confirmation'),
+                  Text(AppLocalizations.of(context).translate('confirmation')),
                 ],
               ),
               content: const Column(
@@ -792,9 +842,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
               actions: [
                 TextButton(
                   onPressed: _isLoading ? null : () => Navigator.pop(context),
-                  child: const Text(
-                    'Annuler',
-                    style: TextStyle(color: Colors.grey),
+                  child: Text(
+                    AppLocalizations.of(context).translate('cancel'),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
                 ElevatedButton(
@@ -819,14 +869,18 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Colis 24{widget.packages.ref} arrivé avec succès.",
+                                  AppLocalizations.of(context)
+                                      .translate('expedition_arrived_success')
+                                      .replaceAll(
+                                          '{ref}', widget.packages.ref ?? ''),
                                 );
                               }
                             } else {
                               if (context.mounted) {
                                 showErrorTopSnackBar(
                                   context,
-                                  "Erreur de confirmation, veuillez réessayer",
+                                  AppLocalizations.of(context)
+                                      .translate('confirm_delivery_error'),
                                 );
                                 setState(() => _isLoading = false);
                               }
@@ -835,7 +889,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             if (context.mounted) {
                               showErrorTopSnackBar(
                                 context,
-                                "Erreur de confirmation",
+                                AppLocalizations.of(context)
+                                    .translate('confirm_delivery_error'),
                               );
                               setState(() => _isLoading = false);
                             }
@@ -848,7 +903,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     ),
                   ),
                   child: Text(
-                    _isLoading ? 'Confirmation...' : 'Confirmer',
+                    _isLoading
+                        ? AppLocalizations.of(context).translate('confirming')
+                        : AppLocalizations.of(context).translate('confirm'),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -877,25 +934,26 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 children: [
                   Icon(Icons.check_circle_outline, color: Colors.green[400]),
                   const SizedBox(width: 8),
-                  const Text('Confirmation'),
+                  Text(AppLocalizations.of(context).translate('confirmation')),
                 ],
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Êtes-vous sûr de vouloir confirmer la livraison de ce Colis ?',
-                    style: TextStyle(fontSize: 16),
+                  Text(
+                    AppLocalizations.of(context)
+                        .translate('confirm_package_delivery'),
+                    style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 16),
                   TextButton.icon(
                     icon: const Icon(Icons.date_range),
                     label: Text(
                       tempSelectedDate != null
-                          ? 'Date de livraison : '
-                              '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
-                          : 'Choisir la date de livraison (optionnel)',
+                          ? '${AppLocalizations.of(context).translate('delivery_date')}: ${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
+                          : AppLocalizations.of(context)
+                              .translate('select_delivery_date'),
                     ),
                     onPressed: () async {
                       final now = DateTime.now();
@@ -916,16 +974,16 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        'Date sélectionnée : '
-                        '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
+                        '${AppLocalizations.of(context).translate('selected_date')}: ${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   if (tempSelectedDate == null)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+                        AppLocalizations.of(context)
+                            .translate('no_date_selected_info'),
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ),
@@ -934,9 +992,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
               actions: [
                 TextButton(
                   onPressed: _isLoading ? null : () => Navigator.pop(context),
-                  child: const Text(
-                    'Annuler',
-                    style: TextStyle(color: Colors.grey),
+                  child: Text(
+                    AppLocalizations.of(context).translate('cancel'),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
                 ElevatedButton(
@@ -968,14 +1026,18 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                 Navigator.pop(context);
                                 showSuccessTopSnackBar(
                                   context,
-                                  "Colis 24{widget.packages.ref} livrée avec succès.",
+                                  AppLocalizations.of(context)
+                                      .translate('expedition_delivered_success')
+                                      .replaceAll(
+                                          '{ref}', widget.packages.ref ?? ''),
                                 );
                               }
                             } else {
                               if (context.mounted) {
                                 showErrorTopSnackBar(
                                   context,
-                                  "Erreur de confirmation, veuillez réessayer",
+                                  AppLocalizations.of(context)
+                                      .translate('confirm_delivery_error'),
                                 );
                                 setState(() => _isLoading = false);
                               }
@@ -984,7 +1046,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             if (context.mounted) {
                               showErrorTopSnackBar(
                                 context,
-                                "Erreur de confirmation",
+                                AppLocalizations.of(context)
+                                    .translate('confirm_delivery_error'),
                               );
                               setState(() => _isLoading = false);
                             }
@@ -997,7 +1060,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     ),
                   ),
                   child: Text(
-                    _isLoading ? 'Confirmation...' : 'Confirmer',
+                    _isLoading
+                        ? AppLocalizations.of(context).translate('confirming')
+                        : AppLocalizations.of(context).translate('confirm'),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -1041,20 +1106,23 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Navigator.pop(context, true);
                   showSuccessTopSnackBar(
                     context,
-                    "Colis 24{updatedExpedition.ref} mise à jour avec succès.",
+                    AppLocalizations.of(context)
+                        .translate('expedition_updated_success')
+                        .replaceAll('{ref}', updatedExpedition.ref ?? ''),
                   );
                 }
               } else {
                 if (context.mounted) {
                   showErrorTopSnackBar(
                     context,
-                    "Erreur de mise à jour, veuillez réessayer",
+                    AppLocalizations.of(context).translate('update_error'),
                   );
                 }
               }
             } catch (e) {
               if (context.mounted) {
-                showErrorTopSnackBar(context, "Erreur de mise à jour");
+                showErrorTopSnackBar(context,
+                    AppLocalizations.of(context).translate('update_error'));
               }
             } finally {
               setState(() => _isLoading = false);
@@ -1092,9 +1160,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey[200]!),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
-            'Aucun article dans ce colis',
+            AppLocalizations.of(context).translate('no_items_in_package'),
             style: TextStyle(
               color: Colors.grey,
               fontStyle: FontStyle.italic,
@@ -1136,7 +1204,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item.description ?? 'Sans description',
+                    item.description ??
+                        AppLocalizations.of(context)
+                            .translate('no_description'),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -1153,7 +1223,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Qté: ${item.quantity ?? 0}',
+                    '${AppLocalizations.of(context).translate('item_quantity')}: ${item.quantity ?? 0}',
                     style: TextStyle(
                       color: Colors.blue[700],
                       fontWeight: FontWeight.bold,
@@ -1196,7 +1266,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Prix unitaire: ${item.unitPrice!.toStringAsFixed(2)} ¥',
+                    '${AppLocalizations.of(context).translate('unit_price')}: ${item.unitPrice!.toStringAsFixed(2)} ¥',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,
@@ -1215,7 +1285,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Prix total: ${item.totalPrice!.toStringAsFixed(2)} ¥',
+                  '${AppLocalizations.of(context).translate('total_price')}: ${item.totalPrice!.toStringAsFixed(2)} ¥',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -1233,7 +1303,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Taux d\'achat: ${item.salesRate} ¥',
+                  '${AppLocalizations.of(context).translate('purchase_rate')}: ${item.salesRate} ¥',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,

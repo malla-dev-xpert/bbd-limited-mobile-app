@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 enum ExpeditionType { all, plane, boat }
 
@@ -90,7 +91,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
         }
       });
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de chargement des expeditions.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_loading_expeditions'));
     } finally {
       setState(() => isLoading = false);
     }
@@ -230,7 +232,9 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                 if (context.mounted) {
                   showSuccessTopSnackBar(
                     context,
-                    "Colis ${updatedExpedition.ref} modifiée avec succès.",
+                    AppLocalizations.of(context)
+                        .translate('expedition_modified_success')
+                        .replaceAll('{ref}', updatedExpedition.ref ?? ''),
                   );
                   fetchPackages(reset: true);
                 }
@@ -238,7 +242,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                 if (context.mounted) {
                   showErrorTopSnackBar(
                     context,
-                    "Erreur lors de la modification du colis",
+                    AppLocalizations.of(context)
+                        .translate('error_modifying_expedition'),
                   );
                 }
               }
@@ -246,7 +251,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
               if (context.mounted) {
                 showErrorTopSnackBar(
                   context,
-                  "Erreur lors de la modification du colis",
+                  AppLocalizations.of(context)
+                      .translate('error_modifying_expedition'),
                 );
               }
             }
@@ -290,9 +296,10 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Gestion des colis',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('home_manage_packages_title'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
                             color: Color(0xFF1A1E49),
@@ -301,7 +308,10 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                           ),
                         ),
                         Text(
-                          '${filteredPackages.length} colis trouvées',
+                          AppLocalizations.of(context)
+                              .translate('packages_found')
+                              .replaceAll('{count}',
+                                  filteredPackages.length.toString()),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -323,19 +333,19 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                     ExpeditionType.all,
                     Icons.all_inbox,
                     Colors.blue,
-                    "Tous",
+                    AppLocalizations.of(context).translate('all'),
                   ),
                   _buildTypeFilter(
                     ExpeditionType.boat,
                     Icons.directions_boat,
                     Colors.deepPurple,
-                    "Bateau",
+                    AppLocalizations.of(context).translate('boat'),
                   ),
                   _buildTypeFilter(
                     ExpeditionType.plane,
                     Icons.airplanemode_active,
                     Colors.amber,
-                    "Avion",
+                    AppLocalizations.of(context).translate('plane'),
                   )
                 ],
               ),
@@ -350,7 +360,8 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                       controller: searchController,
                       autocorrect: false,
                       decoration: InputDecoration(
-                        labelText: 'Rechercher un colis...',
+                        labelText: AppLocalizations.of(context)
+                            .translate('search_package'),
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(32),
@@ -400,46 +411,51 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             items: [
-                              const PopupMenuItem<ExpeditionStatus>(
+                              PopupMenuItem<ExpeditionStatus>(
                                 value: ExpeditionStatus.all,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.filter_list, color: Colors.blue),
-                                    SizedBox(width: 8),
-                                    Text("Tous"),
+                                    const Icon(Icons.filter_list,
+                                        color: Colors.blue),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)
+                                        .translate('filter_all')),
                                   ],
                                 ),
                               ),
-                              const PopupMenuItem<ExpeditionStatus>(
+                              PopupMenuItem<ExpeditionStatus>(
                                 value: ExpeditionStatus.received,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.check_circle,
+                                    const Icon(Icons.check_circle,
                                         color: Colors.green),
-                                    SizedBox(width: 8),
-                                    Text("Livrée"),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)
+                                        .translate('filter_delivered')),
                                   ],
                                 ),
                               ),
-                              const PopupMenuItem<ExpeditionStatus>(
+                              PopupMenuItem<ExpeditionStatus>(
                                 value: ExpeditionStatus.inTransit,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.local_shipping,
+                                    const Icon(Icons.local_shipping,
                                         color: Colors.orange),
-                                    SizedBox(width: 8),
-                                    Text("En transit"),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)
+                                        .translate('filter_in_transit')),
                                   ],
                                 ),
                               ),
-                              const PopupMenuItem<ExpeditionStatus>(
+                              PopupMenuItem<ExpeditionStatus>(
                                 value: ExpeditionStatus.pending,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.hourglass_empty,
+                                    const Icon(Icons.hourglass_empty,
                                         color: Colors.red),
-                                    SizedBox(width: 8),
-                                    Text("En attente"),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)
+                                        .translate('filter_pending')),
                                   ],
                                 ),
                               ),
@@ -516,8 +532,9 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                               ),
                             ),
                           )
-                        : const Center(
-                            child: Text("Aucune expédition trouvée"),
+                        : Center(
+                            child: Text(AppLocalizations.of(context)
+                                .translate('no_expeditions_found')),
                           ),
               ),
             ],
