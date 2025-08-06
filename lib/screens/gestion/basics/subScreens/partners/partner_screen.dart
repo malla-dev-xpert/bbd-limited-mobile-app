@@ -1,5 +1,6 @@
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_edit_form.dart';
@@ -113,6 +114,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
@@ -176,12 +179,14 @@ class _PartnerScreenState extends State<PartnerScreen> {
   }
 
   Widget _buildPartnerList() {
+    final localizations = AppLocalizations.of(context);
+
     if (_isLoading && _filteredPartners.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_filteredPartners.isEmpty) {
-      return const Center(child: Text("Aucun partenaire trouvé"));
+      return Center(child: Text(localizations.translate('no_partner_found')));
     }
 
     return RefreshIndicator(
@@ -199,14 +204,14 @@ class _PartnerScreenState extends State<PartnerScreen> {
           itemCount: _filteredPartners.length + (_hasMoreData ? 1 : 0),
           itemBuilder: (context, index) {
             if (index >= _filteredPartners.length) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Center(
                   child: Column(
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 8),
-                      Text("Chargement en cours..."),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 8),
+                      Text(localizations.translate('loading')),
                     ],
                   ),
                 ),
@@ -267,10 +272,12 @@ class _PartnerScreenState extends State<PartnerScreen> {
   }
 
   Future<void> _deletePartner(Partner partner) async {
+    final localizations = AppLocalizations.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
+        title: Text(localizations.translate('confirm_deletion')),
         backgroundColor: Colors.white,
         content: Text(
           "Supprimer le partenaire ${partner.firstName} ${partner.lastName}?",
@@ -278,7 +285,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(localizations.translate('cancel')),
           ),
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),

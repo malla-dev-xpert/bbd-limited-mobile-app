@@ -214,15 +214,15 @@ class _UserFormModalState extends State<UserFormModal> {
                     controller: _lastNameController,
                     label: 'Nom',
                     icon: Icons.person_outline,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez entrer un nom';
-                      }
-                      if (value.length < 2) {
-                        return 'Le nom doit contenir au moins 2 caractères';
-                      }
-                      return null;
-                    },
+                    // validator: (value) {
+                    //   if (value == null || value.isEmpty) {
+                    //     return 'Veuillez entrer un nom';
+                    //   }
+                    //   if (value.length < 2) {
+                    //     return 'Le nom doit contenir au moins 2 caractères';
+                    //   }
+                    //   return null;
+                    // },
                   ),
                 ] else ...[
                   buildTextField(

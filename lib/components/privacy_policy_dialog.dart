@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import '../core/localization/app_localizations.dart';
 
 class PrivacyPolicyDialog extends StatelessWidget {
   const PrivacyPolicyDialog({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -32,10 +35,10 @@ class PrivacyPolicyDialog extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Politique de Confidentialité',
-                    style: TextStyle(
+                    localizations.translate('privacy_policy_title'),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -48,45 +51,45 @@ class PrivacyPolicyDialog extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 50),
-            const Flexible(
+            Flexible(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '1. Collecte des informations',
-                      style: TextStyle(
+                      localizations.translate('privacy_collection_title'),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Nous collectons les informations que vous nous fournissez directement, notamment votre nom, adresse e-mail et autres informations de contact.',
+                      localizations.translate('privacy_collection_content'),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
-                      '2. Utilisation des informations',
-                      style: TextStyle(
+                      localizations.translate('privacy_usage_title'),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Les informations collectées sont utilisées pour améliorer nos services, personnaliser votre expérience et communiquer avec vous.',
+                      localizations.translate('privacy_usage_content'),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
-                      '3. Protection des informations',
-                      style: TextStyle(
+                      localizations.translate('privacy_protection_title'),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Nous mettons en œuvre une variété de mesures de sécurité pour préserver la sécurité de vos informations personnelles.',
+                      localizations.translate('privacy_protection_content'),
                     ),
                   ],
                 ),
