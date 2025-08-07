@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/users/widgets/user_form_modal.dart';
+import 'package:bbd_limited/screens/gestion/users/widgets/user_details_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -271,6 +272,26 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     }
   }
 
+  Future<void> _showUserDetails(User user) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return UserDetailsBottomSheet(
+          user: user,
+          onUserDisabled: () {
+            // Rafraîchir la liste après désactivation
+            fetchUsers(reset: true);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -466,57 +487,78 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        dense: true,
-        leading: Stack(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              child: Text(
-                user.firstName!.substring(0, 1).toUpperCase(),
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            if (isCurrentUser)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+      child: InkWell(
+        onTap: () => _showUserDetails(user),
+        borderRadius: BorderRadius.circular(8),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          dense: true,
+          leading: Stack(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor:
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                child: Text(
+                  (user.firstName?.isNotEmpty == true
+                          ? user.firstName!
+                          : user.username)
+                      .substring(0, 1)
+                      .toUpperCase(),
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
               ),
-          ],
-        ),
-        title: Text(
-          user.username,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        ),
-        subtitle: Text(
-          '${user.firstName ?? ''} ${user.lastName ?? ''}',
-          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(50),
+              if (isCurrentUser)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          child: Text(
-            user.roleName ?? 'Rôle non défini',
-            style: TextStyle(color: Colors.blue[600], fontSize: 10),
+          title: Text(
+            user.username,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          subtitle: Text(
+            '${user.firstName ?? ''} ${user.lastName ?? ''}',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Text(
+                  user.roleName ?? 'Rôle non défini',
+                  style: TextStyle(color: Colors.blue[600], fontSize: 10),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey[400],
+                size: 16,
+              ),
+            ],
           ),
         ),
       ),
