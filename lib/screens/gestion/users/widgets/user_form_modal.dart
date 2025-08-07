@@ -1,10 +1,12 @@
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/core/services/role_services.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/utils/password_generator.dart';
 
 class UserFormModal extends StatefulWidget {
   final User? user;
@@ -24,11 +26,13 @@ class _UserFormModalState extends State<UserFormModal> {
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _roleServices = RoleServices();
 
   Role? _selectedRole;
   List<Role> _roles = [];
   bool _isLoading = true;
+  bool _obscurePassword = true;
   int _currentStep = 0;
 
   @override
@@ -65,6 +69,21 @@ class _UserFormModalState extends State<UserFormModal> {
     }
   }
 
+  void _generatePassword() {
+    final password = PasswordGenerator.generateSimplePassword(length: 10);
+    setState(() {
+      _passwordController.text = password;
+    });
+  }
+
+  void _copyPassword() {
+    if (_passwordController.text.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: _passwordController.text));
+      showSuccessTopSnackBar(
+          context, 'Mot de passe copié dans le presse-papiers');
+    }
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -72,6 +91,7 @@ class _UserFormModalState extends State<UserFormModal> {
     _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -89,6 +109,12 @@ class _UserFormModalState extends State<UserFormModal> {
       return;
     }
 
+    // Vérifier que le mot de passe est fourni pour un nouvel utilisateur
+    if (widget.user == null && _passwordController.text.isEmpty) {
+      showErrorTopSnackBar(context, 'Veuillez entrer un mot de passe');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -100,16 +126,25 @@ class _UserFormModalState extends State<UserFormModal> {
               username: _usernameController.text,
               firstName: _firstNameController.text,
               lastName: _lastNameController.text,
-              email: _emailController.text.trim(),
-              phoneNumber: _phoneController.text.trim(),
+              email: _emailController.text.trim().isEmpty
+                  ? null
+                  : _emailController.text.trim(),
+              phoneNumber: _phoneController.text.trim().isEmpty
+                  ? null
+                  : _phoneController.text.trim(),
               roleName: _selectedRole!.name,
+              password: _passwordController.text, // 👈 Ajouté pour la création
             )
           : widget.user!.copyWith(
               username: _usernameController.text,
               firstName: _firstNameController.text,
               lastName: _lastNameController.text,
-              email: _emailController.text.trim(),
-              phoneNumber: _phoneController.text.trim(),
+              email: _emailController.text.trim().isEmpty
+                  ? null
+                  : _emailController.text.trim(),
+              phoneNumber: _phoneController.text.trim().isEmpty
+                  ? null
+                  : _phoneController.text.trim(),
               roleName: _selectedRole!.name,
             );
 
@@ -155,7 +190,9 @@ class _UserFormModalState extends State<UserFormModal> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: MediaQuery.of(context).viewInsets.bottom > 0
+            ? MediaQuery.of(context).viewInsets.bottom
+            : 0,
       ),
       child: SingleChildScrollView(
         child: Padding(
@@ -225,9 +262,73 @@ class _UserFormModalState extends State<UserFormModal> {
                     // },
                   ),
                 ] else ...[
+                  // Champ mot de passe avec génération et copie
+                  if (widget.user == null) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: "Mot de passe",
+                              prefixIcon: const Icon(Icons.lock_outline,
+                                  color: Colors.black),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(32)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(32),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
+                              ),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.refresh,
+                                        color: Colors.black),
+                                    onPressed: _generatePassword,
+                                    tooltip: 'Générer un mot de passe',
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: () => setState(() =>
+                                        _obscurePassword = !_obscurePassword),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.copy,
+                                        color: Colors.black),
+                                    onPressed: _copyPassword,
+                                    tooltip: 'Copier le mot de passe',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez entrer un mot de passe';
+                              }
+                              if (value.length < 6) {
+                                return 'Le mot de passe doit contenir au moins 6 caractères';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   buildTextField(
                     controller: _emailController,
-                    label: 'Email',
+                    label: 'Email (optionnel)',
                     icon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -245,7 +346,7 @@ class _UserFormModalState extends State<UserFormModal> {
                   const SizedBox(height: 16),
                   buildTextField(
                     controller: _phoneController,
-                    label: 'Téléphone',
+                    label: 'Téléphone (optionnel)',
                     icon: Icons.phone,
                     keyboardType: TextInputType.phone,
                   ),

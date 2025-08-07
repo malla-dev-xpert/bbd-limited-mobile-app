@@ -7,6 +7,7 @@ class User {
   final String? phoneNumber;
   final String? roleName;
   final Role? role; // 👈 Ajouté ici
+  final String? password; // 👈 Ajouté pour la création d'utilisateur
 
   User({
     required this.id,
@@ -17,6 +18,7 @@ class User {
     this.phoneNumber,
     this.roleName,
     this.role,
+    this.password, // 👈 Ajouté ici
   });
 
   User copyWith({
@@ -28,6 +30,7 @@ class User {
     String? phoneNumber,
     String? roleName,
     Role? role,
+    String? password, // 👈 Ajouté ici
   }) {
     return User(
       id: id ?? this.id,
@@ -38,6 +41,7 @@ class User {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       roleName: roleName ?? this.roleName,
       role: role ?? this.role,
+      password: password ?? this.password, // 👈 Ajouté ici
     );
   }
 
@@ -51,11 +55,12 @@ class User {
       phoneNumber: json['phoneNumber'] as String?,
       roleName: json['roleName'] as String?,
       role: json['role'] != null ? Role.fromJson(json['role']) : null,
+      password: json['password'] as String?, // 👈 Ajouté ici
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
       'id': id,
       'username': username,
       'firstName': firstName,
@@ -65,6 +70,13 @@ class User {
       'roleName': roleName,
       'role': role?.toJson(),
     };
+
+    // Ajouter le mot de passe seulement s'il est fourni (pour la création)
+    if (password != null) {
+      data['password'] = password;
+    }
+
+    return data;
   }
 }
 
