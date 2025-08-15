@@ -2,6 +2,7 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class DeviseForm extends StatefulWidget {
   final Devise? devise;
@@ -57,20 +58,20 @@ class _DeviseFormState extends State<DeviseForm> {
 
   String? _validateName(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Le nom est requis';
+      return AppLocalizations.of(context).translate('devise_name_required');
     }
     if (value.length > _maxNameLength) {
-      return 'Le nom ne doit pas dépasser $_maxNameLength caractères';
+      return AppLocalizations.of(context).translate('devise_name_too_long');
     }
     return null;
   }
 
   String? _validateCode(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Le code est requis';
+      return AppLocalizations.of(context).translate('devise_code_required');
     }
     if (!RegExp(_currencyCodePattern).hasMatch(value)) {
-      return 'Le code doit être composé de 3 lettres majuscules';
+      return AppLocalizations.of(context).translate('devise_code_invalid');
     }
     return null;
   }
@@ -81,10 +82,10 @@ class _DeviseFormState extends State<DeviseForm> {
     }
     final rate = double.tryParse(value);
     if (rate == null) {
-      return 'Le taux doit être un nombre valide';
+      return AppLocalizations.of(context).translate('exchange_rate_invalid');
     }
     if (rate < 0) {
-      return 'Le taux ne peut pas être négatif';
+      return AppLocalizations.of(context).translate('exchange_rate_negative');
     }
     return null;
   }
@@ -111,7 +112,7 @@ class _DeviseFormState extends State<DeviseForm> {
         children: [
           buildTextField(
             controller: _nameController,
-            label: 'Nom de la devise',
+            label: AppLocalizations.of(context).translate('devise_name'),
             icon: Icons.attach_money,
             validator: _validateName,
             errorText:
@@ -120,7 +121,7 @@ class _DeviseFormState extends State<DeviseForm> {
           const SizedBox(height: 16),
           buildTextField(
             controller: _codeController,
-            label: 'Code',
+            label: AppLocalizations.of(context).translate('devise_code'),
             icon: Icons.abc,
             validator: _validateCode,
             keyboardType: TextInputType.text,
@@ -130,7 +131,7 @@ class _DeviseFormState extends State<DeviseForm> {
           const SizedBox(height: 16),
           buildTextField(
             controller: _rateController,
-            label: 'Taux de change',
+            label: AppLocalizations.of(context).translate('exchange_rate'),
             icon: Icons.percent,
             validator: _validateRate,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -141,12 +142,14 @@ class _DeviseFormState extends State<DeviseForm> {
             child: confirmationButton(
                 isLoading: widget.isLoading,
                 onPressed: _handleSubmit,
-                label: widget.isEditing == false ? "Enregistrer" : "Modifier",
+                label: widget.isEditing == false
+                    ? AppLocalizations.of(context).translate('save')
+                    : AppLocalizations.of(context).translate('edit'),
                 icon:
                     widget.isEditing == false ? Icons.check_circle : Icons.edit,
                 subLabel: widget.isEditing == false
-                    ? "Enregistrement..."
-                    : "Modification..."),
+                    ? AppLocalizations.of(context).translate('saving')
+                    : AppLocalizations.of(context).translate('updating')),
           ),
         ],
       ),
