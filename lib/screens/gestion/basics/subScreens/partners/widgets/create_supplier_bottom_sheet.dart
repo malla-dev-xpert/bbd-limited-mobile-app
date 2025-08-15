@@ -80,7 +80,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _firstNameController,
-                            label: "Nom",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_first_name'),
                             icon: Icons.person,
                           ),
                         ),
@@ -88,7 +89,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _lastNameController,
-                            label: "Prénom",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_last_name'),
                             icon: Icons.person_4,
                           ),
                         ),
@@ -100,7 +102,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _phoneController,
-                            label: "Téléphone",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_phone'),
                             icon: Icons.phone,
                           ),
                         ),
@@ -108,7 +111,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _emailController,
-                            label: "Email",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_email'),
                             icon: Icons.mail,
                           ),
                         ),
@@ -117,7 +121,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                     const SizedBox(height: 10),
                     buildTextField(
                       controller: _adresseController,
-                      label: "Adresse",
+                      label: AppLocalizations.of(context)
+                          .translate('partner_address'),
                       icon: Icons.maps_home_work,
                     ),
                     const SizedBox(height: 10),
@@ -164,7 +169,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                                       Text(_selectedCountry!.name),
                                     ],
                                   )
-                                : Text(AppLocalizations.of(context).translate('partner_country')),
+                                : Text(AppLocalizations.of(context)
+                                    .translate('partner_country')),
                             const Icon(Icons.arrow_drop_down),
                           ],
                         ),
@@ -176,9 +182,11 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         : confirmationButton(
                             isLoading: isFormLoading,
                             onPressed: _saveSupplier,
-                            label: AppLocalizations.of(context).translate('save'),
+                            label:
+                                AppLocalizations.of(context).translate('save'),
                             icon: Icons.check_circle_rounded,
-                            subLabel: AppLocalizations.of(context).translate('saving'),
+                            subLabel: AppLocalizations.of(context)
+                                .translate('saving'),
                           ),
                   ],
                 ),
@@ -198,12 +206,14 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
       final user = await authService.getUserInfo();
 
       if (_firstNameController.text.isEmpty) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_name'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_enter_name'));
         return;
       }
 
       if (user == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_login'));
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('please_login'));
         return;
       }
 
@@ -221,10 +231,12 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
       );
 
       if (success == "USER_NOT_FOUND") {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_login'));
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('please_login'));
         return;
       } else if (success == "EMAIL_EXIST") {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('partner_email_exists'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('partner_email_exists'));
         return;
       } else if (success == "PHONE_EXIST") {
         showErrorTopSnackBar(
@@ -242,7 +254,10 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
           _phoneController.clear();
           _adresseController.clear();
           _selectedCountry = null;
-          showSuccessTopSnackBar(context, AppLocalizations.of(context).translate('supplier_created_success'));
+          showSuccessTopSnackBar(
+              context,
+              AppLocalizations.of(context)
+                  .translate('supplier_created_success'));
         });
 
         if (widget.onSupplierCreated != null) {
@@ -250,7 +265,10 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
         }
       }
     } catch (e) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('supplier_registration_error'));
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('supplier_registration_error'));
     } finally {
       setState(() => isFormLoading = false);
     }
