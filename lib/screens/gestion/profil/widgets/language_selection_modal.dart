@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/core/localization/language_provider.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
-class LanguageSelectionModal extends StatelessWidget {
+class LanguageSelectionModal extends ConsumerWidget {
   const LanguageSelectionModal({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context);
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    final languageNotifier = ref.read(languageProvider.notifier);
+    final languageState = ref.watch(languageProvider);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -42,58 +43,38 @@ class LanguageSelectionModal extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Language options
-          ...languageProvider.getSupportedLanguages().map((language) {
+          ...languageNotifier.getSupportedLanguages().map((language) {
             final isSelected =
-                languageProvider.currentLocale.languageCode == language['code'];
+                languageState.locale.languageCode == language['code'];
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? Theme.of(context).primaryColor.withOpacity(0.1)
-                    : Colors.grey[50],
+                color: isSelected ? Colors.blue[50] : Colors.grey[50],
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey[300]!,
-                  width: isSelected ? 2 : 1,
+                  color: isSelected ? Colors.blue[200]! : Colors.grey[300]!,
+                  width: 1,
                 ),
               ),
               child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.language,
-                    color: isSelected ? Colors.white : Colors.grey[600],
-                    size: 20,
-                  ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 title: Text(
                   language['nativeName']!,
                   style: TextStyle(
                     fontWeight:
                         isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.black87,
+                    color: isSelected ? Colors.blue[700] : Colors.black87,
                   ),
                 ),
                 subtitle: Text(
                   language['name']!,
                   style: TextStyle(
-                    color: isSelected
-                        ? Theme.of(context).primaryColor.withOpacity(0.7)
-                        : Colors.grey[600],
+                    color: isSelected ? Colors.blue[600] : Colors.grey[600],
+                    fontSize: 12,
                   ),
                 ),
                 trailing: isSelected
@@ -104,7 +85,7 @@ class LanguageSelectionModal extends StatelessWidget {
                       )
                     : null,
                 onTap: () async {
-                  await languageProvider.setLanguage(language['code']!);
+                  await languageNotifier.setLanguage(language['code']!);
                   if (context.mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(

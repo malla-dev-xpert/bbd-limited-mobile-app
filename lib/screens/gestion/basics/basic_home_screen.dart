@@ -72,18 +72,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final bool isTablet = width > 800;
+
+    final localizations = AppLocalizations.of(context);
+
     final List<ReportCardData> dynamicReportCardDataList = [
       ReportCardData(
-        title: AppLocalizations.of(context)
-            .translate('home_expeditions_in_progress'),
+        title: localizations.translate('home_expeditions_in_progress'),
         value: _expeditionsEnCours.toString(),
         backgroundColor: Colors.blue[800]!,
         textColor: Colors.white,
         icon: Icons.local_shipping,
       ),
       ReportCardData(
-        title:
-            AppLocalizations.of(context).translate('home_packages_in_transit'),
+        title: localizations.translate('home_packages_in_transit'),
         value: _totalColisEnTransit.toString(),
         backgroundColor: Colors.orange[800]!,
         textColor: Colors.white,
@@ -91,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -126,8 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              AppLocalizations.of(context)
-                                  .translate('home_welcome'),
+                              localizations.translate('home_welcome'),
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -137,8 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               _user?.firstName ??
                                   _user?.username ??
-                                  AppLocalizations.of(context)
-                                      .translate('home_user'),
+                                  localizations.translate('home_user'),
                               style: const TextStyle(
                                   letterSpacing: 0, fontSize: 16),
                             ),
@@ -148,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      AppLocalizations.of(context).translate('home_statistics'),
+                      localizations.translate('home_statistics'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -183,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
               SliverToBoxAdapter(
                 child: Text(
-                  AppLocalizations.of(context).translate('home_basic_info'),
+                  localizations.translate('home_basic_info'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -201,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: isTablet ? 3 : 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
-                  children: getCardDataList(context).map((data) {
+                  children: getCardDataList(context, localizations).map((data) {
                     return CustomCard(
                       icon: data.icon,
                       title: data.title,

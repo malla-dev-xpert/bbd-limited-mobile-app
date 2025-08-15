@@ -23,84 +23,73 @@ class CardData {
   });
 }
 
-List<CardData> getCardDataList(BuildContext context) {
+List<CardData> getCardDataList(BuildContext context, AppLocalizations localizations) {
   return [
     CardData(
       icon: Icons.inventory_2,
-      title:
-          AppLocalizations.of(context).translate('home_manage_packages_title'),
+      title: localizations.translate('home_manage_packages_title'),
       backgroundColor: Colors.grey[50]!,
       iconColor: const Color(0xFF13084F),
       titleColor: const Color(0xFF13084F),
       onPressed: (context) {
         Navigator.of(context).pushNamed('/package');
       },
-      description:
-          AppLocalizations.of(context).translate('home_manage_packages_desc'),
+      description: localizations.translate('home_manage_packages_desc'),
     ),
     CardData(
       icon: Icons.person_3_rounded,
-      title:
-          AppLocalizations.of(context).translate('home_manage_partners_title'),
+      title: localizations.translate('home_manage_partners_title'),
       backgroundColor: Colors.grey[50]!,
       iconColor: const Color(0xFF13084F),
       titleColor: const Color(0xFF13084F),
       onPressed: (context) {
         Navigator.of(context).pushNamed('/partners');
       },
-      description:
-          AppLocalizations.of(context).translate('home_manage_partners_desc'),
+      description: localizations.translate('home_manage_partners_desc'),
     ),
     CardData(
       icon: Icons.warehouse,
-      title: AppLocalizations.of(context)
-          .translate('home_manage_warehouses_title'),
+      title: localizations.translate('home_manage_warehouses_title'),
       backgroundColor: Colors.grey[50]!,
       iconColor: const Color(0xFF13084F),
       titleColor: const Color(0xFF13084F),
       onPressed: (context) {
         Navigator.of(context).pushNamed('/warehouse');
       },
-      description:
-          AppLocalizations.of(context).translate('home_manage_warehouses_desc'),
+      description: localizations.translate('home_manage_warehouses_desc'),
     ),
     CardData(
       icon: Icons.monetization_on_rounded,
-      title:
-          AppLocalizations.of(context).translate('home_manage_devices_title'),
+      title: localizations.translate('home_manage_devices_title'),
       backgroundColor: Colors.grey[50]!,
       iconColor: const Color(0xFF13084F),
       titleColor: const Color(0xFF13084F),
       onPressed: (context) {
         Navigator.of(context).pushNamed('/devises');
       },
-      description:
-          AppLocalizations.of(context).translate('home_manage_devices_desc'),
+      description: localizations.translate('home_manage_devices_desc'),
     ),
     CardData(
       icon: Icons.info,
-      title: AppLocalizations.of(context).translate('home_manage_ports_title'),
+      title: localizations.translate('home_manage_ports_title'),
       backgroundColor: Colors.grey[50]!,
       iconColor: const Color(0xFF13084F),
       titleColor: const Color(0xFF13084F),
       onPressed: (context) {
         Navigator.of(context).pushNamed('/harbor');
       },
-      description:
-          AppLocalizations.of(context).translate('home_manage_ports_desc'),
+      description: localizations.translate('home_manage_ports_desc'),
     ),
     CardData(
       icon: Icons.view_quilt,
-      title: AppLocalizations.of(context)
-          .translate('home_manage_containers_title'),
+      title: localizations.translate('home_manage_containers_title'),
       backgroundColor: Colors.grey[50]!,
       iconColor: const Color(0xFF13084F),
       titleColor: const Color(0xFF13084F),
       onPressed: (context) {
         Navigator.of(context).pushNamed('/container');
       },
-      description:
-          AppLocalizations.of(context).translate('home_manage_containers_desc'),
+      description: localizations.translate('home_manage_containers_desc'),
     ),
   ];
 }

@@ -42,7 +42,7 @@ class MainScreenState extends State<MainScreen> {
         if (isAdmin) ManageUsersScreen(),
         const SalesHomeScreen(),
         AccountHomeScreen(),
-        const ProfilePage(),
+        ProfilePage(user: user!),
       ];
     });
   }
@@ -57,7 +57,7 @@ class MainScreenState extends State<MainScreen> {
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: CurvedNavigationBar(
         index: _selectedIndex,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         color: const Color(0xFF1A1E49),
         buttonBackgroundColor: const Color(0xFF1A1E49),
         animationDuration: const Duration(milliseconds: 300),

@@ -1,22 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LanguageProvider extends ChangeNotifier {
+class LanguageState {
+  final Locale locale;
+  final bool isLoading;
+
+  const LanguageState({
+    required this.locale,
+    this.isLoading = true,
+  });
+
+  LanguageState copyWith({
+    Locale? locale,
+    bool? isLoading,
+  }) {
+    return LanguageState(
+      locale: locale ?? this.locale,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+class LanguageNotifier extends StateNotifier<LanguageState> {
   static const String _languageKey = 'selected_language';
-  Locale _currentLocale = const Locale('fr');
 
-  Locale get currentLocale => _currentLocale;
-
-  LanguageProvider() {
+  LanguageNotifier() : super(const LanguageState(locale: Locale('fr'))) {
     _loadSavedLanguage();
   }
 
   Future<void> _detectSystemLanguage() async {
     final String? systemLanguage = await _getSystemLanguage();
     if (systemLanguage != null) {
-      _currentLocale = Locale(systemLanguage);
-      notifyListeners();
+      state = state.copyWith(
+        locale: Locale(systemLanguage),
+        isLoading: false,
+      );
     }
   }
 
@@ -40,8 +60,10 @@ class LanguageProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final savedLanguage = prefs.getString(_languageKey);
     if (savedLanguage != null) {
-      _currentLocale = Locale(savedLanguage);
-      notifyListeners();
+      state = state.copyWith(
+        locale: Locale(savedLanguage),
+        isLoading: false,
+      );
     } else {
       // If no saved language, detect system language
       await _detectSystemLanguage();
@@ -49,14 +71,16 @@ class LanguageProvider extends ChangeNotifier {
   }
 
   Future<void> setLanguage(String languageCode) async {
-    _currentLocale = Locale(languageCode);
+    state = state.copyWith(
+      locale: Locale(languageCode),
+      isLoading: false,
+    );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, languageCode);
-    notifyListeners();
   }
 
   String getCurrentLanguageName() {
-    switch (_currentLocale.languageCode) {
+    switch (state.locale.languageCode) {
       case 'fr':
         return 'Français';
       case 'en':
@@ -76,3 +100,9 @@ class LanguageProvider extends ChangeNotifier {
     ];
   }
 }
+
+// Provider pour Riverpod
+final languageProvider =
+    StateNotifierProvider<LanguageNotifier, LanguageState>((ref) {
+  return LanguageNotifier();
+});
