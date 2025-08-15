@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
@@ -91,7 +92,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors du chargement des fournisseurs",
+          AppLocalizations.of(context).translate('error_loading_suppliers'),
         );
       }
     }
@@ -138,14 +139,17 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
   Future<void> _submitForm() async {
     if (localItems.isEmpty) {
-      showErrorTopSnackBar(context, "Ajoutez au moins un article.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('add_at_least_one_item'));
       return;
     }
 
     // Validation supplémentaire pour les achats avec versement
     if (widget.versementId != null && widget.devise == null) {
       showErrorTopSnackBar(
-          context, "La devise du versement doit être spécifiée");
+          context,
+          AppLocalizations.of(context)
+              .translate('versement_currency_required'));
       return;
     }
 
@@ -154,25 +158,37 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       final item = localItems[i];
       if (item['description']?.toString().isEmpty ?? true) {
         showErrorTopSnackBar(
-            context, "La description de l'article ${i + 1} est requise.");
+            context,
+            AppLocalizations.of(context)
+                .translate('item_description_required')
+                .replaceAll('{index}', '${i + 1}'));
         return;
       }
       final quantity = (item['quantity'] as num?)?.toInt() ?? 0;
       if (quantity <= 0) {
-        showErrorTopSnackBar(context,
-            "La quantité de l'article ${i + 1} doit être supérieure à 0.");
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('item_quantity_invalid')
+                .replaceAll('{index}', '${i + 1}'));
         return;
       }
       final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
       if (unitPrice <= 0) {
-        showErrorTopSnackBar(context,
-            "Le prix unitaire de l'article ${i + 1} doit être supérieur à 0.");
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('item_unit_price_invalid')
+                .replaceAll('{index}', '${i + 1}'));
         return;
       }
       final supplierId = (item['supplierId'] as num?)?.toInt() ?? 0;
       if (supplierId <= 0) {
         showErrorTopSnackBar(
-            context, "Le fournisseur de l'article ${i + 1} est requis.");
+            context,
+            AppLocalizations.of(context)
+                .translate('item_supplier_required')
+                .replaceAll('{index}', '${i + 1}'));
         return;
       }
     }
@@ -217,20 +233,9 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
             salesRate: (item['salesRate'] as num?)?.toDouble() ?? 0.0,
           );
 
-          // Log de chaque article
-          log("Article - Description: ${createItemDto.description}");
-          log("Article - Quantité: ${createItemDto.quantity}");
-          log("Article - Prix unitaire: ${createItemDto.unitPrice}");
-          log("Article - Numéro facture: ${createItemDto.invoiceNumber}");
-          log("Article - ID fournisseur: ${createItemDto.supplierId}");
-          log("Article - Taux de vente: ${createItemDto.salesRate}");
-
           return createItemDto;
         }).toList(),
       );
-
-      // Log du DTO complet
-      log("DTO JSON: ${jsonEncode(createAchatDto.toJson())}");
 
       final result = await achatServices.createAchatForClient(
         clientId: widget.clientId,
@@ -242,9 +247,11 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       if (result.isSuccess) {
         Navigator.pop(context, true);
-        showSuccessTopSnackBar(context, "Achat créé avec succès !");
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context).translate('purchase_created_success'));
       } else {
-        String message = result.errorMessage ?? "Erreur inconnue";
+        String message = result.errorMessage ??
+            AppLocalizations.of(context).translate('unknown_error');
         if (result.errors != null && result.errors!.isNotEmpty) {
           message = result.errors!.join('\n');
         }
@@ -252,8 +259,8 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(
-            context, "Erreur lors de la création de l'achat: ${e.toString()}");
+        showErrorTopSnackBar(context,
+            "${AppLocalizations.of(context).translate('error_creating_purchase')}: ${e.toString()}");
       }
       log("Erreur création achat: ${e.toString()}");
     } finally {
@@ -279,9 +286,9 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Nouvel Achat',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).translate('new_purchase'),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
@@ -375,9 +382,10 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                     confirmationButton(
                       isLoading: isLoading,
                       onPressed: _submitForm,
-                      label: 'Valider',
+                      label: AppLocalizations.of(context).translate('validate'),
                       icon: Icons.verified_outlined,
-                      subLabel: 'Enregistrement...',
+                      subLabel:
+                          AppLocalizations.of(context).translate('saving'),
                     ),
                   ],
                 ),
@@ -448,7 +456,7 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors du chargement des fournisseurs",
+          AppLocalizations.of(context).translate('error_loading_suppliers'),
         );
       }
     }
@@ -495,7 +503,8 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
 
   Future<void> _submitForm() async {
     if (localItems.isEmpty) {
-      showErrorTopSnackBar(context, "Ajoutez au moins un article.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('add_at_least_one_item'));
       return;
     }
 
@@ -535,9 +544,11 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
       if (result.isSuccess) {
         Navigator.pop(context, true);
         if (widget.onDebtCreated != null) widget.onDebtCreated!();
-        showSuccessTopSnackBar(context, "Dette créée avec succès !");
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context).translate('debt_created_success'));
       } else {
-        String message = result.errorMessage ?? "Erreur inconnue";
+        String message = result.errorMessage ??
+            AppLocalizations.of(context).translate('unknown_error');
         if (result.errors != null && result.errors!.isNotEmpty) {
           message = result.errors!.join('\n');
         }
@@ -545,7 +556,8 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur: \\${e.toString()}");
+        showErrorTopSnackBar(context,
+            "${AppLocalizations.of(context).translate('error_creating_debt')}: ${e.toString()}");
       }
       log(e.toString());
     } finally {
@@ -571,9 +583,9 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Nouvelle Dette',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).translate('new_debt'),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
@@ -667,9 +679,10 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
                     confirmationButton(
                       isLoading: isLoading,
                       onPressed: _submitForm,
-                      label: 'Valider',
+                      label: AppLocalizations.of(context).translate('validate'),
                       icon: Icons.verified_outlined,
-                      subLabel: 'Enregistrement...',
+                      subLabel:
+                          AppLocalizations.of(context).translate('saving'),
                     ),
                   ],
                 ),
