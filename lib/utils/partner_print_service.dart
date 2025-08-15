@@ -97,7 +97,7 @@ class PartnerPrintService {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            pw.Text('ÉTAT DU CLIENT',
+            pw.Text('CLIENT_STATUS',
                 style: pw.TextStyle(
                     fontSize: 32,
                     color: PdfColor.fromHex('#1A1E49'),
@@ -105,8 +105,11 @@ class PartnerPrintService {
             pw.SizedBox(height: 8),
             pw.Text(
                 dateRange == null
-                    ? 'Toutes périodes'
-                    : 'Du ${_dateFormat.format(dateRange.start)} au ${_dateFormat.format(dateRange.end)}',
+                    ? 'ALL_PERIODS'
+                    : 'FROM_TO'
+                        .replaceAll(
+                            '{start}', _dateFormat.format(dateRange.start))
+                        .replaceAll('{end}', _dateFormat.format(dateRange.end)),
                 style: pw.TextStyle(fontSize: 12)),
           ],
         ),

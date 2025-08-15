@@ -5,6 +5,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class CreatePartnerBottomSheet extends StatefulWidget {
   const CreatePartnerBottomSheet({Key? key}) : super(key: key);
@@ -55,9 +56,9 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Ajouter un nouveau client',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).translate('add_new_partner'),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -1,
@@ -80,7 +81,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _firstNameController,
-                            label: "Nom",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_first_name'),
                             icon: Icons.person,
                           ),
                         ),
@@ -88,7 +90,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _lastNameController,
-                            label: "Prénom",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_last_name'),
                             icon: Icons.person_4,
                           ),
                         ),
@@ -100,7 +103,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _phoneController,
-                            label: "Téléphone",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_phone'),
                             icon: Icons.phone,
                           ),
                         ),
@@ -108,7 +112,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         Expanded(
                           child: buildTextField(
                             controller: _emailController,
-                            label: "Email",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_email'),
                             icon: Icons.mail,
                           ),
                         ),
@@ -117,7 +122,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                     const SizedBox(height: 10),
                     buildTextField(
                       controller: _adresseController,
-                      label: "Adresse",
+                      label: AppLocalizations.of(context)
+                          .translate('partner_address'),
                       icon: Icons.maps_home_work,
                     ),
                     const SizedBox(height: 10),
@@ -164,7 +170,8 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                                       Text(_selectedCountry!.name),
                                     ],
                                   )
-                                : const Text('Choisir un pays'),
+                                : Text(AppLocalizations.of(context)
+                                    .translate('partner_country')),
                             const Icon(Icons.arrow_drop_down),
                           ],
                         ),
@@ -177,9 +184,11 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
                         : confirmationButton(
                             isLoading: isFormLoading,
                             onPressed: _savePartner,
-                            label: "Enregistrer",
+                            label:
+                                AppLocalizations.of(context).translate('save'),
                             icon: Icons.check_circle_rounded,
-                            subLabel: "Enregistrement...",
+                            subLabel: AppLocalizations.of(context)
+                                .translate('saving'),
                           ),
                   ],
                 ),
@@ -199,12 +208,14 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
       final user = await authService.getUserInfo();
 
       if (_firstNameController.text.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez entrer un nom");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_enter_name'));
         return;
       }
 
       if (user == null) {
-        showErrorTopSnackBar(context, "Veuillez vous connecter.");
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('please_login'));
         return;
       }
 
@@ -222,15 +233,17 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
       );
 
       if (success == "USER_NOT_FOUND") {
-        showErrorTopSnackBar(context, "Veuillez vous connecter.");
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('please_login'));
         return;
       } else if (success == "EMAIL_EXIST") {
-        showErrorTopSnackBar(context, "Cet email est déjà utilisé.");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('partner_email_exists'));
         return;
       } else if (success == "PHONE_EXIST") {
         showErrorTopSnackBar(
           context,
-          "Ce numéro de téléphone est déjà utilisé.",
+          AppLocalizations.of(context).translate('partner_phone_exists'),
         );
         return;
       } else if (success == "CREATED") {
@@ -244,11 +257,15 @@ class _CreatePartnerBottomSheetState extends State<CreatePartnerBottomSheet> {
           _adresseController.clear();
           // _acccountType = '';
           _selectedCountry = null;
-          showSuccessTopSnackBar(context, "Partenaire créé avec succès !");
+          showSuccessTopSnackBar(
+              context,
+              AppLocalizations.of(context)
+                  .translate('partner_created_success'));
         });
       }
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de l'enregistrement");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('partner_creation_error'));
     } finally {
       setState(() => isFormLoading = false);
     }

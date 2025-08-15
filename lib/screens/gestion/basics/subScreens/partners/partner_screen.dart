@@ -83,7 +83,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
         }
       });
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de chargement des partenaires.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('partner_loading_error'));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -107,7 +108,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
       try {
         await loadPartners(reset: true, searchQuery: query);
       } catch (e) {
-        showErrorTopSnackBar(context, "Erreur lors de la recherche");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('partner_search_error'));
       }
     }
   }
@@ -120,16 +122,17 @@ class _PartnerScreenState extends State<PartnerScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text(
-          "Gestion des comptes clients",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context).translate('partner_management_title'),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
-        tooltip: 'Add New partner',
+        tooltip: AppLocalizations.of(context).translate('add_new_partner'),
         heroTag: 'partner_fab',
         onPressed: () async {
           final shouldRefresh = await showModalBottomSheet<bool>(
@@ -160,8 +163,9 @@ class _PartnerScreenState extends State<PartnerScreen> {
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
-                      labelText: 'Recherche...',
-                      prefixIcon: Icon(Icons.search),
+                      labelText: AppLocalizations.of(context)
+                          .translate('search_partner'),
+                      prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32),
                       ),
@@ -258,11 +262,13 @@ class _PartnerScreenState extends State<PartnerScreen> {
               Navigator.pop(context);
               showSuccessTopSnackBar(
                 context,
-                "Partenaire modifié avec succès",
+                AppLocalizations.of(context)
+                    .translate('partner_updated_success'),
               );
             }
           } catch (e) {
-            showErrorTopSnackBar(context, "Erreur lors de la modification");
+            showErrorTopSnackBar(context,
+                AppLocalizations.of(context).translate('partner_update_error'));
           } finally {
             setState(() => _isLoading = false);
           }
@@ -280,7 +286,10 @@ class _PartnerScreenState extends State<PartnerScreen> {
         title: Text(localizations.translate('confirm_deletion')),
         backgroundColor: Colors.white,
         content: Text(
-          "Supprimer le partenaire ${partner.firstName} ${partner.lastName}?",
+          AppLocalizations.of(context)
+              .translate('confirm_delete_partner_message')
+              .replaceAll('{firstName}', partner.firstName)
+              .replaceAll('{lastName}', partner.lastName),
         ),
         actions: [
           TextButton(
@@ -290,9 +299,9 @@ class _PartnerScreenState extends State<PartnerScreen> {
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete, color: Colors.red),
-            label: const Text(
-              "Supprimer",
-              style: TextStyle(color: Colors.red, fontSize: 16),
+            label: Text(
+              AppLocalizations.of(context).translate('delete'),
+              style: const TextStyle(color: Colors.red, fontSize: 16),
             ),
           ),
         ],
@@ -304,7 +313,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
         final user = await authService.getUserInfo();
 
         if (user == null) {
-          showErrorTopSnackBar(context, "Veuillez vous connecter.");
+          showErrorTopSnackBar(
+              context, AppLocalizations.of(context).translate('please_login'));
           return;
         }
         setState(() => _isLoading = true);
@@ -316,12 +326,16 @@ class _PartnerScreenState extends State<PartnerScreen> {
         if (result == "DELETED") {
           loadPartners(reset: true);
           _filteredPartners.removeWhere((element) => element.id == partner.id);
-          showSuccessTopSnackBar(context, "Partenaire supprimé avec succès");
+          showSuccessTopSnackBar(
+              context,
+              AppLocalizations.of(context)
+                  .translate('partner_deleted_success'));
         } else {
           _handleDeleteError(result);
         }
       } catch (e) {
-        showErrorTopSnackBar(context, "Erreur lors de la suppression");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('partner_delete_error'));
       } finally {
         setState(() => _isLoading = false);
       }
@@ -331,16 +345,18 @@ class _PartnerScreenState extends State<PartnerScreen> {
   void _handleDeleteError(String? errorCode) {
     switch (errorCode) {
       case "PARTNER_NOT_FOUND":
-        showErrorTopSnackBar(context, "Partenaire introuvable");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('partner_not_found'));
         break;
       case "PACKAGE_FOUND":
         showErrorTopSnackBar(
           context,
-          "Impossible de supprimer - Il y'a des colis existants pour ce partenaire.",
+          AppLocalizations.of(context).translate('partner_packages_exist'),
         );
         break;
       default:
-        showErrorTopSnackBar(context, "Erreur inconnue");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('partner_unknown_error'));
     }
   }
 }

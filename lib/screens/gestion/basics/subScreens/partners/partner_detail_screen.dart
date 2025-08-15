@@ -19,6 +19,7 @@ import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:printing/printing.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 import 'widgets/balance_card_widget.dart';
 import 'widgets/operation_type_selector.dart';
@@ -334,8 +335,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             TextButton.icon(
               onPressed: _showPrintOptionsDialog,
               icon: const Icon(Icons.print),
-              label: const Text(
-                "Imprimer",
+              label: Text(
+                AppLocalizations.of(context).translate('print'),
               ),
             ),
           ]),
@@ -403,7 +404,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         },
       );
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de la génération du rapport");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('report_generation_error'));
     }
   }
 
@@ -432,9 +434,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            "Options d'impression",
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)
+                                .translate('print_options'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -461,7 +464,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                           RadioListTile<bool>(
                             contentPadding: EdgeInsets.zero,
                             visualDensity: VisualDensity.compact,
-                            title: const Text("Toutes les données"),
+                            title: Text(AppLocalizations.of(context)
+                                .translate('all_data')),
                             value: true,
                             groupValue: printAll,
                             onChanged: (value) {
@@ -471,7 +475,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                           RadioListTile<bool>(
                             contentPadding: EdgeInsets.zero,
                             visualDensity: VisualDensity.compact,
-                            title: const Text("Filtrer par date"),
+                            title: Text(AppLocalizations.of(context)
+                                .translate('filter_by_date')),
                             value: false,
                             groupValue: printAll,
                             onChanged: (value) {
@@ -528,7 +533,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                     Expanded(
                                       child: Text(
                                         selectedDateRange == null
-                                            ? "Sélectionner une période"
+                                            ? AppLocalizations.of(context)
+                                                .translate('select_period')
                                             : "${DateFormat('dd/MM/yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(selectedDateRange!.end)}",
                                         style: TextStyle(
                                           color: selectedDateRange == null
@@ -555,7 +561,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                         children: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text("Annuler"),
+                            child: Text(AppLocalizations.of(context)
+                                .translate('cancel')),
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
@@ -576,9 +583,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                 const Icon(Icons.print,
                                     size: 18, color: Colors.white),
                                 const SizedBox(width: 8),
-                                const Text(
-                                  "Générer le rapport",
-                                  style: TextStyle(color: Colors.white),
+                                Text(
+                                  AppLocalizations.of(context)
+                                      .translate('generate_report'),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                                 if (_isLoading)
                                   const Padding(
@@ -627,10 +635,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         },
         label: Text(
           _selectedOperationType == OperationType.versements
-              ? 'Nouveau versement'
+              ? AppLocalizations.of(context).translate('new_versement')
               : _selectedOperationType == OperationType.expeditions
-                  ? 'Nouveau colis'
-                  : 'Nouvelle dette',
+                  ? AppLocalizations.of(context).translate('new_package')
+                  : AppLocalizations.of(context).translate('new_debt'),
           style: const TextStyle(color: Colors.white),
         ),
         icon: const Icon(Icons.add, color: Colors.white),
@@ -789,7 +797,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         controller: _searchController,
         onChanged: _filterOperations,
         decoration: InputDecoration(
-          hintText: 'Rechercher...',
+          hintText: AppLocalizations.of(context).translate('search'),
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(32),
@@ -840,7 +848,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         ),
         child: Center(
           child: Text(
-            'Aucun colis trouvé.',
+            AppLocalizations.of(context).translate('no_packages_found'),
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
