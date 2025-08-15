@@ -295,7 +295,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),

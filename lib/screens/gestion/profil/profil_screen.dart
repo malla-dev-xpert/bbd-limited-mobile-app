@@ -10,7 +10,9 @@ import 'package:bbd_limited/screens/gestion/profil/widgets/language_selection_mo
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final User user;
+
+  const ProfilePage({super.key, required this.user});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -18,23 +20,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
-  User? _user;
   bool isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserInfo();
-  }
-
-  Future<void> _loadUserInfo() async {
-    final user = await _authService.getUserInfo();
-    if (mounted) {
-      setState(() {
-        _user = user;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +53,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfileHeader(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    if (_user == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     return Column(
       children: [
         Container(
@@ -89,14 +71,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 20),
         Text(
-          "${_user?.firstName ?? ''} ${_user?.lastName ?? ''}",
+          "${widget.user.firstName ?? ''} ${widget.user.lastName ?? ''}",
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(
-          _user?.email ?? '',
+          widget.user.email ?? '',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
@@ -254,7 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         height: MediaQuery.of(context).size.height * 0.45,
-        child: PersonalInfoCard(user: _user!),
+        child: PersonalInfoCard(user: widget.user),
       ),
     );
   }

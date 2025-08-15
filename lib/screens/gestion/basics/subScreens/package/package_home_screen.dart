@@ -272,7 +272,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Padding(
