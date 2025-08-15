@@ -706,18 +706,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     items: [
-                      const PopupMenuItem<VersementType?>(
+                      PopupMenuItem<VersementType?>(
                         value: null,
                         child: Text(
-                          'Tous les types',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          AppLocalizations.of(context).translate('all_types'),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                       ...VersementType.values.map(
                         (type) => PopupMenuItem<VersementType?>(
                           value: type,
                           child: Text(
-                            type.toString().split('.').last,
+                            _getVersementTypeTranslation(type),
                             style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
                         ),
@@ -984,5 +984,22 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  String _getVersementTypeTranslation(VersementType type) {
+    switch (type) {
+      case VersementType.General:
+        return AppLocalizations.of(context).translate('versement_type_general');
+      case VersementType.Dette:
+        return AppLocalizations.of(context).translate('versement_type_dette');
+      case VersementType.Commande:
+        return AppLocalizations.of(context).translate('versement_type_commande');
+      case VersementType.CompteBancaire:
+        return AppLocalizations.of(context).translate('versement_type_compte_bancaire');
+      case VersementType.Autres:
+        return AppLocalizations.of(context).translate('versement_type_autres');
+      default:
+        return type.toString().split('.').last;
+    }
   }
 }

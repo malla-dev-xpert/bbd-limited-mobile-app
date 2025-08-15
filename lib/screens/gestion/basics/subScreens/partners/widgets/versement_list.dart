@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class VersementListWidget extends StatelessWidget {
   final List<dynamic>? versements;
@@ -23,7 +24,7 @@ class VersementListWidget extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            'Aucun versement trouvé.',
+            AppLocalizations.of(context).translate('no_versements_found'),
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -53,7 +54,7 @@ class VersementListWidget extends StatelessWidget {
             child: ListTile(
               onTap: () => onVersementTap(versement),
               title: Text(
-                versement.reference ?? 'Sans référence',
+                versement.reference ?? AppLocalizations.of(context).translate('without_reference'),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -62,7 +63,7 @@ class VersementListWidget extends StatelessWidget {
               subtitle: Text(
                 versement.createdAt != null
                     ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
-                    : 'Date inconnue',
+                    : AppLocalizations.of(context).translate('unknown_date'),
                 style: const TextStyle(fontSize: 12),
               ),
               trailing: Row(

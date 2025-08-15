@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class PartnerBalanceCard extends StatelessWidget {
   final Partner partner;
@@ -52,7 +53,7 @@ class PartnerBalanceCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Balance Actuelle',
+                      AppLocalizations.of(context).translate('current_balance'),
                       style: TextStyle(fontSize: 16, color: Colors.grey[50]!),
                     ),
                   ],
@@ -98,7 +99,7 @@ class PartnerBalanceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Montant total versé (CNY)",
+                          AppLocalizations.of(context).translate('total_amount_paid'),
                           style: TextStyle(color: Colors.grey[50]),
                         ),
                         Text(

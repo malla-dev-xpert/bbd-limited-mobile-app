@@ -1,5 +1,6 @@
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_detail_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class OperationTypeSelector extends StatelessWidget {
   final OperationType selectedOperationType;
@@ -19,17 +20,17 @@ class OperationTypeSelector extends StatelessWidget {
         children: [
           Expanded(
             child: _buildOperationTypeButton(OperationType.versements,
-                'Versements', Icons.payments_outlined),
+                AppLocalizations.of(context).translate('versements'), Icons.payments_outlined),
           ),
           const SizedBox(width: 5),
           Expanded(
             child: _buildOperationTypeButton(
-                OperationType.expeditions, 'Colis', Icons.inventory_2),
+                OperationType.expeditions, AppLocalizations.of(context).translate('packages'), Icons.inventory_2),
           ),
           const SizedBox(width: 5),
           Expanded(
             child: _buildOperationTypeButton(
-                OperationType.debts, 'Dettes', Icons.money_off_csred),
+                OperationType.debts, AppLocalizations.of(context).translate('debts'), Icons.money_off_csred),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class DateFilterWidget extends StatelessWidget {
   final bool showDateFilter;
@@ -46,9 +47,10 @@ class DateFilterWidget extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Text(
-                          'Filtrer par date',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('filter_by_date_title'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1A1E49),
@@ -69,7 +71,8 @@ class DateFilterWidget extends StatelessWidget {
                           Expanded(
                             child: _DatePickerField(
                               controller: dateDebutController,
-                              label: 'Date début',
+                              label: AppLocalizations.of(context)
+                                  .translate('start_date'),
                               onTap: onDateDebutSelected,
                             ),
                           ),
@@ -77,7 +80,8 @@ class DateFilterWidget extends StatelessWidget {
                           Expanded(
                             child: _DatePickerField(
                               controller: dateFinController,
-                              label: 'Date fin',
+                              label: AppLocalizations.of(context)
+                                  .translate('end_date'),
                               onTap: onDateFinSelected,
                             ),
                           ),
@@ -88,13 +92,15 @@ class DateFilterWidget extends StatelessWidget {
                         children: [
                           _DatePickerField(
                             controller: dateDebutController,
-                            label: 'Date début',
+                            label: AppLocalizations.of(context)
+                                .translate('start_date'),
                             onTap: onDateDebutSelected,
                           ),
                           const SizedBox(height: 12),
                           _DatePickerField(
                             controller: dateFinController,
-                            label: 'Date fin',
+                            label: AppLocalizations.of(context)
+                                .translate('end_date'),
                             onTap: onDateFinSelected,
                           ),
                         ],

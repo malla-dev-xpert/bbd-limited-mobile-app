@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class DebtListWidget extends StatelessWidget {
   final List<Achat>? debts;
@@ -24,7 +25,7 @@ class DebtListWidget extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            'Aucune dette trouvée.',
+            AppLocalizations.of(context).translate('no_debts_found'),
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -66,7 +67,7 @@ class DebtListWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Identifiant: ${achat.id ?? "N/A"}',
+                          '${AppLocalizations.of(context).translate('identifier')}: ${achat.id ?? "N/A"}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -84,9 +85,9 @@ class DebtListWidget extends StatelessWidget {
                         ),
                         child: Text(
                           (achat.status == Status.COMPLETED
-                              ? "Complété"
+                              ? AppLocalizations.of(context).translate('completed')
                               : achat.status == Status.PENDING
-                                  ? "En attente"
+                                  ? AppLocalizations.of(context).translate('pending')
                                   : (achat.status != null
                                       ? achat.status.toString().split('.').last
                                       : "N/A")),
@@ -112,7 +113,7 @@ class DebtListWidget extends StatelessWidget {
                           (achat.client != null && achat.client!.isNotEmpty)
                               ? achat.client!
                               : (achat.isDebt == true && achat.clientId != null)
-                                  ? 'Client #${achat.clientId}'
+                                  ? '${AppLocalizations.of(context).translate('client_label')} #${achat.clientId}'
                                   : "N/A",
                           style: TextStyle(
                             color: Colors.grey[700]!,
@@ -151,7 +152,7 @@ class DebtListWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Acheté le ${DateFormat('dd/MM/yyyy').format(achat.createdAt!)}',
+                          '${AppLocalizations.of(context).translate('purchased_on')} ${DateFormat('dd/MM/yyyy').format(achat.createdAt!)}',
                           style: TextStyle(
                             color: Colors.grey[700]!,
                           ),
@@ -164,7 +165,7 @@ class DebtListWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Montant total',
+                        AppLocalizations.of(context).translate('total_amount'),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
