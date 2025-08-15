@@ -5,6 +5,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class PackageItemForm extends StatefulWidget {
   final Function(
@@ -73,7 +74,8 @@ class _PackageItemFormState extends State<PackageItemForm> {
                   },
                   itemToString: (supplier) =>
                       '${supplier.firstName}  ${supplier.lastName} ${supplier.lastName.isNotEmpty ? '|' : ''} ${supplier.phoneNumber}',
-                  hintText: 'Choisir un fournisseur...',
+                  hintText:
+                      AppLocalizations.of(context).translate('choose_supplier'),
                   prefixIcon: Icons.person_add,
                 ),
               ),
@@ -120,11 +122,12 @@ class _PackageItemFormState extends State<PackageItemForm> {
           const SizedBox(height: 10),
           buildTextField(
             controller: _descriptionController,
-            label: "Description de l'article",
+            label: AppLocalizations.of(context).translate('item_description'),
             icon: Icons.description,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer une description';
+                return AppLocalizations.of(context)
+                    .translate('please_enter_description');
               }
               return null;
             },
@@ -132,11 +135,12 @@ class _PackageItemFormState extends State<PackageItemForm> {
           const SizedBox(height: 10),
           buildTextField(
             controller: _invoiceNumberController,
-            label: "Numéro de facture",
+            label: AppLocalizations.of(context).translate('invoice_number'),
             icon: Icons.inventory_outlined,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Veuillez entrer un numéro de facture';
+                return AppLocalizations.of(context)
+                    .translate('please_enter_invoice_number');
               }
               return null;
             },
@@ -147,7 +151,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
               Expanded(
                 child: buildTextField(
                   controller: _unitPriceController,
-                  label: "Prix Unitaire",
+                  label: AppLocalizations.of(context).translate('unit_price'),
                   keyboardType: TextInputType.number,
                   icon: Icons.attach_money,
                 ),
@@ -156,7 +160,8 @@ class _PackageItemFormState extends State<PackageItemForm> {
               Expanded(
                 child: buildTextField(
                   controller: _salesRateController,
-                  label: "Taux d'achat",
+                  label:
+                      AppLocalizations.of(context).translate('purchase_rate'),
                   icon: Icons.percent,
                 ),
               ),
@@ -171,7 +176,7 @@ class _PackageItemFormState extends State<PackageItemForm> {
               Expanded(
                 child: buildTextField(
                   controller: _quantityController,
-                  label: "Quantité",
+                  label: AppLocalizations.of(context).translate('quantity'),
                   keyboardType: TextInputType.number,
                   icon: Icons.numbers,
                 ),
@@ -179,8 +184,8 @@ class _PackageItemFormState extends State<PackageItemForm> {
               ElevatedButton.icon(
                 onPressed: _submitForm,
                 icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text("Ajouter",
-                    style: TextStyle(color: Colors.white)),
+                label: Text(AppLocalizations.of(context).translate('add'),
+                    style: const TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7F78AF),
                   shape: RoundedRectangleBorder(
@@ -199,7 +204,8 @@ class _PackageItemFormState extends State<PackageItemForm> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       if (selectedSupplier == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un fournisseur");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_supplier'));
         return;
       }
 
