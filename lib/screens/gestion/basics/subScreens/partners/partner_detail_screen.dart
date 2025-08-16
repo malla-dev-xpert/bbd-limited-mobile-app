@@ -384,6 +384,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       final pdfBytes = await PartnerPrintService.buildClientReportPdfBytes(
         _partner,
         dateRange: dateRange,
+        localizations: AppLocalizations.of(context),
       );
 
       await showDialog(
@@ -993,9 +994,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       case VersementType.Dette:
         return AppLocalizations.of(context).translate('versement_type_dette');
       case VersementType.Commande:
-        return AppLocalizations.of(context).translate('versement_type_commande');
+        return AppLocalizations.of(context)
+            .translate('versement_type_commande');
       case VersementType.CompteBancaire:
-        return AppLocalizations.of(context).translate('versement_type_compte_bancaire');
+        return AppLocalizations.of(context)
+            .translate('versement_type_compte_bancaire');
       case VersementType.Autres:
         return AppLocalizations.of(context).translate('versement_type_autres');
       default:
