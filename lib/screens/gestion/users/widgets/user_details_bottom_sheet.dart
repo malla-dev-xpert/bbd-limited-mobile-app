@@ -7,11 +7,13 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 class UserDetailsBottomSheet extends StatefulWidget {
   final User user;
   final VoidCallback? onUserDisabled;
+  final bool isCurrentUser;
 
   const UserDetailsBottomSheet({
     Key? key,
     required this.user,
     this.onUserDisabled,
+    this.isCurrentUser = false,
   }) : super(key: key);
 
   @override
@@ -115,9 +117,13 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
+                  color:
+                      widget.isCurrentUser ? Colors.grey[100] : Colors.red[50],
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.red[200]!),
+                  border: Border.all(
+                      color: widget.isCurrentUser
+                          ? Colors.grey[300]!
+                          : Colors.red[200]!),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -127,15 +133,23 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                       Row(
                         children: [
                           Icon(
-                            Icons.warning_amber_rounded,
-                            color: Colors.red[600],
+                            widget.isCurrentUser
+                                ? Icons.info_outline
+                                : Icons.warning_amber_rounded,
+                            color: widget.isCurrentUser
+                                ? Colors.grey[600]
+                                : Colors.red[600],
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Actions dangereuses',
+                            widget.isCurrentUser
+                                ? 'Actions non disponibles'
+                                : 'Actions dangereuses',
                             style: TextStyle(
-                              color: Colors.red[600],
+                              color: widget.isCurrentUser
+                                  ? Colors.grey[600]
+                                  : Colors.red[600],
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -143,43 +157,49 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'La désactivation de ce compte empêchera l\'utilisateur de se connecter à l\'application.',
+                        widget.isCurrentUser
+                            ? 'Vous ne pouvez pas désactiver votre propre compte depuis cette interface.'
+                            : 'La désactivation de ce compte empêchera l\'utilisateur de se connecter à l\'application.',
                         style: TextStyle(
-                          color: Colors.red[700],
+                          color: widget.isCurrentUser
+                              ? Colors.grey[700]
+                              : Colors.red[700],
                           fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: Colors.red[600],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(32),
+                      if (!widget.isCurrentUser) ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              backgroundColor: Colors.red[600],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
+                              ),
                             ),
+                            icon: _isDisabling
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.block, color: Colors.white),
+                            label: Text(
+                              _isDisabling
+                                  ? "Désactivation..."
+                                  : "Désactiver le compte",
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            onPressed:
+                                _isDisabling ? null : _showDisableConfirmation,
                           ),
-                          icon: _isDisabling
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.block, color: Colors.white),
-                          label: Text(
-                            _isDisabling
-                                ? "Désactivation..."
-                                : "Désactiver le compte",
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          onPressed:
-                              _isDisabling ? null : _showDisableConfirmation,
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

@@ -273,6 +273,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   }
 
   Future<void> _showUserDetails(User user) async {
+    final bool isCurrentUser =
+        _currentUser != null && _currentUser!.id == user.id;
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -283,6 +286,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       builder: (context) {
         return UserDetailsBottomSheet(
           user: user,
+          isCurrentUser: isCurrentUser,
           onUserDisabled: () {
             // Rafraîchir la liste après désactivation
             fetchUsers(reset: true);
@@ -468,25 +472,27 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
     return Slidable(
       key: ValueKey(user.id),
-      endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => _showEditUserModal(context, user),
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            icon: Icons.edit,
-            label: 'Modifier',
-          ),
-          SlidableAction(
-            onPressed: (_) => _delete(user),
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: 'Supprimer',
-          ),
-        ],
-      ),
+      endActionPane: isCurrentUser
+          ? null
+          : ActionPane(
+              motion: const DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) => _showEditUserModal(context, user),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  icon: Icons.edit,
+                  label: 'Modifier',
+                ),
+                SlidableAction(
+                  onPressed: (_) => _delete(user),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete,
+                  label: 'Supprimer',
+                ),
+              ],
+            ),
       child: InkWell(
         onTap: () => _showUserDetails(user),
         borderRadius: BorderRadius.circular(8),
