@@ -470,6 +470,10 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     final bool isCurrentUser =
         _currentUser != null && _currentUser!.id == user.id;
 
+    // Détecter si on est sur mobile ou tablette
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Slidable(
       key: ValueKey(user.id),
       endActionPane: isCurrentUser
@@ -535,37 +539,102 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 ),
             ],
           ),
-          title: Text(
-            user.username,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-          ),
-          subtitle: Text(
-            '${user.firstName ?? ''} ${user.lastName ?? ''}',
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Text(
-                  user.roleName ?? 'Rôle non défini',
-                  style: TextStyle(color: Colors.blue[600], fontSize: 10),
-                ),
+              Row(
+                children: [
+                  Text(
+                    "Login ID: ",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      user.username,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-                size: 16,
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Text(
+                    "Nom complet: ",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${user.firstName ?? ''} ${user.lastName ?? ''}',
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
+              if (isMobile) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Text(
+                    user.roleName ?? 'Rôle non défini',
+                    style: TextStyle(color: Colors.blue[600], fontSize: 10),
+                  ),
+                ),
+              ],
             ],
           ),
+          subtitle: isMobile
+              ? null
+              : Text(
+                  '${user.firstName ?? ''} ${user.lastName ?? ''}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+          trailing: isMobile
+              ? Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey[400],
+                  size: 16,
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 2, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Text(
+                        user.roleName ?? 'Rôle non défini',
+                        style: TextStyle(color: Colors.blue[600], fontSize: 10),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey[400],
+                      size: 16,
+                    ),
+                  ],
+                ),
         ),
       ),
     );
