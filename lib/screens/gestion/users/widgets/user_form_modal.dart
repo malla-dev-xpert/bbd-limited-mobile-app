@@ -1,4 +1,5 @@
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:bbd_limited/models/user.dart';
@@ -99,19 +100,21 @@ class _UserFormModalState extends State<UserFormModal> {
     if (!_formKey.currentState!.validate()) {
       showErrorTopSnackBar(
         context,
-        'Veuillez corriger les erreurs dans le formulaire',
+        AppLocalizations.of(context).translate('form_errors'),
       );
       return;
     }
 
     if (_selectedRole == null) {
-      showErrorTopSnackBar(context, 'Veuillez sélectionner un rôle');
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_role'));
       return;
     }
 
     // Vérifier que le mot de passe est fourni pour un nouvel utilisateur
     if (widget.user == null && _passwordController.text.isEmpty) {
-      showErrorTopSnackBar(context, 'Veuillez entrer un mot de passe');
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_enter_password'));
       return;
     }
 
@@ -154,14 +157,15 @@ class _UserFormModalState extends State<UserFormModal> {
         showSuccessTopSnackBar(
           context,
           widget.user == null
-              ? 'Utilisateur créé avec succès'
-              : 'Utilisateur modifié avec succès',
+              ? AppLocalizations.of(context).translate('user_created_success')
+              : AppLocalizations.of(context).translate('user_updated_success'),
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(context, 'Erreur: ${e.toString()}');
+        showErrorTopSnackBar(context,
+            '${AppLocalizations.of(context).translate('error')}: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -208,8 +212,10 @@ class _UserFormModalState extends State<UserFormModal> {
                   children: [
                     Text(
                       widget.user == null
-                          ? 'Nouvel utilisateur'
-                          : 'Modifier l\'utilisateur',
+                          ? AppLocalizations.of(context)
+                              .translate('user_form_create_title')
+                          : AppLocalizations.of(context)
+                              .translate('user_form_edit_title'),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     IconButton(
@@ -222,11 +228,13 @@ class _UserFormModalState extends State<UserFormModal> {
                 if (_currentStep == 0) ...[
                   buildTextField(
                     controller: _usernameController,
-                    label: 'Nom d\'utilisateur',
+                    label: AppLocalizations.of(context)
+                        .translate('user_form_username_label'),
                     icon: Icons.person,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Veuillez entrer un nom d\'utilisateur';
+                        return AppLocalizations.of(context).translate(
+                            'user_form_validation_username_required');
                       }
                       return null;
                     },
@@ -234,14 +242,17 @@ class _UserFormModalState extends State<UserFormModal> {
                   const SizedBox(height: 16),
                   buildTextField(
                     controller: _firstNameController,
-                    label: 'Prénom',
+                    label: AppLocalizations.of(context)
+                        .translate('user_form_first_name_label'),
                     icon: Icons.person_outline,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Veuillez entrer un prénom';
+                        return AppLocalizations.of(context).translate(
+                            'user_form_validation_first_name_required');
                       }
                       if (value.length < 2) {
-                        return 'Le prénom doit contenir au moins 2 caractères';
+                        return AppLocalizations.of(context).translate(
+                            'user_form_validation_first_name_required');
                       }
                       return null;
                     },
@@ -249,7 +260,8 @@ class _UserFormModalState extends State<UserFormModal> {
                   const SizedBox(height: 16),
                   buildTextField(
                     controller: _lastNameController,
-                    label: 'Nom',
+                    label: AppLocalizations.of(context)
+                        .translate('user_form_last_name_label'),
                     icon: Icons.person_outline,
                     // validator: (value) {
                     //   if (value == null || value.isEmpty) {
@@ -271,7 +283,8 @@ class _UserFormModalState extends State<UserFormModal> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
-                              labelText: "Mot de passe",
+                              labelText: AppLocalizations.of(context)
+                                  .translate('user_form_password_label'),
                               prefixIcon: const Icon(Icons.lock_outline,
                                   color: Colors.black),
                               filled: true,
@@ -290,7 +303,9 @@ class _UserFormModalState extends State<UserFormModal> {
                                     icon: const Icon(Icons.refresh,
                                         color: Colors.black),
                                     onPressed: _generatePassword,
-                                    tooltip: 'Générer un mot de passe',
+                                    tooltip: AppLocalizations.of(context)
+                                        .translate(
+                                            'user_form_generate_password'),
                                   ),
                                   IconButton(
                                     icon: Icon(
@@ -306,17 +321,20 @@ class _UserFormModalState extends State<UserFormModal> {
                                     icon: const Icon(Icons.copy,
                                         color: Colors.black),
                                     onPressed: _copyPassword,
-                                    tooltip: 'Copier le mot de passe',
+                                    tooltip: AppLocalizations.of(context)
+                                        .translate('user_form_copy_password'),
                                   ),
                                 ],
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Veuillez entrer un mot de passe';
+                                return AppLocalizations.of(context)
+                                    .translate('user_form_validation_password_required');
                               }
                               if (value.length < 6) {
-                                return 'Le mot de passe doit contenir au moins 6 caractères';
+                                return AppLocalizations.of(context).translate(
+                                    'user_form_validation_password_min_length');
                               }
                               return null;
                             },
@@ -328,7 +346,8 @@ class _UserFormModalState extends State<UserFormModal> {
                   ],
                   buildTextField(
                     controller: _emailController,
-                    label: 'Email (optionnel)',
+                    label: AppLocalizations.of(context)
+                        .translate('user_form_email_label'),
                     icon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -337,7 +356,8 @@ class _UserFormModalState extends State<UserFormModal> {
                           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                         );
                         if (!emailRegex.hasMatch(value)) {
-                          return 'Veuillez entrer un email valide';
+                          return AppLocalizations.of(context)
+                              .translate('user_form_validation_email_invalid');
                         }
                       }
                       return null;
@@ -346,7 +366,8 @@ class _UserFormModalState extends State<UserFormModal> {
                   const SizedBox(height: 16),
                   buildTextField(
                     controller: _phoneController,
-                    label: 'Téléphone (optionnel)',
+                    label: AppLocalizations.of(context)
+                        .translate('user_form_phone_label'),
                     icon: Icons.phone,
                     keyboardType: TextInputType.phone,
                   ),
@@ -360,7 +381,8 @@ class _UserFormModalState extends State<UserFormModal> {
                       });
                     },
                     itemToString: (role) => role.name,
-                    hintText: 'Sélectionner un rôle',
+                    hintText:
+                        AppLocalizations.of(context).translate('user_form_role_hint'),
                     prefixIcon: Icons.assignment_ind,
                   ),
                 ],
@@ -370,10 +392,11 @@ class _UserFormModalState extends State<UserFormModal> {
                     padding: const EdgeInsets.symmetric(vertical: 20.0),
                     child: confirmationButton(
                       isLoading: false,
-                      label: "Suivant",
+                      label: AppLocalizations.of(context).translate('next'),
                       onPressed: _goToNextStep,
                       icon: Icons.arrow_forward_ios,
-                      subLabel: "Chargement...",
+                      subLabel:
+                          AppLocalizations.of(context).translate('loading'),
                     ),
                   )
                 else
@@ -385,15 +408,21 @@ class _UserFormModalState extends State<UserFormModal> {
                           child: TextButton.icon(
                             icon: const Icon(Icons.arrow_back),
                             onPressed: _goToPreviousStep,
-                            label: const Text("Retour"),
+                            label: Text(
+                                AppLocalizations.of(context).translate('back')),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: confirmationButton(
                             isLoading: _isLoading,
-                            label: widget.user == null ? "Créer" : "Modifier",
-                            subLabel: "Enregistrement...",
+                            label: widget.user == null
+                                ? AppLocalizations.of(context)
+                                    .translate('user_form_save')
+                                : AppLocalizations.of(context)
+                                    .translate('user_form_save'),
+                            subLabel: AppLocalizations.of(context)
+                                .translate('user_form_saving'),
                             icon: Icons.check,
                             onPressed: _submitForm,
                           ),

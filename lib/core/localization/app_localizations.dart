@@ -17,12 +17,35 @@ class AppLocalizations {
   Map<String, String> _localizedStrings = {};
 
   Future<bool> load() async {
-    String jsonString = await rootBundle
-        .loadString('assets/translations/${locale.languageCode}.json');
-    Map<String, dynamic> jsonMap = json.decode(jsonString);
-    _localizedStrings =
-        jsonMap.map((key, value) => MapEntry(key, value.toString()));
-    return true;
+    try {
+      String jsonString = await rootBundle
+          .loadString('assets/translations/${locale.languageCode}.json');
+
+      Map<String, dynamic> jsonMap = json.decode(jsonString);
+      _localizedStrings =
+          jsonMap.map((key, value) => MapEntry(key, value.toString()));
+
+      return true;
+    } catch (e) {
+      print('Error loading translations for ${locale.languageCode}: $e');
+      // En cas d'erreur, on charge les traductions par défaut (français)
+      if (locale.languageCode != 'fr') {
+        try {
+          String jsonString =
+              await rootBundle.loadString('assets/translations/fr.json');
+
+          Map<String, dynamic> jsonMap = json.decode(jsonString);
+          _localizedStrings =
+              jsonMap.map((key, value) => MapEntry(key, value.toString()));
+
+          return true;
+        } catch (fallbackError) {
+          print('Error loading fallback translations: $fallbackError');
+          return false;
+        }
+      }
+      return false;
+    }
   }
 
   String translate(String key) {

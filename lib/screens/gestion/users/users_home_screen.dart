@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/users/widgets/user_form_modal.dart';
 import 'package:bbd_limited/screens/gestion/users/widgets/user_details_bottom_sheet.dart';
@@ -53,7 +54,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       if (user == null) {
         showErrorTopSnackBar(
           context,
-          "Impossible de charger les informations de l'utilisateur actuel",
+          AppLocalizations.of(context).translate('error_loading_user'),
         );
         return;
       }
@@ -63,7 +64,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     } catch (e) {
       showErrorTopSnackBar(
         context,
-        "Erreur lors du chargement de l'utilisateur actuel: ${e.toString()}",
+        AppLocalizations.of(context)
+            .translate('error_loading_current_user')
+            .replaceAll('{error}', e.toString()),
       );
     }
   }
@@ -98,7 +101,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     } catch (e) {
       showErrorTopSnackBar(
         context,
-        "Erreur de récupération des utilisateurs: ${e.toString()}",
+        AppLocalizations.of(context)
+            .translate('error_fetching_users')
+            .replaceAll('{error}', e.toString()),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -162,7 +167,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             } catch (e) {
               showErrorTopSnackBar(
                 context,
-                "Erreur lors de la création de l'utilisateur",
+                AppLocalizations.of(context).translate('error_creating_user'),
               );
               return false;
             }
@@ -198,14 +203,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               } else {
                 showErrorTopSnackBar(
                   context,
-                  "Erreur lors de la modification de l'utilisateur",
+                  AppLocalizations.of(context).translate('error_updating_user'),
                 );
                 return false;
               }
             } catch (e) {
               showErrorTopSnackBar(
                 context,
-                "Erreur lors de la modification de l'utilisateur",
+                AppLocalizations.of(context).translate('error_updating_user'),
               );
               return false;
             }
@@ -223,21 +228,26 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
+        title: Text(
+            AppLocalizations.of(context).translate('confirm_user_deletion')),
         content: Text(
-          "Voulez-vous vraiment supprimer l'utilisateur ${user.username}?",
+          AppLocalizations.of(context)
+              .translate('confirm_user_deletion_message')
+              .replaceAll('{username}', user.username),
         ),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
           ),
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
-              _isLoading ? 'Suppression...' : 'Supprimer',
+              _isLoading
+                  ? AppLocalizations.of(context).translate('deleting')
+                  : AppLocalizations.of(context).translate('delete'),
               style: TextStyle(color: Colors.red, fontSize: 16),
             ),
           ),
@@ -253,7 +263,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       });
       final success = await _authService.deleteUser(user.id, _currentUser!);
       if (success) {
-        showSuccessTopSnackBar(context, "Utilisateur supprimé avec succès");
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_deleted_success'));
         // Navigator.pop(context, true);
         setState(() {
           _allUsers.removeWhere((d) => d.id == user.id);
@@ -263,7 +274,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     } catch (e) {
       showErrorTopSnackBar(
         context,
-        "Erreur lors de la suppression: ${e.toString()}",
+        AppLocalizations.of(context)
+            .translate('error_deleting_user')
+            .replaceAll('{error}', e.toString()),
       );
     } finally {
       setState(() {
@@ -313,9 +326,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 30),
-            const Text(
-              "Gestion des utilisateurs",
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).translate('user_management_title'),
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -1,
@@ -337,7 +350,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
-                          title: 'Total des utilisateurs',
+                          title: AppLocalizations.of(context)
+                              .translate('user_stats_total'),
                           value: _allUsers.length.toString(),
                           valueStyle: const TextStyle(
                             fontSize: 24,
@@ -361,7 +375,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: _StatItem(
-                          title: 'Administrateurs',
+                          title: AppLocalizations.of(context)
+                              .translate('user_stats_administrators'),
                           value: _allUsers
                               .where((u) => u.roleName == 'ADMINISTRATEUR')
                               .length
@@ -399,7 +414,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               child: TextField(
                 controller: searchController,
                 decoration: InputDecoration(
-                  hintText: "Rechercher un utilisateur...",
+                  hintText: AppLocalizations.of(context)
+                      .translate('user_search_hint'),
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -486,14 +502,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                   icon: Icons.edit,
-                  label: 'Modifier',
+                  label: AppLocalizations.of(context).translate('edit'),
                 ),
                 SlidableAction(
                   onPressed: (_) => _delete(user),
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                   icon: Icons.delete,
-                  label: 'Supprimer',
+                  label: AppLocalizations.of(context).translate('delete'),
                 ),
               ],
             ),
@@ -545,13 +561,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               Row(
                 children: [
                   Text(
-                    "Login ID: ",
+                    AppLocalizations.of(context).translate('user_login_id'),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       user.username,
@@ -565,13 +582,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               Row(
                 children: [
                   Text(
-                    "Nom complet: ",
+                    AppLocalizations.of(context).translate('user_full_name'),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       '${user.firstName ?? ''} ${user.lastName ?? ''}',
@@ -592,7 +610,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Text(
-                    user.roleName ?? 'Rôle non défini',
+                    user.roleName ??
+                        AppLocalizations.of(context)
+                            .translate('role_not_defined'),
                     style: TextStyle(color: Colors.blue[600], fontSize: 10),
                   ),
                 ),
@@ -623,7 +643,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: Text(
-                        user.roleName ?? 'Rôle non défini',
+                        user.roleName ??
+                            AppLocalizations.of(context)
+                                .translate('user_role_undefined'),
                         style: TextStyle(color: Colors.blue[600], fontSize: 10),
                       ),
                     ),
@@ -651,7 +673,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              "Aucun utilisateur trouvé",
+              AppLocalizations.of(context).translate('no_users_found'),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -660,7 +682,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Commencez par ajouter un nouvel utilisateur",
+              AppLocalizations.of(context).translate('no_users_message'),
               style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             ),
           ],

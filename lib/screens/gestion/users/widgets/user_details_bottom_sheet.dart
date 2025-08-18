@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -92,22 +93,36 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
               const SizedBox(height: 32),
 
               // Informations détaillées
-              _buildInfoSection('Informations personnelles', [
-                _buildInfoRow('Nom d\'utilisateur', widget.user.username,
+              _buildInfoSection(
+                  AppLocalizations.of(context).translate('personal_info'), [
+                _buildInfoRow(
+                    AppLocalizations.of(context).translate('username'),
+                    widget.user.username,
                     Icons.person_outline),
                 if (widget.user.firstName != null &&
                     widget.user.firstName!.isNotEmpty)
-                  _buildInfoRow('Prénom', widget.user.firstName!, Icons.person),
+                  _buildInfoRow(
+                      AppLocalizations.of(context).translate('first_name'),
+                      widget.user.firstName!,
+                      Icons.person),
                 if (widget.user.lastName != null &&
                     widget.user.lastName!.isNotEmpty)
-                  _buildInfoRow('Nom', widget.user.lastName!, Icons.person),
+                  _buildInfoRow(
+                      AppLocalizations.of(context).translate('last_name'),
+                      widget.user.lastName!,
+                      Icons.person),
                 if (widget.user.email != null && widget.user.email!.isNotEmpty)
-                  _buildInfoRow('Email', widget.user.email!, Icons.email),
+                  _buildInfoRow(AppLocalizations.of(context).translate('email'),
+                      widget.user.email!, Icons.email),
                 if (widget.user.phoneNumber != null &&
                     widget.user.phoneNumber!.isNotEmpty)
-                  _buildInfoRow(
-                      'Téléphone', widget.user.phoneNumber!, Icons.phone),
-                _buildInfoRow('Rôle', widget.user.roleName ?? 'Non défini',
+                  _buildInfoRow(AppLocalizations.of(context).translate('phone'),
+                      widget.user.phoneNumber!, Icons.phone),
+                _buildInfoRow(
+                    AppLocalizations.of(context).translate('user_details_role'),
+                    widget.user.roleName ??
+                        AppLocalizations.of(context)
+                            .translate('user_role_undefined'),
                     Icons.assignment_ind),
               ]),
 
@@ -144,8 +159,10 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                           const SizedBox(width: 8),
                           Text(
                             widget.isCurrentUser
-                                ? 'Actions non disponibles'
-                                : 'Actions dangereuses',
+                                ? AppLocalizations.of(context)
+                                    .translate('actions_unavailable')
+                                : AppLocalizations.of(context)
+                                    .translate('dangerous_actions'),
                             style: TextStyle(
                               color: widget.isCurrentUser
                                   ? Colors.grey[600]
@@ -158,8 +175,10 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                       const SizedBox(height: 12),
                       Text(
                         widget.isCurrentUser
-                            ? 'Vous ne pouvez pas désactiver votre propre compte depuis cette interface.'
-                            : 'La désactivation de ce compte empêchera l\'utilisateur de se connecter à l\'application.',
+                            ? AppLocalizations.of(context)
+                                .translate('cannot_disable_self')
+                            : AppLocalizations.of(context)
+                                .translate('disable_account_warning'),
                         style: TextStyle(
                           color: widget.isCurrentUser
                               ? Colors.grey[700]
@@ -191,8 +210,10 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                                 : const Icon(Icons.block, color: Colors.white),
                             label: Text(
                               _isDisabling
-                                  ? "Désactivation..."
-                                  : "Désactiver le compte",
+                                  ? AppLocalizations.of(context)
+                                      .translate("disabling")
+                                  : AppLocalizations.of(context)
+                                      .translate("disable_account"),
                               style: const TextStyle(color: Colors.white),
                             ),
                             onPressed:
@@ -292,16 +313,19 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                 size: 24,
               ),
               const SizedBox(width: 8),
-              const Text('Confirmer la désactivation'),
+              Text(AppLocalizations.of(context).translate('confirm_disable')),
             ],
           ),
           content: Text(
-            'Êtes-vous sûr de vouloir désactiver le compte de ${widget.user.firstName ?? widget.user.username} ?\n\nCette action empêchera l\'utilisateur de se connecter à l\'application.',
+            AppLocalizations.of(context)
+                .translate('confirm_deactivation_message')
+                .replaceAll('{username}',
+                    widget.user.firstName ?? widget.user.username),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
+              child: Text(AppLocalizations.of(context).translate('cancel')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -312,7 +336,8 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                 backgroundColor: Colors.red[600],
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Désactiver'),
+              child: Text(
+                  AppLocalizations.of(context).translate('disable_account')),
             ),
           ],
         );
@@ -333,7 +358,8 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
           case 'SUCCESS':
             showSuccessTopSnackBar(
               context,
-              'Compte désactivé avec succès',
+              AppLocalizations.of(context)
+                  .translate('account_disabled_success'),
             );
             widget.onUserDisabled?.call();
             Navigator.pop(context);
@@ -341,25 +367,25 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
           case 'USER_NOT_FOUND':
             showErrorTopSnackBar(
               context,
-              'Utilisateur non trouvé',
+              AppLocalizations.of(context).translate('user_not_found'),
             );
             break;
           case 'PERMISSION_DENIED':
             showErrorTopSnackBar(
               context,
-              'Vous n\'avez pas les permissions pour effectuer cette action',
+              AppLocalizations.of(context).translate('permission_denied'),
             );
             break;
           case 'INVALID_INPUT':
             showErrorTopSnackBar(
               context,
-              'Données invalides',
+              AppLocalizations.of(context).translate('invalid_data'),
             );
             break;
           default:
             showErrorTopSnackBar(
               context,
-              'Erreur lors de la désactivation du compte',
+              AppLocalizations.of(context).translate('error_disabling_account'),
             );
         }
       }
@@ -367,7 +393,9 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          'Erreur de connexion: ${e.toString()}',
+          AppLocalizations.of(context)
+              .translate('connection_error')
+              .replaceAll('{error}', e.toString()),
         );
       }
     } finally {
