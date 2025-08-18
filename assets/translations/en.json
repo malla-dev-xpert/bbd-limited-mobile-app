@@ -1371,5 +1371,12 @@
   "container_add_package_add": "Add selected packages",
   "container_add_package_adding": "Adding...",
   "container_add_package_added": "Packages added successfully",
-  "container_add_package_error": "Error adding packages"
+  "container_add_package_error": "Error adding packages",
+  "container_available": "Available",
+  "container_unavailable": "Unavailable",
+  "container_delivery_start_date": "Delivery start date",
+  "container_delivery_confirmation_date": "Delivery confirmation date",
+  "container_supplier": "Supplier",
+  "user_not_connected": "Error: User not connected",
+  "status_unknown": "Unknown status"
 } 

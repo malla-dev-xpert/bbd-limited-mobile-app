@@ -1840,5 +1840,12 @@
   "container_add_package_add": "Ajouter les colis sélectionnés",
   "container_add_package_adding": "Ajout en cours...",
   "container_add_package_added": "Colis ajoutés avec succès",
-  "container_add_package_error": "Erreur lors de l'ajout des colis"
+  "container_add_package_error": "Erreur lors de l'ajout des colis",
+  "container_available": "Disponible",
+  "container_unavailable": "Indisponible",
+  "container_delivery_start_date": "Date de début de livraison",
+  "container_delivery_confirmation_date": "Date de confirmation de livraison",
+  "container_supplier": "Fournisseur",
+  "user_not_connected": "Erreur: Utilisateur non connecté",
+  "status_unknown": "Statut inconnu"
 } 

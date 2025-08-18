@@ -340,17 +340,24 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    _infoRow('Taille', "${container.size}",
+                    _infoRow(
+                        AppLocalizations.of(context)!
+                            .translate('container_form_size'),
+                        "${container.size}",
                         icon: Icons.straighten),
                     _infoRow(
-                        'Disponibilité',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_availability'),
                         container.isAvailable == true
-                            ? 'Disponible'
-                            : 'Indisponible',
+                            ? AppLocalizations.of(context)!
+                                .translate('container_available')
+                            : AppLocalizations.of(context)!
+                                .translate('container_unavailable'),
                         icon: Icons.inventory_2),
                     if (container.startDeliveryDate != null)
                       _infoRow(
-                          'Date de debut de livraison',
+                          AppLocalizations.of(context)!
+                              .translate('container_delivery_start_date'),
                           container.startDeliveryDate != null
                               ? DateFormat.yMMMMEEEEd()
                                   .format(container.startDeliveryDate!)
@@ -358,7 +365,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           icon: Icons.calendar_today),
                     if (container.confirmDeliveryDate != null)
                       _infoRow(
-                          'Date de confirmation de livraison',
+                          AppLocalizations.of(context)!.translate(
+                              'container_delivery_confirmation_date'),
                           container.confirmDeliveryDate != null
                               ? DateFormat.yMMMMEEEEd()
                                   .format(container.confirmDeliveryDate!)
@@ -372,7 +380,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle('Fournisseur'),
+                    _sectionTitle(AppLocalizations.of(context)!
+                        .translate('container_supplier')),
                     Container(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.width < 600
@@ -461,7 +470,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle('Fournisseur'),
+                    _sectionTitle(AppLocalizations.of(context)!
+                        .translate('container_supplier')),
                     Container(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.width < 600
@@ -500,48 +510,57 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 child: Column(
                   children: [
                     _infoRow(
-                        'Frais de location',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_location_fee'),
                         container.locationFee != null
                             ? '${container.locationFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de chargement',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_loading_fee'),
                         container.loadingFee != null
                             ? '${container.loadingFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Charge local',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_local_charge'),
                         container.localCharge != null
                             ? '${container.localCharge} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de surpoids',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_overweight_fee'),
                         container.overweightFee != null
                             ? '${container.overweightFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de checking',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_checking_fee'),
                         container.checkingFee != null
                             ? '${container.checkingFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de TELX',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_telx_fee'),
                         container.telxFee != null
                             ? '${container.telxFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Autres charges',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_other_fees'),
                         container.otherFees != null
                             ? '${container.otherFees} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Marge ajoutée',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_margin'),
                         container.margin != null
                             ? '${container.margin} CNY'
                             : '0.0'),
                     const Divider(),
                     _infoRow(
-                        'Total des frais',
+                        AppLocalizations.of(context)!
+                            .translate('container_total_fees'),
                         container.amount != null
                             ? '${container.amount} CNY'
                             : '0.0',
@@ -1116,7 +1135,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                               width: 4),
                                                           Expanded(
                                                             child: _buildInfoText(
-                                                                'Départ',
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_departure'),
                                                                 pkg.startDate !=
                                                                         null
                                                                     ? DateFormat(
@@ -1140,7 +1162,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                               width: 4),
                                                           Expanded(
                                                             child: _buildInfoText(
-                                                                'Arrivée',
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_arrival'),
                                                                 pkg.arrivalDate !=
                                                                         null
                                                                     ? DateFormat(
@@ -1163,7 +1188,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                           color: Colors.grey),
                                                       const SizedBox(width: 4),
                                                       _buildInfoText(
-                                                          'Départ',
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_departure'),
                                                           pkg.startDate != null
                                                               ? DateFormat(
                                                                       'dd/MM/yyyy')
@@ -1172,7 +1200,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                               : ''),
                                                       const SizedBox(width: 10),
                                                       _buildInfoText(
-                                                          'Arrivée',
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_arrival'),
                                                           pkg.arrivalDate !=
                                                                   null
                                                               ? DateFormat(

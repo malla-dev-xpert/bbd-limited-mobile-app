@@ -1371,5 +1371,12 @@
   "container_add_package_add": "添加选中的包裹",
   "container_add_package_adding": "添加中...",
   "container_add_package_added": "包裹添加成功",
-  "container_add_package_error": "添加包裹时出错"
+  "container_add_package_error": "添加包裹时出错",
+  "container_available": "可用",
+  "container_unavailable": "不可用",
+  "container_delivery_start_date": "配送开始日期",
+  "container_delivery_confirmation_date": "配送确认日期",
+  "container_supplier": "供应商",
+  "user_not_connected": "错误：用户未连接",
+  "status_unknown": "状态未知"
 } 
