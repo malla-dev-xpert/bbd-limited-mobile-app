@@ -10,6 +10,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/e
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class ContainerScreen extends StatefulWidget {
   const ContainerScreen({super.key});
@@ -91,7 +92,8 @@ class _ContainerScreen extends State<ContainerScreen> {
         }
       });
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de chargement des colis.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context)!.translate('error_loading_containers'));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -136,21 +138,27 @@ class _ContainerScreen extends State<ContainerScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
+        title: Text(AppLocalizations.of(context)!
+            .translate('container_delete_confirm')),
         content: Text(
-          "Voulez-vous vraiment supprimer le conteneur ${container.reference}?",
+          AppLocalizations.of(context)!
+              .translate('container_delete_message')
+              .replaceAll('{reference}', container.reference ?? ''),
         ),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context)!.translate('cancel')),
           ),
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
-              _isLoading ? 'Suppression...' : 'Supprimer',
+              _isLoading
+                  ? AppLocalizations.of(context)!
+                      .translate('container_deleting')
+                  : AppLocalizations.of(context)!.translate('delete'),
               style: const TextStyle(color: Colors.red, fontSize: 16),
             ),
           ),
@@ -178,9 +186,11 @@ class _ContainerScreen extends State<ContainerScreen> {
           _filteredContainers = List.from(_allContainers);
         });
 
-        showSuccessTopSnackBar(context, "Conteneur supprimé avec succès");
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context)!.translate('container_deleted'));
       } else if (result == "CONTAINER_NOT_FOUND") {
-        showErrorTopSnackBar(context, "Conteneur introuvable");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context)!.translate('container_not_found'));
       } else if (result == "PACKAGE_EXIST") {
         showErrorTopSnackBar(
           context,
@@ -188,19 +198,21 @@ class _ContainerScreen extends State<ContainerScreen> {
         );
       }
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de la suppression");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context)!.translate('container_delete_error'));
     }
   }
 
   String _getStatusLabel(Status? status) {
-    if (status == null) return 'Tous';
+    if (status == null)
+      return AppLocalizations.of(context)!.translate('container_all');
     switch (status) {
       case Status.PENDING:
-        return 'En attente';
+        return AppLocalizations.of(context)!.translate('container_pending');
       case Status.INPROGRESS:
-        return 'En transit';
+        return AppLocalizations.of(context)!.translate('container_in_transit');
       case Status.RECEIVED:
-        return 'Arrivé à destination';
+        return AppLocalizations.of(context)!.translate('container_arrived');
       default:
         return status.name;
     }
@@ -212,9 +224,10 @@ class _ContainerScreen extends State<ContainerScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text(
-          'Gestion des conteneurs',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.translate('container_management'),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -242,7 +255,8 @@ class _ContainerScreen extends State<ContainerScreen> {
                     controller: searchController,
                     autocorrect: false,
                     decoration: InputDecoration(
-                      labelText: 'Rechercher un conteneur...',
+                      labelText: AppLocalizations.of(context)!
+                          .translate('container_search'),
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32),
@@ -259,7 +273,8 @@ class _ContainerScreen extends State<ContainerScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildStatusChip(null, 'Tous'),
+                  _buildStatusChip(null,
+                      AppLocalizations.of(context)!.translate('container_all')),
                   _buildStatusChip(
                       Status.PENDING, _getStatusLabel(Status.PENDING)),
                   _buildStatusChip(
@@ -272,12 +287,13 @@ class _ContainerScreen extends State<ContainerScreen> {
             const SizedBox(height: 20),
 
             // Liste des colis
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "La liste des conteneurs",
-                  style: TextStyle(
+                  AppLocalizations.of(context)!
+                      .translate('container_packages_list'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -299,7 +315,9 @@ class _ContainerScreen extends State<ContainerScreen> {
                         return false;
                       },
                       child: _filteredContainers.isEmpty
-                          ? const Center(child: Text("Aucun conteneur trouvé."))
+                          ? Center(
+                              child: Text(AppLocalizations.of(context)!
+                                  .translate('no_container_found')))
                           : RefreshIndicator(
                               onRefresh: () async {
                                 await fetchContainers(reset: true);

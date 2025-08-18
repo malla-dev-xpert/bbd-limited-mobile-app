@@ -8,6 +8,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/a
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class ContainerDetailPage extends StatefulWidget {
   final Containers container;
@@ -54,15 +55,15 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   String _getStatusText(Status? status) {
     switch (status) {
       case Status.PENDING:
-        return 'En attente';
+        return AppLocalizations.of(context)!.translate('container_pending');
       case Status.INPROGRESS:
-        return 'En livraison';
+        return AppLocalizations.of(context)!.translate('container_in_progress');
       case Status.RECEIVED:
-        return 'Arrivé à destination';
+        return AppLocalizations.of(context)!.translate('container_arrived');
       case Status.DELIVERED:
-        return 'Livré';
+        return AppLocalizations.of(context)!.translate('container_arrived');
       default:
-        return 'Inconnu';
+        return AppLocalizations.of(context)!.translate('status_unknown');
     }
   }
 
@@ -143,7 +144,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Détails du conteneur',
+          title: Text(
+              AppLocalizations.of(context)!.translate('container_details'),
               style: TextStyle(
                   color: Color(0xFF1A1E49), fontWeight: FontWeight.bold)),
           centerTitle: true,
@@ -207,7 +209,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           });
                         }
                       },
-                      label: const Text("Degrouper"),
+                      label: Text(AppLocalizations.of(context)!
+                          .translate('container_ungroup')),
                       icon: const Icon(Icons.person))
           ]),
       backgroundColor: Colors.grey[50],
@@ -469,12 +472,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey[200]!),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.business, color: Color(0xFF1A1E49)),
-                          SizedBox(width: 10),
-                          Text('BBD Limited',
-                              style: TextStyle(
+                          const Icon(Icons.business, color: Color(0xFF1A1E49)),
+                          const SizedBox(width: 10),
+                          Text(
+                              AppLocalizations.of(context)!
+                                  .translate('container_bbd_limited'),
+                              style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 15)),
                         ],
                       ),
@@ -482,7 +487,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   ],
                 ),
               // Bloc frais
-              _sectionTitle('Frais & Charges'),
+              _sectionTitle(AppLocalizations.of(context)!
+                  .translate('container_fees_charges')),
               Container(
                 padding: EdgeInsets.all(
                     MediaQuery.of(context).size.width < 600 ? 12.0 : 16.0),
@@ -544,7 +550,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
               ),
               // Liste des colis
-              _sectionTitle('Colis dans le conteneur'),
+              _sectionTitle(AppLocalizations.of(context)!
+                  .translate('container_packages')),
               LayoutBuilder(
                 builder: (context, constraints) {
                   if (constraints.maxWidth < 600) {
@@ -552,9 +559,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'La liste des colis',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_packages_list'),
+                          style: const TextStyle(
                               fontWeight: FontWeight.w700, fontSize: 16),
                         ),
                         if (container.status == Status.PENDING) ...[
@@ -579,7 +587,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                   });
                                 }
                               },
-                              label: const Text("Ajouter des colis"),
+                              label: Text(AppLocalizations.of(context)!
+                                  .translate('container_add_packages')),
                               icon: const Icon(Icons.add),
                             ),
                           ),
@@ -591,8 +600,9 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'La liste des colis',
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_packages_list'),
                           style: TextStyle(
                               fontWeight: FontWeight.w700, fontSize: 16),
                         ),
@@ -614,7 +624,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                 });
                               }
                             },
-                            label: const Text("Ajouter des colis"),
+                            label: Text(AppLocalizations.of(context)!
+                                .translate('container_add_packages')),
                             icon: const Icon(Icons.add),
                           ),
                       ],
@@ -632,7 +643,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     });
                   },
                   decoration: InputDecoration(
-                    hintText: 'Rechercher un colis...',
+                    hintText: AppLocalizations.of(context)!
+                        .translate('container_search_packages'),
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -669,8 +681,9 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       : MediaQuery.of(context).size.height * 0.5,
                   child: container.packages == null ||
                           container.packages!.isEmpty
-                      ? const Center(
-                          child: Text("Pas de colis pour ce conteneur."),
+                      ? Center(
+                          child: Text(AppLocalizations.of(context)!
+                              .translate('container_no_packages')),
                         )
                       : RefreshIndicator(
                           onRefresh: () async {
@@ -722,18 +735,25 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   return AlertDialog(
                                                     backgroundColor:
                                                         Colors.white,
-                                                    title: const Text(
-                                                        "Confirmation"),
-                                                    content: const Text(
-                                                        "Voulez-vous vraiment retirer ce colis du conteneur ?"),
+                                                    title: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .translate(
+                                                            'confirmation')),
+                                                    content: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .translate(
+                                                            'container_remove_package_confirm')),
                                                     actions: [
                                                       TextButton(
                                                         onPressed: () =>
                                                             Navigator.of(
                                                                     context)
                                                                 .pop(false),
-                                                        child: const Text(
-                                                            "Annuler"),
+                                                        child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .translate(
+                                                                    'cancel')),
                                                       ),
                                                       TextButton(
                                                         onPressed: () =>
@@ -742,8 +762,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 .pop(true),
                                                         child: Text(
                                                             isLoading
-                                                                ? "Suppression..."
-                                                                : "Confirmer",
+                                                                ? AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_removing')
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'confirm'),
                                                             style:
                                                                 const TextStyle(
                                                                     color: Colors
@@ -774,20 +800,35 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   });
                                                   showSuccessTopSnackBar(
                                                       context,
-                                                      "Colis retiré du conteneur");
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_package_removed'));
                                                   return true;
                                                 } else if (result ==
                                                     "PACKAGE_NOT_IN_CONTAINER") {
-                                                  showErrorTopSnackBar(context,
-                                                      "Le colis n'appartient pas à ce conteneur");
+                                                  showErrorTopSnackBar(
+                                                      context,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_package_not_in_container'));
                                                 } else if (result ==
                                                     "CONTAINER_INPROGRESS") {
-                                                  showErrorTopSnackBar(context,
-                                                      "Impossible de retirer un colis d'un conteneur en cours de livraison");
+                                                  showErrorTopSnackBar(
+                                                      context,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_in_progress_remove_error'));
                                                 }
                                               } catch (e) {
-                                                showErrorTopSnackBar(context,
-                                                    "Erreur lors de la suppression");
+                                                showErrorTopSnackBar(
+                                                    context,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .translate(
+                                                            'container_remove_error'));
                                               } finally {
                                                 setState(() {
                                                   isLoading = false;
@@ -965,7 +1006,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                 const SizedBox(width: 4),
                                                 Expanded(
                                                   child: _buildInfoText(
-                                                      'Cartons',
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_cartons'),
                                                       '${pkg.itemQuantity ?? 0}'),
                                                 ),
                                               ],
@@ -992,7 +1036,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                               width: 4),
                                                           Expanded(
                                                             child: _buildInfoText(
-                                                                'Départ',
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_departure'),
                                                                 '${pkg.startCountry ?? 'N/A'}'),
                                                           ),
                                                         ],
@@ -1009,7 +1056,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                               width: 4),
                                                           Expanded(
                                                             child: _buildInfoText(
-                                                                'Arrivée',
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_arrival'),
                                                                 '${pkg.destinationCountry ?? 'N/A'}'),
                                                           ),
                                                         ],
@@ -1025,10 +1075,18 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                           size: 14,
                                                           color: Colors.grey),
                                                       const SizedBox(width: 4),
-                                                      _buildInfoText('Départ',
+                                                      _buildInfoText(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_departure'),
                                                           '${pkg.startCountry ?? 'N/A'}'),
                                                       const SizedBox(width: 10),
-                                                      _buildInfoText('Arrivée',
+                                                      _buildInfoText(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_arrival'),
                                                           '${pkg.destinationCountry ?? 'N/A'}'),
                                                     ],
                                                   );
@@ -1157,7 +1215,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       ),
                       icon: const Icon(Icons.check, color: Colors.white),
                       label: Text(
-                          isLoading ? 'Démarrage...' : 'Démarrer la livraison',
+                          isLoading
+                              ? AppLocalizations.of(context)!
+                                  .translate('container_starting')
+                              : AppLocalizations.of(context)!
+                                  .translate('container_start_delivery'),
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -1169,23 +1231,27 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             return StatefulBuilder(
                               builder: (context, setStateDialog) {
                                 return AlertDialog(
-                                  title: const Text("Confirmer le démarrage"),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .translate('container_confirm_start')),
                                   backgroundColor: Colors.white,
                                   content: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                          "Voulez-vous vraiment démarrer la livraison de ce conteneur ?"),
+                                      Text(AppLocalizations.of(context)!
+                                          .translate(
+                                              'container_confirm_start_message')),
                                       const SizedBox(height: 16),
                                       TextButton.icon(
                                         icon: const Icon(Icons.date_range),
                                         label: Text(
                                           tempSelectedDate != null
-                                              ? 'Date de livraison : '
+                                              ? '${AppLocalizations.of(context)!.translate('container_delivery_date')} : '
                                                   '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
-                                              : 'Choisir la date de livraison (optionnel)',
+                                              : AppLocalizations.of(context)!
+                                                  .translate(
+                                                      'container_choose_delivery_date'),
                                         ),
                                         onPressed: () async {
                                           final now = DateTime.now();
@@ -1208,7 +1274,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           padding:
                                               const EdgeInsets.only(top: 8.0),
                                           child: Text(
-                                            'Date sélectionnée : '
+                                            '${AppLocalizations.of(context)!.translate('container_selected_date')} : '
                                             '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
@@ -1237,8 +1303,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           Navigator.of(context).pop(true),
                                       child: Text(
                                           isLoading
-                                              ? "Démarrage..."
-                                              : "Confirmer",
+                                              ? AppLocalizations.of(context)!
+                                                  .translate(
+                                                      'container_starting')
+                                              : AppLocalizations.of(context)!
+                                                  .translate('confirm'),
                                           style: const TextStyle(
                                               color: Colors.green)),
                                     ),
@@ -1274,15 +1343,21 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               widget.onContainerUpdated!(updatedContainer);
                             }
                             showSuccessTopSnackBar(
-                                context, "Livraison démarrée avec succès !");
+                                context,
+                                AppLocalizations.of(context)!
+                                    .translate('container_delivery_started'));
                           } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(context,
-                                "Impossible de démarrer la livraison, pas de colis dans le conteneur.");
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)!.translate(
+                                    'container_no_packages_for_delivery'));
                           }
                         } catch (e) {
                           print(e);
-                          showErrorTopSnackBar(context,
-                              "Erreur lors du démarrage de la livraison");
+                          showErrorTopSnackBar(
+                              context,
+                              AppLocalizations.of(context)!
+                                  .translate('container_delivery_start_error'));
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -1311,8 +1386,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       icon: const Icon(Icons.flag, color: Colors.white),
                       label: Text(
                           isLoading
-                              ? 'Changement de statut...'
-                              : 'Arrivé à destination',
+                              ? AppLocalizations.of(context)!
+                                  .translate('container_changing_status')
+                              : AppLocalizations.of(context)!
+                                  .translate('container_arrived_destination'),
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -1324,24 +1401,26 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             return StatefulBuilder(
                               builder: (context, setStateDialog) {
                                 return AlertDialog(
-                                  title: const Text(
-                                      "Confirmer l'arrivée du conteneur"),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .translate('container_confirm_arrival')),
                                   backgroundColor: Colors.white,
                                   content: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                          "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?"),
+                                      Text(AppLocalizations.of(context)!.translate(
+                                          'container_confirm_arrival_message')),
                                       const SizedBox(height: 16),
                                       TextButton.icon(
                                         icon: const Icon(Icons.date_range),
                                         label: Text(
                                           tempSelectedConfirmDate != null
-                                              ? 'Date de confirmation : '
+                                              ? '${AppLocalizations.of(context)!.translate('container_confirmation_date')} : '
                                                   '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}'
-                                              : 'Choisir la date de confirmation (optionnel)',
+                                              : AppLocalizations.of(context)!
+                                                  .translate(
+                                                      'container_choose_confirmation_date'),
                                         ),
                                         onPressed: () async {
                                           final now = DateTime.now();
@@ -1429,17 +1508,25 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               widget.onContainerUpdated!(updatedContainer);
                             }
                             showSuccessTopSnackBar(
-                                context, "Conteneur confirmé à destination !");
+                                context,
+                                AppLocalizations.of(context)!
+                                    .translate('container_arrival_confirmed'));
                           } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(context,
-                                "Impossible de confirmer la réception, pas de colis dans le conteneur.");
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)!.translate(
+                                    'container_no_packages_for_reception'));
                           } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
-                            showErrorTopSnackBar(context,
-                                "Le conteneur n'est pas en status INPROGRESS.");
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)!
+                                    .translate('container_not_in_progress'));
                           }
                         } catch (e) {
-                          showErrorTopSnackBar(context,
-                              "Erreur lors de la reception du conteneur");
+                          showErrorTopSnackBar(
+                              context,
+                              AppLocalizations.of(context)!
+                                  .translate('container_reception_error'));
                         } finally {
                           setState(() {
                             isLoading = false;

@@ -4,6 +4,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class ContainerInfoForm extends StatefulWidget {
   final TextEditingController refController;
@@ -117,10 +118,13 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
         children: [
           buildTextField(
             controller: widget.refController,
-            label: "Référence du conteneur",
+            label: AppLocalizations.of(context)!
+                .translate('container_form_reference'),
             icon: Icons.description,
-            validator: (v) =>
-                v == null || v.isEmpty ? 'Veuillez entrer la référence' : null,
+            validator: (v) => v == null || v.isEmpty
+                ? AppLocalizations.of(context)!
+                    .translate('container_form_validation_reference')
+                : null,
           ),
           const SizedBox(height: 10),
           Container(
@@ -132,17 +136,22 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 8.0, top: 8.0),
-                  child: Text("Taille du conteneur",
-                      style: TextStyle(fontSize: 16)),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+                  child: Text(
+                      AppLocalizations.of(context)!
+                          .translate('container_form_size'),
+                      style: const TextStyle(fontSize: 16)),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildSizeButton("20 pieds"),
-                    _buildSizeButton("40 pieds"),
-                    _buildSizeButton("45 pieds"),
+                    _buildSizeButton(
+                        "20 ${AppLocalizations.of(context)!.translate('container_size_feet')}"),
+                    _buildSizeButton(
+                        "40 ${AppLocalizations.of(context)!.translate('container_size_feet')}"),
+                    _buildSizeButton(
+                        "45 ${AppLocalizations.of(context)!.translate('container_size_feet')}"),
                   ],
                 ),
               ],
@@ -165,7 +174,8 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   },
                   itemToString: (client) =>
                       '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
-                  hintText: 'Choisir un fournisseur...',
+                  hintText: AppLocalizations.of(context)!
+                      .translate('container_form_supplier'),
                   prefixIcon: Icons.person,
                 ),
               ),
@@ -188,8 +198,11 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Expanded(
-                  child: Text("Disponibilité", style: TextStyle(fontSize: 16)),
+                Expanded(
+                  child: Text(
+                      AppLocalizations.of(context)!
+                          .translate('container_form_availability'),
+                      style: const TextStyle(fontSize: 16)),
                 ),
                 Switch(
                   value: _isAvailable,

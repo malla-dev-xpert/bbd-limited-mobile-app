@@ -2,6 +2,7 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class ContainerListItem extends StatelessWidget {
   final Containers container;
@@ -30,14 +31,14 @@ class ContainerListItem extends StatelessWidget {
     }
   }
 
-  String _getStatusText() {
+  String _getStatusText(BuildContext context) {
     switch (container.status) {
       case Status.INPROGRESS:
-        return "En cours de livraison";
+        return AppLocalizations.of(context)!.translate('container_in_progress');
       case Status.RECEIVED:
-        return "Arrivé à destination";
+        return AppLocalizations.of(context)!.translate('container_arrived');
       case Status.PENDING:
-        return "Conteneur en attente";
+        return AppLocalizations.of(context)!.translate('container_waiting');
       default:
         return container.status.toString();
     }
@@ -72,7 +73,7 @@ class ContainerListItem extends StatelessWidget {
                   : Colors.grey[300]!,
               foregroundColor: Colors.white,
               icon: Icons.edit,
-              label: 'Modifier',
+              label: AppLocalizations.of(context)!.translate('container_edit'),
               borderRadius:
                   const BorderRadius.horizontal(left: Radius.circular(12)),
             ),
@@ -85,7 +86,8 @@ class ContainerListItem extends StatelessWidget {
                   : Colors.grey[300]!,
               foregroundColor: Colors.white,
               icon: Icons.delete,
-              label: 'Supprimer',
+              label:
+                  AppLocalizations.of(context)!.translate('container_delete'),
               borderRadius:
                   const BorderRadius.horizontal(right: Radius.circular(12)),
             ),
@@ -184,7 +186,7 @@ class ContainerListItem extends StatelessWidget {
                                     ),
                                     SizedBox(width: isTablet ? 10 : 6),
                                     Text(
-                                      _getStatusText(),
+                                      _getStatusText(context),
                                       style: TextStyle(
                                         color: _getStatusColor(),
                                         fontWeight: FontWeight.w600,
@@ -264,7 +266,7 @@ class ContainerListItem extends StatelessWidget {
                                     ),
                                     SizedBox(width: isTablet ? 10 : 6),
                                     Text(
-                                      _getStatusText(),
+                                      _getStatusText(context),
                                       style: TextStyle(
                                         color: _getStatusColor(),
                                         fontWeight: FontWeight.w600,
@@ -294,7 +296,7 @@ class ContainerListItem extends StatelessWidget {
                             ),
                             SizedBox(width: isTablet ? 8 : 4),
                             Text(
-                              "${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} colis",
+                              "${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} ${AppLocalizations.of(context)!.translate('container_packages_count')}",
                               style: TextStyle(
                                 fontSize: isTablet ? 18 : 14,
                                 color: Colors.grey[600],
@@ -313,7 +315,7 @@ class ContainerListItem extends StatelessWidget {
                             ),
                             SizedBox(width: isTablet ? 8 : 4),
                             Text(
-                              "${container.size}",
+                              "${container.size} ${AppLocalizations.of(context)!.translate('container_size_feet')}",
                               style: TextStyle(
                                 fontSize: isTablet ? 18 : 14,
                                 color: Colors.grey[600],
@@ -337,7 +339,8 @@ class ContainerListItem extends StatelessWidget {
                           child: Text(
                             container.supplier_id != null
                                 ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
-                                : 'BBD Limited',
+                                : AppLocalizations.of(context)!
+                                    .translate('container_bbd_limited'),
                             style: TextStyle(
                               fontSize: isTablet ? 18 : 14,
                               color: Colors.grey[600],
