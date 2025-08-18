@@ -759,9 +759,9 @@
   "status_pending": "Pending",
   "status_unknown": "Unknown",
   "item_description": "No description",
-  "item_quantity": "Qty: {quantity}",
-  "unit_price": "Unit price: {price} ¥",
-  "total_price": "Total price: {price} ¥",
+  "item_quantity": "Qty:",
+  "unit_price": "Unit price:",
+  "total_price": "Total price:",
   "purchase_rate": "Purchase rate: {rate} ¥",
   "expedition_type_plane": "Plane",
   "expedition_type_boat": "Boat",
@@ -1378,5 +1378,14 @@
   "container_delivery_confirmation_date": "Delivery confirmation date",
   "container_supplier": "Supplier",
   "user_not_connected": "Error: User not connected",
-  "status_unknown": "Unknown status"
+  "status_unknown": "Unknown status",
+  "status_delivered": "Arrived at destination",
+  "status_received": "Delivered",
+  "status_in_transit": "In Transit",
+  "status_pending": "Pending",
+  "status_unknown_text": "Unknown",
+  "confirm_start_expedition": "Are you sure you want to start the package expedition?",
+  "confirm_arrival_package": "Are you sure you want to confirm the arrival of this Package?",
+  "package_type_plane": "Plane",
+  "package_type_boat": "Boat"
 } 

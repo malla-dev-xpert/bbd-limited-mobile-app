@@ -759,9 +759,9 @@
   "status_pending": "待处理",
   "status_unknown": "未知",
   "item_description": "无描述",
-  "item_quantity": "数量：{quantity}",
-  "unit_price": "单价：{price} ¥",
-  "total_price": "总价：{price} ¥",
+  "item_quantity": "数量：",
+  "unit_price": "单价：",
+  "total_price": "总价：",
   "purchase_rate": "购买率：{rate} ¥",
   "expedition_type_plane": "空运",
   "expedition_type_boat": "船运",
@@ -1378,5 +1378,14 @@
   "container_delivery_confirmation_date": "配送确认日期",
   "container_supplier": "供应商",
   "user_not_connected": "错误：用户未连接",
-  "status_unknown": "状态未知"
+  "status_unknown": "状态未知",
+  "status_delivered": "已到达目的地",
+  "status_received": "已交付",
+  "status_in_transit": "运输中",
+  "status_pending": "待处理",
+  "status_unknown_text": "未知",
+  "confirm_start_expedition": "您确定要开始包裹的运输吗？",
+  "confirm_arrival_package": "您确定要确认此包裹的到达吗？",
+  "package_type_plane": "飞机",
+  "package_type_boat": "船"
 } 

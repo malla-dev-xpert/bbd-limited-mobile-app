@@ -84,15 +84,30 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   String _getStatusText(Status? status) {
     switch (status) {
       case Status.DELIVERED:
-        return 'Arrivée à destination';
+        return AppLocalizations.of(context).translate('status_delivered');
       case Status.RECEIVED:
-        return 'Livrée';
+        return AppLocalizations.of(context).translate('status_received');
       case Status.INPROGRESS:
-        return 'En transit';
+        return AppLocalizations.of(context).translate('status_in_transit');
       case Status.PENDING:
-        return 'En attente';
+        return AppLocalizations.of(context).translate('status_pending');
       default:
-        return 'Inconnu';
+        return AppLocalizations.of(context).translate('status_unknown_text');
+    }
+  }
+
+  String _getTranslatedExpeditionType(String? expeditionType) {
+    if (expeditionType == null) {
+      return AppLocalizations.of(context).translate('na');
+    }
+
+    switch (expeditionType.toLowerCase()) {
+      case 'avion':
+        return AppLocalizations.of(context).translate('package_type_plane');
+      case 'bateau':
+        return AppLocalizations.of(context).translate('package_type_boat');
+      default:
+        return expeditionType;
     }
   }
 
@@ -202,9 +217,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                widget.packages.expeditionType ??
-                                    AppLocalizations.of(context)
-                                        .translate('na'),
+                                _getTranslatedExpeditionType(
+                                    widget.packages.expeditionType),
                                 style: TextStyle(
                                   color: widget.packages.expeditionType
                                               ?.toLowerCase() ==
@@ -725,12 +739,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(AppLocalizations.of(context).translate('confirmation')),
                 ],
               ),
-              content: const Column(
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Êtes-vous sûr de vouloir démarrer l\'expédition du colis ?',
-                    style: TextStyle(fontSize: 16),
+                    AppLocalizations.of(context)
+                        .translate('confirm_start_expedition'),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ],
               ),
@@ -830,12 +845,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(AppLocalizations.of(context).translate('confirmation')),
                 ],
               ),
-              content: const Column(
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Êtes-vous sûr de vouloir confirmer l\'arrivée de ce Colis ?',
-                    style: TextStyle(fontSize: 16),
+                    AppLocalizations.of(context)
+                        .translate('confirm_arrival_package'),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ],
               ),
@@ -1199,40 +1215,96 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    item.description ??
-                        AppLocalizations.of(context)
-                            .translate('no_description'),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
+            // Vérifier si c'est un écran mobile (largeur < 600px)
+            if (MediaQuery.of(context).size.width < 600) ...[
+              // Design mobile : nom de l'article en haut, quantité en dessous
+              Text(
+                item.description ??
+                    AppLocalizations.of(context).translate('no_description'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${AppLocalizations.of(context).translate('item_quantity')}: ${item.quantity ?? 0}',
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: RichText(
+                  text: TextSpan(
                     style: TextStyle(
                       color: Colors.blue[700],
-                      fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
+                    children: [
+                      TextSpan(
+                        text:
+                            '${AppLocalizations.of(context).translate('item_quantity')}: ',
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
+                      TextSpan(
+                        text: '${item.quantity ?? 0}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ] else ...[
+              // Design tablette : nom et quantité sur la même ligne
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      item.description ??
+                          AppLocalizations.of(context)
+                              .translate('no_description'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontSize: 12,
+                        ),
+                        children: [
+                          TextSpan(
+                            text:
+                                '${AppLocalizations.of(context).translate('item_quantity')}: ',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                          TextSpan(
+                            text: '${item.quantity ?? 0}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (item.supplierName != null) ...[
               const SizedBox(height: 4),
               Row(
@@ -1249,6 +1321,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -1265,11 +1338,23 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     color: Colors.grey[600],
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    '${AppLocalizations.of(context).translate('unit_price')}: ${item.unitPrice!.toStringAsFixed(2)} ¥',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                      children: [
+                        TextSpan(
+                          text:
+                              '${AppLocalizations.of(context).translate('unit_price')}: ',
+                          style: const TextStyle(fontWeight: FontWeight.normal),
+                        ),
+                        TextSpan(
+                          text: '${item.unitPrice!.toStringAsFixed(2)} ¥',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1284,11 +1369,23 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   color: Colors.grey[600],
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  '${AppLocalizations.of(context).translate('total_price')}: ${item.totalPrice!.toStringAsFixed(2)} ¥',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    children: [
+                      TextSpan(
+                        text:
+                            '${AppLocalizations.of(context).translate('total_price')}: ',
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
+                      TextSpan(
+                        text: '${item.totalPrice!.toStringAsFixed(2)} ¥',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -1302,11 +1399,23 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   color: Colors.grey[600],
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  '${AppLocalizations.of(context).translate('purchase_rate')}: ${item.salesRate} ¥',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    children: [
+                      TextSpan(
+                        text:
+                            '${AppLocalizations.of(context).translate('purchase_rate')}: ',
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
+                      TextSpan(
+                        text: '${item.salesRate} ¥',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
               ],
