@@ -310,22 +310,24 @@ class _CustomersWithPurchasesBottomSheetState
                                               ),
                                             ),
                                             const SizedBox(height: 4),
-                                            Text(
-                                              customer.phoneNumber,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.grey[600],
+                                            if (customer.phoneNumber.isNotEmpty)
+                                              Text(
+                                                customer.phoneNumber,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[600],
+                                                ),
                                               ),
-                                            ),
                                             const SizedBox(height: 8),
-                                            Row(
+                                            Wrap(
+                                              spacing: 8,
+                                              runSpacing: 4,
                                               children: [
                                                 _buildStatChip(
                                                   Icons.shopping_cart,
                                                   '$totalPurchases achats',
                                                   Colors.blue,
                                                 ),
-                                                const SizedBox(width: 8),
                                                 _buildStatChip(
                                                   Icons.currency_yen,
                                                   NumberFormat.currency(

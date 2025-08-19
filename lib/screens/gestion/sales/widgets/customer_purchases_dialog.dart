@@ -218,7 +218,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           ),
                           if (date != null)
                             Text(
-                              DateFormat('dd/MM/yyyy à HH:mm').format(date),
+                              DateFormat('dd/MM/yyyy').format(date),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],
@@ -291,26 +291,25 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _buildItemDetail(
-                              'Total',
-                              NumberFormat.currency(
-                                locale: 'fr_FR',
-                                symbol: 'CNY',
-                              ).format(item.totalPrice ?? 0),
-                              Icons.receipt,
-                            ),
+                          _buildItemDetail(
+                            'Total',
+                            NumberFormat.currency(
+                              locale: 'fr_FR',
+                              symbol: 'CNY',
+                            ).format(item.totalPrice ?? 0),
+                            Icons.receipt,
                           ),
-                          if (item.supplierName != null)
-                            Expanded(
-                              child: _buildItemDetail(
-                                'Fournisseur',
-                                item.supplierName,
-                                Icons.business,
-                              ),
+                          if (item.supplierName != null) ...[
+                            const SizedBox(height: 8),
+                            _buildItemDetail(
+                              'Fournisseur',
+                              item.supplierName,
+                              Icons.business,
                             ),
+                          ],
                         ],
                       ),
                     ],

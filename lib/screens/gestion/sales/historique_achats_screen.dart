@@ -348,9 +348,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                           ),
                                         ],
                                         const SizedBox(height: 12),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Montant total',
@@ -359,6 +358,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
+                                            const SizedBox(height: 4),
                                             Text(
                                               '${_formatAmount(achat.montantTotal)} ¥',
                                               style: const TextStyle(
