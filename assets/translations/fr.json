@@ -1258,7 +1258,7 @@
   "confirm_delete_title": "Confirmer la suppression",
   "confirm_delete_message": "Voulez-vous vraiment supprimer l'utilisateur {username}?",
   "deleting": "Suppression...",
-  "user_deleted_successfully": "Utilisateur supprimé avec succès"
+  "user_deleted_successfully": "Utilisateur supprimé avec succès",
   "payment_management_title": "Gestion des versements",
   "no_payment_found_message": "Aucun paiement trouvé.",
   "see_all_button": "Voir tout",
