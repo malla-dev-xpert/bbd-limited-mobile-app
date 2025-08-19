@@ -5,6 +5,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'widgets/purchase_wizard_dialog.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:intl/intl.dart';
+import 'reports_screen.dart';
 
 class SalesHomeScreen extends StatefulWidget {
   const SalesHomeScreen({super.key});
@@ -182,7 +183,12 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                       context,
                       'Rapports',
                       Icons.bar_chart,
-                      () {},
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReportsScreen(),
+                        ),
+                      ),
                       Colors.purple,
                     ),
                   ],
