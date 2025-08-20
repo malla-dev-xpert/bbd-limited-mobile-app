@@ -9,6 +9,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/harbor.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 enum ReportPeriod {
   currentMonth,
@@ -217,6 +218,11 @@ class ReportsNotifier extends StateNotifier<ReportStatistics> {
     final Map<String, ProductStat> productStats = {};
 
     for (final achat in achats) {
+      // Filtrer uniquement les achats avec le statut RECEIVED
+      if (achat.status != Status.RECEIVED) {
+        continue;
+      }
+
       if (achat.items != null) {
         for (final item in achat.items!) {
           // Normaliser la description (ignorer la casse et les espaces)

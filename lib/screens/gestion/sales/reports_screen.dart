@@ -397,15 +397,15 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                             color: Colors.grey[600],
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Classé par quantité (70%) et fréquence (30%)',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[500],
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
+                        // const SizedBox(height: 2),
+                        // Text(
+                        //   'Classé par quantité (70%) et fréquence (30%)',
+                        //   style: TextStyle(
+                        //     fontSize: 12,
+                        //     color: Colors.grey[500],
+                        //     fontStyle: FontStyle.italic,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ],
@@ -477,15 +477,15 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Classé par montant (60%) et fréquence (40%)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
+                    // const SizedBox(height: 2),
+                    // Text(
+                    //   'Classé par montant (60%) et fréquence (40%)',
+                    //   style: TextStyle(
+                    //     fontSize: 12,
+                    //     color: Colors.grey[500],
+                    //     fontStyle: FontStyle.italic,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
