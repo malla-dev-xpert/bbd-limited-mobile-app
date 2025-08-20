@@ -623,14 +623,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _InfoIconText(
                 icon: Icons.numbers,
                 label: 'Quantité',
                 value: '${item.quantity ?? 0}',
               ),
-              const SizedBox(width: 16),
+              const SizedBox(height: 8),
               _InfoIconText(
                 icon: Icons.attach_money,
                 label: 'Prix unitaire',

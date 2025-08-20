@@ -277,69 +277,108 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.95,
         height: MediaQuery.of(context).size.height * 0.9,
-        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).translate('new_purchase'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+              // Fixed Header
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: Column(
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: ListView(
-                        children: [
-                          PackageItemForm(
-                            onAddItem: (
-                              description,
-                              quantity,
-                              unitPrice,
-                              supplierId,
-                              supplierName,
-                              invoiceNumber,
-                              salesRate,
-                            ) {
-                              _addItem(
-                                description,
-                                quantity,
-                                unitPrice,
-                                supplierId,
-                                supplierName,
-                                invoiceNumber,
-                                salesRate,
-                              );
-                            },
-                            suppliers: suppliers,
-                          ),
-                          const SizedBox(height: 10),
-                          PackageItemsList(
-                            items: localItems,
-                            suppliers: suppliers,
-                            onRemoveItem: _removeItem,
-                            onDuplicateItem: _duplicateItem,
-                            onEditItem: _editItem,
-                          ),
-                        ],
+                    Text(
+                      AppLocalizations.of(context).translate('new_purchase'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
                       ),
                     ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              // Scrollable Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      PackageItemForm(
+                        onAddItem: (
+                          description,
+                          quantity,
+                          unitPrice,
+                          supplierId,
+                          supplierName,
+                          invoiceNumber,
+                          salesRate,
+                        ) {
+                          _addItem(
+                            description,
+                            quantity,
+                            unitPrice,
+                            supplierId,
+                            supplierName,
+                            invoiceNumber,
+                            salesRate,
+                          );
+                        },
+                        suppliers: suppliers,
+                      ),
+                      const SizedBox(height: 10),
+                      PackageItemsList(
+                        items: localItems,
+                        suppliers: suppliers,
+                        onRemoveItem: _removeItem,
+                        onDuplicateItem: _duplicateItem,
+                        onEditItem: _editItem,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+              // Fixed Bottom Section
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: 10,
@@ -574,69 +613,108 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.95,
         height: MediaQuery.of(context).size.height * 0.9,
-        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).translate('new_debt'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+              // Fixed Header
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: Column(
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: ListView(
-                        children: [
-                          PackageItemForm(
-                            onAddItem: (
-                              description,
-                              quantity,
-                              unitPrice,
-                              supplierId,
-                              supplierName,
-                              invoiceNumber,
-                              salesRate,
-                            ) {
-                              _addItem(
-                                description,
-                                quantity,
-                                unitPrice,
-                                supplierId,
-                                supplierName,
-                                invoiceNumber,
-                                salesRate,
-                              );
-                            },
-                            suppliers: suppliers,
-                          ),
-                          const SizedBox(height: 10),
-                          PackageItemsList(
-                            items: localItems,
-                            suppliers: suppliers,
-                            onRemoveItem: _removeItem,
-                            onDuplicateItem: _duplicateItem,
-                            onEditItem: _editItem,
-                          ),
-                        ],
+                    Text(
+                      AppLocalizations.of(context).translate('new_debt'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
                       ),
                     ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              // Scrollable Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      PackageItemForm(
+                        onAddItem: (
+                          description,
+                          quantity,
+                          unitPrice,
+                          supplierId,
+                          supplierName,
+                          invoiceNumber,
+                          salesRate,
+                        ) {
+                          _addItem(
+                            description,
+                            quantity,
+                            unitPrice,
+                            supplierId,
+                            supplierName,
+                            invoiceNumber,
+                            salesRate,
+                          );
+                        },
+                        suppliers: suppliers,
+                      ),
+                      const SizedBox(height: 10),
+                      PackageItemsList(
+                        items: localItems,
+                        suppliers: suppliers,
+                        onRemoveItem: _removeItem,
+                        onDuplicateItem: _duplicateItem,
+                        onEditItem: _editItem,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+              // Fixed Bottom Section
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: 10,

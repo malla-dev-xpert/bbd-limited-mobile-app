@@ -146,26 +146,54 @@ class _PackageItemFormState extends State<PackageItemForm> {
             },
           ),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: buildTextField(
-                  controller: _unitPriceController,
-                  label: AppLocalizations.of(context).translate('unit_price'),
-                  keyboardType: TextInputType.number,
-                  icon: Icons.attach_money,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: buildTextField(
-                  controller: _salesRateController,
-                  label:
-                      AppLocalizations.of(context).translate('purchase_rate'),
-                  icon: Icons.percent,
-                ),
-              ),
-            ],
+          // Responsive layout for unit price and purchase rate
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Use column layout on mobile (width < 600), row layout on tablet and larger
+              if (constraints.maxWidth < 600) {
+                return Column(
+                  children: [
+                    buildTextField(
+                      controller: _unitPriceController,
+                      label:
+                          AppLocalizations.of(context).translate('unit_price'),
+                      keyboardType: TextInputType.number,
+                      icon: Icons.attach_money,
+                    ),
+                    const SizedBox(height: 10),
+                    buildTextField(
+                      controller: _salesRateController,
+                      label: AppLocalizations.of(context)
+                          .translate('purchase_rate'),
+                      icon: Icons.percent,
+                    ),
+                  ],
+                );
+              } else {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: buildTextField(
+                        controller: _unitPriceController,
+                        label: AppLocalizations.of(context)
+                            .translate('unit_price'),
+                        keyboardType: TextInputType.number,
+                        icon: Icons.attach_money,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: buildTextField(
+                        controller: _salesRateController,
+                        label: AppLocalizations.of(context)
+                            .translate('purchase_rate'),
+                        icon: Icons.percent,
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
           const SizedBox(height: 10),
           Row(
