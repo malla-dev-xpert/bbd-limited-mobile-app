@@ -11,7 +11,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class AuthService {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   static const String _usernameKey = 'username';
   static const String _tokenKey = 'jwt';
 
@@ -23,7 +23,7 @@ class AuthService {
         body: jsonEncode({"username": username, "password": password}),
       );
 
-      log(response.body);
+      // log(response.body);
 
       if (response.statusCode == 200) {
         final token = response.body;

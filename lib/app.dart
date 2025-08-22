@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'routes.dart';
-import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/localization/language_provider.dart';
 import 'package:bbd_limited/screens/main_screen.dart';

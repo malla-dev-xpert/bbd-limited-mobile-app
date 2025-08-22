@@ -38,13 +38,13 @@ class Routes {
       case warehouse:
         return MaterialPageRoute(builder: (_) => const WarehouseScreen());
       case package:
-        return MaterialPageRoute(builder: (_) => PackageHomeScreen());
+        return MaterialPageRoute(builder: (_) => const PackageHomeScreen());
       case harbor:
         return MaterialPageRoute(builder: (_) => HarborScreen());
       case partners:
-        return MaterialPageRoute(builder: (_) => PartnerScreen());
+        return MaterialPageRoute(builder: (_) => const PartnerScreen());
       case containers:
-        return MaterialPageRoute(builder: (_) => ContainerScreen());
+        return MaterialPageRoute(builder: (_) => const ContainerScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
