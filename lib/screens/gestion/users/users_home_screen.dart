@@ -88,7 +88,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       final users = await _authService.getAllUsers(page: currentPage);
 
       setState(() {
-        _allUsers.addAll(users);
+        _allUsers.addAll(users
+            .where((user) => user.email != "admin@bbdproject.com")
+            .toList());
         _filteredUsers = List.from(_allUsers);
         _applyFilters();
 
