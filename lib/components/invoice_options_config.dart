@@ -32,6 +32,16 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     super.initState();
     _options = widget.options;
     _initializeControllers();
+    _addControllersListeners();
+  }
+
+  @override
+  void didUpdateWidget(InvoiceOptionsConfig oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.options != widget.options) {
+      _options = widget.options;
+      _updateControllersFromOptions();
+    }
   }
 
   void _initializeControllers() {
@@ -40,6 +50,18 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
         _options.globalMarginValue?.toString() ?? '15';
     _discountController.text = _options.discountValue?.toString() ?? '5';
     _storageFeeController.text = _options.storageFeeAmount?.toString() ?? '25';
+  }
+
+  void _updateControllersFromOptions() {
+    _lineMarginController.text = _options.lineMarginValue?.toString() ?? '10';
+    _globalMarginController.text =
+        _options.globalMarginValue?.toString() ?? '15';
+    _discountController.text = _options.discountValue?.toString() ?? '5';
+    _storageFeeController.text = _options.storageFeeAmount?.toString() ?? '25';
+  }
+
+  void _addControllersListeners() {
+    // Suppression des listeners automatiques pour éviter les mises à jour pendant la frappe
   }
 
   @override
@@ -55,6 +77,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     setState(() {
       _options = newOptions;
     });
+    _updateControllersFromOptions();
     widget.onOptionsChanged(newOptions);
   }
 
@@ -127,9 +150,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       enableLineMargin: value ?? false,
                       lineMarginValue: value == true ? 10.0 : null,
                     ));
-                    if (value == true) {
-                      _lineMarginController.text = '10';
-                    }
                   },
                   children: [
                     if (_options.enableLineMargin) ...[
@@ -154,11 +174,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                             ? 10.0
                                             : 5.0,
                                   ));
-                                  if (type == MarginType.percentage) {
-                                    _lineMarginController.text = '10';
-                                  } else {
-                                    _lineMarginController.text = '5';
-                                  }
                                 }
                               },
                             ),
@@ -179,6 +194,14 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                       ? Icons.percent
                                       : Icons.attach_money,
                                   keyboardType: TextInputType.number,
+                                  onChanged: (value) {
+                                    final amount = double.tryParse(value);
+                                    if (amount != null &&
+                                        amount != _options.lineMarginValue) {
+                                      _updateOptions(_options.copyWith(
+                                          lineMarginValue: amount));
+                                    }
+                                  },
                                   validator: (value) {
                                     if (value == null || value.isEmpty)
                                       return 'Requis';
@@ -243,9 +266,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       enableGlobalMargin: value ?? false,
                       globalMarginValue: value == true ? 15.0 : null,
                     ));
-                    if (value == true) {
-                      _globalMarginController.text = '15';
-                    }
                   },
                   children: [
                     if (_options.enableGlobalMargin) ...[
@@ -270,11 +290,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                             ? 15.0
                                             : 10.0,
                                   ));
-                                  if (type == MarginType.percentage) {
-                                    _globalMarginController.text = '15';
-                                  } else {
-                                    _globalMarginController.text = '10';
-                                  }
                                 }
                               },
                             ),
@@ -292,6 +307,14 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                   ? Icons.percent
                                   : Icons.attach_money,
                               keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                final amount = double.tryParse(value);
+                                if (amount != null &&
+                                    amount != _options.globalMarginValue) {
+                                  _updateOptions(_options.copyWith(
+                                      globalMarginValue: amount));
+                                }
+                              },
                               validator: (value) {
                                 if (value == null || value.isEmpty)
                                   return 'Requis';
@@ -331,9 +354,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       enableDiscount: value ?? false,
                       discountValue: value == true ? 5.0 : null,
                     ));
-                    if (value == true) {
-                      _discountController.text = '5';
-                    }
                   },
                   children: [
                     if (_options.enableDiscount) ...[
@@ -358,11 +378,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                             ? 5.0
                                             : 10.0,
                                   ));
-                                  if (type == DiscountType.percentage) {
-                                    _discountController.text = '5';
-                                  } else {
-                                    _discountController.text = '10';
-                                  }
                                 }
                               },
                             ),
@@ -416,9 +431,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       enableStorageFees: value ?? false,
                       storageFeeAmount: value == true ? 25.0 : null,
                     ));
-                    if (value == true) {
-                      _storageFeeController.text = '25';
-                    }
                   },
                   children: [
                     if (_options.enableStorageFees) ...[
@@ -462,6 +474,14 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                   : 'Montant (${widget.currencySymbol})',
                               icon: Icons.warehouse,
                               keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                final amount = double.tryParse(value);
+                                if (amount != null &&
+                                    amount != _options.storageFeeAmount) {
+                                  _updateOptions(_options.copyWith(
+                                      storageFeeAmount: amount));
+                                }
+                              },
                               validator: (value) {
                                 if (value == null || value.isEmpty)
                                   return 'Requis';

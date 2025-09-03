@@ -7,11 +7,17 @@ Widget buildTextField({
   TextInputType keyboardType = TextInputType.text,
   String? Function(String?)? validator,
   String? errorText,
+  ValueChanged<String>? onChanged,
+  VoidCallback? onEditingComplete,
+  ValueChanged<String>? onFieldSubmitted,
 }) {
   return TextFormField(
     controller: controller,
     keyboardType: keyboardType,
     autocorrect: false,
+    onChanged: onChanged,
+    onEditingComplete: onEditingComplete,
+    onFieldSubmitted: onFieldSubmitted,
     decoration: InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, color: Colors.black),
