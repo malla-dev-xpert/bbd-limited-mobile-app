@@ -572,17 +572,11 @@ class VersementPrintService {
           if (options.enableGlobalMargin &&
               options.globalMarginValue != null) ...[
             pw.SizedBox(height: 8),
-            pw.Container(
-              width: double.infinity,
+            pw.Padding(
               padding:
                   const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              decoration: pw.BoxDecoration(
-                color: PdfColors.grey100,
-                borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
-                border: pw.Border.all(color: PdfColors.grey300, width: 1),
-              ),
               child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: pw.MainAxisAlignment.end,
                 children: [
                   pw.Text(
                     options.globalMarginType == MarginType.percentage
@@ -594,6 +588,7 @@ class VersementPrintService {
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
+                  pw.SizedBox(width: 10),
                   pw.Text(
                     currencyFormat.format(
                         options.globalMarginType == MarginType.percentage
@@ -932,58 +927,201 @@ class VersementPrintService {
       NumberFormat currencyFormat,
       AppLocalizations localizations,
       bool isProforma) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.end,
-      children: [
-        // Sous-total
-        pw.Text(
-            '${localizations.translate('pdf_subtotal')} : ${currencyFormat.format(sousTotal)}',
-            style: const pw.TextStyle(fontSize: 12)),
+    return pw.Container(
+      width: double.infinity,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
+        children: [
+          // Sous-total
+          pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Text(
+                  'Sous-total :',
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(width: 10),
+                pw.Text(
+                  currencyFormat.format(sousTotal),
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-        // Détail des options appliquées
-        if (options.enableLineMargin && options.lineMarginValue != null) ...[
-          pw.SizedBox(height: 4),
+          // Détail des options appliquées
+          if (options.enableLineMargin && options.lineMarginValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.lineMarginType == MarginType.percentage
+                        ? 'Marge par ligne (${options.lineMarginValue}%) :'
+                        : 'Marge par ligne (${options.lineMarginValue}) :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    currencyFormat.format(
+                        options.lineMarginType == MarginType.percentage
+                            ? (sousTotal * options.lineMarginValue! / 100)
+                            : options.lineMarginValue!),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (options.enableDiscount && options.discountValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.discountType == DiscountType.percentage
+                        ? 'Remise (${options.discountValue}%) :'
+                        : 'Remise :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    '-${currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (options.enableStorageFees &&
+              options.storageFeeAmount != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.storageFeeType == StorageFeeType.percentage
+                        ? 'Frais d\'entreposage (${options.storageFeeAmount}%) :'
+                        : 'Frais d\'entreposage :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    currencyFormat.format(
+                        options.storageFeeType == StorageFeeType.percentage
+                            ? (sousTotal * options.storageFeeAmount! / 100)
+                            : options.storageFeeAmount!),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (options.enableGlobalMargin &&
+              options.globalMarginValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.globalMarginType == MarginType.percentage
+                        ? 'Marge globale (${options.globalMarginValue}%) :'
+                        : 'Marge globale (${options.globalMarginValue}) :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    currencyFormat.format(
+                        options.globalMarginType == MarginType.percentage
+                            ? (montantTotal * options.globalMarginValue! / 100)
+                            : options.globalMarginValue!),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          pw.SizedBox(height: 16),
+
+          // Total final
           pw.Text(
-              'Marge par ligne (${options.lineMarginValue}${options.lineMarginType == MarginType.percentage ? '%' : ''}) : ${currencyFormat.format(options.lineMarginType == MarginType.percentage ? (sousTotal * options.lineMarginValue! / 100) : options.lineMarginValue!)}',
-              style:
-                  const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
-        ],
+            'TOTAL FINAL : ${currencyFormat.format(montantTotal)}',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColor.fromHex('#1A1E49'),
+            ),
+          ),
 
-        if (options.enableDiscount && options.discountValue != null) ...[
-          pw.SizedBox(height: 4),
-          pw.Text(
-              'Remise ${options.discountType == DiscountType.percentage ? '(${options.discountValue}%)' : ''} : -${currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
-              style:
-                  const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
+          if (isProforma) ...[
+            pw.SizedBox(height: 8),
+            pw.Text(
+              localizations.translate('pdf_estimated_amount'),
+              style: pw.TextStyle(
+                fontSize: 10,
+                color: PdfColors.grey600,
+                fontStyle: pw.FontStyle.italic,
+              ),
+            ),
+          ],
         ],
-
-        if (options.enableStorageFees && options.storageFeeAmount != null) ...[
-          pw.SizedBox(height: 4),
-          pw.Text(
-              'Frais d\'entreposage ${options.storageFeeType == StorageFeeType.percentage ? '(${options.storageFeeAmount}%)' : ''} : ${currencyFormat.format(options.storageFeeType == StorageFeeType.percentage ? (sousTotal * options.storageFeeAmount! / 100) : options.storageFeeAmount!)}',
-              style:
-                  const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
-        ],
-
-        if (options.enableGlobalMargin &&
-            options.globalMarginValue != null) ...[
-          pw.SizedBox(height: 4),
-          pw.Text(
-              'Marge globale (${options.globalMarginValue}${options.globalMarginType == MarginType.percentage ? '%' : ''}) : ${currencyFormat.format(options.globalMarginType == MarginType.percentage ? (montantTotal * options.globalMarginValue! / 100) : options.globalMarginValue!)}',
-              style:
-                  const pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
-        ],
-
-        pw.SizedBox(height: 8),
-        pw.Text(
-            '${localizations.translate('pdf_total_amount')} : ${currencyFormat.format(montantTotal)}',
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-        if (isProforma) // Note seulement pour pro-forma
-          pw.SizedBox(height: 8),
-        if (isProforma)
-          pw.Text(localizations.translate('pdf_estimated_amount'),
-              style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
-      ],
+      ),
     );
   }
 }

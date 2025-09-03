@@ -1559,94 +1559,195 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
 
   void _handlePrintAchat(Achat achat) {
     bool includeSupplierInfo = false;
-    bool isProforma = false; // Nouvelle variable d'état
+    bool isProforma = false;
 
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              title: const Text("Options d'impression"),
+            return Dialog(
               backgroundColor: Colors.white,
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Section type de document
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Text("Type de document:"),
-                    ),
-                    Row(
-                      children: [
-                        Radio<bool>(
-                          value: false,
-                          groupValue: isProforma,
-                          onChanged: (value) {
-                            setState(() {
-                              isProforma = false;
-                              if (value != null) includeSupplierInfo = value;
-                            });
-                          },
-                        ),
-                        const Text('Facture réel'),
-                        const SizedBox(width: 20),
-                        Radio<bool>(
-                          value: true,
-                          groupValue: isProforma,
-                          onChanged: (value) {
-                            setState(() {
-                              isProforma = true;
-                              includeSupplierInfo =
-                                  false; // Désactive les infos fournisseur en pro-forma
-                            });
-                          },
-                        ),
-                        const Expanded(child: Text('Pro-forma')),
-                      ],
-                    ),
-
-                    // Option fournisseur (seulement pour facture standard)
-                    if (!isProforma) ...[
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // En-tête
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Configuration et aperçu de l'achat",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
-                      CheckboxListTile(
-                        title: const Text(
-                            "Inclure les informations du fournisseur"),
-                        value: includeSupplierInfo,
-                        onChanged: (value) {
-                          setState(() {
-                            includeSupplierInfo = value ?? false;
-                          });
-                        },
+
+                      // Section options d'impression
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Options d\'impression',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1E49),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Type de document
+                            Row(
+                              children: [
+                                const Text("Type de document:"),
+                                const SizedBox(width: 20),
+                                Row(
+                                  children: [
+                                    Radio<bool>(
+                                      value: false,
+                                      groupValue: isProforma,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          isProforma = false;
+                                          if (value != null)
+                                            includeSupplierInfo = value;
+                                        });
+                                      },
+                                    ),
+                                    const Text('Facture réel'),
+                                  ],
+                                ),
+                                const SizedBox(width: 20),
+                                Row(
+                                  children: [
+                                    Radio<bool>(
+                                      value: true,
+                                      groupValue: isProforma,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          isProforma = true;
+                                          includeSupplierInfo = false;
+                                        });
+                                      },
+                                    ),
+                                    const Text('Pro-forma'),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                            // Option fournisseur (seulement pour facture standard)
+                            if (!isProforma) ...[
+                              const SizedBox(height: 16),
+                              CheckboxListTile(
+                                title: const Text(
+                                    "Inclure les informations du fournisseur"),
+                                value: includeSupplierInfo,
+                                onChanged: (value) {
+                                  setState(() {
+                                    includeSupplierInfo = value ?? false;
+                                  });
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Configuration des options de facturation
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          child: SingleChildScrollView(
+                            child: InvoiceOptionsConfig(
+                              options: _invoiceOptions,
+                              onOptionsChanged: _updateInvoiceOptions,
+                              currencySymbol:
+                                  widget.versement.deviseCode ?? '¥',
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Boutons d'action
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Annuler'),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _showAchatPdfPreviewDialog(context, achat,
+                                  includeSupplierInfo, isProforma);
+                            },
+                            icon: const Icon(Icons.visibility),
+                            label: const Text('Voir l\'aperçu PDF'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1A1E49),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-
-                    // Aperçu PDF
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: PdfPreview(
-                        build: (format) =>
-                            VersementPrintService.buildAchatPdfBytes(
-                          achat,
-                          includeSupplierInfo:
-                              includeSupplierInfo && !isProforma,
-                          currencyFormat: currencyFormat,
-                          localizations: AppLocalizations.of(context),
-                          isProforma: isProforma,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  void _showAchatPdfPreviewDialog(BuildContext context, Achat achat,
+      bool includeSupplierInfo, bool isProforma) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: PdfPreview(
+            build: (format) => VersementPrintService.buildAchatPdfBytes(
+              achat,
+              includeSupplierInfo: includeSupplierInfo,
+              currencyFormat: currencyFormat,
+              localizations: AppLocalizations.of(context),
+              isProforma: isProforma,
+              invoiceOptions: _invoiceOptions,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
