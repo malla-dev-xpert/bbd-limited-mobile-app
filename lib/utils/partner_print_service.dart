@@ -7,6 +7,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class PartnerPrintService {
@@ -21,6 +22,7 @@ class PartnerPrintService {
     Partner partner, {
     DateTimeRange? dateRange,
     required AppLocalizations localizations,
+    InvoiceOptions? invoiceOptions,
   }) async {
     final pdf = pw.Document();
 
@@ -39,6 +41,14 @@ class PartnerPrintService {
 
     final filteredVersements = _filterVersements(partner.versements, dateRange);
     final filteredPackages = _filterPackages(partner.packages, dateRange);
+
+    // Calcul du sous-total des versements
+    double sousTotal =
+        filteredVersements.fold(0, (sum, v) => sum + (v.montantVerser ?? 0));
+
+    // Application des options de facturation
+    final options = invoiceOptions ?? const InvoiceOptions();
+    double montantTotal = options.calculateTotal(sousTotal);
 
     pdf.addPage(
       pw.MultiPage(
@@ -71,6 +81,11 @@ class PartnerPrintService {
                             filteredVersements, localizations),
                       if (filteredPackages.isNotEmpty)
                         _buildPackagesSection(filteredPackages, localizations),
+                      if (_hasActiveOptions(options)) ...[
+                        pw.SizedBox(height: 24),
+                        _buildPricingSummary(
+                            sousTotal, montantTotal, options, localizations),
+                      ],
                     ],
                   ),
                 ),
@@ -82,6 +97,14 @@ class PartnerPrintService {
     );
 
     return pdf.save();
+  }
+
+  // Vérifier si des options de facturation sont actives
+  static bool _hasActiveOptions(InvoiceOptions options) {
+    return options.enableLineMargin ||
+        options.enableGlobalMargin ||
+        options.enableDiscount ||
+        options.enableStorageFees;
   }
 
   static List<Versement> _filterVersements(
@@ -412,6 +435,198 @@ class PartnerPrintService {
           ),
         ],
       ],
+    );
+  }
+
+  static pw.Widget _buildPricingSummary(
+    double sousTotal,
+    double montantTotal,
+    InvoiceOptions options,
+    AppLocalizations localizations,
+  ) {
+    return pw.Container(
+      width: double.infinity,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
+        children: [
+          // Sous-total
+          pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Text(
+                  'Sous-total :',
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(width: 10),
+                pw.Text(
+                  _currencyFormat.format(sousTotal),
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Détail des options appliquées
+          if (options.enableLineMargin && options.lineMarginValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.lineMarginType == MarginType.percentage
+                        ? 'Marge par ligne (${options.lineMarginValue}%) :'
+                        : 'Marge par ligne (${options.lineMarginValue}) :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    _currencyFormat.format(
+                        options.lineMarginType == MarginType.percentage
+                            ? (sousTotal * options.lineMarginValue! / 100)
+                            : options.lineMarginValue!),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (options.enableDiscount && options.discountValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.discountType == DiscountType.percentage
+                        ? 'Remise (${options.discountValue}%) :'
+                        : 'Remise :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    '-${_currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (options.enableStorageFees &&
+              options.storageFeeAmount != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.storageFeeType == StorageFeeType.percentage
+                        ? 'Frais d\'entreposage (${options.storageFeeAmount}%) :'
+                        : 'Frais d\'entreposage :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    _currencyFormat.format(
+                        options.storageFeeType == StorageFeeType.percentage
+                            ? (sousTotal * options.storageFeeAmount! / 100)
+                            : options.storageFeeAmount!),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (options.enableGlobalMargin &&
+              options.globalMarginValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.globalMarginType == MarginType.percentage
+                        ? 'Marge globale (${options.globalMarginValue}%) :'
+                        : 'Marge globale (${options.globalMarginValue}) :',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    _currencyFormat.format(
+                        options.globalMarginType == MarginType.percentage
+                            ? (montantTotal * options.globalMarginValue! / 100)
+                            : options.globalMarginValue!),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          pw.SizedBox(height: 16),
+
+          // Total final
+          pw.Text(
+            'TOTAL FINAL : ${_currencyFormat.format(montantTotal)}',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColor.fromHex('#1A1E49'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

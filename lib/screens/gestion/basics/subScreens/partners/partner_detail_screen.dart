@@ -20,6 +20,8 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dar
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/components/invoice_options_config.dart';
 
 import 'widgets/balance_card_widget.dart';
 import 'widgets/operation_type_selector.dart';
@@ -60,6 +62,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   Timer? _searchTimer;
   bool _isLoading = false;
 
+  // Options de facturation configurables
+  InvoiceOptions _invoiceOptions = const InvoiceOptions();
+
   @override
   void initState() {
     super.initState();
@@ -98,10 +103,13 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       });
     } catch (e) {
       print('Erreur lors du chargement des dettes: $e');
-      setState(() {
-        _filteredDebts = [];
-      });
     }
+  }
+
+  void _updateInvoiceOptions(InvoiceOptions newOptions) {
+    setState(() {
+      _invoiceOptions = newOptions;
+    });
   }
 
   void _sortVersementsByDate() {
@@ -385,6 +393,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         _partner,
         dateRange: dateRange,
         localizations: AppLocalizations.of(context),
+        invoiceOptions: _invoiceOptions,
       );
 
       await showDialog(
@@ -417,75 +426,97 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     await showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.8,
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 16, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)
-                                .translate('print_options'),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Configuration et aperçu du rapport client',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.close, size: 20),
-                            padding: EdgeInsets.zero,
-                            visualDensity: VisualDensity.compact,
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
-                      ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
-                    const Divider(height: 1),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                    const SizedBox(height: 16),
+
+                    // Section options d'impression
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!),
                       ),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          RadioListTile<bool>(
-                            contentPadding: EdgeInsets.zero,
-                            visualDensity: VisualDensity.compact,
-                            title: Text(AppLocalizations.of(context)
-                                .translate('all_data')),
-                            value: true,
-                            groupValue: printAll,
-                            onChanged: (value) {
-                              setState(() => printAll = value!);
-                            },
+                          Text(
+                            'Options d\'impression',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1E49),
+                            ),
                           ),
-                          RadioListTile<bool>(
-                            contentPadding: EdgeInsets.zero,
-                            visualDensity: VisualDensity.compact,
-                            title: Text(AppLocalizations.of(context)
-                                .translate('filter_by_date')),
-                            value: false,
-                            groupValue: printAll,
-                            onChanged: (value) {
-                              setState(() => printAll = value!);
-                            },
+                          const SizedBox(height: 16),
+
+                          // Période d'impression
+                          Row(
+                            children: [
+                              const Text("Période d'impression:"),
+                              const SizedBox(width: 20),
+                              Row(
+                                children: [
+                                  Radio<bool>(
+                                    value: true,
+                                    groupValue: printAll,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        printAll = value!;
+                                        if (value) selectedDateRange = null;
+                                      });
+                                    },
+                                  ),
+                                  const Text('Toutes les données'),
+                                ],
+                              ),
+                              const SizedBox(width: 20),
+                              Row(
+                                children: [
+                                  Radio<bool>(
+                                    value: false,
+                                    groupValue: printAll,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        printAll = value!;
+                                      });
+                                    },
+                                  ),
+                                  const Text('Filtrer par date'),
+                                ],
+                              ),
+                            ],
                           ),
+
+                          // Sélecteur de date (seulement si pas "toutes les données")
                           if (!printAll) ...[
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             InkWell(
                               borderRadius: BorderRadius.circular(8),
                               onTap: () async {
@@ -534,8 +565,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                     Expanded(
                                       child: Text(
                                         selectedDateRange == null
-                                            ? AppLocalizations.of(context)
-                                                .translate('select_period')
+                                            ? 'Sélectionner une période'
                                             : "${DateFormat('dd/MM/yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(selectedDateRange!.end)}",
                                         style: TextStyle(
                                           color: selectedDateRange == null
@@ -554,64 +584,55 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                         ],
                       ),
                     ),
-                    const Divider(height: 1),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(AppLocalizations.of(context)
-                                .translate('cancel')),
+
+                    const SizedBox(height: 16),
+
+                    // Configuration des options de facturation
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        child: SingleChildScrollView(
+                          child: InvoiceOptionsConfig(
+                            options: _invoiceOptions,
+                            onOptionsChanged: _updateInvoiceOptions,
+                            currencySymbol: _getPartnerCurrency(),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _showPdfPreviewDialog(
-                                printAll ? null : selectedDateRange,
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.print,
-                                    size: 18, color: Colors.white),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)
-                                      .translate('generate_report'),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                if (_isLoading)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 8),
-                                    child: SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          )
-                        ],
+                        ),
                       ),
                     ),
+
+                    const SizedBox(height: 16),
+
+                    // Boutons d'action
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Annuler'),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _showPdfPreviewDialog(
+                              printAll ? null : selectedDateRange,
+                            );
+                          },
+                          icon: const Icon(Icons.visibility),
+                          label: const Text('Voir l\'aperçu PDF'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A1E49),
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                );
-              },
-            ),
-          ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -1004,5 +1025,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       default:
         return type.toString().split('.').last;
     }
+  }
+
+  String _getPartnerCurrency() {
+    if (_partner.versements == null || _partner.versements!.isEmpty) {
+      return 'CNY'; // Default currency if no versements
+    }
+    final firstVersement = _partner.versements!.first;
+    return firstVersement.deviseCode ??
+        'CNY'; // Default to CNY if no deviseCode
   }
 }
