@@ -1,5 +1,5 @@
-// card_data.dart
 import 'package:flutter/material.dart';
+import 'report_card.dart';
 
 class ReportCardData {
   final String title;
@@ -17,19 +17,63 @@ class ReportCardData {
   });
 }
 
-List<ReportCardData> reportCardDataList = [
-  ReportCardData(
-    title: 'Balance Actuelle',
-    value: '4 1260.50',
-    backgroundColor: Colors.amber[800]!, // Orange
-    textColor: Colors.white,
-    icon: Icons.wallet,
-  ),
-  ReportCardData(
-    title: 'Total des dettes',
-    value: '4 320.50',
-    backgroundColor: const Color(0xFF1A1E49), // Blue
-    textColor: Colors.white,
-    icon: Icons.currency_yen_rounded,
-  ),
-];
+class ReportCardList extends StatelessWidget {
+  final List<ReportCard> items;
+  final int crossAxisCount;
+  final double childAspectRatio;
+  final double mainAxisSpacing;
+  final double crossAxisSpacing;
+
+  const ReportCardList({
+    super.key,
+    required this.items,
+    this.crossAxisCount = 2,
+    this.childAspectRatio = 1.1,
+    this.mainAxisSpacing = 16,
+    this.crossAxisSpacing = 16,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.analytics_outlined,
+                size: 48,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Aucune donnée disponible',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: childAspectRatio,
+        mainAxisSpacing: mainAxisSpacing,
+        crossAxisSpacing: crossAxisSpacing,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return items[index];
+      },
+    );
+  }
+}

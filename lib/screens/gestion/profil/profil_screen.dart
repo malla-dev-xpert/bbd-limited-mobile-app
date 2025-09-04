@@ -3,12 +3,16 @@ import 'dart:developer';
 import 'package:bbd_limited/components/personal_info_card.dart';
 import 'package:bbd_limited/components/privacy_policy_dialog.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/profil/widgets/change_password_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/profil/widgets/language_selection_modal.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final User user;
+
+  const ProfilePage({super.key, required this.user});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -16,31 +20,17 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
-  User? _user;
   bool isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadUserInfo();
-  }
-
-  Future<void> _loadUserInfo() async {
-    final user = await _authService.getUserInfo();
-    if (mounted) {
-      setState(() {
-        _user = user;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Mon Profil'),
+        title: Text(localizations.translate('my_profile')),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.grey[50],
@@ -61,9 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
-    if (_user == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    final localizations = AppLocalizations.of(context);
 
     return Column(
       children: [
@@ -83,14 +71,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 20),
         Text(
-          "${_user?.firstName ?? ''} ${_user?.lastName ?? ''}",
+          "${widget.user.firstName ?? ''} ${widget.user.lastName ?? ''}",
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(
-          _user?.email ?? '',
+          widget.user.email ?? '',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
@@ -101,7 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // Action pour modifier le profil
           },
           icon: const Icon(Icons.edit, size: 18),
-          label: const Text('Modifier le profil'),
+          label: Text(localizations.translate('edit_profile')),
           style: OutlinedButton.styleFrom(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -114,6 +102,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileOptions(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -132,8 +122,8 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildOptionTile(
             context,
             icon: Icons.person_outline,
-            title: 'Informations personnelles',
-            subtitle: 'Modifier vos coordonnées',
+            title: localizations.translate('personal_info'),
+            subtitle: localizations.translate('personal_info_subtitle'),
             onTap: () {
               _showProfileDetails(context);
             },
@@ -142,8 +132,8 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildOptionTile(
             context,
             icon: Icons.lock_outline,
-            title: 'Mot de passe',
-            subtitle: 'Changer votre mot de passe',
+            title: localizations.translate('change_password'),
+            subtitle: localizations.translate('change_password_subtitle'),
             onTap: () {
               _showChangePasswordModal(context);
             },
@@ -152,18 +142,18 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildOptionTile(
             context,
             icon: Icons.flag_outlined,
-            title: 'Langues',
-            subtitle: 'Changer la langue',
+            title: localizations.translate('language'),
+            subtitle: localizations.translate('language_subtitle'),
             onTap: () {
-              _navigateToDeliveryPreferences(context);
+              _showLanguageSelectionModal(context);
             },
           ),
           const Divider(height: 1, indent: 20),
           _buildOptionTile(
             context,
             icon: Icons.policy_outlined,
-            title: 'Politique de confidentialité',
-            subtitle: 'Consulter la politique de confidentialité',
+            title: localizations.translate('privacy_policy'),
+            subtitle: localizations.translate('privacy_policy_subtitle'),
             onTap: () {
               _showPrivacyPolicyDialog(context);
             },
@@ -208,6 +198,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -222,7 +214,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         child: Text(
-          'Déconnexion',
+          localizations.translate('logout'),
           style: TextStyle(color: Colors.red[400], fontWeight: FontWeight.bold),
         ),
       ),
@@ -244,7 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         height: MediaQuery.of(context).size.height * 0.45,
-        child: PersonalInfoCard(user: _user!),
+        child: PersonalInfoCard(user: widget.user),
       ),
     );
   }
@@ -269,17 +261,28 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _showLanguageSelectionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const LanguageSelectionModal(),
+    );
+  }
+
   void _showLogoutConfirmation(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        title: Text(localizations.translate('logout')),
+        content: Text(localizations.translate('logout_confirmation')),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: Text(localizations.translate('cancel')),
           ),
           TextButton(
             onPressed: () async {
@@ -302,7 +305,9 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
             child: Text(
-              isLoading == true ? 'Déconnexion en cours...' : 'Déconnexion',
+              isLoading == true
+                  ? localizations.translate('logout_in_progress')
+                  : localizations.translate('logout'),
               style: TextStyle(color: Colors.red),
             ),
           ),

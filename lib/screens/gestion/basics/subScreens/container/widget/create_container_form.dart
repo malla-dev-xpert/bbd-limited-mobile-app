@@ -6,6 +6,7 @@ import 'package:bbd_limited/core/services/container_services.dart'; // <-- à cr
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/models/partner.dart'; // Import correct pour Partner
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class CreateContainerForm extends StatefulWidget {
   const CreateContainerForm({super.key});
@@ -70,7 +71,8 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
     try {
       final user = await authService.getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context)!.translate('user_not_connected'));
         return;
       }
       final reference = refController.text.trim();
@@ -100,13 +102,15 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
-        showSuccessTopSnackBar(context, "Conteneur enregistré avec succès !");
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context)!.translate('container_form_saved'));
       } else if (response == "NAME_EXIST") {
-        showErrorTopSnackBar(context, "Ce conteneur existe déjà !");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context)!.translate('container_form_error'));
       }
     } catch (e) {
-      showErrorTopSnackBar(
-          context, "Une erreur est survenue: \${e.toString()}");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context)!.translate('container_form_error'));
     } finally {
       setState(() => isLoading = false);
     }
@@ -130,8 +134,9 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Nouveau conteneur",
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_create'),
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -159,7 +164,8 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                         child: confirmationButton(
                           isLoading: false,
                           onPressed: _goToNextStep,
-                          label: "Suivant",
+                          label:
+                              AppLocalizations.of(context)!.translate('next'),
                           icon: Icons.arrow_forward,
                           subLabel: "",
                         ),
@@ -184,8 +190,9 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           onPressed: _goToPreviousStep,
                           icon: const Icon(Icons.arrow_back),
                         ),
-                        const Text(
-                          "Frais principaux",
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_form_location_fee'),
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -214,7 +221,8 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                         child: confirmationButton(
                           isLoading: false,
                           onPressed: _goToNextStep,
-                          label: "Suivant",
+                          label:
+                              AppLocalizations.of(context)!.translate('next'),
                           icon: Icons.arrow_forward,
                           subLabel: "",
                         ),
@@ -239,8 +247,9 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           onPressed: _goToPreviousStep,
                           icon: const Icon(Icons.arrow_back),
                         ),
-                        const Text(
-                          "Frais additionnels",
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_form_other_fees'),
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -272,9 +281,11 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                         child: confirmationButton(
                           isLoading: isLoading,
                           onPressed: _submitForm,
-                          label: "Enregistrer",
+                          label: AppLocalizations.of(context)!
+                              .translate('container_form_save'),
                           icon: Icons.check_circle_outline_outlined,
-                          subLabel: "Enregistrement...",
+                          subLabel: AppLocalizations.of(context)!
+                              .translate('container_form_saving'),
                         ),
                       ),
                     ),
@@ -331,16 +342,24 @@ class MainFeesFormState extends State<MainFeesForm> {
     print(
         '[DEBUG] locationFee="$locationFee" localCharge="$localCharge" loadingFee="$loadingFee" supplier=$supplier');
     if (supplier != null && locationFee.isEmpty) {
-      showErrorTopSnackBar(context,
-          "Le frais de location est obligatoire si un fournisseur est sélectionné.");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)!
+              .translate('container_form_validation_fees'));
       return false;
     }
     if (localCharge.isEmpty) {
-      showErrorTopSnackBar(context, "Le prix du local charge est obligatoire.");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)!
+              .translate('container_form_validation_fees'));
       return false;
     }
     if (loadingFee.isEmpty) {
-      showErrorTopSnackBar(context, "Le frais de chargement est obligatoire.");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)!
+              .translate('container_form_validation_fees'));
       return false;
     }
     return true;
@@ -354,13 +373,15 @@ class MainFeesFormState extends State<MainFeesForm> {
       children: [
         buildTextField(
           controller: widget.locationFeeController,
-          label:
-              "Frais de location" + (supplier != null ? " *" : " (optionnel)"),
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_location_fee') +
+              (supplier != null ? " *" : " (optionnel)"),
           icon: Icons.business,
           keyboardType: TextInputType.number,
           validator: (value) {
             if (supplier != null && (value == null || value.isEmpty)) {
-              return "Obligatoire si fournisseur";
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
             }
             return null;
           },
@@ -368,20 +389,28 @@ class MainFeesFormState extends State<MainFeesForm> {
         const SizedBox(height: 16),
         buildTextField(
           controller: widget.localChargeController,
-          label: "Prix du local charge *",
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_local_charge') +
+              " *",
           icon: Icons.location_city,
           keyboardType: TextInputType.number,
-          validator: (value) =>
-              value == null || value.isEmpty ? "Obligatoire" : null,
+          validator: (value) => value == null || value.isEmpty
+              ? AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees')
+              : null,
         ),
         const SizedBox(height: 16),
         buildTextField(
           controller: widget.loadingFeeController,
-          label: "Frais de chargement *",
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_loading_fee') +
+              " *",
           icon: Icons.local_shipping,
           keyboardType: TextInputType.number,
-          validator: (value) =>
-              value == null || value.isEmpty ? "Obligatoire" : null,
+          validator: (value) => value == null || value.isEmpty
+              ? AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees')
+              : null,
         ),
       ],
     );
@@ -468,7 +497,9 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
       children: [
         buildTextField(
           controller: widget.overweightFeeController,
-          label: "Prix du surpoids (optionnel)",
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_overweight_fee') +
+              " (optionnel)",
           icon: Icons.scale,
           keyboardType: TextInputType.number,
           validator: null,
@@ -476,7 +507,9 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
         const SizedBox(height: 16),
         buildTextField(
           controller: widget.checkingFeeController,
-          label: "Conteneur checking charge (optionnel)",
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_checking_fee') +
+              " (optionnel)",
           icon: Icons.verified,
           keyboardType: TextInputType.number,
           validator: null,
@@ -484,7 +517,9 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
         const SizedBox(height: 16),
         buildTextField(
           controller: widget.telxFeeController,
-          label: "TELX charge (optionnel)",
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_telx_fee') +
+              " (optionnel)",
           icon: Icons.phone_android,
           keyboardType: TextInputType.number,
           validator: null,
@@ -492,7 +527,9 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
         const SizedBox(height: 16),
         buildTextField(
           controller: widget.otherFeesController,
-          label: "Autres charges (optionnel)",
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_other_fees') +
+              " (optionnel)",
           icon: Icons.more_horiz,
           keyboardType: TextInputType.number,
           validator: null,
@@ -500,10 +537,12 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
         const SizedBox(height: 16),
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
-                "Total des charges : ",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                AppLocalizations.of(context)!
+                        .translate('container_total_fees') +
+                    " : ",
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             Text(
@@ -515,7 +554,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
         const SizedBox(height: 16),
         buildTextField(
           controller: widget.marginController,
-          label: "Marge à ajouter",
+          label:
+              AppLocalizations.of(context)!.translate('container_form_margin'),
           icon: Icons.add,
           keyboardType: TextInputType.number,
           validator: null,

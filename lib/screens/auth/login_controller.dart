@@ -14,17 +14,21 @@ class LoginController extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
 
-    final success = await _authService.login(
-      usernameController.text,
-      passwordController.text,
-    );
+    try {
+      final success = await _authService.login(
+        usernameController.text,
+        passwordController.text,
+      );
 
-    isLoading = false;
-    if (!success) {
-      errorMessage = "Identifiants incorrects. Réessayez.";
+      isLoading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      isLoading = false;
+      errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
     }
-    notifyListeners();
-    return success;
   }
 
   void clear() {

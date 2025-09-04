@@ -24,7 +24,7 @@ class PartnerServices {
       );
       return jsonBody.map((e) => Partner.fromJson(e)).toList();
     } else {
-      throw Exception("Erreur lors du chargement des partenaires");
+      throw Exception("partner_loading_error");
     }
   }
 
@@ -43,7 +43,7 @@ class PartnerServices {
       );
       return jsonBody.map((e) => Partner.fromJson(e)).toList();
     } else {
-      throw Exception("Erreur lors du chargement des partenaires");
+      throw Exception("partner_loading_error");
     }
   }
 
@@ -85,10 +85,10 @@ class PartnerServices {
               'Numéro de téléphone déjà enregistré au nom d\'un partenaire !') {
         return "PHONE_EXIST";
       } else {
-        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
+        throw Exception("partner_creation_error");
       }
     } catch (e) {
-      throw Exception("Erreur de connexion: $e");
+      throw Exception("network_error");
     }
   }
 
@@ -109,7 +109,7 @@ class PartnerServices {
         return "PACKAGE_FOUND";
       }
     } catch (e) {
-      throw Exception("Erreur lors de la suppression du partenaire : $e");
+      throw Exception("partner_delete_error");
     }
   }
 
@@ -127,7 +127,7 @@ class PartnerServices {
       return true;
     } else {
       print('Erreur: ${response.statusCode}, ${response.body}');
-      throw Exception('Échec de la mise à jour');
+      throw Exception('partner_update_error');
     }
   }
 }

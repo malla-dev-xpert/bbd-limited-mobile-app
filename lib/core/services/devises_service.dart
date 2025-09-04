@@ -70,7 +70,7 @@ class DeviseServices {
       final List<dynamic> content = jsonBody['content'];
       return content.map((e) => Devise.fromJson(e)).toList();
     } else {
-      throw Exception("Erreur lors du chargement des devises");
+      throw Exception("devise_loading_error");
     }
   }
 
@@ -80,7 +80,7 @@ class DeviseServices {
     final response = await http.delete(url);
 
     if (response.statusCode != 200) {
-      throw Exception("Erreur lors de la suppression de la devise");
+      throw Exception("devise_delete_error");
     }
   }
 
@@ -99,7 +99,7 @@ class DeviseServices {
         return true;
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'Échec de la mise à jour');
+        throw Exception(errorData['message'] ?? 'devise_update_error');
       }
     } catch (e) {
       rethrow;

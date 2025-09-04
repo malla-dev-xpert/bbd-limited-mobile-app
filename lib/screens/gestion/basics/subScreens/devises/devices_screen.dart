@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/providers/devise_provider.dart';
 import 'package:bbd_limited/widgets/devise/devise_form.dart';
 import 'package:bbd_limited/widgets/devise/devise_list_item.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class DevicesScreen extends ConsumerStatefulWidget {
   const DevicesScreen({super.key});
@@ -111,10 +112,10 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Ajouter une nouvelle devise',
-                      style: TextStyle(
+                      AppLocalizations.of(context).translate('add_new_devise'),
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1E49),
@@ -137,7 +138,9 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                     final user = await authService.getUserInfo();
                     if (user == null) {
                       showErrorTopSnackBar(
-                          context, 'Session utilisateur invalide');
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('invalid_user_session'));
                       return;
                     }
 
@@ -155,29 +158,45 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                     if (result == "SUCCESS") {
                       Navigator.pop(context);
                       showSuccessTopSnackBar(
-                          context, 'Devise créée avec succès!');
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('devise_created_success'));
                     } else if (result == "NAME_EXIST") {
                       showErrorTopSnackBar(
-                          context, 'Le nom de devise existe déjà');
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('devise_name_exists'));
                     } else if (result == "CODE_EXIST") {
                       showErrorTopSnackBar(
-                          context, 'Le code de devise existe déjà');
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('devise_code_exists'));
                     } else if (result == "RATE_NOT_FOUND") {
                       showErrorTopSnackBar(
-                          context, 'Taux de conversion non trouvé');
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('exchange_rate_not_found'));
                     } else if (result == "RATE_SERVICE_ERROR") {
                       showErrorTopSnackBar(
-                          context, 'Erreur du service de taux');
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('exchange_rate_service_error'));
                     } else if (result == "CONNECTION_ERROR") {
-                      showErrorTopSnackBar(context, 'Erreur de connexion');
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('network_error'));
                     } else {
                       // Affiche le message d'erreur tel quel s'il provient du backend
                       showErrorTopSnackBar(
-                          context, result ?? 'Erreur inconnue');
+                          context,
+                          result ??
+                              AppLocalizations.of(context)
+                                  .translate('unknown_error'));
                     }
                   } catch (e) {
-                    showErrorTopSnackBar(
-                        context, 'Erreur serveur: ${e.toString()}');
+                    showErrorTopSnackBar(context,
+                        '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
                   } finally {
                     setState(() => _isLoading = false);
                   }
@@ -198,9 +217,9 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Modifier un devise',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                AppLocalizations.of(context).translate('edit_devise'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
@@ -233,13 +252,18 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                   if (success) {
                     Navigator.pop(context);
                     showSuccessTopSnackBar(
-                        context, 'Devise modifiée avec succès');
+                        context,
+                        AppLocalizations.of(context)
+                            .translate('devise_updated_success'));
                   } else {
                     showErrorTopSnackBar(
-                        context, 'Erreur lors de la modification');
+                        context,
+                        AppLocalizations.of(context)
+                            .translate('devise_update_error'));
                   }
                 } catch (e) {
-                  showErrorTopSnackBar(context, 'Erreur: ${e.toString()}');
+                  showErrorTopSnackBar(context,
+                      '${AppLocalizations.of(context).translate('error')}: ${e.toString()}');
                 } finally {
                   setState(() => _isLoading = false);
                 }
@@ -255,22 +279,26 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
+        title: Text(
+            AppLocalizations.of(context).translate('confirm_delete_devise')),
         content: Text(
-          "Voulez-vous vraiment supprimer la devise ${devise.name} (${devise.code})?",
+          AppLocalizations.of(context)
+              .translate('confirm_delete_devise_message')
+              .replaceAll('{name}', devise.name)
+              .replaceAll('{code}', devise.code),
         ),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
           ),
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete, color: Colors.red),
-            label: const Text(
-              "Supprimer",
-              style: TextStyle(color: Colors.red),
+            label: Text(
+              AppLocalizations.of(context).translate('delete'),
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -283,12 +311,15 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
             .read(deviseListProvider.notifier)
             .deleteDevise(devise.id!);
         if (success) {
-          showSuccessTopSnackBar(context, "Devise supprimée avec succès");
+          showSuccessTopSnackBar(context,
+              AppLocalizations.of(context).translate('devise_deleted_success'));
         } else {
-          showErrorTopSnackBar(context, "Erreur lors de la suppression");
+          showErrorTopSnackBar(context,
+              AppLocalizations.of(context).translate('devise_delete_error'));
         }
       } catch (e) {
-        showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+        showErrorTopSnackBar(context,
+            "${AppLocalizations.of(context).translate('error')}: ${e.toString()}");
       }
     }
   }
@@ -301,9 +332,9 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        title: const Text(
-          "Gestion des devises",
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context).translate('devise_management_title'),
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -337,7 +368,8 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  labelText: 'Rechercher une devise...',
+                  labelText:
+                      AppLocalizations.of(context).translate('search_devise'),
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF1A1E49)),
                   border: OutlineInputBorder(
@@ -351,8 +383,9 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
               child: deviseState.when(
                 data: (devises) {
                   if (devises.isEmpty) {
-                    return const Center(
-                      child: Text("Aucune devise trouvée"),
+                    return Center(
+                      child: Text(AppLocalizations.of(context)
+                          .translate('no_devise_found')),
                     );
                   }
                   return RefreshIndicator(
@@ -377,7 +410,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                 ),
                 error: (error, stack) => Center(
                   child: Text(
-                    "Erreur: ${error.toString()}",
+                    AppLocalizations.of(context).translate(error.toString()),
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),

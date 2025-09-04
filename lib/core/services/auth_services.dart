@@ -11,7 +11,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class AuthService {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   static const String _usernameKey = 'username';
   static const String _tokenKey = 'jwt';
 
@@ -23,15 +23,32 @@ class AuthService {
         body: jsonEncode({"username": username, "password": password}),
       );
 
+      // log(response.body);
+
       if (response.statusCode == 200) {
         final token = response.body;
         await storage.write(key: _tokenKey, value: token);
         await storage.write(key: _usernameKey, value: username);
         return true;
+      } else if ((response.statusCode == 401 || response.statusCode == 403) &&
+          response.body == "Votre compte est suspendu pour le moment.") {
+        throw Exception(
+            "Votre compte a été désactivé. Veuillez contacter votre supérieur pour connaître la cause.");
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        throw Exception(
+            "Identifiants incorrects. Veuillez vérifier votre nom d'utilisateur et mot de passe.");
+      } else if (response.statusCode == 404) {
+        throw Exception(
+            "Utilisateur non trouvé. Veuillez vérifier vos infromations de connexion.");
       } else {
         return false;
       }
     } catch (e) {
+      // Si c'est déjà une Exception avec un message personnalisé, on la relance
+      if (e is Exception) {
+        rethrow;
+      }
+      // Pour les autres erreurs (réseau, etc.), on retourne false
       return false;
     }
   }
@@ -278,6 +295,44 @@ class AuthService {
         throw Exception('Ancien mot de passe incorrect');
       } else {
         throw Exception('Erreur lors du changement de mot de passe');
+      }
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  Future<String> disableUser(int userId) async {
+    try {
+      // Récupérer l'utilisateur courant pour obtenir son ID
+      final currentUser = await getUserInfo();
+      if (currentUser == null) {
+        throw Exception('Utilisateur non authentifié');
+      }
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/users/disable/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id':
+              currentUser.id.toString(), // 👈 Utilisation du header X-User-Id
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['success'] == true) {
+          return 'SUCCESS';
+        } else {
+          return responseData['message'] ?? 'Erreur lors de la désactivation';
+        }
+      } else if (response.statusCode == 404) {
+        return 'USER_NOT_FOUND';
+      } else if (response.statusCode == 403) {
+        return 'PERMISSION_DENIED';
+      } else if (response.statusCode == 400) {
+        return 'INVALID_INPUT';
+      } else {
+        return 'SERVER_ERROR';
       }
     } catch (e) {
       throw Exception('Erreur de connexion: $e');

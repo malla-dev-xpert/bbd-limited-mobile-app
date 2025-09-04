@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class PartnerEditForm extends StatefulWidget {
   final Partner partner;
@@ -44,10 +45,9 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
     _emailController = TextEditingController(text: widget.partner.email);
     _adresseController = TextEditingController(text: widget.partner.adresse);
     _accountType = widget.partner.accountType;
-    _selectedCountry =
-        widget.partner.country != null
-            ? Country.tryParse(widget.partner.country)
-            : null;
+    _selectedCountry = widget.partner.country != null
+        ? Country.tryParse(widget.partner.country)
+        : null;
   }
 
   @override
@@ -78,9 +78,9 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Modifier un partenaire',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).translate('edit_partner'),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -1,
@@ -95,7 +95,8 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                         Expanded(
                           child: buildTextField(
                             controller: _firstNameController,
-                            label: "Nom",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_first_name'),
                             icon: Icons.person,
                           ),
                         ),
@@ -103,7 +104,8 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                         Expanded(
                           child: buildTextField(
                             controller: _lastNameController,
-                            label: "Prénom",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_last_name'),
                             icon: Icons.person_4,
                           ),
                         ),
@@ -115,7 +117,8 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                         Expanded(
                           child: buildTextField(
                             controller: _phoneController,
-                            label: "Téléphone",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_phone'),
                             icon: Icons.phone,
                           ),
                         ),
@@ -123,7 +126,8 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                         Expanded(
                           child: buildTextField(
                             controller: _emailController,
-                            label: "Email",
+                            label: AppLocalizations.of(context)
+                                .translate('partner_email'),
                             icon: Icons.mail,
                           ),
                         ),
@@ -132,7 +136,8 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                     const SizedBox(height: 10),
                     buildTextField(
                       controller: _adresseController,
-                      label: "Adresse",
+                      label: AppLocalizations.of(context)
+                          .translate('partner_address'),
                       icon: Icons.maps_home_work,
                     ),
                     const SizedBox(height: 10),
@@ -170,16 +175,17 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                           children: [
                             _selectedCountry != null
                                 ? Row(
-                                  children: [
-                                    Text(
-                                      _selectedCountry!.flagEmoji,
-                                      style: const TextStyle(fontSize: 24),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(_selectedCountry!.name),
-                                  ],
-                                )
-                                : const Text('Choisir un pays'),
+                                    children: [
+                                      Text(
+                                        _selectedCountry!.flagEmoji,
+                                        style: const TextStyle(fontSize: 24),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(_selectedCountry!.name),
+                                    ],
+                                  )
+                                : Text(AppLocalizations.of(context)
+                                    .translate('partner_country')),
                             const Icon(Icons.arrow_drop_down),
                           ],
                         ),
@@ -205,12 +211,14 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : confirmationButton(
-                          isLoading: _isLoading,
-                          onPressed: _submitForm,
-                          label: "Modifier",
-                          icon: Icons.edit_note_rounded,
-                          subLabel: "Modification...",
-                        ),
+                            isLoading: _isLoading,
+                            onPressed: _submitForm,
+                            label:
+                                AppLocalizations.of(context).translate('edit'),
+                            icon: Icons.edit_note_rounded,
+                            subLabel: AppLocalizations.of(context)
+                                .translate('updating'),
+                          ),
                   ],
                 ),
               ],

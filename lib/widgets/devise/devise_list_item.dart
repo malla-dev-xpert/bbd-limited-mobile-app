@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class DeviseListItem extends StatelessWidget {
   final Devise devise;
@@ -33,14 +34,14 @@ class DeviseListItem extends StatelessWidget {
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             icon: Icons.edit,
-            label: 'Modifier',
+            label: AppLocalizations.of(context).translate('edit'),
           ),
           SlidableAction(
             onPressed: (_) => onDelete(),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
-            label: 'Supprimer',
+            label: AppLocalizations.of(context).translate('delete'),
             borderRadius:
                 const BorderRadius.horizontal(right: Radius.circular(16)),
           ),

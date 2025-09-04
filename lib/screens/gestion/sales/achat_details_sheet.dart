@@ -623,14 +623,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _InfoIconText(
                 icon: Icons.numbers,
                 label: 'Quantité',
                 value: '${item.quantity ?? 0}',
               ),
-              const SizedBox(width: 16),
+              const SizedBox(height: 8),
               _InfoIconText(
                 icon: Icons.attach_money,
                 label: 'Prix unitaire',
@@ -639,7 +640,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _InfoIconText(
                 icon: Icons.business_outlined,
@@ -648,28 +650,28 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               ),
               if (item.supplierPhone != null &&
                   (item.supplierPhone as String).isNotEmpty) ...[
-                const SizedBox(width: 16),
+                const SizedBox(height: 8),
                 _InfoIconText(
                   icon: Icons.phone,
                   label: 'Téléphone',
                   value: item.supplierPhone ?? '',
                 ),
               ],
-              const SizedBox(width: 16),
+              const SizedBox(height: 8),
               _InfoIconText(
                 icon: Icons.percent,
                 label: 'Taux achat',
                 value: (item.salesRate?.toString() ?? ''),
               ),
+              const SizedBox(height: 8),
+              _InfoIconText(
+                icon: Icons.calculate,
+                label: 'Total',
+                value: _formatAmount(item.totalPrice ??
+                        (item.quantity ?? 0) * (item.unitPrice ?? 0)) +
+                    ' ¥',
+              ),
             ],
-          ),
-          const SizedBox(height: 8),
-          _InfoIconText(
-            icon: Icons.calculate,
-            label: 'Total',
-            value: _formatAmount(item.totalPrice ??
-                    (item.quantity ?? 0) * (item.unitPrice ?? 0)) +
-                ' ¥',
           ),
           // Statut et actions de confirmation
           const SizedBox(height: 8),

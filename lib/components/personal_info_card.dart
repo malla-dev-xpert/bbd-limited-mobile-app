@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
+import '../core/localization/app_localizations.dart';
 
 class PersonalInfoCard extends StatelessWidget {
   final User user;
@@ -11,6 +12,8 @@ class PersonalInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.0),
@@ -24,9 +27,9 @@ class PersonalInfoCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
-                  'Informations Personnelles',
-                  style: TextStyle(
+                Text(
+                  localizations.translate('personal_info_title'),
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2D3748),
@@ -42,26 +45,28 @@ class PersonalInfoCard extends StatelessWidget {
             const SizedBox(height: 24),
             _buildInfoRow(
               icon: Icons.person_outline,
-              label: 'Nom',
+              label: localizations.translate('last_name'),
               value: '${user.firstName ?? ''} ${user.lastName ?? ''}',
             ),
             const SizedBox(height: 16),
             _buildInfoRow(
               icon: Icons.email_outlined,
-              label: 'Email',
-              value: user.email ?? 'Non renseigné',
+              label: localizations.translate('email'),
+              value: user.email ?? localizations.translate('no_data_available'),
             ),
             const SizedBox(height: 16),
             _buildInfoRow(
               icon: Icons.phone_outlined,
-              label: 'Téléphone',
-              value: user.phoneNumber ?? 'Non renseigné',
+              label: localizations.translate('phone'),
+              value: user.phoneNumber ??
+                  localizations.translate('no_data_available'),
             ),
             const SizedBox(height: 16),
             _buildInfoRow(
               icon: Icons.work_outline,
-              label: 'Rôle',
-              value: user.role!.name ?? 'Non renseigné',
+              label: localizations.translate('role'),
+              value: user.role!.name ??
+                  localizations.translate('no_data_available'),
             ),
           ],
         ),

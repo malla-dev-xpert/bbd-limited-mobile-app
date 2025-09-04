@@ -3,6 +3,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_detail_screen.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class PartnerListItem extends StatelessWidget {
   final Partner partner;
@@ -37,14 +38,14 @@ class PartnerListItem extends StatelessWidget {
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             icon: Icons.edit,
-            label: 'Modifier',
+            label: AppLocalizations.of(context).translate('edit'),
           ),
           SlidableAction(
             onPressed: (_) => onDelete(partner),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
-            label: 'Supprimer',
+            label: AppLocalizations.of(context).translate('delete'),
           ),
         ],
       ),

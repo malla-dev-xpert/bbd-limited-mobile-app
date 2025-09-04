@@ -8,6 +8,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/a
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class ContainerDetailPage extends StatefulWidget {
   final Containers container;
@@ -54,16 +55,32 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   String _getStatusText(Status? status) {
     switch (status) {
       case Status.PENDING:
-        return 'En attente';
+        return AppLocalizations.of(context)!.translate('container_pending');
       case Status.INPROGRESS:
-        return 'En livraison';
+        return AppLocalizations.of(context)!.translate('container_in_progress');
       case Status.RECEIVED:
-        return 'Arrivé à destination';
+        return AppLocalizations.of(context)!.translate('container_arrived');
       case Status.DELIVERED:
-        return 'Livré';
+        return AppLocalizations.of(context)!.translate('container_arrived');
       default:
-        return 'Inconnu';
+        return AppLocalizations.of(context)!.translate('status_unknown');
     }
+  }
+
+  // Fonction helper pour créer du texte avec valeurs en gras
+  Widget _buildInfoText(String label, String value) {
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 13, color: Colors.black87),
+        children: [
+          TextSpan(text: '$label: '),
+          TextSpan(
+            text: value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _infoRow(String label, String? value, {IconData? icon}) {
@@ -127,7 +144,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Détails du conteneur',
+          title: Text(
+              AppLocalizations.of(context)!.translate('container_details'),
               style: TextStyle(
                   color: Color(0xFF1A1E49), fontWeight: FontWeight.bold)),
           centerTitle: true,
@@ -191,19 +209,22 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           });
                         }
                       },
-                      label: const Text("Degrouper"),
+                      label: Text(AppLocalizations.of(context)!
+                          .translate('container_ungroup')),
                       icon: const Icon(Icons.person))
           ]),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(
+              MediaQuery.of(context).size.width < 600 ? 16.0 : 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Bloc principal infos conteneur
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width < 600 ? 16.0 : 18.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -219,59 +240,124 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          container.reference ?? 'N/A',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(container.status)
-                                .withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Utiliser un layout vertical sur mobile (largeur < 600px)
+                        if (constraints.maxWidth < 600) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                container.status == Status.RECEIVED ||
-                                        container.status == Status.DELIVERED
-                                    ? Icons.check_circle
-                                    : container.status == Status.INPROGRESS
-                                        ? Icons.local_shipping
-                                        : Icons.hourglass_empty,
-                                size: 16,
-                                color: _getStatusColor(container.status),
-                              ),
-                              const SizedBox(width: 6),
                               Text(
-                                _getStatusText(container.status),
-                                style: TextStyle(
-                                  color: _getStatusColor(container.status),
-                                  fontWeight: FontWeight.bold,
+                                container.reference ?? 'N/A',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 20),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(container.status)
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      container.status == Status.RECEIVED ||
+                                              container.status ==
+                                                  Status.DELIVERED
+                                          ? Icons.check_circle
+                                          : container.status ==
+                                                  Status.INPROGRESS
+                                              ? Icons.local_shipping
+                                              : Icons.hourglass_empty,
+                                      size: 16,
+                                      color: _getStatusColor(container.status),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _getStatusText(container.status),
+                                      style: TextStyle(
+                                        color:
+                                            _getStatusColor(container.status),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ],
+                          );
+                        } else {
+                          // Garder le layout horizontal pour les tablettes et plus
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                container.reference ?? 'N/A',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 20),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(container.status)
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      container.status == Status.RECEIVED ||
+                                              container.status ==
+                                                  Status.DELIVERED
+                                          ? Icons.check_circle
+                                          : container.status ==
+                                                  Status.INPROGRESS
+                                              ? Icons.local_shipping
+                                              : Icons.hourglass_empty,
+                                      size: 16,
+                                      color: _getStatusColor(container.status),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _getStatusText(container.status),
+                                      style: TextStyle(
+                                        color:
+                                            _getStatusColor(container.status),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      },
                     ),
                     const SizedBox(height: 12),
-                    _infoRow('Taille', "${container.size} pieds",
+                    _infoRow(
+                        AppLocalizations.of(context)!
+                            .translate('container_form_size'),
+                        "${container.size}",
                         icon: Icons.straighten),
                     _infoRow(
-                        'Disponibilité',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_availability'),
                         container.isAvailable == true
-                            ? 'Disponible'
-                            : 'Indisponible',
+                            ? AppLocalizations.of(context)!
+                                .translate('container_available')
+                            : AppLocalizations.of(context)!
+                                .translate('container_unavailable'),
                         icon: Icons.inventory_2),
                     if (container.startDeliveryDate != null)
                       _infoRow(
-                          'Date de debut de livraison',
+                          AppLocalizations.of(context)!
+                              .translate('container_delivery_start_date'),
                           container.startDeliveryDate != null
                               ? DateFormat.yMMMMEEEEd()
                                   .format(container.startDeliveryDate!)
@@ -279,7 +365,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           icon: Icons.calendar_today),
                     if (container.confirmDeliveryDate != null)
                       _infoRow(
-                          'Date de confirmation de livraison',
+                          AppLocalizations.of(context)!.translate(
+                              'container_delivery_confirmation_date'),
                           container.confirmDeliveryDate != null
                               ? DateFormat.yMMMMEEEEd()
                                   .format(container.confirmDeliveryDate!)
@@ -293,9 +380,103 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle('Fournisseur'),
+                    _sectionTitle(AppLocalizations.of(context)!
+                        .translate('container_supplier')),
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.width < 600
+                              ? 12.0
+                              : 16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth < 600) {
+                            // Layout vertical sur mobile
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.business,
+                                        color: Color(0xFF1A1E49)),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        '${container.supplierName ?? ""}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (container.supplierPhone != null &&
+                                    container.supplierPhone!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.phone,
+                                          color: Colors.green, size: 18),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(container.supplierPhone!,
+                                            style:
+                                                const TextStyle(fontSize: 14)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            );
+                          } else {
+                            // Layout horizontal pour tablettes
+                            return Row(
+                              children: [
+                                const Icon(Icons.business,
+                                    color: Color(0xFF1A1E49)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '${container.supplierName ?? ""}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                  ),
+                                ),
+                                if (container.supplierPhone != null &&
+                                    container.supplierPhone!.isNotEmpty)
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.phone,
+                                          color: Colors.green, size: 18),
+                                      const SizedBox(width: 4),
+                                      Text(container.supplierPhone!,
+                                          style: const TextStyle(fontSize: 14)),
+                                    ],
+                                  ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle(AppLocalizations.of(context)!
+                        .translate('container_supplier')),
+                    Container(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.width < 600
+                              ? 12.0
+                              : 16.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
@@ -305,47 +486,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                         children: [
                           const Icon(Icons.business, color: Color(0xFF1A1E49)),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              '${container.supplierName ?? ""}',
+                          Text(
+                              AppLocalizations.of(context)!
+                                  .translate('container_bbd_limited'),
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 15),
-                            ),
-                          ),
-                          if (container.supplierPhone != null &&
-                              container.supplierPhone!.isNotEmpty)
-                            Row(
-                              children: [
-                                const Icon(Icons.phone,
-                                    color: Colors.green, size: 18),
-                                const SizedBox(width: 4),
-                                Text(container.supplierPhone!,
-                                    style: const TextStyle(fontSize: 14)),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              else
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _sectionTitle('Fournisseur'),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.business, color: Color(0xFF1A1E49)),
-                          SizedBox(width: 10),
-                          Text('BBD Limited',
-                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 15)),
                         ],
                       ),
@@ -353,9 +497,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   ],
                 ),
               // Bloc frais
-              _sectionTitle('Frais & Charges'),
+              _sectionTitle(AppLocalizations.of(context)!
+                  .translate('container_fees_charges')),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width < 600 ? 12.0 : 16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -364,48 +510,57 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 child: Column(
                   children: [
                     _infoRow(
-                        'Frais de location',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_location_fee'),
                         container.locationFee != null
                             ? '${container.locationFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de chargement',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_loading_fee'),
                         container.loadingFee != null
                             ? '${container.loadingFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Charge local',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_local_charge'),
                         container.localCharge != null
                             ? '${container.localCharge} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de surpoids',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_overweight_fee'),
                         container.overweightFee != null
                             ? '${container.overweightFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de checking',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_checking_fee'),
                         container.checkingFee != null
                             ? '${container.checkingFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Frais de TELX',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_telx_fee'),
                         container.telxFee != null
                             ? '${container.telxFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Autres charges',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_other_fees'),
                         container.otherFees != null
                             ? '${container.otherFees} CNY'
                             : '0.0'),
                     _infoRow(
-                        'Marge ajoutée',
+                        AppLocalizations.of(context)!
+                            .translate('container_form_margin'),
                         container.margin != null
                             ? '${container.margin} CNY'
                             : '0.0'),
                     const Divider(),
                     _infoRow(
-                        'Total des frais',
+                        AppLocalizations.of(context)!
+                            .translate('container_total_fees'),
                         container.amount != null
                             ? '${container.amount} CNY'
                             : '0.0',
@@ -414,36 +569,88 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
               ),
               // Liste des colis
-              _sectionTitle('Colis dans le conteneur'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'La liste des colis',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                  ),
-                  if (container.status == Status.PENDING)
-                    TextButton.icon(
-                      onPressed: () async {
-                        final selectedPackages =
-                            await showAddPackagesToContainerDialog(
-                          context,
-                          container.id!,
-                          packageServices,
-                        );
-                        if (selectedPackages != null &&
-                            selectedPackages.isNotEmpty) {
-                          final updatedContainer = await containerServices
-                              .getContainerDetails(container.id!);
-                          setState(() {
-                            container = updatedContainer;
-                          });
-                        }
-                      },
-                      label: const Text("Ajouter des colis"),
-                      icon: const Icon(Icons.add),
-                    ),
-                ],
+              _sectionTitle(AppLocalizations.of(context)!
+                  .translate('container_packages')),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 600) {
+                    // Layout vertical sur mobile
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_packages_list'),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 16),
+                        ),
+                        if (container.status == Status.PENDING) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextButton.icon(
+                              onPressed: () async {
+                                final selectedPackages =
+                                    await showAddPackagesToContainerDialog(
+                                  context,
+                                  container.id!,
+                                  packageServices,
+                                );
+                                if (selectedPackages != null &&
+                                    selectedPackages.isNotEmpty) {
+                                  final updatedContainer =
+                                      await containerServices
+                                          .getContainerDetails(container.id!);
+                                  setState(() {
+                                    container = updatedContainer;
+                                  });
+                                }
+                              },
+                              label: Text(AppLocalizations.of(context)!
+                                  .translate('container_add_packages')),
+                              icon: const Icon(Icons.add),
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  } else {
+                    // Layout horizontal pour tablettes
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!
+                              .translate('container_packages_list'),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 16),
+                        ),
+                        if (container.status == Status.PENDING)
+                          TextButton.icon(
+                            onPressed: () async {
+                              final selectedPackages =
+                                  await showAddPackagesToContainerDialog(
+                                context,
+                                container.id!,
+                                packageServices,
+                              );
+                              if (selectedPackages != null &&
+                                  selectedPackages.isNotEmpty) {
+                                final updatedContainer = await containerServices
+                                    .getContainerDetails(container.id!);
+                                setState(() {
+                                  container = updatedContainer;
+                                });
+                              }
+                            },
+                            label: Text(AppLocalizations.of(context)!
+                                .translate('container_add_packages')),
+                            icon: const Icon(Icons.add),
+                          ),
+                      ],
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -455,7 +662,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     });
                   },
                   decoration: InputDecoration(
-                    hintText: 'Rechercher un colis...',
+                    hintText: AppLocalizations.of(context)!
+                        .translate('container_search_packages'),
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -479,18 +687,22 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
               ),
               const SizedBox(height: 10),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width < 600 ? 6.0 : 8.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
                 child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
+                  height: MediaQuery.of(context).size.width < 600
+                      ? MediaQuery.of(context).size.height * 0.4
+                      : MediaQuery.of(context).size.height * 0.5,
                   child: container.packages == null ||
                           container.packages!.isEmpty
-                      ? const Center(
-                          child: Text("Pas de colis pour ce conteneur."),
+                      ? Center(
+                          child: Text(AppLocalizations.of(context)!
+                              .translate('container_no_packages')),
                         )
                       : RefreshIndicator(
                           onRefresh: () async {
@@ -526,10 +738,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                       background: Container(
                                         padding:
                                             const EdgeInsets.only(right: 16),
-                                        color:
-                                            container.status != Status.RECEIVED
-                                                ? Colors.red
-                                                : Colors.grey,
+                                        color: Colors.red,
                                         alignment: Alignment.centerRight,
                                         child: const Icon(Icons.delete,
                                             color: Colors.white, size: 30),
@@ -545,18 +754,25 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   return AlertDialog(
                                                     backgroundColor:
                                                         Colors.white,
-                                                    title: const Text(
-                                                        "Confirmation"),
-                                                    content: const Text(
-                                                        "Voulez-vous vraiment retirer ce colis du conteneur ?"),
+                                                    title: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .translate(
+                                                            'confirmation')),
+                                                    content: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .translate(
+                                                            'container_remove_package_confirm')),
                                                     actions: [
                                                       TextButton(
                                                         onPressed: () =>
                                                             Navigator.of(
                                                                     context)
                                                                 .pop(false),
-                                                        child: const Text(
-                                                            "Annuler"),
+                                                        child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .translate(
+                                                                    'cancel')),
                                                       ),
                                                       TextButton(
                                                         onPressed: () =>
@@ -565,8 +781,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 .pop(true),
                                                         child: Text(
                                                             isLoading
-                                                                ? "Suppression..."
-                                                                : "Confirmer",
+                                                                ? AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_removing')
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'confirm'),
                                                             style:
                                                                 const TextStyle(
                                                                     color: Colors
@@ -597,20 +819,35 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   });
                                                   showSuccessTopSnackBar(
                                                       context,
-                                                      "Colis retiré du conteneur");
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_package_removed'));
                                                   return true;
                                                 } else if (result ==
                                                     "PACKAGE_NOT_IN_CONTAINER") {
-                                                  showErrorTopSnackBar(context,
-                                                      "Le colis n'appartient pas à ce conteneur");
+                                                  showErrorTopSnackBar(
+                                                      context,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_package_not_in_container'));
                                                 } else if (result ==
                                                     "CONTAINER_INPROGRESS") {
-                                                  showErrorTopSnackBar(context,
-                                                      "Impossible de retirer un colis d'un conteneur en cours de livraison");
+                                                  showErrorTopSnackBar(
+                                                      context,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_in_progress_remove_error'));
                                                 }
                                               } catch (e) {
-                                                showErrorTopSnackBar(context,
-                                                    "Erreur lors de la suppression");
+                                                showErrorTopSnackBar(
+                                                    context,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .translate(
+                                                            'container_remove_error'));
                                               } finally {
                                                 setState(() {
                                                   isLoading = false;
@@ -620,9 +857,19 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                             }
                                           : null,
                                       child: Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 5, horizontal: 2),
-                                        padding: const EdgeInsets.all(12),
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: 5,
+                                            horizontal: MediaQuery.of(context)
+                                                        .size
+                                                        .width <
+                                                    600
+                                                ? 1
+                                                : 2),
+                                        padding: EdgeInsets.all(
+                                            MediaQuery.of(context).size.width <
+                                                    600
+                                                ? 10.0
+                                                : 12.0),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
@@ -642,36 +889,96 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(pkg.ref ?? '',
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15)),
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 4),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue[50],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                  child: Text(
-                                                      pkg.expeditionType ?? '',
-                                                      style: const TextStyle(
-                                                          color: Colors.blue,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 12)),
-                                                ),
-                                              ],
+                                            LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                if (constraints.maxWidth <
+                                                    600) {
+                                                  // Layout vertical sur mobile
+                                                  return Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(pkg.ref ?? '',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize:
+                                                                      15)),
+                                                      const SizedBox(height: 6),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 4),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.blue[50],
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
+                                                        ),
+                                                        child: Text(
+                                                            pkg.expeditionType ??
+                                                                '',
+                                                            style: const TextStyle(
+                                                                color:
+                                                                    Colors.blue,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 12)),
+                                                      ),
+                                                    ],
+                                                  );
+                                                } else {
+                                                  // Layout horizontal pour tablettes
+                                                  return Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(pkg.ref ?? '',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize:
+                                                                      15)),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 4),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.blue[50],
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
+                                                        ),
+                                                        child: Text(
+                                                            pkg.expeditionType ??
+                                                                '',
+                                                            style: const TextStyle(
+                                                                color:
+                                                                    Colors.blue,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 12)),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
+                                              },
                                             ),
                                             const SizedBox(height: 6),
                                             Row(
@@ -681,10 +988,32 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                     color: Colors.grey),
                                                 const SizedBox(width: 4),
                                                 Expanded(
-                                                    child: Text(
-                                                        '${pkg.clientName ?? ''} ${pkg.clientPhone != null ? '| ${pkg.clientPhone}' : ''}',
-                                                        style: const TextStyle(
-                                                            fontSize: 13))),
+                                                    child: RichText(
+                                                  text: TextSpan(
+                                                    style: const TextStyle(
+                                                        fontSize: 13,
+                                                        color: Colors.black87),
+                                                    children: [
+                                                      TextSpan(
+                                                          text:
+                                                              '${pkg.clientName ?? ''}'),
+                                                      if (pkg.clientPhone !=
+                                                              null &&
+                                                          pkg.clientPhone!
+                                                              .isNotEmpty) ...[
+                                                        TextSpan(text: ' | '),
+                                                        TextSpan(
+                                                          text:
+                                                              pkg.clientPhone!,
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                )),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
@@ -694,47 +1023,198 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                     size: 14,
                                                     color: Colors.grey),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                    'Cartons: ${pkg.itemQuantity ?? 0}',
-                                                    style: const TextStyle(
-                                                        fontSize: 13)),
+                                                Expanded(
+                                                  child: _buildInfoText(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .translate(
+                                                              'container_cartons'),
+                                                      '${pkg.itemQuantity ?? 0}'),
+                                                ),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.location_on,
-                                                    size: 14,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                    'Départ: ${pkg.startCountry ?? 'N/A'}',
-                                                    style: const TextStyle(
-                                                        fontSize: 13)),
-                                                const SizedBox(width: 10),
-                                                Text(
-                                                    'Arrivée: ${pkg.destinationCountry ?? 'N/A'}',
-                                                    style: const TextStyle(
-                                                        fontSize: 13)),
-                                              ],
+                                            LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                if (constraints.maxWidth <
+                                                    600) {
+                                                  // Layout vertical sur mobile
+                                                  return Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                              Icons.location_on,
+                                                              size: 14,
+                                                              color:
+                                                                  Colors.grey),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Expanded(
+                                                            child: _buildInfoText(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_departure'),
+                                                                '${pkg.startCountry ?? 'N/A'}'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                              Icons.location_on,
+                                                              size: 14,
+                                                              color:
+                                                                  Colors.grey),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Expanded(
+                                                            child: _buildInfoText(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_arrival'),
+                                                                '${pkg.destinationCountry ?? 'N/A'}'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  );
+                                                } else {
+                                                  // Layout horizontal pour tablettes
+                                                  return Row(
+                                                    children: [
+                                                      const Icon(
+                                                          Icons.location_on,
+                                                          size: 14,
+                                                          color: Colors.grey),
+                                                      const SizedBox(width: 4),
+                                                      _buildInfoText(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_departure'),
+                                                          '${pkg.startCountry ?? 'N/A'}'),
+                                                      const SizedBox(width: 10),
+                                                      _buildInfoText(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_arrival'),
+                                                          '${pkg.destinationCountry ?? 'N/A'}'),
+                                                    ],
+                                                  );
+                                                }
+                                              },
                                             ),
                                             const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.calendar_today,
-                                                    size: 14,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                    'Départ: ${pkg.startDate != null ? DateFormat('dd/MM/yyyy').format(pkg.startDate!) : ''}',
-                                                    style: const TextStyle(
-                                                        fontSize: 13)),
-                                                const SizedBox(width: 10),
-                                                Text(
-                                                    'Arrivée: ${pkg.arrivalDate != null ? DateFormat('dd/MM/yyyy').format(pkg.arrivalDate!) : ''}',
-                                                    style: const TextStyle(
-                                                        fontSize: 13)),
-                                              ],
+                                            LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                if (constraints.maxWidth <
+                                                    600) {
+                                                  // Layout vertical sur mobile
+                                                  return Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                              Icons
+                                                                  .calendar_today,
+                                                              size: 14,
+                                                              color:
+                                                                  Colors.grey),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Expanded(
+                                                            child: _buildInfoText(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_departure'),
+                                                                pkg.startDate !=
+                                                                        null
+                                                                    ? DateFormat(
+                                                                            'dd/MM/yyyy')
+                                                                        .format(
+                                                                            pkg.startDate!)
+                                                                    : ''),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                              Icons
+                                                                  .calendar_today,
+                                                              size: 14,
+                                                              color:
+                                                                  Colors.grey),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Expanded(
+                                                            child: _buildInfoText(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .translate(
+                                                                        'container_arrival'),
+                                                                pkg.arrivalDate !=
+                                                                        null
+                                                                    ? DateFormat(
+                                                                            'dd/MM/yyyy')
+                                                                        .format(
+                                                                            pkg.arrivalDate!)
+                                                                    : ''),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  );
+                                                } else {
+                                                  // Layout horizontal pour tablettes
+                                                  return Row(
+                                                    children: [
+                                                      const Icon(
+                                                          Icons.calendar_today,
+                                                          size: 14,
+                                                          color: Colors.grey),
+                                                      const SizedBox(width: 4),
+                                                      _buildInfoText(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_departure'),
+                                                          pkg.startDate != null
+                                                              ? DateFormat(
+                                                                      'dd/MM/yyyy')
+                                                                  .format(pkg
+                                                                      .startDate!)
+                                                              : ''),
+                                                      const SizedBox(width: 10),
+                                                      _buildInfoText(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .translate(
+                                                                  'container_arrival'),
+                                                          pkg.arrivalDate !=
+                                                                  null
+                                                              ? DateFormat(
+                                                                      'dd/MM/yyyy')
+                                                                  .format(pkg
+                                                                      .arrivalDate!)
+                                                              : ''),
+                                                    ],
+                                                  );
+                                                }
+                                              },
                                             ),
                                           ],
                                         ),
@@ -750,7 +1230,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   container.packages!.isNotEmpty &&
                   container.status == Status.PENDING)
                 Padding(
-                  padding: const EdgeInsets.only(top: 24.0),
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.width < 600
+                          ? 16.0
+                          : 24.0),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -763,7 +1246,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       ),
                       icon: const Icon(Icons.check, color: Colors.white),
                       label: Text(
-                          isLoading ? 'Démarrage...' : 'Démarrer la livraison',
+                          isLoading
+                              ? AppLocalizations.of(context)!
+                                  .translate('container_starting')
+                              : AppLocalizations.of(context)!
+                                  .translate('container_start_delivery'),
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -775,23 +1262,27 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             return StatefulBuilder(
                               builder: (context, setStateDialog) {
                                 return AlertDialog(
-                                  title: const Text("Confirmer le démarrage"),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .translate('container_confirm_start')),
                                   backgroundColor: Colors.white,
                                   content: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                          "Voulez-vous vraiment démarrer la livraison de ce conteneur ?"),
+                                      Text(AppLocalizations.of(context)!
+                                          .translate(
+                                              'container_confirm_start_message')),
                                       const SizedBox(height: 16),
                                       TextButton.icon(
                                         icon: const Icon(Icons.date_range),
                                         label: Text(
                                           tempSelectedDate != null
-                                              ? 'Date de livraison : '
+                                              ? '${AppLocalizations.of(context)!.translate('container_delivery_date')} : '
                                                   '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
-                                              : 'Choisir la date de livraison (optionnel)',
+                                              : AppLocalizations.of(context)!
+                                                  .translate(
+                                                      'container_choose_delivery_date'),
                                         ),
                                         onPressed: () async {
                                           final now = DateTime.now();
@@ -814,7 +1305,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           padding:
                                               const EdgeInsets.only(top: 8.0),
                                           child: Text(
-                                            'Date sélectionnée : '
+                                            '${AppLocalizations.of(context)!.translate('container_selected_date')} : '
                                             '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
@@ -843,8 +1334,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           Navigator.of(context).pop(true),
                                       child: Text(
                                           isLoading
-                                              ? "Démarrage..."
-                                              : "Confirmer",
+                                              ? AppLocalizations.of(context)!
+                                                  .translate(
+                                                      'container_starting')
+                                              : AppLocalizations.of(context)!
+                                                  .translate('confirm'),
                                           style: const TextStyle(
                                               color: Colors.green)),
                                     ),
@@ -880,15 +1374,21 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               widget.onContainerUpdated!(updatedContainer);
                             }
                             showSuccessTopSnackBar(
-                                context, "Livraison démarrée avec succès !");
+                                context,
+                                AppLocalizations.of(context)!
+                                    .translate('container_delivery_started'));
                           } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(context,
-                                "Impossible de démarrer la livraison, pas de colis dans le conteneur.");
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)!.translate(
+                                    'container_no_packages_for_delivery'));
                           }
                         } catch (e) {
                           print(e);
-                          showErrorTopSnackBar(context,
-                              "Erreur lors du démarrage de la livraison");
+                          showErrorTopSnackBar(
+                              context,
+                              AppLocalizations.of(context)!
+                                  .translate('container_delivery_start_error'));
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -900,7 +1400,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 )
               else if (container.status == Status.INPROGRESS)
                 Padding(
-                  padding: const EdgeInsets.only(top: 24.0),
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.width < 600
+                          ? 16.0
+                          : 24.0),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -914,8 +1417,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       icon: const Icon(Icons.flag, color: Colors.white),
                       label: Text(
                           isLoading
-                              ? 'Changement de statut...'
-                              : 'Arrivé à destination',
+                              ? AppLocalizations.of(context)!
+                                  .translate('container_changing_status')
+                              : AppLocalizations.of(context)!
+                                  .translate('container_arrived_destination'),
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -927,24 +1432,26 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             return StatefulBuilder(
                               builder: (context, setStateDialog) {
                                 return AlertDialog(
-                                  title: const Text(
-                                      "Confirmer l'arrivée du conteneur"),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .translate('container_confirm_arrival')),
                                   backgroundColor: Colors.white,
                                   content: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                          "Voulez-vous vraiment confirmer que le conteneur est arrivé à destination ?"),
+                                      Text(AppLocalizations.of(context)!.translate(
+                                          'container_confirm_arrival_message')),
                                       const SizedBox(height: 16),
                                       TextButton.icon(
                                         icon: const Icon(Icons.date_range),
                                         label: Text(
                                           tempSelectedConfirmDate != null
-                                              ? 'Date de confirmation : '
+                                              ? '${AppLocalizations.of(context)!.translate('container_confirmation_date')} : '
                                                   '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}'
-                                              : 'Choisir la date de confirmation (optionnel)',
+                                              : AppLocalizations.of(context)!
+                                                  .translate(
+                                                      'container_choose_confirmation_date'),
                                         ),
                                         onPressed: () async {
                                           final now = DateTime.now();
@@ -1032,17 +1539,25 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               widget.onContainerUpdated!(updatedContainer);
                             }
                             showSuccessTopSnackBar(
-                                context, "Conteneur confirmé à destination !");
+                                context,
+                                AppLocalizations.of(context)!
+                                    .translate('container_arrival_confirmed'));
                           } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(context,
-                                "Impossible de confirmer la réception, pas de colis dans le conteneur.");
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)!.translate(
+                                    'container_no_packages_for_reception'));
                           } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
-                            showErrorTopSnackBar(context,
-                                "Le conteneur n'est pas en status INPROGRESS.");
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)!
+                                    .translate('container_not_in_progress'));
                           }
                         } catch (e) {
-                          showErrorTopSnackBar(context,
-                              "Erreur lors de la reception du conteneur");
+                          showErrorTopSnackBar(
+                              context,
+                              AppLocalizations.of(context)!
+                                  .translate('container_reception_error'));
                         } finally {
                           setState(() {
                             isLoading = false;

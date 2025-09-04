@@ -159,111 +159,112 @@ class _SelectCustomerAndVersementStepState
           ),
         ),
         const SizedBox(height: 18),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _filterCustomers,
-                  decoration: InputDecoration(
-                    hintText: 'Rechercher un client...',
-                    prefixIcon:
-                        Icon(Icons.search, color: Colors.grey[400], size: 22),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  style: const TextStyle(fontSize: 15),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _filterCustomers,
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher un client...',
+                      prefixIcon:
+                          Icon(Icons.search, color: Colors.grey[400], size: 22),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 12),
+                    ),
+                    style: const TextStyle(fontSize: 15),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4,
-                child: _isLoadingCustomers
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.separated(
-                        itemCount: _filteredCustomers.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final customer = _filteredCustomers[index];
-                          final isSelected =
-                              _selectedCustomer?.id == customer.id;
-                          return MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeInOut,
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? theme.primaryColor.withOpacity(0.10)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: theme.primaryColor
-                                              .withOpacity(0.08),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor:
-                                      theme.primaryColor.withOpacity(0.13),
-                                  child: Text(
-                                    customer.firstName.isNotEmpty
-                                        ? customer.firstName[0].toUpperCase()
-                                        : '',
-                                    style: TextStyle(
-                                      color: theme.primaryColor,
-                                      fontWeight: FontWeight.bold,
+                const SizedBox(height: 20),
+                Expanded(
+                  child: _isLoadingCustomers
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.separated(
+                          itemCount: _filteredCustomers.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final customer = _filteredCustomers[index];
+                            final isSelected =
+                                _selectedCustomer?.id == customer.id;
+                            return MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? theme.primaryColor.withOpacity(0.10)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: theme.primaryColor
+                                                .withOpacity(0.08),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : [],
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor:
+                                        theme.primaryColor.withOpacity(0.13),
+                                    child: Text(
+                                      customer.firstName.isNotEmpty
+                                          ? customer.firstName[0].toUpperCase()
+                                          : '',
+                                      style: TextStyle(
+                                        color: theme.primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                title: Text(
-                                  '${customer.firstName} ${customer.lastName}',
-                                  style: TextStyle(
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.w500,
-                                    color: isSelected
-                                        ? theme.primaryColor
-                                        : Colors.black87,
-                                    fontSize: 16,
+                                  title: Text(
+                                    '${customer.firstName} ${customer.lastName}',
+                                    style: TextStyle(
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: isSelected
+                                          ? theme.primaryColor
+                                          : Colors.black87,
+                                      fontSize: 16,
+                                    ),
                                   ),
+                                  subtitle: Text(customer.phoneNumber,
+                                      style: const TextStyle(fontSize: 13)),
+                                  trailing: isSelected
+                                      ? Icon(Icons.check_circle,
+                                          color: theme.primaryColor, size: 22)
+                                      : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedCustomer = customer;
+                                    });
+                                    _loadVersements(customer.id);
+                                  },
                                 ),
-                                subtitle: Text(customer.phoneNumber,
-                                    style: const TextStyle(fontSize: 13)),
-                                trailing: isSelected
-                                    ? Icon(Icons.check_circle,
-                                        color: theme.primaryColor, size: 22)
-                                    : null,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedCustomer = customer;
-                                  });
-                                  _loadVersements(customer.id);
-                                },
                               ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
-        const Spacer(),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,

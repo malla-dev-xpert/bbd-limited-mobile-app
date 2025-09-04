@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -96,7 +97,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         final clientData = await partnerServices.findCustomers(page: 0);
         final client = clientData.firstWhere(
           (c) => c.id.toString() == widget.clientId,
-          orElse: () => throw Exception("Client non trouvé"),
+          orElse: () => throw Exception(AppLocalizations.of(context).translate('client_not_found')),
         );
         setState(() {
           selectedCLients = client;
@@ -105,7 +106,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       }
     } catch (_) {
       setState(() => isLoading = false);
-      showErrorTopSnackBar(context, "Erreur lors du chargement des données");
+      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('error_loading_data'));
     }
   }
 
@@ -119,7 +120,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       });
     } catch (_) {
       setState(() => isLoading = false);
-      showErrorTopSnackBar(context, "Erreur lors du chargement des données");
+      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('error_loading_data'));
     }
   }
 
@@ -127,35 +128,35 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     try {
       // Validation des champs
       if (montantVerserController.text.isEmpty) {
-        showErrorTopSnackBar(context, "Veuillez entrer un montant");
+        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_amount'));
         return;
       }
 
       final montant = double.tryParse(montantVerserController.text) ?? 0.0;
       if (montant <= 0) {
-        showErrorTopSnackBar(context, "Montant invalide");
+        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('invalid_amount'));
         return;
       }
 
       if (widget.isVersementScreen && selectedCLients == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un client");
+        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_client'));
         return;
       }
 
       if (myDate == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner une date");
+        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_date'));
         return;
       }
 
       if (selectedDevise == null || selectedDevise!.id == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner une devise valide");
+            context, AppLocalizations.of(context).translate('please_select_valid_currency'));
         return;
       }
 
       if (selectedType == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner un type de versement");
+            context, AppLocalizations.of(context).translate('please_select_versement_type'));
         return;
       }
 
@@ -163,7 +164,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
       final user = await authService.getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('user_not_connected'));
         setState(() => isLoading = false);
         return;
       }
@@ -194,7 +195,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         Navigator.pop(context, true);
         showSuccessTopSnackBar(
           context,
-          "Nouveau versement effectué avec succès",
+          AppLocalizations.of(context).translate('new_versement_success'),
         );
       }
     } catch (e) {
@@ -206,20 +207,20 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
   bool _validateFirstStep() {
     if (montantVerserController.text.isEmpty) {
-      showErrorTopSnackBar(context, "Veuillez entrer un montant");
+      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_amount'));
       return false;
     }
     if (widget.isVersementScreen && selectedCLients == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un client");
+      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_client'));
       return false;
     }
     if (myDate == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner une date");
+      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_date'));
       return false;
     }
     if (selectedType == null) {
       showErrorTopSnackBar(
-          context, "Veuillez sélectionner un type de versement");
+          context, AppLocalizations.of(context).translate('please_select_versement_type'));
       return false;
     }
     return true;
@@ -250,10 +251,10 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                   Expanded(
                     child: Text(
                       currentStep == 0
-                          ? "Informations du versement"
+                          ? AppLocalizations.of(context).translate('versement_information')
                           : currentStep == 1
-                              ? "Informations du commissionnaire"
-                              : "Note additionnelle",
+                              ? AppLocalizations.of(context).translate('commissionnaire_information')
+                              : AppLocalizations.of(context).translate('additional_note'),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -279,7 +280,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                         children: [
                           buildTextField(
                             controller: montantVerserController,
-                            label: "Montant à versé",
+                            label: AppLocalizations.of(context).translate('amount_to_pay'),
                             icon: Icons.attach_money,
                             keyboardType: TextInputType.number,
                           ),
@@ -294,7 +295,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             },
                             itemToString: (type) =>
                                 type.toString().split('.').last,
-                            hintText: 'Choisir un type de versement...',
+                            hintText: AppLocalizations.of(context).translate('choose_versement_type'),
                             prefixIcon: Icons.category,
                           ),
                           const SizedBox(height: 10),
@@ -309,13 +310,13 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                               },
                               itemToString: (client) =>
                                   '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
-                              hintText: 'Choisir un client...',
+                              hintText: AppLocalizations.of(context).translate('choose_client'),
                               prefixIcon: Icons.person_3,
                             ),
                           if (widget.isVersementScreen)
                             const SizedBox(height: 10),
                           DatePickerField(
-                            label: "Date de paiement",
+                            label: AppLocalizations.of(context).translate('payment_date'),
                             selectedDate: myDate,
                             onDateSelected: (date) {
                               setState(() {
@@ -330,13 +331,13 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                         children: [
                           buildTextField(
                             controller: commissionnaireNameController,
-                            label: "Nom complet du commissionnaire",
+                            label: AppLocalizations.of(context).translate('commissionnaire_full_name'),
                             icon: Icons.person,
                           ),
                           const SizedBox(height: 10),
                           buildTextField(
                             controller: commissionnairePhoneController,
-                            label: "Téléphone du commissionnaire",
+                            label: AppLocalizations.of(context).translate('commissionnaire_phone'),
                             icon: Icons.phone,
                             keyboardType: TextInputType.phone,
                           ),
@@ -353,7 +354,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                                     });
                                   },
                                   itemToString: (currency) => currency.code,
-                                  hintText: 'Choisir une devise...',
+                                  hintText: AppLocalizations.of(context).translate('choose_currency'),
                                   prefixIcon: Icons.currency_exchange,
                                 ),
                               ),
@@ -372,7 +373,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                           TextFormField(
                             controller: noteController,
                             decoration: InputDecoration(
-                              labelText: "Note (optionnelle)",
+                              labelText: AppLocalizations.of(context).translate('note_optional'),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -401,15 +402,15 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             currentStep--;
                           });
                         },
-                        label: const Text("Retour"),
+                        label: Text(AppLocalizations.of(context).translate('back')),
                         icon: const Icon(Icons.arrow_back),
                       ),
                     if (currentStep > 0) const SizedBox(width: 10),
                     Expanded(
                       child: confirmationButton(
                         isLoading: isLoading,
-                        label: currentStep == 2 ? "Enregistrer" : "Suivant",
-                        subLabel: "Enregistrement...",
+                        label: currentStep == 2 ? AppLocalizations.of(context).translate('save') : AppLocalizations.of(context).translate('next'),
+                        subLabel: AppLocalizations.of(context).translate('saving'),
                         icon: currentStep == 2
                             ? Icons.check
                             : Icons.arrow_forward,
@@ -473,10 +474,10 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Ajouter une nouvelle devise',
-                            style: TextStyle(
+                            AppLocalizations.of(context).translate('add_new_currency'),
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF1A1E49),
@@ -501,7 +502,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                           final user = await authService.getUserInfo();
                           if (user == null) {
                             showErrorTopSnackBar(
-                                context, 'Session utilisateur invalide');
+                                context, AppLocalizations.of(context).translate('invalid_user_session'));
                             return;
                           }
 
@@ -519,30 +520,30 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                           if (result == "SUCCESS") {
                             Navigator.pop(context);
                             showSuccessTopSnackBar(
-                                context, 'Devise créée avec succès!');
+                                context, AppLocalizations.of(context).translate('currency_created_success'));
                           } else if (result == "NAME_EXIST") {
                             showErrorTopSnackBar(
-                                context, 'Le nom de devise existe déjà');
+                                context, AppLocalizations.of(context).translate('currency_name_exists'));
                           } else if (result == "CODE_EXIST") {
                             showErrorTopSnackBar(
-                                context, 'Le code de devise existe déjà');
+                                context, AppLocalizations.of(context).translate('currency_code_exists'));
                           } else if (result == "RATE_NOT_FOUND") {
                             showErrorTopSnackBar(
-                                context, 'Taux de conversion non trouvé');
+                                context, AppLocalizations.of(context).translate('conversion_rate_not_found'));
                           } else if (result == "RATE_SERVICE_ERROR") {
                             showErrorTopSnackBar(
-                                context, 'Erreur du service de taux');
+                                context, AppLocalizations.of(context).translate('rate_service_error'));
                           } else if (result == "CONNECTION_ERROR") {
                             showErrorTopSnackBar(
-                                context, 'Erreur de connexion');
+                                context, AppLocalizations.of(context).translate('connection_error'));
                           } else {
                             // Affiche le message d'erreur tel quel s'il provient du backend
                             showErrorTopSnackBar(
-                                context, result ?? 'Erreur inconnue');
+                                context, result ?? AppLocalizations.of(context).translate('unknown_error'));
                           }
                         } catch (e) {
                           showErrorTopSnackBar(
-                              context, 'Erreur serveur: ${e.toString()}');
+                              context, '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
                         } finally {
                           setState(() => _isLoading = false);
                         }

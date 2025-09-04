@@ -4,6 +4,7 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/ion.dart';
 import 'package:iconify_flutter/icons/ph.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 enum ExpeditionStatusFilter { all, delivered, inProgress, pending }
 
@@ -80,12 +81,13 @@ class PackageListItem extends StatelessWidget {
   }
 
   Widget _buildReferenceText(BuildContext context) {
-    final statusInfo = _getStatusInfo(packages.status?.name);
+    final statusInfo = _getStatusInfo(context, packages.status?.name);
 
     return Row(
       children: [
         Text(
-          packages.ref ?? 'Sans référence',
+          packages.ref ??
+              AppLocalizations.of(context).translate('package_no_reference'),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -123,18 +125,19 @@ class PackageListItem extends StatelessWidget {
       children: [
         const SizedBox(height: 5),
         _buildInfoText(
-          "Client : ${packages.clientName ?? 'Non spécifié'} ${packages.clientPhone != null ? '| ${packages.clientPhone}' : ''}",
+          "${AppLocalizations.of(context).translate('package_client_label')} : ${packages.clientName ?? AppLocalizations.of(context).translate('package_client_unspecified')} ${packages.clientPhone != null ? '| ${packages.clientPhone}' : ''}",
           maxLines: 1,
         ),
         _buildInfoText(
           packages.expeditionType?.toLowerCase() == "avion"
-              ? "Poids : ${packages.weight ?? 0} kg"
-              : "CBN : ${packages.cbn ?? 0} m³",
+              ? "${AppLocalizations.of(context).translate('package_weight_label')} : ${packages.weight ?? 0} ${AppLocalizations.of(context).translate('kg')}"
+              : "${AppLocalizations.of(context).translate('package_cbn_label')} : ${packages.cbn ?? 0} ${AppLocalizations.of(context).translate('m3')}",
         ),
         _buildInfoText(
-          "Destination : ${packages.destinationCountry ?? 'Non spécifiée'}",
+          "${AppLocalizations.of(context).translate('package_destination_label')} : ${packages.destinationCountry ?? AppLocalizations.of(context).translate('package_destination_unspecified')}",
         ),
-        _buildInfoText("Nombre de carton : ${packages.itemQuantity ?? 0}"),
+        _buildInfoText(
+            "${AppLocalizations.of(context).translate('package_cartons_count')} : ${packages.itemQuantity ?? 0}"),
       ],
     );
   }
@@ -207,41 +210,47 @@ class PackageListItem extends StatelessWidget {
     }
   }
 
-  _StatusInfo _getStatusInfo(String? status) {
+  _StatusInfo _getStatusInfo(BuildContext context, String? status) {
     switch (packages.status) {
       case Status.DELIVERED:
         return _StatusInfo(
-          displayText: 'Arrivée à destination',
+          displayText:
+              AppLocalizations.of(context).translate('package_status_arrived'),
           backgroundColor: Colors.lightGreen[50]!,
           textColor: Colors.lightGreen[700]!,
         );
       case Status.RECEIVED:
         return _StatusInfo(
-          displayText: 'Livrée',
+          displayText: AppLocalizations.of(context)
+              .translate('package_status_delivered'),
           backgroundColor: Colors.green[50]!,
           textColor: Colors.green[700]!,
         );
       case Status.PENDING:
         return _StatusInfo(
-          displayText: 'En attente',
+          displayText:
+              AppLocalizations.of(context).translate('package_status_pending'),
           backgroundColor: Colors.orange[50]!,
           textColor: Colors.orange[700]!,
         );
       case Status.DELETE:
         return _StatusInfo(
-          displayText: 'Annulé',
+          displayText: AppLocalizations.of(context)
+              .translate('package_status_cancelled'),
           backgroundColor: Colors.red[50]!,
           textColor: Colors.red[700]!,
         );
       case Status.INPROGRESS:
         return _StatusInfo(
-          displayText: 'En transit',
+          displayText: AppLocalizations.of(context)
+              .translate('package_status_in_transit'),
           backgroundColor: Colors.purple[50]!,
           textColor: Colors.purple[700]!,
         );
       default:
         return _StatusInfo(
-          displayText: 'Statut inconnu',
+          displayText:
+              AppLocalizations.of(context).translate('package_status_unknown'),
           backgroundColor: Colors.grey[300]!,
           textColor: Colors.grey[700]!,
         );

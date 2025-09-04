@@ -4,6 +4,7 @@ import 'login_controller.dart';
 import '../../widgets/rounded_button.dart';
 import '../../widgets/responsive_container.dart';
 import '../../components/text_input.dart';
+import '../../core/localization/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -32,6 +33,7 @@ class _LoginViewState extends State<_LoginView> {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<LoginController>();
+    final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -67,9 +69,9 @@ class _LoginViewState extends State<_LoginView> {
                           height: 200,
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          "BIENVENUE",
-                          style: TextStyle(
+                        Text(
+                          localizations.translate('welcome'),
+                          style: const TextStyle(
                             fontFamily: 'Pacifico',
                             fontSize: 38,
                             color: Colors.white,
@@ -85,10 +87,10 @@ class _LoginViewState extends State<_LoginView> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          "Connectez-vous pour gérer vos livraisons",
+                        Text(
+                          localizations.translate('login_subtitle'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w400,
@@ -170,11 +172,51 @@ class _LoginViewState extends State<_LoginView> {
                             ),
                           ),
                           if (controller.errorMessage != null)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                controller.errorMessage!,
-                                style: const TextStyle(color: Colors.red),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: controller.errorMessage!
+                                        .contains('désactivé')
+                                    ? Colors.orange[50]
+                                    : Colors.red[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: controller.errorMessage!
+                                          .contains('désactivé')
+                                      ? Colors.orange[200]!
+                                      : Colors.red[200]!,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    controller.errorMessage!
+                                            .contains('désactivé')
+                                        ? Icons.warning_amber_rounded
+                                        : Icons.error_outline,
+                                    color: controller.errorMessage!
+                                            .contains('désactivé')
+                                        ? Colors.orange[600]
+                                        : Colors.red[600],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      controller.errorMessage!,
+                                      style: TextStyle(
+                                        color: controller.errorMessage!
+                                                .contains('désactivé')
+                                            ? Colors.orange[700]
+                                            : Colors.red[700],
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           const SizedBox(height: 8),

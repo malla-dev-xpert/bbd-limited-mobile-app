@@ -22,6 +22,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/c
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class CreateExpeditionForm extends StatefulWidget {
   final bool isPackageScreen;
@@ -168,10 +169,11 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          "Ajouter un colis",
-                          style: TextStyle(
+                          AppLocalizations.of(context)
+                              .translate('create_expedition_title'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.5,
@@ -205,7 +207,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                   Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Text(
-                                      'Type d\'expédition',
+                                      AppLocalizations.of(context)
+                                          .translate('expedition_type_title'),
                                       style: TextStyle(color: Colors.grey[600]),
                                     ),
                                   ),
@@ -213,7 +216,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     children: [
                                       Expanded(
                                         child: RadioListTile<String>(
-                                          title: const Text('Bateau'),
+                                          title: Text(
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'expedition_type_boat')),
                                           value: 'Bateau',
                                           groupValue: _expeditionType,
                                           onChanged: (value) {
@@ -225,7 +231,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                       ),
                                       Expanded(
                                         child: RadioListTile<String>(
-                                          title: const Text('Avion'),
+                                          title: Text(
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'expedition_type_plane')),
                                           value: 'Avion',
                                           groupValue: _expeditionType,
                                           onChanged: (value) {
@@ -243,10 +252,12 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             const SizedBox(height: 20),
                             buildTextField(
                               controller: _refController,
-                              label: "Référence de l'expédition",
+                              label: AppLocalizations.of(context)
+                                  .translate('expedition_reference_label'),
                               icon: Icons.numbers,
                               validator: (value) => value?.isEmpty ?? true
-                                  ? 'Ce champ est requis'
+                                  ? AppLocalizations.of(context)
+                                      .translate('field_required')
                                   : null,
                             ),
                             const SizedBox(height: 20),
@@ -260,32 +271,46 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                   child: _expeditionType == 'Avion'
                                       ? buildTextField(
                                           controller: _weightController,
-                                          label: "Poids (kg)",
+                                          label: AppLocalizations.of(context)
+                                              .translate(
+                                                  'expedition_weight_label'),
                                           icon: Icons.scale,
                                           keyboardType: TextInputType.number,
                                           validator: (value) {
                                             if (value?.isEmpty ?? true) {
-                                              return 'Ce champ est requis';
+                                              return AppLocalizations.of(
+                                                      context)
+                                                  .translate('field_required');
                                             }
                                             if (double.tryParse(value!) ==
                                                 null) {
-                                              return 'Veuillez entrer un nombre valide';
+                                              return AppLocalizations.of(
+                                                      context)
+                                                  .translate(
+                                                      'please_enter_valid_number');
                                             }
                                             return null;
                                           },
                                         )
                                       : buildTextField(
                                           controller: _cbnController,
-                                          label: "CBN",
+                                          label: AppLocalizations.of(context)
+                                              .translate(
+                                                  'expedition_cbn_label'),
                                           icon: Icons.monitor_weight,
                                           keyboardType: TextInputType.number,
                                           validator: (value) {
                                             if (value?.isEmpty ?? true) {
-                                              return 'Ce champ est requis';
+                                              return AppLocalizations.of(
+                                                      context)
+                                                  .translate('field_required');
                                             }
                                             if (double.tryParse(value!) ==
                                                 null) {
-                                              return 'Veuillez entrer un nombre valide';
+                                              return AppLocalizations.of(
+                                                      context)
+                                                  .translate(
+                                                      'please_enter_valid_number');
                                             }
                                             return null;
                                           },
@@ -295,16 +320,20 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                 Expanded(
                                   child: buildTextField(
                                     controller: _quantityController,
-                                    label: "Nombre de carton",
+                                    label: AppLocalizations.of(context)
+                                        .translate('expedition_cartons_count'),
                                     icon: Icons
                                         .production_quantity_limits_outlined,
                                     keyboardType: TextInputType.number,
                                     validator: (value) {
                                       if (value?.isEmpty ?? true) {
-                                        return 'Ce champ est requis';
+                                        return AppLocalizations.of(context)
+                                            .translate('field_required');
                                       }
                                       if (double.tryParse(value!) == null) {
-                                        return 'Veuillez entrer un nombre valide';
+                                        return AppLocalizations.of(context)
+                                            .translate(
+                                                'please_enter_valid_number');
                                       }
                                       return null;
                                     },
@@ -328,7 +357,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                       onChanged: _onClientSelected,
                                       itemToString: (client) =>
                                           '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
-                                      hintText: 'Choisir un client...',
+                                      hintText: AppLocalizations.of(context)
+                                          .translate('choose_client'),
                                       prefixIcon: Icons.person,
                                     ),
                                   ),
@@ -363,7 +393,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                       });
                                     },
                                     itemToString: (harbor) => harbor.name ?? '',
-                                    hintText: 'Choisir un port de départ...',
+                                    hintText: AppLocalizations.of(context)
+                                        .translate('choose_departure_port'),
                                     prefixIcon: Icons.sailing,
                                   ),
                                 ),
@@ -392,7 +423,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                       });
                                     },
                                     itemToString: (harbor) => harbor.name ?? '',
-                                    hintText: "Choisir un port d'arrivée...",
+                                    hintText: AppLocalizations.of(context)
+                                        .translate('choose_arrival_port'),
                                     prefixIcon: Icons.sailing,
                                   ),
                                 ),
@@ -408,7 +440,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             const SizedBox(height: 20),
                             // Date de départ
                             DatePickerField(
-                              label: "Date de départ",
+                              label: AppLocalizations.of(context)
+                                  .translate('departure_date'),
                               selectedDate: _startDate,
                               onDateSelected: (date) {
                                 setState(() {
@@ -419,7 +452,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                             const SizedBox(height: 20),
                             // Date d'arrivée estimée
                             DatePickerField(
-                              label: "Date d'arrivée estimée",
+                              label: AppLocalizations.of(context)
+                                  .translate('estimated_arrival_date'),
                               selectedDate: _estimatedArrivalDate,
                               onDateSelected: (date) {
                                 setState(() {
@@ -449,7 +483,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     },
                                     itemToString: (container) =>
                                         '${container.reference}',
-                                    hintText: 'Choisir un container...',
+                                    hintText: AppLocalizations.of(context)
+                                        .translate('choose_container'),
                                     prefixIcon: Icons.inventory_2,
                                   ),
                                 ),
@@ -498,7 +533,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                     },
                                     itemToString: (warehouse) =>
                                         '${warehouse.name} - ${warehouse.adresse}',
-                                    hintText: 'Choisir un entrepôt...',
+                                    hintText: AppLocalizations.of(context)
+                                        .translate('choose_warehouse'),
                                     prefixIcon: Icons.warehouse,
                                   ),
                                 ),
@@ -559,46 +595,60 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
 
   void _goToNextStep() {
     if (currentStep == 0 && widget.isPackageScreen && _selectedClient == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un client.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_client'));
       return;
     }
     if (currentStep == 1 &&
         _eligibleItems.isNotEmpty &&
         _selectedItemIds.isEmpty) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner au moins un item.");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_at_least_one_item'));
       return;
     }
     if (currentStep == 2) {
       // Validation pour l'étape 3 (ports et dates)
       if (_selectedDepartureHarbor == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner le port de départ.");
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_departure_port'));
         return;
       }
       if (_selectedArrivalHarbor == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner le port d'arrivée.");
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_arrival_port'));
         return;
       }
       if (_startDate == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner la date de départ.");
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_departure_date'));
         return;
       }
       if (_estimatedArrivalDate == null) {
         showErrorTopSnackBar(
-            context, "Veuillez sélectionner la date d'arrivée estimée.");
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_arrival_date'));
         return;
       }
     }
     if (currentStep == 3) {
       // Validation pour l'étape 4 (conteneur et entrepôt)
       if (_selectedContainer == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur.");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_container'));
         return;
       }
       if (_selectedWarehouse == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un entrepôt.");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_warehouse'));
         return;
       }
     }
@@ -612,19 +662,25 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   Future<void> _submitForm() async {
     // Validation finale avant soumission
     if (_selectedContainer == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_container'));
       return;
     }
     if (_selectedWarehouse == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un entrepôt.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_warehouse'));
       return;
     }
     if (_selectedDepartureHarbor == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner le port de départ.");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_departure_port'));
       return;
     }
     if (_selectedArrivalHarbor == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner le port d'arrivée.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_arrival_port'));
       return;
     }
 
@@ -632,7 +688,8 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
     try {
       final user = await authService.getUserInfo();
       if (user == null || user.id == null) {
-        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         return;
       }
 
@@ -643,12 +700,14 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
 
       if (_expeditionType == "Avion") {
         if (weight == null) {
-          showErrorTopSnackBar(context, "Le poids est invalid");
+          showErrorTopSnackBar(context,
+              AppLocalizations.of(context).translate('weight_invalid'));
           return;
         }
       } else if (_expeditionType == "Bateau") {
         if (cbn == null) {
-          showErrorTopSnackBar(context, "Le cbn est invalid");
+          showErrorTopSnackBar(
+              context, AppLocalizations.of(context).translate('cbn_invalid'));
           return;
         }
       }
@@ -688,14 +747,19 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
         case "SUCCESS":
           widget.onExpeditionCreated?.call();
           Navigator.pop(context, true);
-          showSuccessTopSnackBar(context, "Expédition créée avec succès !");
+          showSuccessTopSnackBar(
+              context,
+              AppLocalizations.of(context)
+                  .translate('expedition_created_success'));
           break;
         default:
-          showErrorTopSnackBar(context, "Une erreur inattendue s'est produite");
+          showErrorTopSnackBar(context,
+              AppLocalizations.of(context).translate('unexpected_error'));
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur: ${e.toString()}");
+        showErrorTopSnackBar(context,
+            "${AppLocalizations.of(context).translate('error')}: ${e.toString()}");
       }
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -706,10 +770,10 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
     if (currentStep == 0) {
       return confirmationButton(
         isLoading: false,
-        label: "Suivant",
+        label: AppLocalizations.of(context).translate('next'),
         onPressed: _goToNextStep,
         icon: Icons.arrow_forward_ios,
-        subLabel: "Chargement...",
+        subLabel: AppLocalizations.of(context).translate('loading'),
       );
     } else if (currentStep == 3) {
       return Row(
@@ -718,15 +782,15 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
             child: TextButton.icon(
               icon: Icon(Icons.arrow_back),
               onPressed: _goToPreviousStep,
-              label: Text("Retour"),
+              label: Text(AppLocalizations.of(context).translate('back')),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: confirmationButton(
               isLoading: isLoading,
-              label: "Enregistrer",
-              subLabel: "Enregistrement...",
+              label: AppLocalizations.of(context).translate('save'),
+              subLabel: AppLocalizations.of(context).translate('saving'),
               icon: Icons.check,
               onPressed: _submitForm,
             ),
@@ -740,17 +804,17 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
             child: TextButton.icon(
               icon: Icon(Icons.arrow_back),
               onPressed: _goToPreviousStep,
-              label: Text("Retour"),
+              label: Text(AppLocalizations.of(context).translate('back')),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: confirmationButton(
               isLoading: false,
-              label: "Suivant",
+              label: AppLocalizations.of(context).translate('next'),
               onPressed: _goToNextStep,
               icon: Icons.arrow_forward_ios,
-              subLabel: "Chargement...",
+              subLabel: AppLocalizations.of(context).translate('loading'),
             ),
           ),
         ],
@@ -810,7 +874,9 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_eligibleItems.isEmpty) {
-      return const Center(child: Text("Aucun item éligible pour ce client."));
+      return Center(
+          child: Text(
+              AppLocalizations.of(context).translate('no_eligible_items')));
     }
     return ListView(
       children: _eligibleItems.map((item) {
@@ -825,8 +891,12 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
               }
             });
           },
-          title: Text(item.description ?? "Sans description"),
-          subtitle: Text("Quantité: " + (item.quantity?.toString() ?? "-")),
+          title: Text(item.description ??
+              AppLocalizations.of(context).translate('no_description')),
+          subtitle: Text(
+              AppLocalizations.of(context).translate('item_quantity_label') +
+                  " " +
+                  (item.quantity?.toString() ?? "-")),
         );
       }).toList(),
     );

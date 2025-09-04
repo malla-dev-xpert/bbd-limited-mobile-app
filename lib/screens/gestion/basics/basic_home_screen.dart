@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../../models/user.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -71,16 +72,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final bool isTablet = width > 800;
+
+    final localizations = AppLocalizations.of(context);
+
     final List<ReportCardData> dynamicReportCardDataList = [
       ReportCardData(
-        title: 'Expéditions en cours',
+        title: localizations.translate('home_expeditions_in_progress'),
         value: _expeditionsEnCours.toString(),
         backgroundColor: Colors.blue[800]!,
         textColor: Colors.white,
         icon: Icons.local_shipping,
       ),
       ReportCardData(
-        title: 'Colis en transit',
+        title: localizations.translate('home_packages_in_transit'),
         value: _totalColisEnTransit.toString(),
         backgroundColor: Colors.orange[800]!,
         textColor: Colors.white,
@@ -88,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -122,9 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Bienvenue',
-                              style: TextStyle(
+                            Text(
+                              localizations.translate('home_welcome'),
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -1,
@@ -133,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               _user?.firstName ??
                                   _user?.username ??
-                                  'Utilisateur',
+                                  localizations.translate('home_user'),
                               style: const TextStyle(
                                   letterSpacing: 0, fontSize: 16),
                             ),
@@ -143,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      "Statistique",
+                      localizations.translate('home_statistics'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -178,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
               SliverToBoxAdapter(
                 child: Text(
-                  "Informations de base",
+                  localizations.translate('home_basic_info'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -196,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: isTablet ? 3 : 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
-                  children: cardDataList.map((data) {
+                  children: getCardDataList(context, localizations).map((data) {
                     return CustomCard(
                       icon: data.icon,
                       title: data.title,
