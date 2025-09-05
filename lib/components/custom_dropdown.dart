@@ -23,6 +23,9 @@ class DropDownCustom<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 768;
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!),
@@ -30,6 +33,7 @@ class DropDownCustom<T> extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (labelText != null)
@@ -37,7 +41,12 @@ class DropDownCustom<T> extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 4.0),
               child: Text(
                 labelText!,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: isTablet ? 14 : 12,
+                  color: Colors.grey[600],
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           CustomDropdown<String>.search(
@@ -45,6 +54,12 @@ class DropDownCustom<T> extends StatelessWidget {
                 selectedItem != null ? itemToString(selectedItem!) : hintText,
             decoration: CustomDropdownDecoration(
               prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+              closedBorder: Border.all(color: Colors.grey[300]!),
+              expandedBorder: Border.all(color: Colors.grey[300]!),
+              closedFillColor: Colors.white,
+              expandedFillColor: Colors.white,
+              closedSuffixIcon: const Icon(Icons.keyboard_arrow_down),
+              expandedSuffixIcon: const Icon(Icons.keyboard_arrow_up),
             ),
             noResultFoundText: 'Aucun résultat trouvé.',
             searchHintText: 'Rechercher...',
