@@ -1176,7 +1176,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       context: context,
       builder: (context) => DebtPurchaseDialog(
         clientId: _partner.id,
-        onDebtCreated: () async {
+        onDebtCreated: (achat) async {
           await _loadDebts();
           setState(() {});
         },

@@ -81,6 +81,17 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     }
   }
 
+  Future<void> _loadVersementData() async {
+    try {
+      // Appeler l'API pour récupérer les données mises à jour du versement
+      // Pour l'instant, on va simplement déclencher le callback parent pour recharger
+      widget.onVersementUpdated?.call();
+    } catch (e) {
+      // Gérer l'erreur si nécessaire
+      print('Erreur lors du rechargement du versement: $e');
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -1386,9 +1397,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     PurchaseDialog.show(
       context,
       (achat) {
-        setState(() {
-          _achats = List.from(_achats)..add(achat);
-        });
+        // Recharger les données du versement pour obtenir la liste mise à jour des achats
+        _loadVersementData();
         widget.onVersementUpdated?.call();
       },
       widget.versement.partnerId!,

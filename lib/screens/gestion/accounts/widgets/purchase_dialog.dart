@@ -247,6 +247,10 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 
       if (result.isSuccess) {
         Navigator.pop(context, true);
+        // Appeler le callback pour indiquer que l'achat a été créé
+        // Le parent se chargera de recharger la liste
+        widget.onPurchaseComplete(
+            Achat()); // Achat temporaire pour déclencher le callback
         showSuccessTopSnackBar(context,
             AppLocalizations.of(context).translate('purchase_created_success'));
       } else {
@@ -345,6 +349,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                           );
                         },
                         suppliers: suppliers,
+                        onSuppliersReload: _loadSuppliers,
                       ),
                       const SizedBox(height: 10),
                       PackageItemsList(
@@ -440,7 +445,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
 class DebtPurchaseDialog extends StatefulWidget {
   final int clientId;
   final int? versementId;
-  final Function()? onDebtCreated;
+  final Function(Achat)? onDebtCreated;
 
   const DebtPurchaseDialog({
     Key? key,
@@ -450,7 +455,7 @@ class DebtPurchaseDialog extends StatefulWidget {
   }) : super(key: key);
 
   static void show(BuildContext context, int clientId,
-      {int? versementId, Function()? onDebtCreated}) {
+      {int? versementId, Function(Achat)? onDebtCreated}) {
     showDialog(
       context: context,
       builder: (context) => DebtPurchaseDialog(
@@ -582,7 +587,11 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
 
       if (result.isSuccess) {
         Navigator.pop(context, true);
-        if (widget.onDebtCreated != null) widget.onDebtCreated!();
+        // Appeler le callback pour indiquer que l'achat à crédit a été créé
+        if (widget.onDebtCreated != null) {
+          widget.onDebtCreated!(
+              Achat()); // Achat temporaire pour déclencher le callback
+        }
         showSuccessTopSnackBar(context,
             AppLocalizations.of(context).translate('debt_created_success'));
       } else {
@@ -681,6 +690,7 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
                           );
                         },
                         suppliers: suppliers,
+                        onSuppliersReload: _loadSuppliers,
                       ),
                       const SizedBox(height: 10),
                       PackageItemsList(
