@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:bbd_limited/components/personal_info_card.dart';
-import 'package:bbd_limited/components/privacy_policy_dialog.dart';
+import 'package:bbd_limited/components/privacy_policy_bottom_sheet.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
@@ -255,9 +255,14 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showPrivacyPolicyDialog(BuildContext context) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => const PrivacyPolicyDialog(),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: const PrivacyPolicyBottomSheet(),
+      ),
     );
   }
 
