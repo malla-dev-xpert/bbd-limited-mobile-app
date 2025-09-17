@@ -28,10 +28,10 @@
 	<true/>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_dartobservatory._tcp</string>
+		<string>_dartVmService._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Cette application utilise le réseau local pour le débogage et les connexions réseau locales.</string>
+	<string>Cette application a besoin d'accéder au réseau local pour le débogage et la communication avec d'autres appareils sur le même réseau.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -51,13 +51,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSLocalNetworkUsageDescription</key>
-<string>Cette application a besoin d'accéder au réseau local pour le débogage et la communication avec d'autres appareils sur le même réseau.</string>
-
-<key>NSBonjourServices</key>
-<array>
-  <string>_dartVmService._tcp</string>
-</array>
-
 </dict>
 </plist>
