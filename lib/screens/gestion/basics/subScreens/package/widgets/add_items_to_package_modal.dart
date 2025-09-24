@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/components/confirm_btn.dart';
 
 class AddItemsToPackageModal extends StatefulWidget {
   final int clientId;
@@ -24,7 +23,6 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
   List<Items> _items = [];
   Set<int> _selectedItemIds = {};
   bool _isLoading = false;
-  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -47,15 +45,6 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
       showErrorTopSnackBar(
           context, "Erreur lors du chargement des articles reçus");
     }
-  }
-
-  void _handleValidate() {
-    setState(() => _isSubmitting = true);
-    final selectedItems =
-        _items.where((item) => _selectedItemIds.contains(item.id)).toList();
-    widget.onValidate(selectedItems);
-    setState(() => _isSubmitting = false);
-    Navigator.pop(context);
   }
 
   @override
@@ -112,22 +101,6 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
                           }).toList(),
                         ),
                       ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 200,
-                child: confirmationButton(
-                  isLoading: _isSubmitting,
-                  onPressed: (_selectedItemIds.isEmpty || _isSubmitting)
-                      ? () {}
-                      : _handleValidate,
-                  label: "Ajouter au colis",
-                  subLabel: "Ajout...",
-                  icon: Icons.add,
-                ),
-              ),
-            ),
           ],
         ),
       ),

@@ -413,82 +413,82 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   ),
                   if (widget.packages.status == Status.PENDING) ...[
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: TextButton.icon(
-                          onPressed: () async {
-                            final clientId = widget.packages.clientId;
-                            if (clientId == null) {
-                              showErrorTopSnackBar(
-                                  context,
-                                  AppLocalizations.of(context)
-                                      .translate('unknown_client_for_package'));
-                              return;
-                            }
-                            // Récupérer les IDs des articles déjà dans le colis
-                            final alreadyInPackageIds =
-                                _items.map((e) => e.id!).toList();
-                            final result = await showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.white,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20)),
-                              ),
-                              builder: (context) {
-                                return SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.7,
-                                  child: AddItemsToPackageModal(
-                                    clientId: clientId,
-                                    alreadyInPackageIds: alreadyInPackageIds,
-                                    onValidate: (selectedItems) async {
-                                      final user =
-                                          await AuthService().getUserInfo();
-                                      if (user == null || user.id == null) {
-                                        showErrorTopSnackBar(
-                                            context,
-                                            AppLocalizations.of(context)
-                                                .translate(
-                                                    'user_not_logged_in'));
-                                        return;
-                                      }
-                                      final result = await PackageServices()
-                                          .addItemsToPackage(
-                                        packageId: widget.packages.id!,
-                                        itemIds: selectedItems
-                                            .map((e) => e.id!)
-                                            .toList(),
-                                        userId: user.id,
-                                      );
-                                      if (result == "SUCCESS") {
-                                        await _loadItems();
-                                        Navigator.pop(context, true);
-                                        showSuccessTopSnackBar(
-                                            context,
-                                            AppLocalizations.of(context).translate(
-                                                'items_added_to_package_success'));
-                                      } else {
-                                        showErrorTopSnackBar(context, result);
-                                      }
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                            if (result == true) {
-                              showSuccessTopSnackBar(
-                                  context,
-                                  AppLocalizations.of(context).translate(
-                                      'items_added_to_package_success'));
-                            }
-                          },
-                          label: Text(
-                              AppLocalizations.of(context)
-                                  .translate('add_items'),
-                              overflow: TextOverflow.ellipsis),
-                          icon: const Icon(Icons.add)),
-                    )
+                    TextButton.icon(
+                        onPressed: () async {
+                          final clientId = widget.packages.clientId;
+                          if (clientId == null) {
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('unknown_client_for_package'));
+                            return;
+                          }
+                          // Récupérer les IDs des articles déjà dans le colis
+                          final alreadyInPackageIds =
+                              _items.map((e) => e.id!).toList();
+                          final result = await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            builder: (context) {
+                              return SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.7,
+                                child: AddItemsToPackageModal(
+                                  clientId: clientId,
+                                  alreadyInPackageIds: alreadyInPackageIds,
+                                  onValidate: (selectedItems) async {
+                                    final user =
+                                        await AuthService().getUserInfo();
+                                    if (user == null) {
+                                      showErrorTopSnackBar(
+                                          context,
+                                          AppLocalizations.of(context)
+                                              .translate('user_not_logged_in'));
+                                      return;
+                                    }
+                                    final result = await PackageServices()
+                                        .addItemsToPackage(
+                                      packageId: widget.packages.id!,
+                                      itemIds: selectedItems
+                                          .map((e) => e.id!)
+                                          .toList(),
+                                      userId: user.id,
+                                    );
+                                    if (result == "SUCCESS") {
+                                      await _loadItems();
+                                      Navigator.pop(context, true);
+                                      showSuccessTopSnackBar(
+                                          context,
+                                          AppLocalizations.of(context).translate(
+                                              'items_added_to_package_success'));
+                                    } else {
+                                      showErrorTopSnackBar(context, result);
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                          if (result == true) {
+                            showSuccessTopSnackBar(
+                                context,
+                                AppLocalizations.of(context).translate(
+                                    'items_added_to_package_success'));
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        label: Text(
+                            AppLocalizations.of(context).translate('add_items'),
+                            style: const TextStyle(fontSize: 12)),
+                        icon: const Icon(Icons.add, size: 16)),
                   ],
                 ],
               ),
