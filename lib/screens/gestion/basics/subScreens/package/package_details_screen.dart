@@ -1179,7 +1179,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
         child: Center(
           child: Text(
             AppLocalizations.of(context).translate('no_items_in_package'),
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.grey,
               fontStyle: FontStyle.italic,
             ),
@@ -1317,7 +1317,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      '${item.supplierName} | ${item.supplierPhone}',
+                      '${item.supplierName} ${item.supplierPhone?.isNotEmpty ?? false ? '| ${item.supplierPhone}' : ''}',
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,

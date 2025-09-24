@@ -2015,5 +2015,10 @@
   "sales_unknown_error": "未知错误",
   "sales_error_during_deletion": "删除时出错：{error}",
   "sales_error_loading_reports": "加载报告时出错",
-  "sales_error_loading_suppliers": "加载供应商时出错"
+  "sales_error_loading_suppliers": "加载供应商时出错",
+  "add_items_modal_title": "已接收物品",
+  "add_items_loading_error": "加载已接收物品时出错",
+  "add_items_no_items_available": "没有可用的已接收物品。",
+  "add_items_no_description": "无描述",
+  "add_items_quantity_label": "数量"
 }

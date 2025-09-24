@@ -2015,5 +2015,10 @@
   "sales_unknown_error": "Unknown error",
   "sales_error_during_deletion": "Error during deletion: {error}",
   "sales_error_loading_reports": "Error loading reports",
-  "sales_error_loading_suppliers": "Error loading suppliers"
+  "sales_error_loading_suppliers": "Error loading suppliers",
+  "add_items_modal_title": "Received Items",
+  "add_items_loading_error": "Error loading received items",
+  "add_items_no_items_available": "No received items available.",
+  "add_items_no_description": "No description",
+  "add_items_quantity_label": "Quantity"
 }

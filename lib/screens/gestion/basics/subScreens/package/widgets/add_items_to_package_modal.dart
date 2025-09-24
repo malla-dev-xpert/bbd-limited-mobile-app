@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class AddItemsToPackageModal extends StatefulWidget {
   final int clientId;
@@ -42,8 +43,8 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      showErrorTopSnackBar(
-          context, "Erreur lors du chargement des articles reçus");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('add_items_loading_error'));
     }
   }
 
@@ -62,9 +63,11 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Articles reçus",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('add_items_modal_title'),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -76,8 +79,9 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _items.isEmpty
-                    ? const Center(
-                        child: Text("Aucun article reçu disponible."))
+                    ? Center(
+                        child: Text(AppLocalizations.of(context)
+                            .translate('add_items_no_items_available')))
                     : Expanded(
                         child: ListView(
                           shrinkWrap: true,
@@ -93,9 +97,12 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
                                   }
                                 });
                               },
-                              title:
-                                  Text(item.description ?? "Sans description"),
-                              subtitle: Text("Quantité: " +
+                              title: Text(item.description ??
+                                  AppLocalizations.of(context)
+                                      .translate('add_items_no_description')),
+                              subtitle: Text(AppLocalizations.of(context)
+                                      .translate('add_items_quantity_label') +
+                                  ": " +
                                   (item.quantity?.toString() ?? "-")),
                             );
                           }).toList(),

@@ -2138,5 +2138,10 @@
   "sales_unknown_error": "Erreur inconnue",
   "sales_error_during_deletion": "Erreur lors de la suppression : {error}",
   "sales_error_loading_reports": "Erreur lors du chargement des rapports",
-  "sales_error_loading_suppliers": "Erreur lors du chargement des fournisseurs"
+  "sales_error_loading_suppliers": "Erreur lors du chargement des fournisseurs",
+  "add_items_modal_title": "Articles reçus",
+  "add_items_loading_error": "Erreur lors du chargement des articles reçus",
+  "add_items_no_items_available": "Aucun article reçu disponible.",
+  "add_items_no_description": "Sans description",
+  "add_items_quantity_label": "Quantité"
 } 
