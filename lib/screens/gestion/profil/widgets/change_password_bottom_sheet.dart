@@ -45,6 +45,9 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
 
     setState(() => _isLoading = true);
     final currentContext = context;
+    final navigator = Navigator.of(context);
+    // Obtenir le contexte parent (de la page principale) pour afficher le dialogue
+    final parentContext = navigator.overlay?.context;
 
     try {
       final result = await _authService.changePassword(
@@ -54,41 +57,56 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
 
       if (result == "PASSWORD_EDITED") {
         if (mounted) {
-          Navigator.pop(currentContext);
+          // Fermer le bottom sheet
+          navigator.pop();
 
-          await showDialog(
-            context: currentContext,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              backgroundColor: Colors.white,
-              title: Row(
-                children: [
-                  Icon(Icons.security, color: Colors.green[400]),
-                  const SizedBox(width: 8),
-                  Text(localizations.translate('security_enhanced')),
+          // Attendre un peu pour que le bottom sheet se ferme complètement
+          await Future.delayed(const Duration(milliseconds: 300));
+
+          // Afficher le dialogue de confirmation avec le contexte parent
+          if (parentContext != null) {
+            await showDialog(
+              context: parentContext,
+              barrierDismissible: false,
+              builder: (dialogContext) => AlertDialog(
+                backgroundColor: Colors.white,
+                title: Row(
+                  children: [
+                    Icon(Icons.security, color: Colors.green[400]),
+                    const SizedBox(width: 8),
+                    Text(localizations.translate('security_enhanced')),
+                  ],
+                ),
+                content: Text(
+                  localizations.translate('security_logout_message'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () async {
+                      try {
+                        await _authService.logout();
+                        if (mounted) {
+                          // Fermer le dialogue
+                          Navigator.of(dialogContext).pop();
+                          // Naviguer vers la page de connexion
+                          navigator.pushNamedAndRemoveUntil(
+                            '/login',
+                            (route) => false,
+                          );
+                        }
+                      } catch (e) {
+                        // En cas d'erreur, fermer le dialogue quand même
+                        if (mounted) {
+                          Navigator.of(dialogContext).pop();
+                        }
+                      }
+                    },
+                    child: Text(localizations.translate('understood')),
+                  ),
                 ],
               ),
-              content: Text(
-                localizations.translate('security_logout_message'),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    await _authService.logout();
-                    if (mounted) {
-                      Navigator.of(currentContext).pop();
-                      Navigator.pushNamedAndRemoveUntil(
-                        currentContext,
-                        '/login',
-                        (route) => false,
-                      );
-                    }
-                  },
-                  child: Text(localizations.translate('understood')),
-                ),
-              ],
-            ),
-          );
+            );
+          }
         }
       } else {
         if (mounted) {

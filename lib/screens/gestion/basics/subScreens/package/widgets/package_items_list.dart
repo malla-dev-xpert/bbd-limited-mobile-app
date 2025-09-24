@@ -107,7 +107,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
 
     return ListView.builder(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       itemCount: widget.items.length,
       itemBuilder: (context, index) {
         final item = widget.items[index];
