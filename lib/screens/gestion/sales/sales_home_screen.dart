@@ -6,6 +6,7 @@ import 'widgets/purchase_wizard_dialog.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:intl/intl.dart';
 import 'reports_screen.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class SalesHomeScreen extends StatefulWidget {
   const SalesHomeScreen({super.key});
@@ -61,9 +62,9 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
-          'Gestion des achats',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context).translate('sales_management_title'),
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -101,14 +102,16 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                           children: [
                             _buildStatItem(
                               context,
-                              'Achats du mois',
+                              AppLocalizations.of(context)
+                                  .translate('sales_monthly_purchases'),
                               isLoading ? '...' : achatsDuMoisCount.toString(),
                               Icons.calendar_month,
                               Colors.white,
                             ),
                             _buildStatItem(
                               context,
-                              'Chiffre d\'affaires',
+                              AppLocalizations.of(context)
+                                  .translate('sales_revenue'),
                               isLoading
                                   ? '...'
                                   : NumberFormat.currency(
@@ -126,12 +129,13 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                 const SizedBox(height: 32),
 
                 // Section des actions rapides
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Actions rapides',
-                      style: TextStyle(
+                      AppLocalizations.of(context)
+                          .translate('sales_quick_actions'),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -150,7 +154,8 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                   children: [
                     _buildActionCard(
                       context,
-                      'Nouveau achat',
+                      AppLocalizations.of(context)
+                          .translate('sales_new_purchase'),
                       Icons.add_shopping_cart,
                       () {
                         showDialog(
@@ -162,7 +167,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                     ),
                     _buildActionCard(
                       context,
-                      'Historique',
+                      AppLocalizations.of(context).translate('sales_history'),
                       Icons.history,
                       () => Navigator.push(
                         context,
@@ -174,14 +179,14 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                     ),
                     _buildActionCard(
                       context,
-                      'Clients',
+                      AppLocalizations.of(context).translate('sales_customers'),
                       Icons.people,
                       () => _showCustomersWithPurchases(context),
                       Colors.green,
                     ),
                     _buildActionCard(
                       context,
-                      'Rapports',
+                      AppLocalizations.of(context).translate('sales_reports'),
                       Icons.bar_chart,
                       () => Navigator.push(
                         context,
