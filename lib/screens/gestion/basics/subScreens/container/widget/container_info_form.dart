@@ -11,6 +11,8 @@ class ContainerInfoForm extends StatefulWidget {
   final TextEditingController size;
   final bool initialAvailability;
   final Partner? selectedSupplier;
+  final Function(bool)? onAvailabilityChanged;
+  final Function(Partner?)? onSupplierChanged;
 
   const ContainerInfoForm({
     Key? key,
@@ -18,6 +20,8 @@ class ContainerInfoForm extends StatefulWidget {
     required this.size,
     this.initialAvailability = false,
     this.selectedSupplier,
+    this.onAvailabilityChanged,
+    this.onSupplierChanged,
   }) : super(key: key);
 
   @override
@@ -171,6 +175,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                     setState(() {
                       selectedSupplier = s;
                     });
+                    widget.onSupplierChanged?.call(s);
                   },
                   itemToString: (client) =>
                       '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
@@ -212,6 +217,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   inactiveTrackColor: Colors.grey[200],
                   onChanged: (value) {
                     setState(() => _isAvailable = value);
+                    widget.onAvailabilityChanged?.call(value);
                   },
                 ),
               ],
