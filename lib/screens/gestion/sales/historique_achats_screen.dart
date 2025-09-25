@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'achat_details_sheet.dart';
 
 class HistoriqueAchatsScreen extends StatefulWidget {
@@ -72,9 +73,9 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
-          'Historique des achats',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context).translate('purchase_history_title'),
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -106,7 +107,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Rechercher par référence ou client...',
+                    hintText: AppLocalizations.of(context)
+                        .translate('purchase_history_search_hint'),
                     prefixIcon:
                         const Icon(Icons.search, color: Color(0xFF1A1E49)),
                     suffixIcon: _searchController.text.isNotEmpty
@@ -138,7 +140,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
-                          'Filtrer par statut',
+                          AppLocalizations.of(context)
+                              .translate('purchase_history_filter_status'),
                           style: TextStyle(
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w600,
@@ -150,11 +153,18 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            _buildStatusFilterChip(null, 'Tous'),
                             _buildStatusFilterChip(
-                                Status.COMPLETED, 'Complétés'),
+                                null,
+                                AppLocalizations.of(context)
+                                    .translate('purchase_history_filter_all')),
                             _buildStatusFilterChip(
-                                Status.PENDING, 'En attente'),
+                                Status.COMPLETED,
+                                AppLocalizations.of(context).translate(
+                                    'purchase_history_filter_completed')),
+                            _buildStatusFilterChip(
+                                Status.PENDING,
+                                AppLocalizations.of(context).translate(
+                                    'purchase_history_filter_pending')),
                           ],
                         ),
                       ),
@@ -180,7 +190,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Aucun achat trouvé',
+                              AppLocalizations.of(context)
+                                  .translate('purchase_history_no_purchases'),
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey[600],
@@ -235,8 +246,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                 children: [
                                                   Text(
                                                     achat.isDebt == true
-                                                        ? 'Identifiant: ${achat.id ?? "N/A"}'
-                                                        : 'Réf. V: ${achat.referenceVersement ?? "N/A"}',
+                                                        ? '${AppLocalizations.of(context).translate('purchase_history_identifier')}: ${achat.id ?? "N/A"}'
+                                                        : '${AppLocalizations.of(context).translate('purchase_history_reference')}: ${achat.referenceVersement ?? "N/A"}',
                                                     style: const TextStyle(
                                                       fontSize: 16,
                                                       fontWeight:
@@ -260,9 +271,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                             color: const Color(
                                                                 0xFF7F78AF)),
                                                       ),
-                                                      child: const Text(
-                                                        'Dette',
-                                                        style: TextStyle(
+                                                      child: Text(
+                                                        AppLocalizations.of(
+                                                                context)
+                                                            .translate(
+                                                                'purchase_history_debt'),
+                                                        style: const TextStyle(
                                                           color:
                                                               Color(0xFF7F78AF),
                                                           fontWeight:
@@ -289,10 +303,16 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                               child: Text(
                                                 achat.status?.name ==
                                                         "COMPLETED"
-                                                    ? "Complété"
+                                                    ? AppLocalizations.of(
+                                                            context)
+                                                        .translate(
+                                                            'purchase_history_filter_completed')
                                                     : achat.status?.name ==
                                                             "PENDING"
-                                                        ? "En attente"
+                                                        ? AppLocalizations.of(
+                                                                context)
+                                                            .translate(
+                                                                'purchase_history_filter_pending')
                                                         : achat.status?.name ??
                                                             "N/A",
                                                 style: TextStyle(
@@ -356,7 +376,9 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Montant total',
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'purchase_history_total_amount'),
                                               style: TextStyle(
                                                 color: Colors.grey[600],
                                                 fontWeight: FontWeight.w500,

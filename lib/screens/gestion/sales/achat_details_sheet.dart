@@ -10,7 +10,6 @@ import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -102,14 +101,22 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             widget.achat.items![idx].status = Status.RECEIVED;
           }
         });
-        showSuccessTopSnackBar(context, "Article reçu avec succès");
+        showSuccessTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_item_received_success'));
       } else {
         showErrorTopSnackBar(
-            context, result.errorMessage ?? "Erreur lors de la confirmation");
+            context,
+            result.errorMessage ??
+                AppLocalizations.of(context)
+                    .translate('purchase_history_confirmation_error'));
       }
     } catch (e) {
       showErrorTopSnackBar(
-          context, "Une erreur est survenue lors de la confirmation");
+          context,
+          AppLocalizations.of(context)
+              .translate('purchase_history_error_during_confirmation'));
     } finally {
       setState(() {
         isLoading = false;
@@ -175,10 +182,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text(
-                                "Modifier l'article",
+                              Text(
+                                AppLocalizations.of(context).translate(
+                                    'purchase_history_edit_item_title'),
                                 textAlign: TextAlign.start,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
                                     letterSpacing: -0.5),
@@ -186,7 +194,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                               const SizedBox(height: 30),
                               buildTextField(
                                 controller: descriptionController,
-                                label: 'Description',
+                                label: AppLocalizations.of(context).translate(
+                                    'purchase_history_edit_description'),
                                 icon: Icons.description,
                               ),
                               const SizedBox(height: 12),
@@ -197,7 +206,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   Expanded(
                                     child: buildTextField(
                                       controller: quantityController,
-                                      label: 'Quantité',
+                                      label: AppLocalizations.of(context)
+                                          .translate(
+                                              'purchase_history_edit_quantity'),
                                       icon: Icons.numbers,
                                       keyboardType: TextInputType.number,
                                     ),
@@ -205,7 +216,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   Expanded(
                                     child: buildTextField(
                                       controller: unitPriceController,
-                                      label: 'Prix unitaire',
+                                      label: AppLocalizations.of(context)
+                                          .translate(
+                                              'purchase_history_edit_unit_price'),
                                       icon: Icons.attach_money,
                                       keyboardType:
                                           const TextInputType.numberWithOptions(
@@ -217,7 +230,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                               const SizedBox(height: 12),
                               buildTextField(
                                 controller: salesRateController,
-                                label: 'Taux d\'achat',
+                                label: AppLocalizations.of(context).translate(
+                                    'purchase_history_edit_purchase_rate'),
                                 icon: Icons.percent,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
@@ -234,7 +248,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                             ? ' ' + p.lastName
                                             : ''))
                                     .trim()),
-                                hintText: 'Sélectionner...',
+                                hintText: AppLocalizations.of(context)
+                                    .translate(
+                                        'purchase_history_edit_supplier'),
                                 prefixIcon: Icons.person,
                               ),
                               const SizedBox(height: 24),
@@ -243,14 +259,18 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   Expanded(
                                     child: OutlinedButton(
                                       onPressed: () => Navigator.pop(context),
-                                      child: const Text('Annuler'),
+                                      child: Text(AppLocalizations.of(context)
+                                          .translate(
+                                              'purchase_history_edit_cancel')),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: confirmationButton(
                                       icon: Icons.save,
-                                      label: 'Enregistrer',
+                                      label: AppLocalizations.of(context)
+                                          .translate(
+                                              'purchase_history_edit_save'),
                                       isLoading: isLoading,
                                       subLabel: '',
                                       onPressed: () async {
@@ -333,32 +353,57 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                                     updatedItem;
                                               }
                                             });
-                                            showSuccessTopSnackBar(context,
-                                                'Article modifié avec succès');
+                                            showSuccessTopSnackBar(
+                                                context,
+                                                AppLocalizations.of(context)
+                                                    .translate(
+                                                        'purchase_history_item_modified_success'));
                                             Navigator.pop(context);
                                           } else if (result ==
                                               'ITEM_NOT_FOUND') {
                                             showErrorTopSnackBar(
-                                                context, 'Article non trouvé.');
+                                                context,
+                                                AppLocalizations.of(context)
+                                                    .translate(
+                                                        'purchase_history_item_not_found'));
                                           } else if (result ==
                                               'USER_NOT_FOUND') {
-                                            showErrorTopSnackBar(context,
-                                                'Utilisateur non trouvé.');
+                                            showErrorTopSnackBar(
+                                                context,
+                                                AppLocalizations.of(context)
+                                                    .translate(
+                                                        'purchase_history_user_not_found'));
                                           } else if (result ==
                                               'CLIENT_MISMATCH') {
-                                            showErrorTopSnackBar(context,
-                                                'Client ne correspond pas.');
+                                            showErrorTopSnackBar(
+                                                context,
+                                                AppLocalizations.of(context)
+                                                    .translate(
+                                                        'purchase_history_client_mismatch'));
                                           } else if (result ==
                                               'SUPPLIER_NOT_FOUND') {
-                                            showErrorTopSnackBar(context,
-                                                'Fournisseur non trouvé.');
+                                            showErrorTopSnackBar(
+                                                context,
+                                                AppLocalizations.of(context)
+                                                    .translate(
+                                                        'purchase_history_supplier_not_found'));
                                           } else {
                                             showErrorTopSnackBar(
-                                                context, result);
+                                                context,
+                                                AppLocalizations.of(context)
+                                                    .translate(
+                                                        'purchase_history_error_occurred')
+                                                    .replaceAll(
+                                                        '{error}', result));
                                           }
                                         } catch (e) {
                                           showErrorTopSnackBar(
-                                              context, 'Erreur : $e');
+                                              context,
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'purchase_history_error_occurred')
+                                                  .replaceAll(
+                                                      '{error}', e.toString()));
                                         }
                                       },
                                     ),
@@ -390,24 +435,32 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 child: const Icon(Icons.warning_amber_rounded,
                     color: Colors.orange)),
             const SizedBox(width: 12),
-            const Text('Attention',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+                AppLocalizations.of(context)
+                    .translate('purchase_history_delete_confirm_title'),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
-        content: Text(
-            'Vous allez supprimer  l\'article "${item.description}" de votre liste d\'achats.\nCette action est irréversible.'),
+        content: Text(AppLocalizations.of(context)
+            .translate('purchase_history_delete_confirm_message')
+            .replaceAll('{description}', item.description ?? '')),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: Text(AppLocalizations.of(context)
+                .translate('purchase_history_delete_confirm_cancel')),
           ),
           TextButton(
             onPressed: () {
               _deleteArticle(item);
               Navigator.pop(context);
             },
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+            child: Text(
+                AppLocalizations.of(context)
+                    .translate('purchase_history_delete_confirm_delete'),
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -437,19 +490,39 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         setState(() {
           widget.achat.items?.remove(item);
         });
-        showSuccessTopSnackBar(context, "Article supprimé avec succès");
+        showSuccessTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_item_deleted_success'));
         Navigator.of(context).pop(true);
       } else if (result == "ITEM_NOT_FOUND") {
-        showErrorTopSnackBar(context, "Article non trouvé.");
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_item_not_found'));
       } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
-        showErrorTopSnackBar(context, "Client non trouvé ou ne correspond pas");
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_client_mismatch'));
       } else if (result == "USER_NOT_FOUND") {
-        showErrorTopSnackBar(context, "Utilisateur non trouvé.");
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_user_not_found'));
       } else {
-        showErrorTopSnackBar(context, result?.toString() ?? "Erreur inconnue");
+        showErrorTopSnackBar(
+            context,
+            result?.toString() ??
+                AppLocalizations.of(context)
+                    .translate('purchase_history_unknown_error'));
       }
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de la suppression : $e");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('purchase_history_error_during_deletion')
+              .replaceAll('{error}', e.toString()));
     } finally {
       setState(() {
         isLoading = false;
@@ -481,7 +554,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         children: [
                           Expanded(
                             child: Text(
-                              "Configuration et aperçu de l'achat",
+                              AppLocalizations.of(context)
+                                  .translate('purchase_history_print_options'),
                               style: TextStyle(
                                 fontSize:
                                     MediaQuery.of(context).size.width < 400
@@ -510,9 +584,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Options d\'impression',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context).translate(
+                                  'purchase_history_invoice_options'),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -530,10 +605,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                     });
                                   },
                                 ),
-                                const Expanded(
+                                Expanded(
                                   child: Text(
-                                    'Inclure les informations du fournisseur',
-                                    style: TextStyle(fontSize: 14),
+                                    AppLocalizations.of(context).translate(
+                                        'purchase_history_include_supplier'),
+                                    style: const TextStyle(fontSize: 14),
                                   ),
                                 ),
                               ],
@@ -550,10 +626,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                     });
                                   },
                                 ),
-                                const Expanded(
+                                Expanded(
                                   child: Text(
-                                    'Générer un proforma (inclut tous les articles)',
-                                    style: TextStyle(fontSize: 14),
+                                    AppLocalizations.of(context).translate(
+                                        'purchase_history_generate_proforma'),
+                                    style: const TextStyle(fontSize: 14),
                                   ),
                                 ),
                               ],
@@ -674,7 +751,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                           includeSupplierInfo, isProforma);
                                     },
                                     icon: const Icon(Icons.visibility),
-                                    label: const Text('Voir l\'aperçu PDF'),
+                                    label: Text(AppLocalizations.of(context)
+                                        .translate(
+                                            'purchase_history_preview_pdf')),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF1A1E49),
                                       foregroundColor: Colors.white,
@@ -715,7 +794,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                         includeSupplierInfo, isProforma);
                                   },
                                   icon: const Icon(Icons.visibility),
-                                  label: const Text('Voir l\'aperçu PDF'),
+                                  label: Text(AppLocalizations.of(context)
+                                      .translate(
+                                          'purchase_history_preview_pdf')),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF1A1E49),
                                     foregroundColor: Colors.white,
@@ -915,7 +996,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Détails de l\'achat',
+                      AppLocalizations.of(context)
+                          .translate('purchase_history_details_title'),
                       style: TextStyle(
                           fontSize:
                               MediaQuery.of(context).size.width < 400 ? 20 : 24,
@@ -941,9 +1023,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFF7F78AF)),
                   ),
-                  child: const Text(
-                    'Dette',
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)
+                        .translate('purchase_history_debt'),
+                    style: const TextStyle(
                       color: Color(0xFF7F78AF),
                       fontWeight: FontWeight.bold,
                     ),
@@ -957,8 +1040,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             controller: _searchController,
             decoration: InputDecoration(
               hintText: MediaQuery.of(context).size.width < 400
-                  ? 'Rechercher...'
-                  : 'Rechercher par nom ou facture...',
+                  ? AppLocalizations.of(context).translate('search')
+                  : AppLocalizations.of(context)
+                      .translate('purchase_history_search_hint'),
               prefixIcon: const Icon(Icons.search, size: 20),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -991,23 +1075,36 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInfoRow(
-                      achat.isDebt == true ? 'Identifiant' : 'Référence',
+                      achat.isDebt == true
+                          ? AppLocalizations.of(context)
+                              .translate('purchase_history_identifier')
+                          : AppLocalizations.of(context)
+                              .translate('purchase_history_reference'),
                       achat.isDebt == true
                           ? achat.id.toString()
                           : (achat.referenceVersement ?? "N/A")),
-                  _buildInfoRow('Client', achat.client ?? "N/A"),
+                  _buildInfoRow(
+                      AppLocalizations.of(context)
+                          .translate('purchase_history_client'),
+                      achat.client ?? "N/A"),
                   if (achat.clientPhone != null)
-                    _buildInfoRow('Téléphone', achat.clientPhone!),
-                  _buildInfoRow('Montant de l\'achat',
+                    _buildInfoRow(
+                        AppLocalizations.of(context)
+                            .translate('purchase_history_phone'),
+                        achat.clientPhone!),
+                  _buildInfoRow(
+                      AppLocalizations.of(context)
+                          .translate('purchase_history_total_amount'),
                       '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
                   const SizedBox(height: 20),
                   // Section Articles achetés avec bouton d'export
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Articles achetés',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)
+                            .translate('purchase_history_purchased_items'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1022,7 +1119,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           icon: const Icon(Icons.print,
                               color: Colors.white, size: 20),
                           onPressed: () => _handlePrintAchat(achat),
-                          tooltip: 'Exporter en PDF',
+                          tooltip: AppLocalizations.of(context)
+                              .translate('purchase_history_export_pdf'),
                           padding: const EdgeInsets.all(8),
                         ),
                       ),
@@ -1032,10 +1130,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   if (filteredItems.isNotEmpty)
                     ...filteredItems.map((item) => _buildItemCard(item, achat))
                   else
-                    const Center(
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('Aucun article trouvé'),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(AppLocalizations.of(context)
+                            .translate('purchase_history_no_items')),
                       ),
                     ),
                 ],
