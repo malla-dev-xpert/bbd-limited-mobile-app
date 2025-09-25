@@ -575,12 +575,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            const Row(
                               children: [
-                                const Icon(Icons.settings,
+                                Icon(Icons.settings,
                                     size: 20, color: Color(0xFF1A1E49)),
-                                const SizedBox(width: 8),
-                                const Text(
+                                SizedBox(width: 8),
+                                Text(
                                   'Options de facturation',
                                   style: TextStyle(
                                     fontSize: 16,
