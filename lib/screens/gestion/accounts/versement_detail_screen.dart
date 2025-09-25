@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildDetailRow.dart';
@@ -48,7 +46,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   final AchatServices _achatServices = AchatServices();
   final DeviseServices _deviseServices = DeviseServices();
-  String _searchQuery = '';
   bool isLoading = false;
   bool _isInfoExpanded = true;
   bool _isArticlesExpanded = false;
@@ -219,69 +216,144 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 ],
               ),
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
+                // Section de recherche et impression - Design responsive
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isMobile = constraints.maxWidth < 600;
+
+                    if (isMobile) {
+                      // Layout vertical pour mobile
+                      return Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Rechercher un article ou une facture...',
-                            prefixIcon: const Icon(Icons.search),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(32),
-                              borderSide: BorderSide(
-                                color: Colors.grey[300]!,
+                        child: Column(
+                          children: [
+                            TextField(
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Rechercher un article ou une facture...',
+                                prefixIcon: const Icon(Icons.search),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(32),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(32),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(32),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF1A1E49),
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQueries[achatId] = value;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: TextButton.icon(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Colors.grey[200]!),
+                                  foregroundColor: MaterialStateProperty.all(
+                                      Colors.grey[700]!),
+                                  padding: MaterialStateProperty.all(
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                ),
+                                onPressed: () => _handlePrintAchat(achat),
+                                icon: const Icon(Icons.print),
+                                label: Text('Imprimer',
+                                    style: TextStyle(
+                                        color: Colors.grey[700], fontSize: 14)),
                               ),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(32),
-                              borderSide: BorderSide(
-                                color: Colors.grey[300]!,
+                          ],
+                        ),
+                      );
+                    } else {
+                      // Layout horizontal pour tablettes et desktop
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Rechercher un article ou une facture...',
+                                  prefixIcon: const Icon(Icons.search),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(32),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(32),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(32),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF1A1E49),
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchQueries[achatId] = value;
+                                  });
+                                },
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(32),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF1A1E49),
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
                             ),
                           ),
-                          onChanged: (value) {
-                            setState(() {
-                              _searchQueries[achatId] = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: TextButton.icon(
-                        style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.grey[200]!),
-                          foregroundColor:
-                              MaterialStateProperty.all(Colors.grey[700]!),
-                        ),
-                        onPressed: () => _handlePrintAchat(achat),
-                        icon: const Icon(Icons.print),
-                        label: Text('Imprimer',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 13)),
-                      ),
-                    ),
-                  ],
+                          Expanded(
+                            flex: 1,
+                            child: TextButton.icon(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Colors.grey[200]!),
+                                foregroundColor: MaterialStateProperty.all(
+                                    Colors.grey[700]!),
+                              ),
+                              onPressed: () => _handlePrintAchat(achat),
+                              icon: const Icon(Icons.print),
+                              label: Text('Imprimer',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 13)),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                  },
                 ),
                 if (filteredItems.isNotEmpty)
                   ...filteredItems
@@ -949,7 +1021,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                         .isNotEmpty)
                                                 ? '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}'
                                                     .trim()
-                                                : (w.user.username ?? ''),
+                                                : w.user.username,
                                         style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
@@ -1635,154 +1707,300 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 height: MediaQuery.of(context).size.height * 0.8,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      // En-tête
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Configuration et aperçu de l'achat",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                child: Column(
+                  children: [
+                    // En-tête fixe
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 600;
 
-                      // Section options d'impression
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Options d\'impression',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1E49),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Type de document
-                            Row(
+                          if (isMobile) {
+                            // Layout vertical pour mobile
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Type de document:"),
-                                const SizedBox(width: 20),
                                 Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Radio<bool>(
-                                      value: false,
-                                      groupValue: isProforma,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          isProforma = false;
-                                          if (value != null)
-                                            includeSupplierInfo = value;
-                                        });
-                                      },
+                                    Expanded(
+                                      child: Text(
+                                        "Configuration et aperçu de l'achat",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    const Text('Facture réel'),
-                                  ],
-                                ),
-                                const SizedBox(width: 20),
-                                Row(
-                                  children: [
-                                    Radio<bool>(
-                                      value: true,
-                                      groupValue: isProforma,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          isProforma = true;
-                                          includeSupplierInfo = false;
-                                        });
-                                      },
+                                    IconButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      icon: const Icon(Icons.close),
                                     ),
-                                    const Text('Pro-forma'),
                                   ],
                                 ),
                               ],
+                            );
+                          } else {
+                            // Layout horizontal pour tablettes et desktop
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    "Configuration et aperçu de l'achat",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  icon: const Icon(Icons.close),
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ),
+
+                    // Contenu scrollable
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            // Section options d'impression
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey[300]!),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Options d\'impression',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1E49),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Type de document - Design responsive
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final isMobile =
+                                          constraints.maxWidth < 600;
+
+                                      if (isMobile) {
+                                        // Layout vertical pour mobile
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Type de document:",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Row(
+                                              children: [
+                                                Radio<bool>(
+                                                  value: false,
+                                                  groupValue: isProforma,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      isProforma = false;
+                                                      if (value != null)
+                                                        includeSupplierInfo =
+                                                            value;
+                                                    });
+                                                  },
+                                                ),
+                                                const Text('Facture réel'),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Radio<bool>(
+                                                  value: true,
+                                                  groupValue: isProforma,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      isProforma = true;
+                                                      includeSupplierInfo =
+                                                          false;
+                                                    });
+                                                  },
+                                                ),
+                                                const Text('Pro-forma'),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      } else {
+                                        // Layout horizontal pour tablettes et desktop
+                                        return Row(
+                                          children: [
+                                            const Text("Type de document:"),
+                                            const SizedBox(width: 20),
+                                            Row(
+                                              children: [
+                                                Radio<bool>(
+                                                  value: false,
+                                                  groupValue: isProforma,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      isProforma = false;
+                                                      if (value != null)
+                                                        includeSupplierInfo =
+                                                            value;
+                                                    });
+                                                  },
+                                                ),
+                                                const Text('Facture réel'),
+                                              ],
+                                            ),
+                                            const SizedBox(width: 20),
+                                            Row(
+                                              children: [
+                                                Radio<bool>(
+                                                  value: true,
+                                                  groupValue: isProforma,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      isProforma = true;
+                                                      includeSupplierInfo =
+                                                          false;
+                                                    });
+                                                  },
+                                                ),
+                                                const Text('Pro-forma'),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                    },
+                                  ),
+
+                                  // Option fournisseur (seulement pour facture standard)
+                                  if (!isProforma) ...[
+                                    const SizedBox(height: 16),
+                                    CheckboxListTile(
+                                      title: const Text(
+                                          "Inclure les informations du fournisseur"),
+                                      value: includeSupplierInfo,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          includeSupplierInfo = value ?? false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
 
-                            // Option fournisseur (seulement pour facture standard)
-                            if (!isProforma) ...[
-                              const SizedBox(height: 16),
-                              CheckboxListTile(
-                                title: const Text(
-                                    "Inclure les informations du fournisseur"),
-                                value: includeSupplierInfo,
-                                onChanged: (value) {
-                                  setState(() {
-                                    includeSupplierInfo = value ?? false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+                            const SizedBox(height: 16),
 
-                      const SizedBox(height: 16),
-
-                      // Configuration des options de facturation
-                      Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          child: SingleChildScrollView(
-                            child: InvoiceOptionsConfig(
+                            // Configuration des options de facturation
+                            InvoiceOptionsConfig(
                               options: _invoiceOptions,
                               onOptionsChanged: _updateInvoiceOptions,
                               currencySymbol:
                                   widget.versement.deviseCode ?? '¥',
                             ),
-                          ),
+
+                            const SizedBox(height: 16),
+                          ],
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 16),
+                    // Boutons d'action fixes en bas - Design responsive
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 600;
 
-                      // Boutons d'action
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Annuler'),
-                          ),
-                          const SizedBox(width: 16),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              _showAchatPdfPreviewDialog(context, achat,
-                                  includeSupplierInfo, isProforma);
-                            },
-                            icon: const Icon(Icons.visibility),
-                            label: const Text('Voir l\'aperçu PDF'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A1E49),
-                              foregroundColor: Colors.white,
-                            ),
-                          ),
-                        ],
+                          if (isMobile) {
+                            // Layout vertical pour mobile
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _showAchatPdfPreviewDialog(context, achat,
+                                        includeSupplierInfo, isProforma);
+                                  },
+                                  icon: const Icon(Icons.visibility),
+                                  label: const Text('Voir l\'aperçu PDF'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF1A1E49),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Annuler'),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            // Layout horizontal pour tablettes et desktop
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Annuler'),
+                                ),
+                                const SizedBox(width: 16),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _showAchatPdfPreviewDialog(context, achat,
+                                        includeSupplierInfo, isProforma);
+                                  },
+                                  icon: const Icon(Icons.visibility),
+                                  label: const Text('Voir l\'aperçu PDF'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF1A1E49),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );
