@@ -11,6 +11,12 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/utils/versement_print_service.dart';
+import 'package:printing/printing.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/components/invoice_options_config.dart';
+import 'package:intl/intl.dart';
 
 class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
@@ -29,6 +35,32 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   // Ajout pour la recherche
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  // Options de facturation configurables
+  InvoiceOptions _invoiceOptions = const InvoiceOptions();
+  late NumberFormat currencyFormat;
+
+  @override
+  void initState() {
+    super.initState();
+    currencyFormat = NumberFormat.currency(
+      locale: 'fr_FR',
+      symbol: 'CNY',
+    );
+  }
+
+  void _updateInvoiceOptions(InvoiceOptions newOptions) {
+    setState(() {
+      _invoiceOptions = newOptions;
+    });
+  }
+
+  bool get _hasActiveInvoiceOptions {
+    return _invoiceOptions.enableLineMargin ||
+        _invoiceOptions.enableGlobalMargin ||
+        _invoiceOptions.enableDiscount ||
+        _invoiceOptions.enableStorageFees;
+  }
 
   String _formatAmount(double? amount) {
     if (amount == null) return "0,00";
@@ -425,6 +457,430 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     }
   }
 
+  void _handlePrintAchat(Achat achat) {
+    bool includeSupplierInfo = false;
+    bool isProforma = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // En-tête
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Configuration et aperçu de l'achat",
+                              style: TextStyle(
+                                fontSize:
+                                    MediaQuery.of(context).size.width < 400
+                                        ? 16
+                                        : 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Section options d'impression
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Options d\'impression',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Option inclure infos fournisseur
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: includeSupplierInfo,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      includeSupplierInfo = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Expanded(
+                                  child: Text(
+                                    'Inclure les informations du fournisseur',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // Option proforma
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: isProforma,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isProforma = value ?? false;
+                                    });
+                                  },
+                                ),
+                                const Expanded(
+                                  child: Text(
+                                    'Générer un proforma (inclut tous les articles)',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Configuration des options de facturation
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.settings,
+                                    size: 20, color: Color(0xFF1A1E49)),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Options de facturation',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Résumé des options actives
+                            if (_hasActiveInvoiceOptions) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.blue[200]!),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.info_outline,
+                                            color: Colors.blue[700], size: 16),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            'Options actuellement appliquées :',
+                                            style: TextStyle(
+                                              color: Colors.blue[700],
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: MediaQuery.of(context)
+                                                          .size
+                                                          .width <
+                                                      400
+                                                  ? 11
+                                                  : 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInvoiceOptionsSummary(),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+
+                            // Bouton pour configurer
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _showInvoiceOptionsDialog(context),
+                                icon: const Icon(Icons.settings, size: 18),
+                                label: Text(_hasActiveInvoiceOptions
+                                    ? 'Modifier les options'
+                                    : 'Configurer les options'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1A1E49),
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      // Boutons d'action - Responsive
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isMobile = constraints.maxWidth < 400;
+                          if (isMobile) {
+                            // Layout vertical pour mobile
+                            return Column(
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      _showAchatPdfPreviewDialog(context, achat,
+                                          includeSupplierInfo, isProforma);
+                                    },
+                                    icon: const Icon(Icons.visibility),
+                                    label: const Text('Voir l\'aperçu PDF'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF1A1E49),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('Annuler'),
+                                    style: TextButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            // Layout horizontal pour tablette/desktop
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Annuler'),
+                                ),
+                                const SizedBox(width: 16),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _showAchatPdfPreviewDialog(context, achat,
+                                        includeSupplierInfo, isProforma);
+                                  },
+                                  icon: const Icon(Icons.visibility),
+                                  label: const Text('Voir l\'aperçu PDF'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF1A1E49),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showInvoiceOptionsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Configuration des options de facturation',
+                      style: TextStyle(
+                        fontSize:
+                            MediaQuery.of(context).size.width < 400 ? 16 : 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: InvoiceOptionsConfig(
+                    options: _invoiceOptions,
+                    onOptionsChanged: _updateInvoiceOptions,
+                    currencySymbol: '¥',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Fermer'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceOptionsSummary() {
+    final List<Widget> summaryItems = [];
+
+    if (_invoiceOptions.enableLineMargin &&
+        _invoiceOptions.lineMarginValue != null) {
+      summaryItems.add(_buildSummaryItem('Marge par ligne',
+          '${_invoiceOptions.lineMarginValue}${_invoiceOptions.lineMarginType == MarginType.percentage ? '%' : '¥'}'));
+    }
+
+    if (_invoiceOptions.enableGlobalMargin &&
+        _invoiceOptions.globalMarginValue != null) {
+      summaryItems.add(_buildSummaryItem('Marge globale',
+          '${_invoiceOptions.globalMarginValue}${_invoiceOptions.globalMarginType == MarginType.percentage ? '%' : '¥'}'));
+    }
+
+    if (_invoiceOptions.enableDiscount &&
+        _invoiceOptions.discountValue != null) {
+      final discountText =
+          _invoiceOptions.discountType == DiscountType.percentage
+              ? '${_invoiceOptions.discountValue}%'
+              : '¥${_invoiceOptions.discountValue}';
+      summaryItems.add(_buildSummaryItem('Remise', discountText));
+    }
+
+    if (_invoiceOptions.enableStorageFees &&
+        _invoiceOptions.storageFeeAmount != null) {
+      final storageText =
+          _invoiceOptions.storageFeeType == StorageFeeType.percentage
+              ? '${_invoiceOptions.storageFeeAmount}%'
+              : '¥${_invoiceOptions.storageFeeAmount}';
+      summaryItems.add(_buildSummaryItem('Frais d\'entreposage', storageText));
+    }
+
+    return Column(
+      children: summaryItems
+          .map((item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: item,
+              ))
+          .toList(),
+    );
+  }
+
+  void _showAchatPdfPreviewDialog(BuildContext context, Achat achat,
+      bool includeSupplierInfo, bool isProforma) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: PdfPreview(
+            build: (format) => VersementPrintService.buildAchatPdfBytes(
+              achat,
+              includeSupplierInfo: includeSupplierInfo,
+              currencyFormat: currencyFormat,
+              localizations: AppLocalizations.of(context),
+              isProforma: isProforma,
+              invoiceOptions: _invoiceOptions,
+            ),
+            pdfFileName: 'achat_${achat.id ?? "detail"}.pdf',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1E49),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final achat = widget.achat;
@@ -449,59 +905,77 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header fixe
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Header fixe - Responsive
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              // Ligne 1: Titre et bouton fermer
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Détails de l\'achat',
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5),
-                  ),
-                  const SizedBox(height: 4),
-                  if (achat.isDebt == true)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF7F78AF).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF7F78AF)),
-                      ),
-                      child: const Text(
-                        'Dette',
-                        style: TextStyle(
-                          color: Color(0xFF7F78AF),
+                  Expanded(
+                    child: Text(
+                      'Détails de l\'achat',
+                      style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width < 400 ? 20 : 24,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
+                          letterSpacing: -0.5),
+                    ),
+                  ),
+                  // Bouton fermer
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ],
               ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
+              const SizedBox(height: 4),
+              // Ligne 2: Badge dette si applicable
+              if (achat.isDebt == true)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7F78AF).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF7F78AF)),
+                  ),
+                  child: const Text(
+                    'Dette',
+                    style: TextStyle(
+                      color: Color(0xFF7F78AF),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 20),
-          // Champ de recherche fixe
+          // Champ de recherche fixe - Responsive
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Rechercher par nom ou facture...',
-              prefixIcon: const Icon(Icons.search),
+              hintText: MediaQuery.of(context).size.width < 400
+                  ? 'Rechercher...'
+                  : 'Rechercher par nom ou facture...',
+              prefixIcon: const Icon(Icons.search, size: 20),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(32),
-                borderSide: BorderSide(color: Colors.grey),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF1A1E49)),
               ),
               contentPadding:
-                  const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              filled: true,
+              fillColor: Colors.grey[50],
             ),
             onChanged: (val) {
               setState(() {
@@ -527,12 +1001,32 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   _buildInfoRow('Montant de l\'achat',
                       '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Articles achetés',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  // Section Articles achetés avec bouton d'export
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Articles achetés',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      // Bouton d'export PDF
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1E49),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.print,
+                              color: Colors.white, size: 20),
+                          onPressed: () => _handlePrintAchat(achat),
+                          tooltip: 'Exporter en PDF',
+                          padding: const EdgeInsets.all(8),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   if (filteredItems.isNotEmpty)
@@ -556,21 +1050,23 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   Widget _buildInfoRow(String label, String value, {bool isAmount = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 16,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
-              fontSize: isAmount ? 18 : 16,
-              fontWeight: isAmount ? FontWeight.bold : FontWeight.normal,
+              fontSize: isAmount ? 16 : 15,
+              fontWeight: isAmount ? FontWeight.bold : FontWeight.w600,
               color: isAmount ? const Color(0xFF1A1E49) : Colors.black,
             ),
           ),
@@ -582,16 +1078,16 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   Widget _buildItemCard(Items item, Achat achat) {
     final isConfirmed = confirmedArticles.contains(item.id?.toString());
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.10),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.grey.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(color: Colors.grey[200]!),
@@ -599,35 +1095,42 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ligne titre + actions
+          // Titre et actions - Responsive
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Titre
               Expanded(
                 child: Text(
                   item.description ?? 'Article sans nom',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                    color: Color(0xFF1A1E49),
+                    fontSize: MediaQuery.of(context).size.width < 400 ? 15 : 16,
+                    color: const Color(0xFF1A1E49),
                   ),
                 ),
               ),
-              // Actions éditer/supprimer
+              // Actions éditer/supprimer - Plus compactes sur mobile
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.edit, color: Color(0xFF1976D2)),
+                    icon: const Icon(Icons.edit,
+                        color: Color(0xFF1976D2), size: 20),
                     tooltip: 'Modifier',
                     onPressed: () => _showEditArticleDialog(item),
+                    padding: const EdgeInsets.all(8),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
                   ),
-                  const SizedBox(width: 4),
                   IconButton(
                     icon: const Icon(Icons.delete_outline,
-                        color: Color(0xFFD32F2F)),
+                        color: Color(0xFFD32F2F), size: 20),
                     tooltip: 'Supprimer',
                     onPressed: () => _confirmDeleteArticle(item),
+                    padding: const EdgeInsets.all(8),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
                   ),
                 ],
               ),
