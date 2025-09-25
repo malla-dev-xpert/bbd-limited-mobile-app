@@ -226,6 +226,7 @@ class _WarehouseState extends State<WarehouseScreen> {
         onPressed: () {
           showModalBottomSheet(
             context: context,
+            isScrollControlled: true,
             backgroundColor: Colors.white,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -233,8 +234,13 @@ class _WarehouseState extends State<WarehouseScreen> {
             builder: (BuildContext context) {
               return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setModalState) {
-                  return Container(
-                    padding: const EdgeInsets.all(30),
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: 30,
+                      right: 30,
+                      top: 30,
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 30,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
