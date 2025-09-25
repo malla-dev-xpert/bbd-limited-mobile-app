@@ -438,8 +438,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           invoice.contains(query);
     }).toList();
     return Container(
-      // MODIFIE : largeur max
+      // MODIFIE : largeur max et hauteur optimisée
       width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -447,8 +448,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
+          // Header fixe
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -489,7 +490,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             ],
           ),
           const SizedBox(height: 20),
-          // Champ de recherche ajouté ici
+          // Champ de recherche fixe
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
@@ -509,34 +510,44 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             },
           ),
           const SizedBox(height: 16),
-          _buildInfoRow(
-              achat.isDebt == true ? 'Identifiant' : 'Référence',
-              achat.isDebt == true
-                  ? achat.id.toString()
-                  : (achat.referenceVersement ?? "N/A")),
-          _buildInfoRow('Client', achat.client ?? "N/A"),
-          if (achat.clientPhone != null)
-            _buildInfoRow('Téléphone', achat.clientPhone!),
-          _buildInfoRow('Montant de l\'achat',
-              '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
-          const SizedBox(height: 20),
-          const Text(
-            'Articles achetés',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (filteredItems.isNotEmpty)
-            ...filteredItems.map((item) => _buildItemCard(item, achat))
-          else
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text('Aucun article trouvé'),
+          // Contenu scrollable
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                      achat.isDebt == true ? 'Identifiant' : 'Référence',
+                      achat.isDebt == true
+                          ? achat.id.toString()
+                          : (achat.referenceVersement ?? "N/A")),
+                  _buildInfoRow('Client', achat.client ?? "N/A"),
+                  if (achat.clientPhone != null)
+                    _buildInfoRow('Téléphone', achat.clientPhone!),
+                  _buildInfoRow('Montant de l\'achat',
+                      '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Articles achetés',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (filteredItems.isNotEmpty)
+                    ...filteredItems.map((item) => _buildItemCard(item, achat))
+                  else
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('Aucun article trouvé'),
+                      ),
+                    ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
