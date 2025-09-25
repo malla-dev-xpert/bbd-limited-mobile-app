@@ -87,6 +87,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       ),
       body: Column(
         children: [
+          // Header fixe avec recherche et filtres
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -163,6 +164,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
               ],
             ),
           ),
+          // Contenu scrollable
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -190,6 +192,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                     : RefreshIndicator(
                         onRefresh: _chargerAchats,
                         child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.all(16),
                           itemCount: _filteredAchats.length,
                           itemBuilder: (context, index) {
@@ -349,7 +352,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                         ],
                                         const SizedBox(height: 12),
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Montant total',
