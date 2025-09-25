@@ -2144,6 +2144,7 @@
   "add_items_no_items_available": "Aucun article reçu disponible.",
   "add_items_no_description": "Sans description",
   "add_items_quantity_label": "Quantité",
+  "add_selected_items": "Ajouter",
   "purchase_history_title": "Historique des achats",
   "purchase_history_search_hint": "Rechercher par référence ou client...",
   "purchase_history_filter_status": "Filtrer par statut",

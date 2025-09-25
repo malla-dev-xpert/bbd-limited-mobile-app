@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/widgets/rounded_button.dart';
 
 class AddItemsToPackageModal extends StatefulWidget {
   final int clientId;
@@ -108,6 +109,40 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
                           }).toList(),
                         ),
                       ),
+            if (_items.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        AppLocalizations.of(context).translate('cancel'),
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: RoundedButton(
+                      text: AppLocalizations.of(context)
+                          .translate('add_selected_items'),
+                      onPressed: _selectedItemIds.isEmpty
+                          ? () {}
+                          : () {
+                              final selectedItems = _items
+                                  .where((item) =>
+                                      _selectedItemIds.contains(item.id))
+                                  .toList();
+                              widget.onValidate(selectedItems);
+                              Navigator.pop(context);
+                            },
+                      loading: false,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

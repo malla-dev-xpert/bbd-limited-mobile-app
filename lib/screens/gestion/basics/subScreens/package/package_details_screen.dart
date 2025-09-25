@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/add_items_to_package_modal.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/localization/translation_helper.dart';
+import 'package:bbd_limited/widgets/rounded_button.dart';
 
 class PackageDetailsScreen extends StatefulWidget {
   final Packages packages;
@@ -36,11 +37,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   List<Items> _items = [];
   final ItemServices _itemServices = ItemServices();
   DateTime? selectedDeliveryDate;
+  List<Items> _availableItems = [];
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+    _loadAvailableItems();
   }
 
   Future<void> _loadItems() async {
@@ -63,6 +66,23 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
       if (mounted) {
         showErrorTopSnackBar(context, "Erreur lors du chargement des articles");
       }
+    }
+  }
+
+  Future<void> _loadAvailableItems() async {
+    final clientId = widget.packages.clientId;
+    if (clientId == null) return;
+
+    try {
+      final items = await _itemServices.findItemsByClient(clientId);
+      final alreadyInPackageIds = _items.map((e) => e.id!).toList();
+      setState(() {
+        _availableItems = items
+            .where((item) => !alreadyInPackageIds.contains(item.id))
+            .toList();
+      });
+    } catch (e) {
+      // Gérer l'erreur silencieusement
     }
   }
 
@@ -461,6 +481,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                                     );
                                     if (result == "SUCCESS") {
                                       await _loadItems();
+                                      await _loadAvailableItems();
                                       Navigator.pop(context, true);
                                       showSuccessTopSnackBar(
                                           context,

@@ -2021,6 +2021,7 @@
   "add_items_no_items_available": "没有可用的已接收物品。",
   "add_items_no_description": "无描述",
   "add_items_quantity_label": "数量",
+  "add_selected_items": "添加选中的物品",
   "purchase_history_title": "采购历史",
   "purchase_history_search_hint": "按参考号或客户搜索...",
   "purchase_history_filter_status": "按状态筛选",

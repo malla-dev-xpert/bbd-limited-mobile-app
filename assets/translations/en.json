@@ -2021,6 +2021,7 @@
   "add_items_no_items_available": "No received items available.",
   "add_items_no_description": "No description",
   "add_items_quantity_label": "Quantity",
+  "add_selected_items": "Add",
   "purchase_history_title": "Purchase History",
   "purchase_history_search_hint": "Search by reference or client...",
   "purchase_history_filter_status": "Filter by status",
