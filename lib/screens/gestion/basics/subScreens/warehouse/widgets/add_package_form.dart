@@ -108,102 +108,109 @@ class _AddPackageFormState extends State<AddPackageForm> {
       builder: (context, provider, child) {
         return Form(
           key: _formKey,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.95,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
             ),
-            padding: const EdgeInsets.all(20),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 80.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              "Ajouter un nouveau colis",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -1,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.95,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 80.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                "Ajouter un nouveau colis",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -1,
+                                ),
                               ),
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                      Expanded(
-                        child: IndexedStack(
-                          index: provider.currentStep,
-                          children: [
-                            _buildStep1(provider),
-                            _buildStep2(provider),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              padding: EdgeInsets.zero,
+                            ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 10),
-                    child: Row(
-                      children: [
-                        if (provider.currentStep > 0)
-                          Expanded(
-                            child: TextButton.icon(
-                              icon: const Icon(Icons.arrow_back),
-                              onPressed: () {
-                                provider.currentStep--;
-                              },
-                              label: const Text("Retour"),
-                            ),
+                        const SizedBox(height: 40),
+                        Expanded(
+                          child: IndexedStack(
+                            index: provider.currentStep,
+                            children: [
+                              _buildStep1(provider),
+                              _buildStep2(provider),
+                            ],
                           ),
-                        if (provider.currentStep == 0)
-                          Expanded(
-                            child: confirmationButton(
-                              isLoading: false,
-                              label: "Suivant",
-                              onPressed: () {
-                                if (_validateStep1()) {
-                                  provider.currentStep++;
-                                }
-                              },
-                              icon: Icons.arrow_forward_ios,
-                              subLabel: "Chargement...",
-                            ),
-                          )
-                        else
-                          Expanded(
-                            child: confirmationButton(
-                              isLoading: provider.isLoading,
-                              label: "Enregistrer",
-                              subLabel: "Enregistrement...",
-                              icon: Icons.check,
-                              onPressed: _handleSubmit,
-                            ),
-                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 10),
+                      child: Row(
+                        children: [
+                          if (provider.currentStep > 0)
+                            Expanded(
+                              child: TextButton.icon(
+                                icon: const Icon(Icons.arrow_back),
+                                onPressed: () {
+                                  provider.currentStep--;
+                                },
+                                label: const Text("Retour"),
+                              ),
+                            ),
+                          if (provider.currentStep == 0)
+                            Expanded(
+                              child: confirmationButton(
+                                isLoading: false,
+                                label: "Suivant",
+                                onPressed: () {
+                                  if (_validateStep1()) {
+                                    provider.currentStep++;
+                                  }
+                                },
+                                icon: Icons.arrow_forward_ios,
+                                subLabel: "Chargement...",
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: confirmationButton(
+                                isLoading: provider.isLoading,
+                                label: "Enregistrer",
+                                subLabel: "Enregistrement...",
+                                icon: Icons.check,
+                                onPressed: _handleSubmit,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

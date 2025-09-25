@@ -15,16 +15,24 @@ Future<List<Packages>?> showAddPackagesToContainerDialog(
     barrierDismissible: false,
     builder: (context) {
       return Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         backgroundColor: Colors.white,
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.6,
+        insetPadding: EdgeInsets.zero,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          child: _AddPackagesDialogContent(
-            containerId: containerId,
-            packageServices: packageServices,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            child: _AddPackagesDialogContent(
+              containerId: containerId,
+              packageServices: packageServices,
+            ),
           ),
         ),
       );
