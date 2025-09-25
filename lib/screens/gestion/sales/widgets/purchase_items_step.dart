@@ -216,7 +216,7 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Header
+        // Fixer que le Header
         Container(
           padding:
               const EdgeInsets.only(top: 18, left: 0, right: 0, bottom: 12),
@@ -311,12 +311,13 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
             ],
           ),
         ),
-        const SizedBox(height: 18),
+        // Contenu scrollable
         Expanded(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
+                const SizedBox(height: 18),
                 // Formulaire d'ajout d'article
                 PackageItemForm(
                   suppliers: _suppliers,
@@ -324,20 +325,19 @@ class _PurchaseItemsStepState extends State<PurchaseItemsStep> {
                 ),
                 const SizedBox(height: 20),
                 // Liste des articles
-                Expanded(
-                  child: PackageItemsList(
-                    items: _items,
-                    onRemoveItem: _removeItem,
-                    onDuplicateItem: _duplicateItem,
-                    onEditItem: _editItem,
-                    suppliers: _suppliers,
-                  ),
+                PackageItemsList(
+                  items: _items,
+                  onRemoveItem: _removeItem,
+                  onDuplicateItem: _duplicateItem,
+                  onEditItem: _editItem,
+                  suppliers: _suppliers,
                 ),
+                const SizedBox(height: 100), // Espace pour le footer fixe
               ],
             ),
           ),
         ),
-        // Footer avec bouton de validation
+        // Fixed Footer avec bouton de validation
         Container(
           decoration: BoxDecoration(
             color: Colors.white,

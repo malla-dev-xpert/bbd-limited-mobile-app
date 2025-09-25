@@ -327,7 +327,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 100),
                       PackageItemForm(
                         onAddItem: (
                           description,
@@ -359,7 +359,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                         onDuplicateItem: _duplicateItem,
                         onEditItem: _editItem,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
@@ -668,7 +668,7 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 100),
                       PackageItemForm(
                         onAddItem: (
                           description,
@@ -700,7 +700,7 @@ class _DebtPurchaseDialogState extends State<DebtPurchaseDialog> {
                         onDuplicateItem: _duplicateItem,
                         onEditItem: _editItem,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
