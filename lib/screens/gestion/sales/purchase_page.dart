@@ -81,6 +81,9 @@ class _PurchasePageState extends State<PurchasePage> {
   void initState() {
     super.initState();
 
+    // Debug: Afficher les paramètres reçus
+    log("PurchasePage initState - clientId: ${widget.clientId}, versementId: ${widget.versementId}");
+
     // Initialiser le format de devise
     final deviseCode = widget.devise?.code ?? 'CNY';
     currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: deviseCode);
@@ -88,11 +91,11 @@ class _PurchasePageState extends State<PurchasePage> {
     // Initialiser le sales rate avec la valeur par défaut 1
     _salesRateController.text = '1';
 
-    // Si on a déjà un client et versement (cas d'achat avec versement existant)
-    if (widget.clientId != null && widget.versementId != null) {
+    // Si on a déjà un client (cas d'achat depuis les détails d'un client ou versement)
+    if (widget.clientId != null) {
       _loadExistingPurchaseData();
     } else {
-      // Cas d'achat normal ou dette - charger les données
+      // Cas d'achat normal - charger les données
       _loadInitialData();
     }
   }
@@ -113,25 +116,42 @@ class _PurchasePageState extends State<PurchasePage> {
     try {
       // Charger le client et le versement existants
       final customersData = await partnerServices.findCustomers(page: 0);
-      final versementsData = await versementServices.getAll(page: 0);
 
       setState(() {
         customers = customersData;
-        versements = versementsData;
-
-        // Trouver le client et versement correspondants
-        selectedCustomer = customers.firstWhere(
-          (c) => c.id == widget.clientId,
-          orElse: () => customers.first,
-        );
-        selectedVersement = versements.firstWhere(
-          (v) => v.id == widget.versementId,
-          orElse: () => versements.first,
-        );
-
-        isDebtPurchase = false; // Achat avec versement existant
         isCustomersLoading = false;
+
+        // Trouver le client correspondant
+        log("Recherche du client avec ID: ${widget.clientId}");
+        log("Clients disponibles: ${customers.map((c) => '${c.id}: ${c.firstName} ${c.lastName}').join(', ')}");
+
+        try {
+          selectedCustomer = customers.firstWhere(
+            (c) => c.id == widget.clientId,
+          );
+        } catch (e) {
+          log("Client non trouvé, utilisation du premier client");
+          selectedCustomer = customers.isNotEmpty ? customers.first : null;
+        }
+
+        log("Client sélectionné: ${selectedCustomer?.id} - ${selectedCustomer?.firstName} ${selectedCustomer?.lastName}");
       });
+
+      // Si on a un versement ID, charger les versements et le sélectionner
+      if (widget.versementId != null) {
+        final versementsData = await versementServices.getAll(page: 0);
+        setState(() {
+          versements = versementsData;
+          selectedVersement = versements.firstWhere(
+            (v) => v.id == widget.versementId,
+            orElse: () => versements.first,
+          );
+          isDebtPurchase = false; // Achat avec versement existant
+        });
+      } else {
+        // Si pas de versement ID, charger les versements du client et déterminer le mode
+        await _loadVersementsForCustomer(widget.clientId!);
+      }
 
       await _loadSuppliers();
     } catch (e) {
@@ -483,147 +503,309 @@ class _PurchasePageState extends State<PurchasePage> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Section sélection client/versement
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)
-                          .translate('customer_selection'),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+              // Section sélection client/versement (seulement si pas déjà défini)
+              if (widget.clientId == null) ...[
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Sélection du client
-                    DropDownCustom<Partner>(
-                      items: customers,
-                      selectedItem: selectedCustomer,
-                      onChanged: _onCustomerSelected,
-                      itemToString: (customer) =>
-                          '${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}',
-                      hintText: AppLocalizations.of(context)
-                          .translate('select_customer'),
-                      prefixIcon: Icons.person,
-                    ),
-
-                    if (selectedCustomer != null) ...[
-                      const SizedBox(height: 16),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
                         AppLocalizations.of(context)
-                            .translate('versement_selection'),
+                            .translate('customer_selection'),
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
 
-                      // Sélection du versement (seulement si des versements existent)
-                      if (versements.isNotEmpty) ...[
-                        DropDownCustom<Versement>(
-                          items: versements,
-                          selectedItem: selectedVersement,
-                          onChanged: _onVersementSelected,
-                          itemToString: (versement) =>
-                              '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
-                          hintText: AppLocalizations.of(context)
-                              .translate('select_versement_or_debt'),
-                          prefixIcon: Icons.payment,
+                      // Sélection du client
+                      DropDownCustom<Partner>(
+                        items: customers,
+                        selectedItem: selectedCustomer,
+                        onChanged: _onCustomerSelected,
+                        itemToString: (customer) =>
+                            '${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}',
+                        hintText: AppLocalizations.of(context)
+                            .translate('select_customer'),
+                        prefixIcon: Icons.person,
+                      ),
+
+                      if (selectedCustomer != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('versement_selection'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ] else ...[
-                        // Message quand aucun versement n'est disponible
+                        const SizedBox(height: 8),
+
+                        // Sélection du versement (seulement si des versements existent)
+                        if (versements.isNotEmpty) ...[
+                          DropDownCustom<Versement>(
+                            items: versements,
+                            selectedItem: selectedVersement,
+                            onChanged: _onVersementSelected,
+                            itemToString: (versement) =>
+                                '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
+                            hintText: AppLocalizations.of(context)
+                                .translate('select_versement_or_debt'),
+                            prefixIcon: Icons.payment,
+                          ),
+                        ] else ...[
+                          // Message quand aucun versement n'est disponible
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.payment,
+                                    color: Colors.grey[600], size: 24),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context)
+                                        .translate('no_versements_available'),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        // Option dette (seulement si des versements existent)
+                        if (versements.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: isDebtPurchase,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isDebtPurchase = value ?? false;
+                                    if (isDebtPurchase) {
+                                      selectedVersement = null;
+                                    }
+                                  });
+                                },
+                              ),
+                              Text(
+                                AppLocalizations.of(context)
+                                    .translate('debt_purchase'),
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          // Message informatif quand aucun versement n'est disponible
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.orange[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.orange[200]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline,
+                                    color: Colors.orange[600], size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context).translate(
+                                        'no_versements_available_debt_mode'),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.orange[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ] else ...[
+                // Affichage des informations du client/versement quand déjà défini
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).translate('purchase_info'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Informations du client
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue[200]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person,
+                                color: Colors.blue[600], size: 24),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context)
+                                        .translate('client'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    selectedCustomer != null
+                                        ? '${selectedCustomer!.firstName} ${selectedCustomer!.lastName}'
+                                        : 'Chargement...',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Informations du versement (si applicable)
+                      if (widget.versementId != null &&
+                          selectedVersement != null) ...[
+                        const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: Colors.green[50],
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[300]!),
+                            border: Border.all(color: Colors.green[200]!),
                           ),
                           child: Row(
                             children: [
                               Icon(Icons.payment,
-                                  color: Colors.grey[600], size: 24),
+                                  color: Colors.green[600], size: 24),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)
-                                      .translate('no_versements_available'),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                    fontStyle: FontStyle.italic,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)
+                                          .translate('versement'),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${selectedVersement!.reference} - ${currencyFormat.format(selectedVersement!.montantRestant)}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-
-                      // Option dette (seulement si des versements existent)
-                      if (versements.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: isDebtPurchase,
-                              onChanged: (value) {
-                                setState(() {
-                                  isDebtPurchase = value ?? false;
-                                  if (isDebtPurchase) {
-                                    selectedVersement = null;
-                                  }
-                                });
-                              },
-                            ),
-                            Text(
-                              AppLocalizations.of(context)
-                                  .translate('debt_purchase'),
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ] else ...[
-                        // Message informatif quand aucun versement n'est disponible
-                        const SizedBox(height: 8),
+                      ] else if (isDebtPurchase) ...[
+                        const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.orange[50],
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.orange[200]!),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.info_outline,
-                                  color: Colors.orange[600], size: 20),
-                              const SizedBox(width: 8),
+                              Icon(Icons.account_balance_wallet,
+                                  color: Colors.orange[600], size: 24),
+                              const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context).translate(
-                                      'no_versements_available_debt_mode'),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.orange[700],
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)
+                                          .translate('purchase_type'),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.orange[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)
+                                          .translate('debt_purchase'),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -631,14 +813,14 @@ class _PurchasePageState extends State<PurchasePage> {
                         ),
                       ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
+              ],
 
               const SizedBox(height: 16),
 
               // Section ajout d'article
-              if (selectedCustomer != null) ...[
+              if (selectedCustomer != null || widget.clientId != null) ...[
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
