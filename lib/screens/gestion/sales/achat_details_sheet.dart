@@ -126,6 +126,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
 
   void _showEditArticleDialog(Items item) async {
     final descriptionController = TextEditingController(text: item.description);
+    final cartonController =
+        TextEditingController(text: item.carton?.toString() ?? '');
+    final quantityPerCartonController =
+        TextEditingController(text: item.quantityPerCarton?.toString() ?? '');
     final quantityController =
         TextEditingController(text: item.quantity?.toString() ?? '');
     final unitPriceController =
@@ -136,6 +140,19 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     List<Partner> suppliers = [];
     bool loadingSuppliers = true;
     String? errorMsg;
+
+    // Fonction pour recalculer la quantité totale
+    void calculateTotalQuantity() {
+      final carton = int.tryParse(cartonController.text) ?? 0;
+      final quantityPerCarton =
+          int.tryParse(quantityPerCartonController.text) ?? 0;
+      final totalQuantity = carton * quantityPerCarton;
+      quantityController.text = totalQuantity.toString();
+    }
+
+    // Ajouter des listeners pour recalculer automatiquement
+    cartonController.addListener(calculateTotalQuantity);
+    quantityPerCartonController.addListener(calculateTotalQuantity);
 
     await showModalBottomSheet(
       context: context,
@@ -206,27 +223,57 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                 children: [
                                   Expanded(
                                     child: buildTextField(
-                                      controller: quantityController,
+                                      controller: cartonController,
                                       label: AppLocalizations.of(context)
-                                          .translate(
-                                              'purchase_history_edit_quantity'),
-                                      icon: Icons.numbers,
+                                          .translate('carton'),
+                                      icon: Icons.inventory_2,
                                       keyboardType: TextInputType.number,
                                     ),
                                   ),
                                   Expanded(
                                     child: buildTextField(
-                                      controller: unitPriceController,
+                                      controller: quantityPerCartonController,
                                       label: AppLocalizations.of(context)
-                                          .translate(
-                                              'purchase_history_edit_unit_price'),
-                                      icon: Icons.attach_money,
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                              decimal: true),
+                                          .translate('quantity_per_carton'),
+                                      icon: Icons.format_list_numbered,
+                                      keyboardType: TextInputType.number,
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 12),
+                              // Champ quantité totale (lecture seule)
+                              TextFormField(
+                                controller: quantityController,
+                                keyboardType: TextInputType.number,
+                                enabled: false, // Lecture seule
+                                decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(context)
+                                      .translate('total_quantity'),
+                                  prefixIcon: Icon(Icons.calculate,
+                                      color: Colors.grey[600]),
+                                  filled: true,
+                                  fillColor: Colors.grey[100],
+                                  hintText: AppLocalizations.of(context)
+                                      .translate('calculated_automatically'),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide:
+                                        BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              buildTextField(
+                                controller: unitPriceController,
+                                label: AppLocalizations.of(context).translate(
+                                    'purchase_history_edit_unit_price'),
+                                icon: Icons.attach_money,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                               ),
                               const SizedBox(height: 12),
                               buildTextField(
@@ -286,18 +333,28 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                           return;
                                         }
                                         try {
+                                          // Calculer la quantité totale automatiquement
+                                          final carton = int.tryParse(
+                                                  cartonController.text) ??
+                                              0;
+                                          final quantityPerCarton = int.tryParse(
+                                                  quantityPerCartonController
+                                                      .text) ??
+                                              0;
+                                          final totalQuantity =
+                                              carton * quantityPerCarton;
+
                                           final updatedItem = Items(
                                             id: item.id,
                                             description:
                                                 descriptionController.text,
-                                            quantity: int.tryParse(
-                                                quantityController.text),
+                                            carton: carton,
+                                            quantityPerCarton:
+                                                quantityPerCarton,
+                                            quantity: totalQuantity,
                                             unitPrice: double.tryParse(
                                                 unitPriceController.text),
-                                            totalPrice: (int.tryParse(
-                                                        quantityController
-                                                            .text) ??
-                                                    0) *
+                                            totalPrice: totalQuantity *
                                                 (double.tryParse(
                                                         unitPriceController
                                                             .text) ??
@@ -1240,9 +1297,25 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Affichage des nouveaux champs carton et quantité par carton
+              if (item.carton != null && item.quantityPerCarton != null) ...[
+                _InfoIconText(
+                  icon: Icons.inventory_2,
+                  label: AppLocalizations.of(context).translate('carton'),
+                  value: '${item.carton}',
+                ),
+                const SizedBox(height: 8),
+                _InfoIconText(
+                  icon: Icons.format_list_numbered,
+                  label: AppLocalizations.of(context)
+                      .translate('quantity_per_carton'),
+                  value: '${item.quantityPerCarton}',
+                ),
+                const SizedBox(height: 8),
+              ],
               _InfoIconText(
-                icon: Icons.numbers,
-                label: AppLocalizations.of(context).translate('quantity'),
+                icon: Icons.calculate,
+                label: AppLocalizations.of(context).translate('total_quantity'),
                 value: '${item.quantity ?? 0}',
               ),
               const SizedBox(height: 8),

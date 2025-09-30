@@ -12,6 +12,8 @@ class CreateAchatDto {
             (item) => {
               'description': item.description,
               'quantity': item.quantity.toInt(),
+              'carton': item.carton,
+              'quantityPerCarton': item.quantityPerCarton,
               'unitPrice': item.unitPrice,
               'invoiceNumber': item.invoiceNumber,
               'supplierId': item.supplierId,
@@ -26,6 +28,8 @@ class CreateAchatDto {
 class CreateItemDto {
   final String description;
   final int quantity;
+  final int carton; // Nouveau champ : nombre de cartons
+  final int quantityPerCarton; // Nouveau champ : quantité par carton
   final double unitPrice;
   final String invoiceNumber;
   final int supplierId;
@@ -34,6 +38,8 @@ class CreateItemDto {
   CreateItemDto({
     required this.description,
     required this.quantity,
+    required this.carton,
+    required this.quantityPerCarton,
     required this.unitPrice,
     required this.invoiceNumber,
     required this.supplierId,
@@ -44,6 +50,8 @@ class CreateItemDto {
     return {
       'description': description,
       'quantity': quantity,
+      'carton': carton,
+      'quantityPerCarton': quantityPerCarton,
       'unitPrice': unitPrice,
       'invoiceNumber': invoiceNumber,
       'supplierId': supplierId,

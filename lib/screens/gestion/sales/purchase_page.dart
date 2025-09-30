@@ -15,6 +15,8 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
 
 class PurchasePage extends StatefulWidget {
   // Paramètres optionnels pour les achats avec versement existant
@@ -71,11 +73,18 @@ class _PurchasePageState extends State<PurchasePage> {
 
   // Contrôleurs pour les articles
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _cartonController = TextEditingController();
+  final TextEditingController _quantityPerCartonController =
+      TextEditingController();
+  final TextEditingController _quantityController =
+      TextEditingController(); // Calculé automatiquement
   final TextEditingController _unitPriceController = TextEditingController();
   final TextEditingController _invoiceNumberController =
       TextEditingController();
   final TextEditingController _salesRateController = TextEditingController();
+
+  // Mode de calcul du prix (par défaut: par carton)
+  bool _isPricePerCarton = true;
 
   @override
   void initState() {
@@ -105,6 +114,8 @@ class _PurchasePageState extends State<PurchasePage> {
     _searchCustomerController.dispose();
     _searchSupplierController.dispose();
     _descriptionController.dispose();
+    _cartonController.dispose();
+    _quantityPerCartonController.dispose();
     _quantityController.dispose();
     _unitPriceController.dispose();
     _invoiceNumberController.dispose();
@@ -260,9 +271,65 @@ class _PurchasePageState extends State<PurchasePage> {
     });
   }
 
+  // Méthode pour créer un nouveau client
+  void _showCreateClientBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreatePartnerBottomSheet(),
+    ).then((_) {
+      _loadCustomers(); // Recharger la liste des clients après la création
+    });
+  }
+
+  // Méthode pour créer un nouveau fournisseur
+  void _showCreateSupplierBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CreateSupplierBottomSheet(
+        onSupplierCreated: () {
+          _loadSuppliers(); // Recharger la liste des fournisseurs après la création
+        },
+      ),
+    );
+  }
+
+  // Méthode pour calculer la quantité totale automatiquement
+  void _calculateTotalQuantity() {
+    final carton = int.tryParse(_cartonController.text) ?? 0;
+    final quantityPerCarton =
+        int.tryParse(_quantityPerCartonController.text) ?? 0;
+    final totalQuantity = carton * quantityPerCarton;
+
+    setState(() {
+      _quantityController.text = totalQuantity.toString();
+    });
+  }
+
+  // Méthode pour calculer le prix total automatiquement
+  double _calculateItemTotalPrice() {
+    final carton = int.tryParse(_cartonController.text) ?? 0;
+    final quantityPerCarton =
+        int.tryParse(_quantityPerCartonController.text) ?? 0;
+    final unitPrice = double.tryParse(_unitPriceController.text) ?? 0.0;
+
+    if (_isPricePerCarton) {
+      // Prix par carton
+      return carton * unitPrice;
+    } else {
+      // Prix par quantité totale
+      final totalQuantity = carton * quantityPerCarton;
+      return totalQuantity * unitPrice;
+    }
+  }
+
   void _addItem() {
     if (_descriptionController.text.trim().isEmpty ||
-        _quantityController.text.trim().isEmpty ||
+        _cartonController.text.trim().isEmpty ||
+        _quantityPerCartonController.text.trim().isEmpty ||
         _unitPriceController.text.trim().isEmpty ||
         selectedSupplier == null) {
       showErrorTopSnackBar(
@@ -272,11 +339,27 @@ class _PurchasePageState extends State<PurchasePage> {
       return;
     }
 
+    // Calculer la quantité totale
+    _calculateTotalQuantity();
+    final totalQuantity = int.tryParse(_quantityController.text) ?? 0;
+
+    if (totalQuantity <= 0) {
+      showErrorTopSnackBar(
+        context,
+        AppLocalizations.of(context).translate('invalid_quantity_calculation'),
+      );
+      return;
+    }
+
     setState(() {
       localItems.add({
         'description': _descriptionController.text.trim(),
-        'quantity': double.tryParse(_quantityController.text) ?? 0.0,
+        'carton': int.tryParse(_cartonController.text) ?? 0,
+        'quantityPerCarton':
+            int.tryParse(_quantityPerCartonController.text) ?? 0,
+        'quantity': totalQuantity,
         'unitPrice': double.tryParse(_unitPriceController.text) ?? 0.0,
+        'isPricePerCarton': _isPricePerCarton, // Ajouter le mode de calcul
         'supplierId': selectedSupplier!.id,
         'supplierName':
             '${selectedSupplier!.firstName} ${selectedSupplier!.lastName}',
@@ -287,6 +370,8 @@ class _PurchasePageState extends State<PurchasePage> {
 
     // Réinitialiser les champs
     _descriptionController.clear();
+    _cartonController.clear();
+    _quantityPerCartonController.clear();
     _quantityController.clear();
     _unitPriceController.clear();
     _invoiceNumberController.clear();
@@ -312,10 +397,15 @@ class _PurchasePageState extends State<PurchasePage> {
 
     // Remplir les champs avec les données de l'article
     _descriptionController.text = item['description']?.toString() ?? '';
+    _cartonController.text = item['carton']?.toString() ?? '';
+    _quantityPerCartonController.text =
+        item['quantityPerCarton']?.toString() ?? '';
     _quantityController.text = item['quantity']?.toString() ?? '';
     _unitPriceController.text = item['unitPrice']?.toString() ?? '';
     _invoiceNumberController.text = item['invoiceNumber']?.toString() ?? '';
     _salesRateController.text = item['salesRate']?.toString() ?? '1';
+    _isPricePerCarton =
+        item['isPricePerCarton'] ?? true; // Par défaut par carton
 
     // Trouver et sélectionner le fournisseur
     final supplierId = item['supplierId'];
@@ -422,6 +512,9 @@ class _PurchasePageState extends State<PurchasePage> {
           final createItemDto = CreateItemDto(
             description: item['description']?.toString() ?? '',
             quantity: (item['quantity'] as num?)?.toInt() ?? 0,
+            carton: (item['carton'] as num?)?.toInt() ?? 0,
+            quantityPerCarton:
+                (item['quantityPerCarton'] as num?)?.toInt() ?? 0,
             unitPrice: unitPrice,
             invoiceNumber:
                 item['invoiceNumber']?.toString() ?? widget.invoiceNumber ?? '',
@@ -532,16 +625,35 @@ class _PurchasePageState extends State<PurchasePage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Sélection du client
-                      DropDownCustom<Partner>(
-                        items: customers,
-                        selectedItem: selectedCustomer,
-                        onChanged: _onCustomerSelected,
-                        itemToString: (customer) =>
-                            '${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}',
-                        hintText: AppLocalizations.of(context)
-                            .translate('select_customer'),
-                        prefixIcon: Icons.person,
+                      // Sélection du client avec bouton d'ajout
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropDownCustom<Partner>(
+                              items: customers,
+                              selectedItem: selectedCustomer,
+                              onChanged: _onCustomerSelected,
+                              itemToString: (customer) =>
+                                  '${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}',
+                              hintText: AppLocalizations.of(context)
+                                  .translate('select_customer'),
+                              prefixIcon: Icons.person,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.add, color: Colors.blue[700]),
+                              onPressed: _showCreateClientBottomSheet,
+                              tooltip: AppLocalizations.of(context)
+                                  .translate('add_new_partner'),
+                            ),
+                          ),
+                        ],
                       ),
 
                       if (selectedCustomer != null) ...[
@@ -861,40 +973,200 @@ class _PurchasePageState extends State<PurchasePage> {
                         children: [
                           Expanded(
                             child: buildTextField(
-                              controller: _quantityController,
+                              controller: _cartonController,
                               label: AppLocalizations.of(context)
-                                  .translate('quantity'),
-                              icon: Icons.numbers,
+                                  .translate('carton'),
+                              icon: Icons.inventory_2,
                               keyboardType: TextInputType.number,
+                              onChanged: (value) => _calculateTotalQuantity(),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: buildTextField(
-                              controller: _unitPriceController,
+                              controller: _quantityPerCartonController,
                               label: AppLocalizations.of(context)
-                                  .translate('unit_price'),
-                              icon: Icons.attach_money,
+                                  .translate('quantity_per_carton'),
+                              icon: Icons.format_list_numbered,
                               keyboardType: TextInputType.number,
+                              onChanged: (value) => _calculateTotalQuantity(),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
 
-                      DropDownCustom<Partner>(
-                        items: suppliers,
-                        selectedItem: selectedSupplier,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedSupplier = value;
-                          });
-                        },
-                        itemToString: (supplier) =>
-                            '${supplier.firstName} ${supplier.lastName}',
-                        hintText:
-                            AppLocalizations.of(context).translate('supplier'),
-                        prefixIcon: Icons.business,
+                      // Champ quantité totale (lecture seule)
+                      TextFormField(
+                        controller: _quantityController,
+                        keyboardType: TextInputType.number,
+                        enabled: false, // Lecture seule
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)
+                              .translate('total_quantity'),
+                          prefixIcon:
+                              Icon(Icons.calculate, color: Colors.grey[600]),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          hintText: AppLocalizations.of(context)
+                              .translate('calculated_automatically'),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Mode de calcul du prix
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)
+                                  .translate('price_calculation_mode'),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: RadioListTile<bool>(
+                                    title: Text(
+                                      AppLocalizations.of(context)
+                                          .translate('price_per_carton'),
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    value: true,
+                                    groupValue: _isPricePerCarton,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isPricePerCarton = value ?? true;
+                                      });
+                                    },
+                                    dense: true,
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: RadioListTile<bool>(
+                                    title: Text(
+                                      AppLocalizations.of(context).translate(
+                                          'price_per_total_quantity'),
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    value: false,
+                                    groupValue: _isPricePerCarton,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isPricePerCarton = value ?? false;
+                                      });
+                                    },
+                                    dense: true,
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      buildTextField(
+                        controller: _unitPriceController,
+                        label: _isPricePerCarton
+                            ? AppLocalizations.of(context)
+                                .translate('price_per_carton')
+                            : AppLocalizations.of(context)
+                                .translate('unit_price'),
+                        icon: Icons.attach_money,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) =>
+                            setState(() {}), // Pour recalculer l'affichage
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Prix total sur une ligne entière
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue[200]!),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)
+                                  .translate('total_price'),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue[700],
+                              ),
+                            ),
+                            Text(
+                              currencyFormat.format(_calculateItemTotalPrice()),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Sélection du fournisseur avec bouton d'ajout
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropDownCustom<Partner>(
+                              items: suppliers,
+                              selectedItem: selectedSupplier,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedSupplier = value;
+                                });
+                              },
+                              itemToString: (supplier) =>
+                                  '${supplier.firstName} ${supplier.lastName}',
+                              hintText: AppLocalizations.of(context)
+                                  .translate('supplier'),
+                              prefixIcon: Icons.business,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.green[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.add, color: Colors.green[700]),
+                              onPressed: _showCreateSupplierBottomSheet,
+                              tooltip: AppLocalizations.of(context)
+                                  .translate('add_new_supplier'),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
 
@@ -983,8 +1255,16 @@ class _PurchasePageState extends State<PurchasePage> {
                           itemCount: localItems.length,
                           itemBuilder: (context, index) {
                             final item = localItems[index];
-                            final total = (item['quantity'] as double) *
-                                (item['unitPrice'] as double);
+                            // Calculer le total selon le mode de calcul du prix
+                            final isPricePerCarton =
+                                item['isPricePerCarton'] ?? true;
+                            final carton = item['carton'] as int? ?? 0;
+                            final quantity = item['quantity'] as int? ?? 0;
+                            final unitPrice =
+                                item['unitPrice'] as double? ?? 0.0;
+                            final total = isPricePerCarton
+                                ? carton * unitPrice
+                                : quantity * unitPrice;
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
@@ -1132,18 +1412,44 @@ class _PurchasePageState extends State<PurchasePage> {
                                       ),
                                       child: Column(
                                         children: [
-                                          // Ligne quantité et prix unitaire
+                                          // Ligne carton et quantité par carton
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               _buildDetailItem(
                                                   AppLocalizations.of(context)
-                                                      .translate('quantity'),
-                                                  '${item['quantity']}'),
+                                                      .translate('carton'),
+                                                  '${item['carton']}'),
                                               _buildDetailItem(
                                                   AppLocalizations.of(context)
-                                                      .translate('unit_price'),
+                                                      .translate(
+                                                          'quantity_per_carton'),
+                                                  '${item['quantityPerCarton']}'),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          // Ligne quantité totale et prix unitaire
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _buildDetailItem(
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'total_quantity'),
+                                                  '${item['quantity']}'),
+                                              _buildDetailItem(
+                                                  (item['isPricePerCarton'] ??
+                                                          true)
+                                                      ? AppLocalizations.of(
+                                                              context)
+                                                          .translate(
+                                                              'price_per_carton')
+                                                      : AppLocalizations.of(
+                                                              context)
+                                                          .translate(
+                                                              'unit_price'),
                                                   currencyFormat.format(
                                                       item['unitPrice'])),
                                             ],

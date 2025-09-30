@@ -105,6 +105,8 @@ class Items {
   final int? id;
   final String? description;
   final int? quantity;
+  final int? carton; // Nouveau champ : nombre de cartons
+  final int? quantityPerCarton; // Nouveau champ : quantité par carton
   final double? unitPrice;
   final double? totalPrice;
   final int? supplierId;
@@ -119,6 +121,8 @@ class Items {
     this.id,
     this.description,
     this.quantity,
+    this.carton,
+    this.quantityPerCarton,
     this.unitPrice,
     this.totalPrice,
     this.supplierId,
@@ -134,6 +138,8 @@ class Items {
     int? id,
     String? description,
     int? quantity,
+    int? carton,
+    int? quantityPerCarton,
     double? unitPrice,
     double? totalPrice,
     int? supplierId,
@@ -148,6 +154,8 @@ class Items {
       id: id ?? this.id,
       description: description ?? this.description,
       quantity: quantity ?? this.quantity,
+      carton: carton ?? this.carton,
+      quantityPerCarton: quantityPerCarton ?? this.quantityPerCarton,
       unitPrice: unitPrice ?? this.unitPrice,
       totalPrice: totalPrice ?? this.totalPrice,
       supplierId: supplierId ?? this.supplierId,
@@ -167,6 +175,8 @@ class Items {
       'totalPrice': totalPrice,
       'description': description,
       'quantity': quantity,
+      'carton': carton,
+      'quantityPerCarton': quantityPerCarton,
       'supplierId': supplierId,
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
@@ -194,6 +204,8 @@ class Items {
       id: json['id'] as int?,
       quantity: json['quantity'] as int?,
       description: json['description'] as String?,
+      carton: json['carton'] as int?,
+      quantityPerCarton: json['quantityPerCarton'] as int?,
       unitPrice: json['unitPrice'] != null
           ? (json['unitPrice'] as num).toDouble()
           : null,
