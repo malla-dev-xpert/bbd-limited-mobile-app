@@ -732,6 +732,7 @@
   "calculated_automatically": "自动计算",
   "invalid_quantity_calculation": "数量计算无效",
   "price_calculation_mode": "价格计算模式",
+  "create_purchase": "创建购买",
   "price_per_carton": "每箱价格",
   "price_per_total_quantity": "按总数量价格",
   "departure_date": "出发日期",

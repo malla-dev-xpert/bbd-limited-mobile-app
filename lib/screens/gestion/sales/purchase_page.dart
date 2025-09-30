@@ -961,6 +961,15 @@ class _PurchasePageState extends State<PurchasePage> {
                       const SizedBox(height: 16),
 
                       // Formulaire d'ajout d'article
+                      // Numéro de facture en première position
+                      buildTextField(
+                        controller: _invoiceNumberController,
+                        label: AppLocalizations.of(context)
+                            .translate('invoice_number'),
+                        icon: Icons.receipt,
+                      ),
+                      const SizedBox(height: 12),
+
                       buildTextField(
                         controller: _descriptionController,
                         label: AppLocalizations.of(context)
@@ -1093,7 +1102,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                 .translate('price_per_carton')
                             : AppLocalizations.of(context)
                                 .translate('unit_price'),
-                        icon: Icons.attach_money,
+                        icon: Icons.currency_yen,
                         keyboardType: TextInputType.number,
                         onChanged: (value) =>
                             setState(() {}), // Pour recalculer l'affichage
@@ -1170,27 +1179,12 @@ class _PurchasePageState extends State<PurchasePage> {
                       ),
                       const SizedBox(height: 12),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: buildTextField(
-                              controller: _invoiceNumberController,
-                              label: AppLocalizations.of(context)
-                                  .translate('invoice_number'),
-                              icon: Icons.receipt,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: buildTextField(
-                              controller: _salesRateController,
-                              label: AppLocalizations.of(context)
-                                  .translate('sales_rate'),
-                              icon: Icons.trending_up,
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                        ],
+                      buildTextField(
+                        controller: _salesRateController,
+                        label: AppLocalizations.of(context)
+                            .translate('sales_rate'),
+                        icon: Icons.trending_up,
+                        keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 16),
 

@@ -738,6 +738,7 @@
   "calculated_automatically": "Calculated automatically",
   "invalid_quantity_calculation": "Invalid quantity calculation",
   "price_calculation_mode": "Price calculation mode",
+  "create_purchase": "Create purchase",
   "price_per_carton": "Price per carton",
   "price_per_total_quantity": "Price per total quantity",
   "departure_date": "Departure Date",

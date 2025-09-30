@@ -1091,6 +1091,7 @@
   "connection_error": "Erreur de connexion: {error}",
   "user_stats_total": "Total des utilisateurs",
   "user_stats_administrators": "Administrateurs",
+  "create_purchase": "Créer un achat",
   "user_login_id": "Login ID:",
   "user_full_name": "Nom complet:",
   "user_role_undefined": "Rôle non défini",
