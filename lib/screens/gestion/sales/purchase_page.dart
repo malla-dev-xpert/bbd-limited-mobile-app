@@ -198,10 +198,18 @@ class _PurchasePageState extends State<PurchasePage> {
       setState(() {
         versements = versementsData;
         isVersementsLoading = false;
+        // Si aucun versement n'est trouvé, définir automatiquement comme dette
+        if (versementsData.isEmpty) {
+          isDebtPurchase = true;
+        } else {
+          isDebtPurchase = false;
+        }
       });
     } catch (e) {
       setState(() {
         isVersementsLoading = false;
+        // En cas d'erreur, considérer comme dette
+        isDebtPurchase = true;
       });
       if (mounted) {
         showErrorTopSnackBar(
@@ -227,7 +235,8 @@ class _PurchasePageState extends State<PurchasePage> {
   void _onVersementSelected(Versement? versement) {
     setState(() {
       selectedVersement = versement;
-      isDebtPurchase = versement == null;
+      // Ne pas changer automatiquement isDebtPurchase ici
+      // Laisser l'utilisateur contrôler via la checkbox
     });
   }
 
@@ -526,40 +535,101 @@ class _PurchasePageState extends State<PurchasePage> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Sélection du versement
-                      DropDownCustom<Versement>(
-                        items: versements,
-                        selectedItem: selectedVersement,
-                        onChanged: _onVersementSelected,
-                        itemToString: (versement) =>
-                            '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
-                        hintText: AppLocalizations.of(context)
-                            .translate('select_versement_or_debt'),
-                        prefixIcon: Icons.payment,
-                      ),
+                      // Sélection du versement (seulement si des versements existent)
+                      if (versements.isNotEmpty) ...[
+                        DropDownCustom<Versement>(
+                          items: versements,
+                          selectedItem: selectedVersement,
+                          onChanged: _onVersementSelected,
+                          itemToString: (versement) =>
+                              '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
+                          hintText: AppLocalizations.of(context)
+                              .translate('select_versement_or_debt'),
+                          prefixIcon: Icons.payment,
+                        ),
+                      ] else ...[
+                        // Message quand aucun versement n'est disponible
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.payment,
+                                  color: Colors.grey[600], size: 24),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)
+                                      .translate('no_versements_available'),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
-                      // Option dette
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: isDebtPurchase,
-                            onChanged: (value) {
-                              setState(() {
-                                isDebtPurchase = value ?? false;
-                                if (isDebtPurchase) {
-                                  selectedVersement = null;
-                                }
-                              });
-                            },
+                      // Option dette (seulement si des versements existent)
+                      if (versements.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: isDebtPurchase,
+                              onChanged: (value) {
+                                setState(() {
+                                  isDebtPurchase = value ?? false;
+                                  if (isDebtPurchase) {
+                                    selectedVersement = null;
+                                  }
+                                });
+                              },
+                            ),
+                            Text(
+                              AppLocalizations.of(context)
+                                  .translate('debt_purchase'),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        // Message informatif quand aucun versement n'est disponible
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange[200]!),
                           ),
-                          Text(
-                            AppLocalizations.of(context)
-                                .translate('debt_purchase'),
-                            style: const TextStyle(fontSize: 14),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline,
+                                  color: Colors.orange[600], size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context).translate(
+                                      'no_versements_available_debt_mode'),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.orange[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
