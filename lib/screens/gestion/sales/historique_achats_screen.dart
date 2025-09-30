@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:intl/intl.dart';
 import 'achat_details_sheet.dart';
 
@@ -105,31 +106,11 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
+                buildTextField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)
-                        .translate('purchase_history_search_hint'),
-                    prefixIcon:
-                        const Icon(Icons.search, color: Color(0xFF1A1E49)),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () {
-                              _searchController.clear();
-                              _filterAchats();
-                            },
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    hintStyle: TextStyle(color: Colors.grey[600]),
-                  ),
+                  label: AppLocalizations.of(context)
+                      .translate('purchase_history_search_hint'),
+                  icon: Icons.search,
                   onChanged: (_) => _filterAchats(),
                 ),
                 const SizedBox(height: 16),

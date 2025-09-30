@@ -6,10 +6,10 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
-import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 enum ExpeditionType { all, plane, boat }
@@ -355,18 +355,12 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: TextField(
-                      onChanged: searchPackage,
+                    child: buildTextField(
                       controller: searchController,
-                      autocorrect: false,
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)
-                            .translate('search_package'),
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                      ),
+                      label: AppLocalizations.of(context)
+                          .translate('search_package'),
+                      icon: Icons.search,
+                      onChanged: searchPackage,
                     ),
                   ),
                   const SizedBox(width: 10),

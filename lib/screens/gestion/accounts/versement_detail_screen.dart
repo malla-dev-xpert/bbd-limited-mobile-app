@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildDetailRow.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildNoteField.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/infoIconText.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -228,34 +229,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                             horizontal: 16, vertical: 8),
                         child: Column(
                           children: [
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText:
-                                    'Rechercher un article ou une facture...',
-                                prefixIcon: const Icon(Icons.search),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF1A1E49),
-                                  ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                              ),
+                            buildTextField(
+                              controller: _searchController,
+                              label: 'Rechercher un article ou une facture...',
+                              icon: Icons.search,
                               onChanged: (value) {
                                 setState(() {
                                   _searchQueries[achatId] = value;
@@ -296,34 +273,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 8),
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Rechercher un article ou une facture...',
-                                  prefixIcon: const Icon(Icons.search),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(32),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey[300]!,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(32),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey[300]!,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(32),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFF1A1E49),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                ),
+                              child: buildTextField(
+                                controller: _searchController,
+                                label:
+                                    'Rechercher un article ou une facture...',
+                                icon: Icons.search,
                                 onChanged: (value) {
                                   setState(() {
                                     _searchQueries[achatId] = value;

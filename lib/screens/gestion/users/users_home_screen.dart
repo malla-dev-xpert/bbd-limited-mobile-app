@@ -5,6 +5,7 @@ import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/users/widgets/user_form_modal.dart';
 import 'package:bbd_limited/screens/gestion/users/widgets/user_details_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -413,19 +414,11 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   ),
                 ],
               ),
-              child: TextField(
+              child: buildTextField(
                 controller: searchController,
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)
-                      .translate('user_search_hint'),
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+                label:
+                    AppLocalizations.of(context).translate('user_search_hint'),
+                icon: Icons.search,
                 onChanged: filterUsers,
               ),
             ),

@@ -1053,31 +1053,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           ),
           const SizedBox(height: 20),
           // Champ de recherche fixe - Responsive
-          TextField(
+          buildTextField(
             controller: _searchController,
-            decoration: InputDecoration(
-              hintText: MediaQuery.of(context).size.width < 400
-                  ? AppLocalizations.of(context).translate('search')
-                  : AppLocalizations.of(context)
-                      .translate('purchase_history_search_hint'),
-              prefixIcon: const Icon(Icons.search, size: 20),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF1A1E49)),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              filled: true,
-              fillColor: Colors.grey[50],
-            ),
+            label: MediaQuery.of(context).size.width < 400
+                ? AppLocalizations.of(context).translate('search')
+                : AppLocalizations.of(context)
+                    .translate('purchase_history_search_hint'),
+            icon: Icons.search,
             onChanged: (val) {
               setState(() {
                 _searchQuery = val;

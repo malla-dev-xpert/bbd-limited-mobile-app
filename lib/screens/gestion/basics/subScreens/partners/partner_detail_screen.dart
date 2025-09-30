@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bbd_limited/utils/partner_print_service.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/partner.dart';
@@ -1001,20 +1002,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.only(left: 14),
-      child: TextField(
+      child: buildTextField(
         controller: _searchController,
+        label: AppLocalizations.of(context).translate('search'),
+        icon: Icons.search,
         onChanged: _filterOperations,
-        decoration: InputDecoration(
-          hintText: AppLocalizations.of(context).translate('search'),
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(32),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          filled: true,
-          fillColor: Colors.grey[50],
-          contentPadding: const EdgeInsets.symmetric(vertical: 18),
-        ),
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -594,24 +595,11 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Expanded(
-                              child: TextField(
-                                onChanged: filterPackages,
+                              child: buildTextField(
                                 controller: searchController,
-                                autocorrect: false,
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Rechercher par référence ou client...',
-                                  prefixIcon: const Icon(Icons.search),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(32),
-                                    borderSide:
-                                        BorderSide(color: Colors.grey[300]!),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 18),
-                                ),
+                                label: 'Rechercher par référence ou client...',
+                                icon: Icons.search,
+                                onChanged: filterPackages,
                               ),
                             ),
                             const SizedBox(width: 8),

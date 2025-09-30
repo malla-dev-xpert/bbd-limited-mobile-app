@@ -7,6 +7,7 @@ import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/detail_harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 
 class HarborScreen extends StatefulWidget {
@@ -193,27 +194,11 @@ class _HarborScreen extends State<HarborScreen> {
                   ),
                 ],
               ),
-              child: TextField(
-                onChanged: searchHarbor,
+              child: buildTextField(
                 controller: searchController,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  labelText: 'Rechercher un port...',
-                  hintText: 'Entrez le nom du port',
-                  prefixIcon:
-                      const Icon(Icons.search, color: Color(0xFF1A1E49)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(32),
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
-                      width: 2,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                ),
+                label: 'Rechercher un port...',
+                icon: Icons.search,
+                onChanged: searchHarbor,
               ),
             ),
             const SizedBox(height: 16),

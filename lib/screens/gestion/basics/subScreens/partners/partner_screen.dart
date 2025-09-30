@@ -6,6 +6,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/c
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_edit_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_list_items.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 
 class PartnerScreen extends StatefulWidget {
@@ -158,18 +159,12 @@ class _PartnerScreenState extends State<PartnerScreen> {
               spacing: 10,
               children: [
                 Expanded(
-                  child: TextField(
-                    onChanged: searchPartner,
+                  child: buildTextField(
                     controller: searchController,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)
-                          .translate('search_partner'),
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                    ),
+                    label: AppLocalizations.of(context)
+                        .translate('search_partner'),
+                    icon: Icons.search,
+                    onChanged: searchPartner,
                   ),
                 ),
               ],

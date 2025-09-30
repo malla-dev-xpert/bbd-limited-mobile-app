@@ -7,6 +7,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/detail_warehouse_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:intl/intl.dart';
@@ -385,16 +386,10 @@ class _WarehouseState extends State<WarehouseScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            TextField(
+            buildTextField(
               controller: _searchController,
-              autocorrect: false,
-              decoration: InputDecoration(
-                labelText: 'Rechercher un entrepôt...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(32),
-                ),
-              ),
+              label: 'Rechercher un entrepôt...',
+              icon: Icons.search,
             ),
             const SizedBox(height: 20),
             Expanded(
