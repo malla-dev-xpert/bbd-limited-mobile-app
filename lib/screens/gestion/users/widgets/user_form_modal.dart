@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:bbd_limited/models/user.dart';
+import 'package:bbd_limited/models/branch.dart';
 import 'package:bbd_limited/core/services/role_services.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
@@ -31,7 +32,9 @@ class _UserFormModalState extends State<UserFormModal> {
   final _roleServices = RoleServices();
 
   Role? _selectedRole;
+  Branch? _selectedBranch;
   List<Role> _roles = [];
+  List<Branch> _branches = [];
   bool _isLoading = true;
   bool _obscurePassword = true;
   int _currentStep = 0;
@@ -40,6 +43,7 @@ class _UserFormModalState extends State<UserFormModal> {
   void initState() {
     super.initState();
     _loadRoles();
+    _loadBranches();
     if (widget.user != null) {
       _usernameController.text = widget.user!.username;
       _firstNameController.text = widget.user!.firstName ?? '';
@@ -54,7 +58,6 @@ class _UserFormModalState extends State<UserFormModal> {
       final roles = await _roleServices.getAllRoles();
       setState(() {
         _roles = roles;
-        _isLoading = false;
         if (widget.user != null && widget.user!.roleName != null) {
           _selectedRole = _roles.firstWhere(
             (role) => role.name == widget.user!.roleName,
@@ -63,11 +66,25 @@ class _UserFormModalState extends State<UserFormModal> {
         }
       });
     } catch (e) {
-      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors du chargement des rôles: $e')),
       );
     }
+  }
+
+  void _loadBranches() {
+    setState(() {
+      _branches = Branch.getAllBranches();
+      _isLoading = false;
+      if (widget.user != null && widget.user!.branchName != null) {
+        try {
+          _selectedBranch = Branch.fromName(widget.user!.branchName!);
+        } catch (e) {
+          // Si le nom de branche n'est pas trouvé, utiliser la première branche
+          _selectedBranch = _branches.first;
+        }
+      }
+    });
   }
 
   void _generatePassword() {
@@ -111,6 +128,17 @@ class _UserFormModalState extends State<UserFormModal> {
       return;
     }
 
+    if (_selectedBranch == null) {
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_country'));
+      return;
+    }
+
+    if (_selectedBranch!.code.isEmpty) {
+      showErrorTopSnackBar(context, 'Erreur: Code de branche invalide');
+      return;
+    }
+
     // Vérifier que le mot de passe est fourni pour un nouvel utilisateur
     if (widget.user == null && _passwordController.text.isEmpty) {
       showErrorTopSnackBar(context,
@@ -123,6 +151,10 @@ class _UserFormModalState extends State<UserFormModal> {
     });
 
     try {
+      // Debug: Afficher le code de branche sélectionné
+      print('Selected branch code: ${_selectedBranch!.code}');
+      print('Selected branch name: ${_selectedBranch!.name}');
+
       final user = widget.user == null
           ? User(
               id: 0,
@@ -137,6 +169,7 @@ class _UserFormModalState extends State<UserFormModal> {
                   : _phoneController.text.trim(),
               roleName: _selectedRole!.name,
               password: _passwordController.text, // 👈 Ajouté pour la création
+              branchName: _selectedBranch!.code, // 👈 Ajouté pour le pays
             )
           : widget.user!.copyWith(
               username: _usernameController.text,
@@ -149,6 +182,7 @@ class _UserFormModalState extends State<UserFormModal> {
                   ? null
                   : _phoneController.text.trim(),
               roleName: _selectedRole!.name,
+              branchName: _selectedBranch!.code, // 👈 Ajouté pour le pays
             );
 
       await widget.onSubmit(user);
@@ -329,8 +363,8 @@ class _UserFormModalState extends State<UserFormModal> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return AppLocalizations.of(context)
-                                    .translate('user_form_validation_password_required');
+                                return AppLocalizations.of(context).translate(
+                                    'user_form_validation_password_required');
                               }
                               if (value.length < 6) {
                                 return AppLocalizations.of(context).translate(
@@ -372,6 +406,22 @@ class _UserFormModalState extends State<UserFormModal> {
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
+                  DropDownCustom<Branch>(
+                    items: _branches,
+                    selectedItem: _selectedBranch,
+                    onChanged: (Branch? value) {
+                      setState(() {
+                        _selectedBranch = value;
+                      });
+                    },
+                    itemToString: (branch) => branch.toString(),
+                    hintText: AppLocalizations.of(context)
+                        .translate('user_form_country_hint'),
+                    prefixIcon: Icons.public,
+                    labelText: AppLocalizations.of(context)
+                        .translate('user_form_country_label'),
+                  ),
+                  const SizedBox(height: 16),
                   DropDownCustom<Role>(
                     items: _roles,
                     selectedItem: _selectedRole,
@@ -381,8 +431,8 @@ class _UserFormModalState extends State<UserFormModal> {
                       });
                     },
                     itemToString: (role) => role.name,
-                    hintText:
-                        AppLocalizations.of(context).translate('user_form_role_hint'),
+                    hintText: AppLocalizations.of(context)
+                        .translate('user_form_role_hint'),
                     prefixIcon: Icons.assignment_ind,
                   ),
                 ],
