@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'achat_details_sheet.dart';
 
 class HistoriqueAchatsScreen extends StatefulWidget {
@@ -246,7 +247,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                 children: [
                                                   Text(
                                                     achat.isDebt == true
-                                                        ? '${AppLocalizations.of(context).translate('purchase_history_identifier')}: ${achat.id ?? "N/A"}'
+                                                        ? '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy HH:mm').format(achat.createdAt ?? DateTime.now())}'
                                                         : '${AppLocalizations.of(context).translate('purchase_history_reference')}: ${achat.referenceVersement ?? "N/A"}',
                                                     style: const TextStyle(
                                                       fontSize: 16,
@@ -342,7 +343,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                     : (achat.isDebt == true &&
                                                             achat.clientId !=
                                                                 null)
-                                                        ? 'Client #${achat.clientId}'
+                                                        ? '${AppLocalizations.of(context).translate('client')} #${achat.clientId}'
                                                         : "N/A",
                                                 style: TextStyle(
                                                   color: Colors.grey[700]!,

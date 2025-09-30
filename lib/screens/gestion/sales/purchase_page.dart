@@ -712,7 +712,8 @@ class _PurchasePageState extends State<PurchasePage> {
                                   Text(
                                     selectedCustomer != null
                                         ? '${selectedCustomer!.firstName} ${selectedCustomer!.lastName}'
-                                        : 'Chargement...',
+                                        : AppLocalizations.of(context)
+                                            .translate('loading'),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -966,7 +967,7 @@ class _PurchasePageState extends State<PurchasePage> {
                               ),
                             ),
                             Text(
-                              'Total: ${currencyFormat.format(_calculateTotal())}',
+                              '${AppLocalizations.of(context).translate('total')}: ${currencyFormat.format(_calculateTotal())}',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1029,7 +1030,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                'Fournisseur: ${item['supplierName']?.toString() ?? ''}',
+                                                '${AppLocalizations.of(context).translate('supplier')}: ${item['supplierName']?.toString() ?? ''}',
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.grey[600],
@@ -1055,7 +1056,9 @@ class _PurchasePageState extends State<PurchasePage> {
                                                     size: 20),
                                                 onPressed: () =>
                                                     _duplicateItem(index),
-                                                tooltip: 'Dupliquer',
+                                                tooltip:
+                                                    AppLocalizations.of(context)
+                                                        .translate('duplicate'),
                                                 constraints:
                                                     const BoxConstraints(
                                                         minWidth: 36,
@@ -1078,7 +1081,9 @@ class _PurchasePageState extends State<PurchasePage> {
                                                     size: 20),
                                                 onPressed: () =>
                                                     _editItem(index),
-                                                tooltip: 'Modifier',
+                                                tooltip:
+                                                    AppLocalizations.of(context)
+                                                        .translate('edit'),
                                                 constraints:
                                                     const BoxConstraints(
                                                         minWidth: 36,
@@ -1101,7 +1106,9 @@ class _PurchasePageState extends State<PurchasePage> {
                                                     size: 20),
                                                 onPressed: () =>
                                                     _removeItem(index),
-                                                tooltip: 'Supprimer',
+                                                tooltip:
+                                                    AppLocalizations.of(context)
+                                                        .translate('delete'),
                                                 constraints:
                                                     const BoxConstraints(
                                                         minWidth: 36,
@@ -1130,10 +1137,13 @@ class _PurchasePageState extends State<PurchasePage> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              _buildDetailItem('Quantité',
+                                              _buildDetailItem(
+                                                  AppLocalizations.of(context)
+                                                      .translate('quantity'),
                                                   '${item['quantity']}'),
                                               _buildDetailItem(
-                                                  'Prix unitaire',
+                                                  AppLocalizations.of(context)
+                                                      .translate('unit_price'),
                                                   currencyFormat.format(
                                                       item['unitPrice'])),
                                             ],
@@ -1145,11 +1155,15 @@ class _PurchasePageState extends State<PurchasePage> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               _buildDetailItem(
-                                                  'Facture',
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'invoice_number'),
                                                   item['invoiceNumber']
                                                           ?.toString() ??
                                                       'N/A'),
-                                              _buildDetailItem('Sales Rate',
+                                              _buildDetailItem(
+                                                  AppLocalizations.of(context)
+                                                      .translate('sales_rate'),
                                                   '${item['salesRate']}'),
                                             ],
                                           ),
@@ -1168,9 +1182,9 @@ class _PurchasePageState extends State<PurchasePage> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Text(
-                                                  'Total:',
-                                                  style: TextStyle(
+                                                Text(
+                                                  '${AppLocalizations.of(context).translate('total')}:',
+                                                  style: const TextStyle(
                                                     fontWeight: FontWeight.w600,
                                                     color: Colors.black87,
                                                   ),

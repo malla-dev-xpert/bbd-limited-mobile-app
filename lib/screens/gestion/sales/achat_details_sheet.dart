@@ -160,7 +160,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 });
               }).catchError((e) {
                 setStateModal(() {
-                  errorMsg = 'Erreur lors du chargement des fournisseurs';
+                  errorMsg = AppLocalizations.of(context)
+                      .translate('error_loading_suppliers');
                   loadingSuppliers = false;
                 });
               });
@@ -277,8 +278,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                         final user =
                                             await AuthService().getUserInfo();
                                         if (user == null) {
-                                          showErrorTopSnackBar(context,
-                                              'Utilisateur non connecté');
+                                          showErrorTopSnackBar(
+                                              context,
+                                              AppLocalizations.of(context)
+                                                  .translate(
+                                                      'user_not_connected'));
                                           return;
                                         }
                                         try {
@@ -652,13 +656,14 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Icons.settings,
+                                const Icon(Icons.settings,
                                     size: 20, color: Color(0xFF1A1E49)),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
-                                  'Options de facturation',
+                                  AppLocalizations.of(context)
+                                      .translate('billing_options'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -687,7 +692,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
-                                            'Options actuellement appliquées :',
+                                            AppLocalizations.of(context)
+                                                .translate(
+                                                    'currently_applied_options'),
                                             style: TextStyle(
                                               color: Colors.blue[700],
                                               fontWeight: FontWeight.bold,
@@ -718,8 +725,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                     _showInvoiceOptionsDialog(context),
                                 icon: const Icon(Icons.settings, size: 18),
                                 label: Text(_hasActiveInvoiceOptions
-                                    ? 'Modifier les options'
-                                    : 'Configurer les options'),
+                                    ? AppLocalizations.of(context)
+                                        .translate('modify_options')
+                                    : AppLocalizations.of(context)
+                                        .translate('configure_options')),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF1A1E49),
                                   foregroundColor: Colors.white,
@@ -768,7 +777,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   child: TextButton(
                                     onPressed: () =>
                                         Navigator.of(context).pop(),
-                                    child: const Text('Annuler'),
+                                    child: Text(AppLocalizations.of(context)
+                                        .translate('cancel')),
                                     style: TextButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 12),
@@ -784,7 +794,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                               children: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Annuler'),
+                                  child: Text(AppLocalizations.of(context)
+                                      .translate('cancel')),
                                 ),
                                 const SizedBox(width: 16),
                                 ElevatedButton.icon(
@@ -834,7 +845,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Configuration des options de facturation',
+                      AppLocalizations.of(context)
+                          .translate('billing_options_configuration'),
                       style: TextStyle(
                         fontSize:
                             MediaQuery.of(context).size.width < 400 ? 16 : 18,
@@ -864,7 +876,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Fermer'),
+                    child:
+                        Text(AppLocalizations.of(context).translate('close')),
                   ),
                 ],
               ),
@@ -880,13 +893,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
 
     if (_invoiceOptions.enableLineMargin &&
         _invoiceOptions.lineMarginValue != null) {
-      summaryItems.add(_buildSummaryItem('Marge par ligne',
+      summaryItems.add(_buildSummaryItem(
+          AppLocalizations.of(context).translate('margin_per_line'),
           '${_invoiceOptions.lineMarginValue}${_invoiceOptions.lineMarginType == MarginType.percentage ? '%' : '¥'}'));
     }
 
     if (_invoiceOptions.enableGlobalMargin &&
         _invoiceOptions.globalMarginValue != null) {
-      summaryItems.add(_buildSummaryItem('Marge globale',
+      summaryItems.add(_buildSummaryItem(
+          AppLocalizations.of(context).translate('global_margin'),
           '${_invoiceOptions.globalMarginValue}${_invoiceOptions.globalMarginType == MarginType.percentage ? '%' : '¥'}'));
     }
 
@@ -896,7 +911,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           _invoiceOptions.discountType == DiscountType.percentage
               ? '${_invoiceOptions.discountValue}%'
               : '¥${_invoiceOptions.discountValue}';
-      summaryItems.add(_buildSummaryItem('Remise', discountText));
+      summaryItems.add(_buildSummaryItem(
+          AppLocalizations.of(context).translate('discount'), discountText));
     }
 
     if (_invoiceOptions.enableStorageFees &&
@@ -905,7 +921,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           _invoiceOptions.storageFeeType == StorageFeeType.percentage
               ? '${_invoiceOptions.storageFeeAmount}%'
               : '¥${_invoiceOptions.storageFeeAmount}';
-      summaryItems.add(_buildSummaryItem('Frais d\'entreposage', storageText));
+      summaryItems.add(_buildSummaryItem(
+          AppLocalizations.of(context).translate('storage_fees'), storageText));
     }
 
     return Column(
@@ -1077,11 +1094,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   _buildInfoRow(
                       achat.isDebt == true
                           ? AppLocalizations.of(context)
-                              .translate('purchase_history_identifier')
+                              .translate('purchase_history_date')
                           : AppLocalizations.of(context)
                               .translate('purchase_history_reference'),
                       achat.isDebt == true
-                          ? achat.id.toString()
+                          ? DateFormat('dd/MM/yyyy HH:mm')
+                              .format(achat.createdAt ?? DateTime.now())
                           : (achat.referenceVersement ?? "N/A")),
                   _buildInfoRow(
                       AppLocalizations.of(context)
@@ -1201,7 +1219,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               // Titre
               Expanded(
                 child: Text(
-                  item.description ?? 'Article sans nom',
+                  item.description ??
+                      AppLocalizations.of(context).translate('unnamed_item'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: MediaQuery.of(context).size.width < 400 ? 15 : 16,
@@ -1216,7 +1235,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   IconButton(
                     icon: const Icon(Icons.edit,
                         color: Color(0xFF1976D2), size: 20),
-                    tooltip: 'Modifier',
+                    tooltip: AppLocalizations.of(context).translate('edit'),
                     onPressed: () => _showEditArticleDialog(item),
                     padding: const EdgeInsets.all(8),
                     constraints:
@@ -1225,7 +1244,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   IconButton(
                     icon: const Icon(Icons.delete_outline,
                         color: Color(0xFFD32F2F), size: 20),
-                    tooltip: 'Supprimer',
+                    tooltip: AppLocalizations.of(context).translate('delete'),
                     onPressed: () => _confirmDeleteArticle(item),
                     padding: const EdgeInsets.all(8),
                     constraints:
@@ -1241,13 +1260,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             children: [
               _InfoIconText(
                 icon: Icons.numbers,
-                label: 'Quantité',
+                label: AppLocalizations.of(context).translate('quantity'),
                 value: '${item.quantity ?? 0}',
               ),
               const SizedBox(height: 8),
               _InfoIconText(
                 icon: Icons.attach_money,
-                label: 'Prix unitaire',
+                label: AppLocalizations.of(context).translate('unit_price'),
                 value: _formatAmount(item.unitPrice ?? 0) + ' ¥',
               ),
             ],
@@ -1258,7 +1277,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             children: [
               _InfoIconText(
                 icon: Icons.business_outlined,
-                label: 'Fournisseur',
+                label: AppLocalizations.of(context).translate('supplier'),
                 value: item.supplierName ?? 'N/A',
               ),
               if (item.supplierPhone != null &&
@@ -1273,13 +1292,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               const SizedBox(height: 8),
               _InfoIconText(
                 icon: Icons.percent,
-                label: 'Taux achat',
+                label: AppLocalizations.of(context).translate('purchase_rate'),
                 value: (item.salesRate?.toString() ?? ''),
               ),
               const SizedBox(height: 8),
               _InfoIconText(
                 icon: Icons.calculate,
-                label: 'Total',
+                label: AppLocalizations.of(context).translate('total'),
                 value: _formatAmount(item.totalPrice ??
                         (item.quantity ?? 0) * (item.unitPrice ?? 0)) +
                     ' ¥',
