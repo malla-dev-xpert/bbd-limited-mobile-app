@@ -271,12 +271,76 @@ class _PurchasePageState extends State<PurchasePage> {
     });
   }
 
+  void _duplicateItem(int index) {
+    final item = localItems[index];
+    setState(() {
+      localItems.add(Map<String, dynamic>.from(item));
+    });
+  }
+
+  void _editItem(int index) {
+    final item = localItems[index];
+
+    // Remplir les champs avec les données de l'article
+    _descriptionController.text = item['description']?.toString() ?? '';
+    _quantityController.text = item['quantity']?.toString() ?? '';
+    _unitPriceController.text = item['unitPrice']?.toString() ?? '';
+    _invoiceNumberController.text = item['invoiceNumber']?.toString() ?? '';
+    _salesRateController.text = item['salesRate']?.toString() ?? '1';
+
+    // Trouver et sélectionner le fournisseur
+    final supplierId = item['supplierId'];
+    selectedSupplier = suppliers.firstWhere(
+      (s) => s.id == supplierId,
+      orElse: () => suppliers.first,
+    );
+
+    // Supprimer l'article de la liste
+    _removeItem(index);
+
+    // Faire défiler vers le formulaire d'ajout
+    Future.delayed(const Duration(milliseconds: 100), () {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
   double _calculateTotal() {
     return localItems.fold(0.0, (sum, item) {
       final quantity = (item['quantity'] as num?)?.toDouble() ?? 0.0;
       final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
       return sum + (quantity * unitPrice);
     });
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _submitPurchase() async {
@@ -666,17 +730,214 @@ class _PurchasePageState extends State<PurchasePage> {
                           itemCount: localItems.length,
                           itemBuilder: (context, index) {
                             final item = localItems[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                title: Text(item['description']),
-                                subtitle: Text(
-                                  'Qty: ${item['quantity']} × ${currencyFormat.format(item['unitPrice'])} = ${currencyFormat.format((item['quantity'] as double) * (item['unitPrice'] as double))}',
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => _removeItem(index),
+                            final total = (item['quantity'] as double) *
+                                (item['unitPrice'] as double);
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey[200]!),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // En-tête avec description et actions
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item['description']
+                                                        ?.toString() ??
+                                                    '',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black87,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Fournisseur: ${item['supplierName']?.toString() ?? ''}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Boutons d'action
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Bouton dupliquer
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: IconButton(
+                                                icon: Icon(Icons.copy,
+                                                    color: Colors.blue[600],
+                                                    size: 20),
+                                                onPressed: () =>
+                                                    _duplicateItem(index),
+                                                tooltip: 'Dupliquer',
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 36,
+                                                        minHeight: 36),
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            // Bouton modifier
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.orange[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: IconButton(
+                                                icon: Icon(Icons.edit,
+                                                    color: Colors.orange[600],
+                                                    size: 20),
+                                                onPressed: () =>
+                                                    _editItem(index),
+                                                tooltip: 'Modifier',
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 36,
+                                                        minHeight: 36),
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            // Bouton supprimer
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.red[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: IconButton(
+                                                icon: Icon(Icons.delete_outline,
+                                                    color: Colors.red[600],
+                                                    size: 20),
+                                                onPressed: () =>
+                                                    _removeItem(index),
+                                                tooltip: 'Supprimer',
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 36,
+                                                        minHeight: 36),
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Détails de l'article
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[50],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          // Ligne quantité et prix unitaire
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _buildDetailItem('Quantité',
+                                                  '${item['quantity']}'),
+                                              _buildDetailItem(
+                                                  'Prix unitaire',
+                                                  currencyFormat.format(
+                                                      item['unitPrice'])),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          // Ligne numéro de facture et sales rate
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              _buildDetailItem(
+                                                  'Facture',
+                                                  item['invoiceNumber']
+                                                          ?.toString() ??
+                                                      'N/A'),
+                                              _buildDetailItem('Sales Rate',
+                                                  '${item['salesRate']}'),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          // Ligne total
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue[50],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  'Total:',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  currencyFormat.format(total),
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Colors.blue[700],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
