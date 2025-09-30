@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'historique_achats_screen.dart';
 import 'widgets/customers_with_purchases_bottom_sheet.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'widgets/purchase_wizard_dialog.dart';
+import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:intl/intl.dart';
 import 'reports_screen.dart';
@@ -158,9 +158,9 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                           .translate('sales_new_purchase'),
                       Icons.add_shopping_cart,
                       () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const PurchaseWizardDialog(),
+                        Navigator.pushNamed(
+                          context,
+                          Routes.purchase,
                         );
                       },
                       Colors.blue,

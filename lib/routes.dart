@@ -5,6 +5,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/harbor_scre
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
+import 'package:bbd_limited/screens/gestion/sales/purchase_page.dart';
 
 import 'package:bbd_limited/screens/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class Routes {
   static const String harbor = '/harbor';
   static const String partners = '/partners';
   static const String containers = '/container';
+  static const String purchase = '/purchase';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -45,6 +47,18 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const PartnerScreen());
       case containers:
         return MaterialPageRoute(builder: (_) => const ContainerScreen());
+      case purchase:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => PurchasePage(
+            clientId: args?['clientId'],
+            versementId: args?['versementId'],
+            invoiceNumber: args?['invoiceNumber'],
+            devise: args?['devise'],
+            tauxChange: args?['tauxChange'],
+            onPurchaseComplete: args?['onPurchaseComplete'],
+          ),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

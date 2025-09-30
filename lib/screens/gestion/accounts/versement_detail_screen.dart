@@ -6,7 +6,7 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/infoIconText.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
+import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
@@ -1466,18 +1466,21 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       }
     }
 
-    PurchaseDialog.show(
+    Navigator.pushNamed(
       context,
-      (achat) {
-        // Recharger les données du versement pour obtenir la liste mise à jour des achats
-        _loadVersementData();
-        widget.onVersementUpdated?.call();
+      Routes.purchase,
+      arguments: {
+        'clientId': widget.versement.partnerId!,
+        'versementId': widget.versement.id!,
+        'invoiceNumber': widget.versement.reference ?? '',
+        'devise': devise,
+        'tauxChange': devise?.rate,
+        'onPurchaseComplete': (achat) {
+          // Recharger les données du versement pour obtenir la liste mise à jour des achats
+          _loadVersementData();
+          widget.onVersementUpdated?.call();
+        },
       },
-      widget.versement.partnerId!,
-      widget.versement.id!,
-      widget.versement.reference ?? '',
-      devise: devise,
-      tauxChange: devise?.rate,
     );
     setState(() {
       isLoading = false;

@@ -15,7 +15,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/cr
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/purchase_dialog.dart';
+import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -1172,15 +1172,16 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Future<void> _showCreateDebtBottomSheet(BuildContext context) async {
-    final result = await showDialog(
-      context: context,
-      builder: (context) => DebtPurchaseDialog(
-        clientId: _partner.id,
-        onDebtCreated: (achat) async {
+    final result = await Navigator.pushNamed(
+      context,
+      Routes.purchase,
+      arguments: {
+        'clientId': _partner.id,
+        'onPurchaseComplete': (achat) async {
           await _loadDebts();
           setState(() {});
         },
-      ),
+      },
     );
     if (result == true) {
       await _loadDebts();
