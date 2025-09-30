@@ -144,9 +144,9 @@ class _LoginViewState extends State<_LoginView> {
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(32)),
+                                  borderRadius: BorderRadius.circular(8)),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(8),
                                 borderSide:
                                     BorderSide(color: Colors.grey.shade300),
                               ),
