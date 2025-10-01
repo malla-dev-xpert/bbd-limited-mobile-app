@@ -427,11 +427,25 @@ class _PurchasePageState extends State<PurchasePage> {
     });
   }
 
+  // Méthode unifiée pour calculer le total d'un article
+  double _calculateItemTotal(Map<String, dynamic> item) {
+    final isPricePerCarton = item['isPricePerCarton'] ?? true;
+    final carton = (item['carton'] as num?)?.toInt() ?? 0;
+    final quantity = (item['quantity'] as num?)?.toInt() ?? 0;
+    final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
+
+    if (isPricePerCarton) {
+      // Prix par carton
+      return carton * unitPrice;
+    } else {
+      // Prix par quantité totale
+      return quantity * unitPrice;
+    }
+  }
+
   double _calculateTotal() {
     return localItems.fold(0.0, (sum, item) {
-      final quantity = (item['quantity'] as num?)?.toDouble() ?? 0.0;
-      final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
-      return sum + (quantity * unitPrice);
+      return sum + _calculateItemTotal(item);
     });
   }
 
@@ -1250,16 +1264,8 @@ class _PurchasePageState extends State<PurchasePage> {
                           itemCount: localItems.length,
                           itemBuilder: (context, index) {
                             final item = localItems[index];
-                            // Calculer le total selon le mode de calcul du prix
-                            final isPricePerCarton =
-                                item['isPricePerCarton'] ?? true;
-                            final carton = item['carton'] as int? ?? 0;
-                            final quantity = item['quantity'] as int? ?? 0;
-                            final unitPrice =
-                                item['unitPrice'] as double? ?? 0.0;
-                            final total = isPricePerCarton
-                                ? carton * unitPrice
-                                : quantity * unitPrice;
+                            // Calculer le total en utilisant la méthode unifiée
+                            final total = _calculateItemTotal(item);
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
