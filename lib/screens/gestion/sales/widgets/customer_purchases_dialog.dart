@@ -153,7 +153,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Ce client n\'a pas encore effectué d\'achats',
+              'Ce client n\'a pas encore effectué d\'${AppLocalizations.of(context).translate('purchases_count')}',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[500],
@@ -239,7 +239,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        _getStatusText(achat.status),
+                        _getStatusText(achat.status, context),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -274,7 +274,8 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _buildItemDetail(
-                              'Quantité',
+                              AppLocalizations.of(context)
+                                  .translate('quantity'),
                               '${item.quantity ?? 0}',
                               Icons.shopping_cart,
                             ),
@@ -296,7 +297,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildItemDetail(
-                            'Total',
+                            AppLocalizations.of(context).translate('total'),
                             NumberFormat.currency(
                               locale: 'fr_FR',
                               symbol: 'CNY',
@@ -306,7 +307,8 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           if (item.supplierName != null) ...[
                             const SizedBox(height: 8),
                             _buildItemDetail(
-                              'Fournisseur',
+                              AppLocalizations.of(context)
+                                  .translate('supplier'),
                               item.supplierName,
                               Icons.business,
                             ),
@@ -370,18 +372,18 @@ class CustomerPurchasesDialog extends StatelessWidget {
     }
   }
 
-  String _getStatusText(Status? status) {
+  String _getStatusText(Status? status, BuildContext context) {
     switch (status) {
       case Status.PENDING:
         return 'En attente';
       case Status.COMPLETED:
-        return 'Terminé';
+        return AppLocalizations.of(context).translate('status_completed');
       case Status.RECEIVED:
-        return 'Reçu';
+        return AppLocalizations.of(context).translate('status_received');
       case Status.DELETE:
-        return 'Supprimé';
+        return AppLocalizations.of(context).translate('status_deleted');
       default:
-        return 'Créé';
+        return AppLocalizations.of(context).translate('status_created');
     }
   }
 }

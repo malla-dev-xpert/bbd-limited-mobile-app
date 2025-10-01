@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/providers/reports_provider.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -268,7 +269,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Réessayer'),
+            child: Text(AppLocalizations.of(context).translate('retry')),
           ),
         ],
       ),
@@ -296,7 +297,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           // Clients avec le plus d'achats
           _buildCollapsibleSection(
             key: 'customers',
-            title: 'Clients avec le plus d\'achats',
+            title:
+                'Clients avec le plus d\'${AppLocalizations.of(context).translate('purchases_count')}',
             icon: Icons.people,
             content: reportsState.topCustomers.isNotEmpty
                 ? _buildCustomersList(reportsState.topCustomers)
