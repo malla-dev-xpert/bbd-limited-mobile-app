@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
@@ -104,7 +105,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildPurchasesList(),
+                    _buildPurchasesList(context),
                   ],
                 ),
               ),
@@ -115,7 +116,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildPurchasesList() {
+  Widget _buildPurchasesList(BuildContext context) {
     final allPurchases = <Map<String, dynamic>>[];
 
     // Collecter tous les achats de tous les versements
@@ -209,7 +210,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Réf: ${versement.reference ?? 'N/A'}',
+                            '${AppLocalizations.of(context).translate('reference_short')}: ${versement.reference ?? AppLocalizations.of(context).translate('not_available')}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,

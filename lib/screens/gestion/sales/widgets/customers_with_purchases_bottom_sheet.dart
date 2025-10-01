@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -60,7 +61,8 @@ class _CustomersWithPurchasesBottomSheetState
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur lors du chargement des clients");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_loading_clients'));
       }
     }
   }

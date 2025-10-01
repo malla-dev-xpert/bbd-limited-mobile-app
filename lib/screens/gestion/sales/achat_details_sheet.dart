@@ -82,7 +82,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     try {
       final user = await AuthService().getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         return;
       }
       final result = await achatServices.confirmDelivery(
@@ -535,7 +536,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     try {
       final user = await AuthService().getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         setState(() {
           isLoading = false;
         });
@@ -547,7 +549,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         user.id,
         widget.achat.clientId ?? 0,
       );
-      if (result == "DELETED") {
+      if (result == AppLocalizations.of(context).translate('deleted')) {
         setState(() {
           widget.achat.items?.remove(item);
         });
@@ -556,17 +558,21 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             AppLocalizations.of(context)
                 .translate('purchase_history_item_deleted_success'));
         Navigator.of(context).pop(true);
-      } else if (result == "ITEM_NOT_FOUND") {
+      } else if (result ==
+          AppLocalizations.of(context).translate('item_not_found')) {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_item_not_found'));
-      } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
+      } else if (result ==
+          AppLocalizations.of(context)
+              .translate('client_not_found_or_mismatch')) {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_client_mismatch'));
-      } else if (result == "USER_NOT_FOUND") {
+      } else if (result ==
+          AppLocalizations.of(context).translate('user_not_found')) {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
@@ -1139,11 +1145,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                       achat.isDebt == true
                           ? DateFormat('dd/MM/yyyy HH:mm')
                               .format(achat.createdAt ?? DateTime.now())
-                          : (achat.referenceVersement ?? "N/A")),
+                          : (achat.referenceVersement ??
+                              AppLocalizations.of(context)
+                                  .translate('not_available'))),
                   _buildInfoRow(
                       AppLocalizations.of(context)
                           .translate('purchase_history_client'),
-                      achat.client ?? "N/A"),
+                      achat.client ??
+                          AppLocalizations.of(context)
+                              .translate('not_available')),
                   if (achat.clientPhone != null)
                     _buildInfoRow(
                         AppLocalizations.of(context)
@@ -1333,7 +1343,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               _InfoIconText(
                 icon: Icons.business_outlined,
                 label: AppLocalizations.of(context).translate('supplier'),
-                value: item.supplierName ?? 'N/A',
+                value: item.supplierName ??
+                    AppLocalizations.of(context).translate('not_available'),
               ),
               if (item.supplierPhone != null &&
                   (item.supplierPhone as String).isNotEmpty) ...[
@@ -1398,7 +1409,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           confirmArticle(item.id?.toString() ?? ''),
                       icon: const Icon(Icons.check_circle_outline,
                           color: Colors.white),
-                      label: Text(isLoading ? "Chargement..." : "Confirmer"),
+                      label: Text(isLoading
+                          ? AppLocalizations.of(context)
+                              .translate('loading_short')
+                          : AppLocalizations.of(context)
+                              .translate('confirm_short')),
                       style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFF1A1E49),
                         foregroundColor: Colors.white,

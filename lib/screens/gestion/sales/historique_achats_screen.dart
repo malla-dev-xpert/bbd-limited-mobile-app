@@ -229,7 +229,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                   Text(
                                                     achat.isDebt == true
                                                         ? '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy HH:mm').format(achat.createdAt ?? DateTime.now())}'
-                                                        : '${AppLocalizations.of(context).translate('purchase_history_reference')}: ${achat.referenceVersement ?? "N/A"}',
+                                                        : '${AppLocalizations.of(context).translate('purchase_history_reference')}: ${achat.referenceVersement ?? AppLocalizations.of(context).translate('not_available')}',
                                                     style: const TextStyle(
                                                       fontSize: 16,
                                                       fontWeight:
@@ -284,19 +284,28 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                               ),
                                               child: Text(
                                                 achat.status?.name ==
-                                                        "COMPLETED"
+                                                        AppLocalizations.of(
+                                                                context)
+                                                            .translate(
+                                                                'completed')
                                                     ? AppLocalizations.of(
                                                             context)
                                                         .translate(
                                                             'purchase_history_filter_completed')
                                                     : achat.status?.name ==
-                                                            "PENDING"
+                                                            AppLocalizations.of(
+                                                                    context)
+                                                                .translate(
+                                                                    'pending')
                                                         ? AppLocalizations.of(
                                                                 context)
                                                             .translate(
                                                                 'purchase_history_filter_pending')
                                                         : achat.status?.name ??
-                                                            "N/A",
+                                                            AppLocalizations.of(
+                                                                    context)
+                                                                .translate(
+                                                                    'not_available'),
                                                 style: TextStyle(
                                                   color: _getStatusColor(
                                                       achat.status),
@@ -325,7 +334,10 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                             achat.clientId !=
                                                                 null)
                                                         ? '${AppLocalizations.of(context).translate('client')} #${achat.clientId}'
-                                                        : "N/A",
+                                                        : AppLocalizations.of(
+                                                                context)
+                                                            .translate(
+                                                                'not_available'),
                                                 style: TextStyle(
                                                   color: Colors.grey[700]!,
                                                 ),

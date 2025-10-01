@@ -484,7 +484,8 @@ class _PurchasePageState extends State<PurchasePage> {
     try {
       final user = await authService.getUserInfo();
       if (user?.id == null) {
-        showErrorTopSnackBar(context, "Utilisateur non connecté");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         return;
       }
 
