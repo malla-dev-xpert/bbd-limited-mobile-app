@@ -954,6 +954,8 @@
   "password_generation_error": "生成密码时出错",
   "password_copy_error": "复制密码时出错",
   "pdf_total": "总计",
+  "pdf_client_information": "客户信息",
+  "pdf_remaining_amount": "剩余金额",
   "pdf_articles_list_label": "所有物品",
   "pdf_invoice": "发票",
   "pdf_versement_reference": "付款参考号",

@@ -1019,6 +1019,8 @@
   "verify_account": "Vérifier le compte",
   "unverify_account": "Ne plus vérifier le compte",
   "pdf_client_status": "STATUT CLIENT",
+  "pdf_client_information": "INFORMATION CLIENT",
+  "pdf_remaining_amount": "MONTANT RESTANT",
   "pdf_articles_list_label": "LISTE DES ARTICLES",
   "pdf_all_periods": "TOUTES LES PÉRIODES",
   "pdf_from_to": "DU {start} AU {end}",

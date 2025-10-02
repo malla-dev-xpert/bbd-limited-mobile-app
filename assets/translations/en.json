@@ -1007,6 +1007,8 @@
   "password_copy_error": "Error copying password",
   "export": "Export",
   "pdf_all_periods": "ALL PERIODS",
+  "pdf_client_information": "CLIENT INFORMATION",
+  "pdf_remaining_amount": "REMAINING AMOUNT",
   "pdf_articles_list_label": "All items",
   "pdf_from_to": "FROM {start} TO {end}",
   "pdf_packages": "PACKAGES",
