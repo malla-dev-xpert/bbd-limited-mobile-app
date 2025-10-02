@@ -765,6 +765,7 @@
   "partner_loading_error": "加载合作伙伴时出错。",
   "partner_search_error": "搜索时出错",
   "partner_creation_error": "注册时出错",
+  "partner_management_title": "合作伙伴管理",
   "please_login": "请登录。",
   "please_enter_name": "请输入姓名",
   "print_options": "打印选项",
@@ -953,6 +954,7 @@
   "password_generation_error": "生成密码时出错",
   "password_copy_error": "复制密码时出错",
   "pdf_total": "总计",
+  "pdf_articles_list_label": "所有物品",
   "pdf_invoice": "发票",
   "pdf_versement_reference": "付款参考号",
   "pdf_commissionnaire": "专员",
@@ -1783,5 +1785,7 @@
   "status_received": "已接收",
   "status_deleted": "已删除",
   "status_created": "已创建",
-  "purchases_count": "购买"
+  "purchases_count": "购买",
+  "pdf_carton": "纸箱",
+  "pdf_quantity_per_carton": "每箱数量"
 }
