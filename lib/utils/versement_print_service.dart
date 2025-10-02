@@ -361,36 +361,50 @@ class VersementPrintService {
           padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
           child: pw.Row(
             children: [
-              pw.Expanded(
+              pw.Container(
+                  width: 120,
                   child: pw.Text(localizations.translate('pdf_designation'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8))),
               pw.Container(
                   width: 40,
-                  child: pw.Text(localizations.translate('pdf_quantity'),
+                  child: pw.Text(localizations.translate('pdf_carton'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8))),
               pw.Container(
-                  width: 70,
+                  width: 50,
+                  child: pw.Text(
+                      localizations.translate('pdf_quantity_per_carton'),
+                      style: pw.TextStyle(
+                          color: PdfColors.white,
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8))),
+              pw.Container(
+                  width: 60,
                   child: pw.Text(localizations.translate('pdf_purchase_rate'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8))),
               pw.Container(
-                  width: 100,
+                  width: 80,
                   child: pw.Text(
                       localizations.translate('pdf_unit_price_short'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8))),
               pw.Container(
-                  width: 100,
+                  width: 80,
                   child: pw.Text(localizations.translate('pdf_total'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8))),
             ],
           ),
         ),
@@ -402,26 +416,31 @@ class VersementPrintService {
                   const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
               child: pw.Row(
                 children: [
-                  pw.Expanded(
+                  pw.Container(
+                      width: 120,
                       child: pw.Text(item.description ?? '',
-                          style: const pw.TextStyle(fontSize: 12))),
+                          style: const pw.TextStyle(fontSize: 10))),
                   pw.Container(
                       width: 40,
-                      child: pw.Text('${item.quantity ?? ''}',
-                          style: const pw.TextStyle(fontSize: 12))),
+                      child: pw.Text('${item.carton ?? ''}',
+                          style: const pw.TextStyle(fontSize: 10))),
                   pw.Container(
-                      width: 70,
+                      width: 50,
+                      child: pw.Text('${item.quantityPerCarton ?? ''}',
+                          style: const pw.TextStyle(fontSize: 10))),
+                  pw.Container(
+                      width: 60,
                       child: pw.Text('${item.salesRate ?? ''}',
-                          style: const pw.TextStyle(fontSize: 12))),
+                          style: const pw.TextStyle(fontSize: 10))),
                   pw.Container(
-                      width: 100,
+                      width: 80,
                       child: pw.Text(currencyFormat.format(item.unitPrice ?? 0),
-                          style: const pw.TextStyle(fontSize: 12))),
+                          style: const pw.TextStyle(fontSize: 10))),
                   pw.Container(
-                      width: 100,
+                      width: 80,
                       child: pw.Text(
                           currencyFormat.format(item.totalPrice ?? 0),
-                          style: const pw.TextStyle(fontSize: 12))),
+                          style: const pw.TextStyle(fontSize: 10))),
                 ],
               ),
             ),
@@ -830,14 +849,23 @@ class VersementPrintService {
                             fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 40,
-                  child: pw.Text(localizations.translate('pdf_quantity_short'),
+                  child: pw.Text(localizations.translate('pdf_carton'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
                           fontSize: 8,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
-                  width: 70,
+                  width: 50,
+                  child: pw.Text(
+                      localizations.translate('pdf_quantity_per_carton'),
+                      style: pw.TextStyle(
+                          color:
+                              isProforma ? PdfColors.grey500 : PdfColors.white,
+                          fontSize: 8,
+                          fontWeight: pw.FontWeight.bold))),
+              pw.Container(
+                  width: 60,
                   child: pw.Text(localizations.translate('pdf_rate'),
                       style: pw.TextStyle(
                           color:
@@ -845,7 +873,7 @@ class VersementPrintService {
                           fontSize: 8,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
-                  width: 100,
+                  width: 80,
                   child: pw.Text(
                       localizations.translate('pdf_unit_price_label'),
                       style: pw.TextStyle(
@@ -854,7 +882,7 @@ class VersementPrintService {
                           fontSize: 8,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
-                  width: 100,
+                  width: 80,
                   child: pw.Text(localizations.translate('pdf_total'),
                       style: pw.TextStyle(
                           color:
@@ -899,20 +927,24 @@ class VersementPrintService {
                   ),
                 pw.Container(
                     width: 40,
-                    child: pw.Text('${item.quantity ?? ''}',
-                        style: const pw.TextStyle(fontSize: 12))),
+                    child: pw.Text('${item.carton ?? ''}',
+                        style: const pw.TextStyle(fontSize: 10))),
                 pw.Container(
-                    width: 70,
+                    width: 50,
+                    child: pw.Text('${item.quantityPerCarton ?? ''}',
+                        style: const pw.TextStyle(fontSize: 10))),
+                pw.Container(
+                    width: 60,
                     child: pw.Text('${item.salesRate ?? ''}',
-                        style: const pw.TextStyle(fontSize: 12))),
+                        style: const pw.TextStyle(fontSize: 10))),
                 pw.Container(
-                    width: 100,
+                    width: 80,
                     child: pw.Text(currencyFormat.format(item.unitPrice ?? 0),
-                        style: const pw.TextStyle(fontSize: 12))),
+                        style: const pw.TextStyle(fontSize: 10))),
                 pw.Container(
-                    width: 100,
+                    width: 80,
                     child: pw.Text(currencyFormat.format(item.totalPrice ?? 0),
-                        style: const pw.TextStyle(fontSize: 12))),
+                        style: const pw.TextStyle(fontSize: 10))),
               ],
             ),
           ),
