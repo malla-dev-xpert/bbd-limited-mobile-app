@@ -21,23 +21,11 @@ class AchatServices {
         Uri.parse('$baseUrl/achats/create?clientId=$clientId&userId=$userId');
 
     try {
-      // Log des données avant envoi
-      log('=== CRÉATION ACHAT ===');
-      log('URL: $url');
-      log('Client ID: $clientId');
-      log('User ID: $userId');
-      log('Versement ID: ${dto.versementId}');
-      log('Nombre d\'articles: ${dto.items.length}');
-      log('DTO JSON: ${jsonEncode(dto.toJson())}');
-
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(dto.toJson()),
       );
-
-      log('Response status: ${response.statusCode}');
-      log('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       final apiResponse = ApiResponse<String>.fromJson(responseBody);
