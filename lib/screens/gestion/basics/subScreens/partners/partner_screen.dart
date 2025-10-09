@@ -325,6 +325,9 @@ class _PartnerScreenState extends State<PartnerScreen> {
               context,
               AppLocalizations.of(context)
                   .translate('partner_deleted_success'));
+        } else if (result == "CANT_DELETED") {
+          showErrorTopSnackBar(context,
+              AppLocalizations.of(context).translate('partner_cant_deleted'));
         } else {
           _handleDeleteError(result);
         }

@@ -105,8 +105,8 @@ class PartnerServices {
         return "PARTNER_NOT_FOUND";
       } else if (response.statusCode == 409 &&
           response.body ==
-              "Impossible de supprimer, des colis existent pour ce partenaire.") {
-        return "PACKAGE_FOUND";
+              "Impossible de supprimer, des données existent pour ce partenaire.") {
+        return "CANT_DELETED";
       }
     } catch (e) {
       throw Exception("partner_delete_error");
