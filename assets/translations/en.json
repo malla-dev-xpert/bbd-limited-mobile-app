@@ -1886,5 +1886,7 @@
   "status_received": "Received",
   "status_deleted": "Deleted",
   "status_created": "Created",
-  "purchases_count": "purchases"
+  "purchases_count": "purchases",
+  "purchase_history_view_purchases": "View purchases",
+  "purchase_history_view_items": "View items"
 }

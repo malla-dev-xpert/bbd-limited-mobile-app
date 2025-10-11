@@ -1863,5 +1863,7 @@
   "status_received": "已接收",
   "status_deleted": "已删除",
   "status_created": "已创建",
-  "purchases_count": "购买"
+  "purchases_count": "购买",
+  "purchase_history_view_purchases": "查看购买",
+  "purchase_history_view_items": "查看物品"
 }
