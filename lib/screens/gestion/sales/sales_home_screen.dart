@@ -99,26 +99,34 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            _buildStatItem(
-                              context,
-                              AppLocalizations.of(context)
-                                  .translate('sales_monthly_purchases'),
-                              isLoading ? '...' : achatsDuMoisCount.toString(),
-                              Icons.calendar_month,
-                              Colors.white,
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('sales_monthly_purchases'),
+                                isLoading
+                                    ? '...'
+                                    : achatsDuMoisCount.toString(),
+                                Icons.calendar_month,
+                                Colors.white,
+                              ),
                             ),
-                            _buildStatItem(
-                              context,
-                              AppLocalizations.of(context)
-                                  .translate('sales_revenue'),
-                              isLoading
-                                  ? '...'
-                                  : NumberFormat.currency(
-                                          locale: 'fr_FR', symbol: '¥')
-                                      .format(chiffreAffaires),
-                              Icons.currency_yen,
-                              Colors.white,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('sales_revenue'),
+                                isLoading
+                                    ? '...'
+                                    : NumberFormat.currency(
+                                            locale: 'fr_FR', symbol: '¥')
+                                        .format(chiffreAffaires),
+                                Icons.currency_yen,
+                                Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -234,16 +242,23 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
             fontSize: 14,
             color: color.withOpacity(0.9),
             fontWeight: FontWeight.w500,
+            letterSpacing: 0.3,
           ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
             color: color,
           ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -324,10 +339,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
         maxChildSize: 0.95,
         builder: (context, scrollController) =>
             CustomersWithPurchasesBottomSheet(
-          onCustomerSelected: (Partner customer) {
-            print(
-                'Client sélectionné: [200m${customer.firstName} ${customer.lastName}[0m');
-          },
+          onCustomerSelected: (Partner customer) {},
         ),
       ),
     );

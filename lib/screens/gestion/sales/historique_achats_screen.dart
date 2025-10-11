@@ -227,9 +227,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    achat.isDebt == true
-                                                        ? '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy HH:mm').format(achat.createdAt ?? DateTime.now())}'
-                                                        : '${AppLocalizations.of(context).translate('purchase_history_reference')}: ${achat.referenceVersement ?? AppLocalizations.of(context).translate('not_available')}',
+                                                    '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy HH:mm').format(achat.createdAt ?? DateTime.now())}',
                                                     style: const TextStyle(
                                                       fontSize: 16,
                                                       fontWeight:
