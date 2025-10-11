@@ -266,8 +266,10 @@ class _PurchasePageState extends State<PurchasePage> {
   void _onVersementSelected(Versement? versement) {
     setState(() {
       selectedVersement = versement;
-      // Ne pas changer automatiquement isDebtPurchase ici
-      // Laisser l'utilisateur contrôler via la checkbox
+      // Si un versement est sélectionné, désactiver l'achat en dette
+      if (versement != null) {
+        isDebtPurchase = false;
+      }
     });
   }
 
@@ -685,15 +687,21 @@ class _PurchasePageState extends State<PurchasePage> {
 
                         // Sélection du versement (seulement si des versements existent)
                         if (versements.isNotEmpty) ...[
-                          DropDownCustom<Versement>(
-                            items: versements,
-                            selectedItem: selectedVersement,
-                            onChanged: _onVersementSelected,
-                            itemToString: (versement) =>
-                                '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
-                            hintText: AppLocalizations.of(context)
-                                .translate('select_versement_or_debt'),
-                            prefixIcon: Icons.payment,
+                          IgnorePointer(
+                            ignoring: isDebtPurchase,
+                            child: Opacity(
+                              opacity: isDebtPurchase ? 0.5 : 1.0,
+                              child: DropDownCustom<Versement>(
+                                items: versements,
+                                selectedItem: selectedVersement,
+                                onChanged: _onVersementSelected,
+                                itemToString: (versement) =>
+                                    '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
+                                hintText: AppLocalizations.of(context)
+                                    .translate('select_versement_or_debt'),
+                                prefixIcon: Icons.payment,
+                              ),
+                            ),
                           ),
                         ] else ...[
                           // Message quand aucun versement n'est disponible
@@ -732,19 +740,28 @@ class _PurchasePageState extends State<PurchasePage> {
                             children: [
                               Checkbox(
                                 value: isDebtPurchase,
-                                onChanged: (value) {
-                                  setState(() {
-                                    isDebtPurchase = value ?? false;
-                                    if (isDebtPurchase) {
-                                      selectedVersement = null;
-                                    }
-                                  });
-                                },
+                                onChanged: selectedVersement != null
+                                    ? null // Désactiver si un versement est sélectionné
+                                    : (value) {
+                                        setState(() {
+                                          isDebtPurchase = value ?? false;
+                                          if (isDebtPurchase) {
+                                            selectedVersement = null;
+                                          }
+                                        });
+                                      },
                               ),
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('debt_purchase'),
-                                style: const TextStyle(fontSize: 14),
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)
+                                      .translate('debt_purchase'),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: selectedVersement != null
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
