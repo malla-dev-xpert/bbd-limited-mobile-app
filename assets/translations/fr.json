@@ -499,6 +499,7 @@
   "quantity": "Quantité",
   "carton": "Carton",
   "quantity_per_carton": "Quantité par carton",
+  "quantity_per_carton_2":"Qté/carton",
   "total_quantity": "Quantité totale",
   "calculated_automatically": "Calculé automatiquement",
   "invalid_quantity_calculation": "Calcul de quantité invalide",
@@ -1887,5 +1888,17 @@
   "status_created": "Créé",
   "purchases_count": "achats",
   "purchase_history_view_purchases": "Afficher les achats",
-  "purchase_history_view_items": "Afficher les articles"
+  "purchase_history_view_items": "Afficher les articles",
+  "purchase_history_edit_item_title": "Modifier l'article",
+  "purchase_history_edit_description": "Description",
+  "purchase_history_edit_unit_price": "Prix unitaire",
+  "purchase_history_edit_purchase_rate": "Taux d'achat",
+  "purchase_history_edit_supplier": "Fournisseur",
+  "purchase_history_edit_cancel": "Annuler",
+  "purchase_history_edit_save": "Enregistrer",
+  "purchase_history_item_modified_success": "Article modifié avec succès",
+  "purchase_history_supplier_not_found": "Fournisseur non trouvé",
+  "purchase_history_error_occurred": "Une erreur s'est produite : {error}",
+  "purchase_history_item_pending": "En attente de réception",
+  "purchase_history_item_received": "Article reçu"
 }

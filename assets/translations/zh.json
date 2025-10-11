@@ -663,6 +663,7 @@
   "quantity": "数量",
   "carton": "纸箱",
   "quantity_per_carton": "每箱数量",
+  "quantity_per_carton_2": "每箱数量",
   "total_quantity": "总数量",
   "calculated_automatically": "自动计算",
   "invalid_quantity_calculation": "数量计算无效",
@@ -1865,5 +1866,17 @@
   "status_created": "已创建",
   "purchases_count": "购买",
   "purchase_history_view_purchases": "查看购买",
-  "purchase_history_view_items": "查看物品"
+  "purchase_history_view_items": "查看物品",
+  "purchase_history_edit_item_title": "编辑项目",
+  "purchase_history_edit_description": "描述",
+  "purchase_history_edit_unit_price": "单价",
+  "purchase_history_edit_purchase_rate": "购买率",
+  "purchase_history_edit_supplier": "供应商",
+  "purchase_history_edit_cancel": "取消",
+  "purchase_history_edit_save": "保存",
+  "purchase_history_item_modified_success": "项目修改成功",
+  "purchase_history_supplier_not_found": "未找到供应商",
+  "purchase_history_error_occurred": "发生错误：{error}",
+  "purchase_history_item_pending": "待接收",
+  "purchase_history_item_received": "项目已接收"
 }

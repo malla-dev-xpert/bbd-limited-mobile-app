@@ -1244,240 +1244,301 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   Widget _buildItemCard(Items item, Achat achat) {
     final isConfirmed = confirmedArticles.contains(item.id?.toString());
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Titre et actions - Responsive
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Titre
-              Expanded(
-                child: Text(
-                  item.description ??
-                      AppLocalizations.of(context).translate('unnamed_item'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: MediaQuery.of(context).size.width < 400 ? 15 : 16,
-                    color: const Color(0xFF1A1E49),
-                  ),
-                ),
-              ),
-              // Actions éditer/supprimer - Plus compactes sur mobile
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit,
-                        color: Color(0xFF1976D2), size: 20),
-                    tooltip: AppLocalizations.of(context).translate('edit'),
-                    onPressed: () => _showEditArticleDialog(item),
-                    padding: const EdgeInsets.all(8),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: Color(0xFFD32F2F), size: 20),
-                    tooltip: AppLocalizations.of(context).translate('delete'),
-                    onPressed: () => _confirmDeleteArticle(item),
-                    padding: const EdgeInsets.all(8),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Affichage des nouveaux champs carton et quantité par carton
-              if (item.carton != null && item.quantityPerCarton != null) ...[
-                _InfoIconText(
-                  icon: Icons.inventory_2,
-                  label: AppLocalizations.of(context).translate('carton'),
-                  value: '${item.carton}',
-                ),
-                const SizedBox(height: 8),
-                _InfoIconText(
-                  icon: Icons.format_list_numbered,
-                  label: AppLocalizations.of(context)
-                      .translate('quantity_per_carton'),
-                  value: '${item.quantityPerCarton}',
-                ),
-                const SizedBox(height: 8),
-              ],
-              _InfoIconText(
-                icon: Icons.calculate,
-                label: AppLocalizations.of(context).translate('total_quantity'),
-                value: '${item.quantity ?? 0}',
-              ),
-              const SizedBox(height: 8),
-              _InfoIconText(
-                icon: Icons.attach_money,
-                label: AppLocalizations.of(context).translate('unit_price'),
-                value: _formatAmount(item.unitPrice ?? 0) + ' ¥',
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _InfoIconText(
-                icon: Icons.business_outlined,
-                label: AppLocalizations.of(context).translate('supplier'),
-                value: item.supplierName ??
-                    AppLocalizations.of(context).translate('not_available'),
-              ),
-              if (item.supplierPhone != null &&
-                  (item.supplierPhone as String).isNotEmpty) ...[
-                const SizedBox(height: 8),
-                _InfoIconText(
-                  icon: Icons.phone,
-                  label: 'Téléphone',
-                  value: item.supplierPhone ?? '',
-                ),
-              ],
-              const SizedBox(height: 8),
-              _InfoIconText(
-                icon: Icons.percent,
-                label: AppLocalizations.of(context).translate('purchase_rate'),
-                value: (item.salesRate?.toString() ?? ''),
-              ),
-              const SizedBox(height: 8),
-              _InfoIconText(
-                icon: Icons.calculate,
-                label: AppLocalizations.of(context).translate('total'),
-                value: _formatAmount(item.totalPrice ??
-                        (item.quantity ?? 0) * (item.unitPrice ?? 0)) +
-                    ' ¥',
-              ),
-            ],
-          ),
-          // Statut et actions de confirmation
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (!isConfirmed && item.status != Status.RECEIVED)
+          // En-tête de l'item avec actions
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // En-tête avec icône et actions
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.red[100],
-                        borderRadius: BorderRadius.circular(20),
+                        color: const Color(0xFF1A1E49).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: const Icon(
+                        Icons.inventory_2,
+                        color: Color(0xFF1A1E49),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.receipt_long,
-                              color: Colors.red, size: 16),
-                          const SizedBox(width: 4),
                           Text(
-                            item.invoiceNumber ?? '',
+                            item.description ??
+                                AppLocalizations.of(context)
+                                    .translate('unnamed_item'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${AppLocalizations.of(context).translate('invoice_number')}: ${item.invoiceNumber ?? 'N/A'}',
                             style: TextStyle(
-                              color: Colors.red[700],
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13,
+                              fontSize: 12,
+                              color: Colors.grey[600],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    TextButton.icon(
-                      onPressed: () =>
-                          confirmArticle(item.id?.toString() ?? ''),
-                      icon: const Icon(Icons.check_circle_outline,
-                          color: Colors.white),
-                      label: Text(isLoading
-                          ? AppLocalizations.of(context)
-                              .translate('loading_short')
-                          : AppLocalizations.of(context)
-                              .translate('confirm_short')),
-                      style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A1E49),
-                        foregroundColor: Colors.white,
-                      ),
+                    // Actions éditer/supprimer
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit,
+                              color: Color(0xFF1976D2), size: 20),
+                          tooltip:
+                              AppLocalizations.of(context).translate('edit'),
+                          onPressed: () => _showEditArticleDialog(item),
+                          padding: const EdgeInsets.all(8),
+                          constraints:
+                              const BoxConstraints(minWidth: 32, minHeight: 32),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Color(0xFFD32F2F), size: 20),
+                          tooltip:
+                              AppLocalizations.of(context).translate('delete'),
+                          onPressed: () => _confirmDeleteArticle(item),
+                          padding: const EdgeInsets.all(8),
+                          constraints:
+                              const BoxConstraints(minWidth: 32, minHeight: 32),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              if (item.status == Status.RECEIVED)
+                const SizedBox(height: 12),
+                // Divider
+                Divider(color: Colors.grey[200], height: 1),
+                const SizedBox(height: 12),
+                // Détails de l'item
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildItemDetailChip(
+                      '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
+                      Icons.inventory,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildItemDetailChip(
+                      '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                      Icons.format_list_numbered,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildItemDetailChip(
+                      '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
+                      Icons.numbers,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildItemDetailChip(
+                      '${_formatAmount(item.unitPrice ?? 0)} ¥',
+                      Icons.attach_money,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildItemDetailChip(
+                      '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
+                      Icons.trending_up,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildItemDetailChip(
+                      '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                      Icons.calculate,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Information sur le fournisseur
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.green[100],
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.purple[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.purple[200]!),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.receipt_long,
-                          color: Colors.green, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.invoiceNumber ?? '',
-                        style: TextStyle(
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
+                      Icon(Icons.business, size: 16, color: Colors.purple[700]),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName ?? AppLocalizations.of(context).translate('not_available')}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.purple[900],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (item.supplierPhone != null &&
+                                (item.supplierPhone as String).isNotEmpty)
+                              Text(
+                                '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.purple[700],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-            ],
+                // Statut et bouton de confirmation
+                if (!isConfirmed && item.status != Status.RECEIVED) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.pending_actions,
+                            size: 20, color: Colors.orange[700]),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)
+                                .translate('purchase_history_item_pending'),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.orange[900],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              confirmArticle(item.id?.toString() ?? ''),
+                          icon:
+                              const Icon(Icons.check_circle_outline, size: 18),
+                          label: Text(
+                            isLoading
+                                ? AppLocalizations.of(context)
+                                    .translate('loading_short')
+                                : AppLocalizations.of(context)
+                                    .translate('confirm_short'),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A1E49),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (item.status == Status.RECEIVED) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle,
+                            size: 20, color: Colors.green[700]),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)
+                                .translate('purchase_history_item_received'),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.green[900],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-}
 
-// Widget utilitaire pour afficher une info avec icône
-class _InfoIconText extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  const _InfoIconText(
-      {required this.icon, required this.label, required this.value, Key? key})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 15, color: Colors.grey[600]),
-        const SizedBox(width: 3),
-        Text('$label: ',
-            style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-        Text(value,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: Color(0xFF1A1E49))),
-      ],
+  Widget _buildItemDetailChip(String text, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: Colors.grey[700]),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
