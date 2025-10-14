@@ -702,7 +702,7 @@
   "carton": "Carton",
   "quantity_per_carton": "Quantity per carton",
   "quantity_per_carton_2": "Qty/carton",
-  "total_quantity": "Total quantity",
+  "total_quantity": "Total Qty",
   "calculated_automatically": "Calculated automatically",
   "invalid_quantity_calculation": "Invalid quantity calculation",
   "price_calculation_mode": "Price calculation mode",
