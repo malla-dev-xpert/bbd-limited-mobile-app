@@ -65,6 +65,9 @@ class _PurchasePageState extends State<PurchasePage> {
   bool isCustomersLoading = true;
   bool isVersementsLoading = false;
 
+  // Clé pour forcer la reconstruction du dropdown fournisseur
+  Key _supplierDropdownKey = UniqueKey();
+
   // Contrôleurs
   final TextEditingController _searchCustomerController =
       TextEditingController();
@@ -368,17 +371,20 @@ class _PurchasePageState extends State<PurchasePage> {
         'invoiceNumber': _invoiceNumberController.text.trim(),
         'salesRate': double.tryParse(_salesRateController.text) ?? 0.0,
       });
-    });
 
-    // Réinitialiser les champs
-    _descriptionController.clear();
-    _cartonController.clear();
-    _quantityPerCartonController.clear();
-    _quantityController.clear();
-    _unitPriceController.clear();
-    _invoiceNumberController.clear();
-    _salesRateController.text = '1'; // Réinitialiser à la valeur par défaut
-    selectedSupplier = null;
+      // Réinitialiser les champs dans le setState pour garantir la mise à jour de l'UI
+      _descriptionController.clear();
+      _cartonController.clear();
+      _quantityPerCartonController.clear();
+      _quantityController.clear();
+      _unitPriceController.clear();
+      _invoiceNumberController.clear();
+      _salesRateController.text = '1'; // Réinitialiser à la valeur par défaut
+      selectedSupplier = null;
+
+      // Forcer la reconstruction du dropdown fournisseur
+      _supplierDropdownKey = UniqueKey();
+    });
   }
 
   void _removeItem(int index) {
@@ -397,24 +403,29 @@ class _PurchasePageState extends State<PurchasePage> {
   void _editItem(int index) {
     final item = localItems[index];
 
-    // Remplir les champs avec les données de l'article
-    _descriptionController.text = item['description']?.toString() ?? '';
-    _cartonController.text = item['carton']?.toString() ?? '';
-    _quantityPerCartonController.text =
-        item['quantityPerCarton']?.toString() ?? '';
-    _quantityController.text = item['quantity']?.toString() ?? '';
-    _unitPriceController.text = item['unitPrice']?.toString() ?? '';
-    _invoiceNumberController.text = item['invoiceNumber']?.toString() ?? '';
-    _salesRateController.text = item['salesRate']?.toString() ?? '1';
-    _isPricePerCarton =
-        item['isPricePerCarton'] ?? true; // Par défaut par carton
+    setState(() {
+      // Remplir les champs avec les données de l'article
+      _descriptionController.text = item['description']?.toString() ?? '';
+      _cartonController.text = item['carton']?.toString() ?? '';
+      _quantityPerCartonController.text =
+          item['quantityPerCarton']?.toString() ?? '';
+      _quantityController.text = item['quantity']?.toString() ?? '';
+      _unitPriceController.text = item['unitPrice']?.toString() ?? '';
+      _invoiceNumberController.text = item['invoiceNumber']?.toString() ?? '';
+      _salesRateController.text = item['salesRate']?.toString() ?? '1';
+      _isPricePerCarton =
+          item['isPricePerCarton'] ?? true; // Par défaut par carton
 
-    // Trouver et sélectionner le fournisseur
-    final supplierId = item['supplierId'];
-    selectedSupplier = suppliers.firstWhere(
-      (s) => s.id == supplierId,
-      orElse: () => suppliers.first,
-    );
+      // Trouver et sélectionner le fournisseur
+      final supplierId = item['supplierId'];
+      selectedSupplier = suppliers.firstWhere(
+        (s) => s.id == supplierId,
+        orElse: () => suppliers.first,
+      );
+
+      // Forcer la reconstruction du dropdown avec le nouveau fournisseur
+      _supplierDropdownKey = UniqueKey();
+    });
 
     // Supprimer l'article de la liste
     _removeItem(index);
@@ -1180,6 +1191,8 @@ class _PurchasePageState extends State<PurchasePage> {
                         children: [
                           Expanded(
                             child: DropDownCustom<Partner>(
+                              key:
+                                  _supplierDropdownKey, // Clé pour forcer la reconstruction
                               items: suppliers,
                               selectedItem: selectedSupplier,
                               onChanged: (value) {
