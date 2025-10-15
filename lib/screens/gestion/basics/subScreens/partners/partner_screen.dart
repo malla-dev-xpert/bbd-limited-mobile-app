@@ -5,6 +5,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_edit_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_list_items.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/merge_partner_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,6 @@ class _PartnerScreenState extends State<PartnerScreen> {
 
   List<Partner> _allPartners = [];
   List<Partner> _filteredPartners = [];
-  String? _currentFilter;
 
   bool _isLoading = false;
   bool _hasMoreData = true;
@@ -117,8 +117,6 @@ class _PartnerScreenState extends State<PartnerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
@@ -222,6 +220,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
               partner: partner,
               onEdit: _editPartner,
               onDelete: _deletePartner,
+              onMerge: _mergePartner,
             );
           },
         ),
@@ -356,5 +355,19 @@ class _PartnerScreenState extends State<PartnerScreen> {
         showErrorTopSnackBar(context,
             AppLocalizations.of(context).translate('partner_unknown_error'));
     }
+  }
+
+  void _mergePartner(Partner partner) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => MergePartnerBottomSheet(
+        mainPartner: partner,
+        onMergeSuccess: () {
+          loadPartners(reset: true);
+        },
+      ),
+    );
   }
 }

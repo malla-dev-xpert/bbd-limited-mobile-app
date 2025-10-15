@@ -1901,5 +1901,15 @@
   "purchase_history_supplier_not_found": "Supplier not found",
   "purchase_history_error_occurred": "An error occurred: {error}",
   "purchase_history_item_pending": "Pending receipt",
-  "purchase_history_item_received": "Item received"
+  "purchase_history_item_received": "Item received",
+  "merge_partners": "Merge Partners",
+  "main_partner": "Main Partner",
+  "duplicate_partner": "Duplicate Partner",
+  "search_partner_to_merge": "Search partner to merge...",
+  "merge_summary": "Merge Summary",
+  "merge_now": "Merge Now",
+  "partner_merge_success": "Merge successful: {duplicateName}'s data has been transferred to {mainName}.",
+  "same_partner_error": "Cannot merge the same partner with itself",
+  "partner_merge_error": "Error during partner merge",
+  "partner_unknown_error": "Unknown error occurred"
 }

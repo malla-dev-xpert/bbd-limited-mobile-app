@@ -9,12 +9,14 @@ class PartnerListItem extends StatelessWidget {
   final Partner partner;
   final Function(Partner) onEdit;
   final Function(Partner) onDelete;
+  final Function(Partner) onMerge;
 
   const PartnerListItem({
     Key? key,
     required this.partner,
     required this.onEdit,
     required this.onDelete,
+    required this.onMerge,
   }) : super(key: key);
 
   @override
@@ -39,6 +41,13 @@ class PartnerListItem extends StatelessWidget {
             foregroundColor: Colors.white,
             icon: Icons.edit,
             label: AppLocalizations.of(context).translate('edit'),
+          ),
+          SlidableAction(
+            onPressed: (_) => onMerge(partner),
+            backgroundColor: Colors.orange,
+            foregroundColor: Colors.white,
+            icon: Icons.merge_type,
+            label: AppLocalizations.of(context).translate('merge'),
           ),
           SlidableAction(
             onPressed: (_) => onDelete(partner),
