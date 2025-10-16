@@ -592,12 +592,6 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            AppLocalizations.of(context)
-                                .translate('container_packages_list'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 18),
-                          ),
                           if (container.status == Status.PENDING) ...[
                             const SizedBox(height: 8),
                             SizedBox(
