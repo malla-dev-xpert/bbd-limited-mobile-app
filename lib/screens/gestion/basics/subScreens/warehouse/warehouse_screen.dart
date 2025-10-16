@@ -11,7 +11,7 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({super.key});
@@ -197,6 +197,274 @@ class _WarehouseState extends State<WarehouseScreen> {
     }
   }
 
+  Future<void> _updateWarehouse(Warehouses warehouse) async {
+    try {
+      await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => _buildEditWarehouseModal(context, warehouse),
+      );
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(
+          context,
+          "Erreur lors de la modification: ${e.toString()}",
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteWarehouse(Warehouses warehouse) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        backgroundColor: Colors.white,
+        content: Text("Supprimer le magasin ${warehouse.name}?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Annuler"),
+          ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: const Text(
+              "Supprimer",
+              style: TextStyle(color: Colors.red, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final user = await authService.getUserInfo();
+
+        if (user == null) {
+          showErrorTopSnackBar(context, "Veuillez vous connecter.");
+          return;
+        }
+        setState(() => _isLoading = true);
+        final result = await warehousServices.deleteWarehouse(
+          warehouse.id,
+          user.id,
+        );
+
+        if (result == "DELETED") {
+          showSuccessTopSnackBar(context, "Entrepôt supprimé avec succès");
+          _refreshController.add(null);
+        } else if (result == "PACKAGE_FOUND") {
+          showErrorTopSnackBar(
+            context,
+            "Impossible de supprimer - Il y'a des colis existants pour ce magasin.",
+          );
+        }
+      } catch (e) {
+        showErrorTopSnackBar(context, "Erreur lors de la suppression");
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleWarehouseUpdate(Warehouses warehouse) async {
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final user = await authService.getUserInfo();
+      if (user == null) {
+        setState(() {
+          _errorMessage = "Erreur: Utilisateur non connecté ou ID manquant";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (_nameController.text.isEmpty ||
+          _adressController.text.isEmpty ||
+          _storageTypeController.text.isEmpty) {
+        setState(() {
+          _errorMessage = "Tous les champs doivent être remplis";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final warehouseData = Warehouses(
+        id: warehouse.id,
+        name: _nameController.text,
+        adresse: _adressController.text,
+        storageType: _storageTypeController.text,
+      );
+
+      final result = await warehousServices.updateWarehouse(
+        warehouse.id,
+        warehouseData,
+        user.id,
+      );
+
+      if (result == true) {
+        if (mounted) {
+          Navigator.pop(context, true);
+          showSuccessTopSnackBar(context, "Entrepôt modifié avec succès");
+          _refreshController.add(null);
+        }
+      } else {
+        if (mounted) {
+          showErrorTopSnackBar(context, "Ce nom est déjà utilisé");
+          setState(() => _isLoading = false);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(context, "Erreur technique: ${e.toString()}");
+        setState(() => _isLoading = false);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Widget _buildEditWarehouseModal(BuildContext context, Warehouses warehouse) {
+    // Initialiser les contrôleurs avec les valeurs actuelles
+    _nameController.text = warehouse.name ?? '';
+    _adressController.text = warehouse.adresse ?? '';
+    _storageTypeController.text = warehouse.storageType ?? '';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: StatefulBuilder(
+        builder: (context, setModalState) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Modifier l\'entrepôt',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        icon: const Icon(Icons.close_rounded, size: 30),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Nom
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.warehouse),
+                      labelText: 'Nom de l\'entrepôt',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez definir un nom';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Adresse
+                  TextFormField(
+                    controller: _adressController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.maps_home_work),
+                      labelText: 'Adresse de l\'entrepôt',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez definir une adresse';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Type de stockage
+                  TextFormField(
+                    controller: _storageTypeController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.storage),
+                      labelText: 'Type de stockage',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez definir un type de stockage';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Erreur éventuelle
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  const SizedBox(height: 10),
+
+                  // Bouton de confirmation
+                  confirmationButton(
+                    isLoading: _isLoading,
+                    onPressed: () => _handleWarehouseUpdate(warehouse),
+                    label: "Modifier",
+                    icon: Icons.edit_document,
+                    subLabel: "Modification...",
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _refreshController.close();
@@ -374,7 +642,7 @@ class _WarehouseState extends State<WarehouseScreen> {
   }
 
   Widget _buildWarehouseList() {
-    if (_allWarehouses == null) {
+    if (_allWarehouses.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -429,133 +697,156 @@ class _WarehouseState extends State<WarehouseScreen> {
             warehouse.createdAt!,
           );
 
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          return Slidable(
+            key: ValueKey(warehouse.id),
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (context) => _updateWarehouse(warehouse),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  icon: Icons.edit,
+                  label: 'Modifier',
+                ),
+                SlidableAction(
+                  onPressed: (context) => _deleteWarehouse(warehouse),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete,
+                  label: 'Supprimer',
                 ),
               ],
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => WarehouseDetailPage(
-                        warehouseId: warehouse.id,
-                        name: warehouse.name,
-                        adresse: warehouse.adresse,
-                        storageType: warehouse.storageType,
-                        onWarehouseUpdated: () {
-                          loadWarehouses(reset: true);
-                        },
-                      ),
-                    ),
-                  );
-                  if (result == true) {
-                    setState(() {
-                      loadWarehouses(reset: true);
-                    });
-                  }
-                },
-                child: Padding(
-                  padding: EdgeInsets.all(
-                    MediaQuery.of(context).size.width >= 768 ? 16 : 20,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // En-tête avec nom et badge
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A1E49).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WarehouseDetailPage(
+                          warehouseId: warehouse.id,
+                          name: warehouse.name,
+                          adresse: warehouse.adresse,
+                          storageType: warehouse.storageType,
+                          onWarehouseUpdated: () {
+                            loadWarehouses(reset: true);
+                          },
+                        ),
+                      ),
+                    );
+                    if (result == true) {
+                      setState(() {
+                        loadWarehouses(reset: true);
+                      });
+                    }
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width >= 768 ? 16 : 20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // En-tête avec nom et badge
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A1E49).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.warehouse_rounded,
+                                color: Color(0xFF1A1E49),
+                                size: 24,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.warehouse_rounded,
-                              color: Color(0xFF1A1E49),
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  warehouse.name ?? 'Entrepôt sans nom',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1A1E49),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1A1E49)
-                                        .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    warehouse.storageType ?? 'Type non défini',
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    warehouse.name ?? 'Entrepôt sans nom',
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                       color: Color(0xFF1A1E49),
-                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1A1E49)
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      warehouse.storageType ??
+                                          'Type non défini',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Color(0xFF1A1E49),
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            color: Color(0xFF1A1E49),
-                            size: 16,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              color: Color(0xFF1A1E49),
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
 
-                      // Informations détaillées
-                      _buildInfoRow(
-                        icon: Icons.location_on_outlined,
-                        label: 'Adresse',
-                        value: warehouse.adresse ?? 'Adresse non définie',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(
-                        icon: Icons.calendar_today_outlined,
-                        label: 'Créé le',
-                        value: formattedDate,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'Colis en attente',
-                        value:
-                            '0', // TODO: Récupérer le nombre réel de colis pending
-                        valueColor: Colors.orange,
-                      ),
-                    ],
+                        // Informations détaillées
+                        _buildInfoRow(
+                          icon: Icons.location_on_outlined,
+                          label: 'Adresse',
+                          value: warehouse.adresse ?? 'Adresse non définie',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          icon: Icons.calendar_today_outlined,
+                          label: 'Créé le',
+                          value: formattedDate,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          icon: Icons.inventory_2_outlined,
+                          label: 'Colis en attente',
+                          value:
+                              '0', // TODO: Récupérer le nombre réel de colis pending
+                          valueColor: Colors.orange,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

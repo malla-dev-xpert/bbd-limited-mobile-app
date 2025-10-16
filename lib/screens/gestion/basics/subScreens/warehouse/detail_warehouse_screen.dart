@@ -1,13 +1,9 @@
 import 'dart:async';
-import 'dart:developer';
 
-import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
-import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/models/packages.dart';
-import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package_to_warehouse.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -39,13 +35,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
   // Contrôleurs et services
   final TextEditingController searchController = TextEditingController();
   final PackageServices packageServices = PackageServices();
-  final AuthService _authService = AuthService();
-  final WarehouseServices _warehouseServices = WarehouseServices();
-
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _adressController = TextEditingController();
-  final TextEditingController _storageTypeController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
 
   // Animation controllers
   AnimationController? _animationController;
@@ -55,8 +44,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
   List<Packages> _allPackages = [];
   List<Packages> _filteredPackages = [];
   String? _currentFilter;
-  bool _isLoading = false;
-  String? _errorMessage;
   bool _isRefreshing = false;
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
@@ -64,10 +51,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.name ?? '';
-    _adressController.text = widget.adresse ?? '';
-    _storageTypeController.text = widget.storageType ?? '';
-
     _initializeAnimation();
     fetchPackages();
     _refreshController.stream.listen((_) => fetchPackages());
@@ -84,213 +67,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
     );
 
     _animationController!.forward();
-  }
-
-  Future<void> _updateWarehouse() async {
-    try {
-      await showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => _buildEditWarehouseModal(context),
-      );
-    } catch (e) {
-      if (mounted) {
-        showErrorTopSnackBar(
-          context,
-          "Erreur lors de la modification: ${e.toString()}",
-        );
-      }
-    }
-  }
-
-  Future<void> _handleWarehouseUpdate() async {
-    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final user = await _authService.getUserInfo();
-      if (user == null || user.id == null) {
-        setState(() {
-          _errorMessage = "Erreur: Utilisateur non connecté ou ID manquant";
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (_nameController.text.isEmpty ||
-          _adressController.text.isEmpty ||
-          _storageTypeController.text.isEmpty) {
-        setState(() {
-          _errorMessage = "Tous les champs doivent être remplis";
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final warehouseData = Warehouses(
-        id: widget.warehouseId,
-        name: _nameController.text,
-        adresse: _adressController.text,
-        storageType: _storageTypeController.text,
-      );
-
-      final result = await _warehouseServices.updateWarehouse(
-        widget.warehouseId,
-        warehouseData,
-        user.id,
-      );
-      log(result.toString());
-
-      if (result == true) {
-        if (mounted) {
-          Navigator.pop(context, true);
-          showSuccessTopSnackBar(context, "Entrepôt modifié avec succès");
-          _refreshController.add(null);
-          final updatedWarehouse = await _warehouseServices.getWarehouseById(
-            widget.warehouseId,
-          );
-
-          if (updatedWarehouse != null && mounted) {
-            // Notifier le screen parent
-            if (widget.onWarehouseUpdated != null) {
-              widget.onWarehouseUpdated!();
-            }
-            Navigator.pop(context);
-          }
-        }
-      } else {
-        if (mounted) {
-          showErrorTopSnackBar(context, "Ce nom est déjà utilisé");
-          setState(() => _isLoading = false);
-        }
-      }
-    } catch (e, stackTrace) {
-      log(
-        "Erreur lors de la modification de l'entrepôt",
-        error: e,
-        stackTrace: stackTrace,
-      );
-      if (mounted) {
-        showErrorTopSnackBar(context, "Erreur technique: ${e.toString()}");
-        setState(() => _isLoading = false);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Widget _buildEditWarehouseModal(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: StatefulBuilder(
-        builder: (context, setModalState) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              left: 20,
-              right: 20,
-              top: 20,
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Modifier l\'entrepôt',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        icon: const Icon(Icons.close_rounded, size: 30),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Nom
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.warehouse),
-                      labelText: 'Nom de l\'entrepôt',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Adresse
-                  TextFormField(
-                    controller: _adressController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.maps_home_work),
-                      labelText: 'Adresse de l\'entrepôt',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Type de stockage
-                  TextFormField(
-                    controller: _storageTypeController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.storage),
-                      labelText: 'Type de stockage',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Erreur éventuelle
-                  if (_errorMessage != null)
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  const SizedBox(height: 10),
-
-                  // Bouton de confirmation
-                  confirmationButton(
-                    isLoading: _isLoading,
-                    onPressed: _handleWarehouseUpdate,
-                    label: "Modifier",
-                    icon: Icons.edit_document,
-                    subLabel: "Modification...",
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 
   Future<void> fetchPackages({bool reset = false, String? searchQuery}) async {
@@ -357,61 +133,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
     });
 
     filterPackages(searchController.text);
-  }
-
-  Future<Warehouses?> _deleteWarehouse(Warehouses warehouse) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
-        backgroundColor: Colors.white,
-        content: Text("Supprimer le magasin ${warehouse.name}?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
-          ),
-          TextButton.icon(
-            onPressed: () => Navigator.pop(context, true),
-            icon: const Icon(Icons.delete, color: Colors.red),
-            label: const Text(
-              "Supprimer",
-              style: TextStyle(color: Colors.red, fontSize: 18),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        final user = await _authService.getUserInfo();
-
-        if (user == null) {
-          showErrorTopSnackBar(context, "Veuillez vous connecter.");
-          return null;
-        }
-        setState(() => _isLoading = true);
-        final result = await _warehouseServices.deleteWarehouse(
-          warehouse.id,
-          user.id,
-        );
-
-        if (result == "DELETED") {
-          Navigator.pop(context, true);
-          showSuccessTopSnackBar(context, "Warehouse supprimé avec succès");
-        } else if (result == "PACKAGE_FOUND") {
-          showErrorTopSnackBar(
-            context,
-            "Impossible de supprimer - Il y'a des colis existants pour ce magasin.",
-          );
-        }
-      } catch (e) {
-        showErrorTopSnackBar(context, "Erreur lors de la suppression");
-      } finally {
-        setState(() => _isLoading = false);
-      }
-    }
   }
 
   @override
@@ -484,93 +205,6 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                 child: CustomScrollView(
                   slivers: [
                     // Section des informations de l'entrepôt
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Card(
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Colors.white, Colors.grey[50]!],
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        "Informations de l'entrepôt",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          IconButton(
-                                            onPressed: () => _updateWarehouse(),
-                                            icon: const Icon(
-                                              Icons.edit,
-                                              color: Color(0xFF7F78AF),
-                                            ),
-                                            tooltip: 'Modifier',
-                                          ),
-                                          IconButton(
-                                            onPressed: () => _deleteWarehouse(
-                                              Warehouses(
-                                                id: widget.warehouseId,
-                                                name: widget.name,
-                                              ),
-                                            ),
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
-                                            ),
-                                            tooltip: 'Supprimer',
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildInfoRow(
-                                    Icons.warehouse,
-                                    widget.name!,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildInfoRow(
-                                    Icons.map_rounded,
-                                    widget.adresse!,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildInfoRow(
-                                    Icons.type_specimen_rounded,
-                                    widget.storageType!,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
 
                     // Barre de recherche fixe
                     SliverPersistentHeader(
@@ -789,26 +423,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
     }
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: const Color(0xFF7F78AF)),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 18, color: Color(0xFF1A1E49)),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   void dispose() {
-    _nameController.dispose();
-    _adressController.dispose();
-    _storageTypeController.dispose();
     searchController.dispose();
     _refreshController.close();
     _animationController?.dispose();
