@@ -12,6 +12,7 @@ import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
+import 'package:bbd_limited/core/localization/translation_helper.dart';
 
 class AddPackageToWarehouseForm extends StatefulWidget {
   final int warehouseId;
@@ -96,8 +97,8 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     setState(() {
       _selectedClient = client;
     });
-    if (client != null && client.id != null) {
-      _loadEligibleItems(client.id!);
+    if (client?.id != null) {
+      _loadEligibleItems(client!.id);
     } else {
       setState(() {
         _eligibleItems = [];
@@ -217,66 +218,51 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
       builder: (context, provider, child) {
         return Form(
           key: _formKey,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.95,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 30,
+              right: 30,
+              top: 30,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 30,
             ),
-            padding: const EdgeInsets.all(20),
-            child: Stack(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 80.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              "Ajouter un nouveau colis",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -1,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                      Expanded(
-                        child: IndexedStack(
-                          index: currentStep,
-                          children: [
-                            _buildStep1(provider),
-                            _buildStep2(),
-                            _buildStep3(),
-                            _buildStep4(),
-                          ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        TranslationHelper.t(context, 'add_new_package_title'),
+                        style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -1,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
                 ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 10),
-                    child: _buildStepControls(),
-                  ),
+                const SizedBox(height: 20),
+                // Contenu des étapes
+                IndexedStack(
+                  index: currentStep,
+                  children: [
+                    _buildStep1(provider),
+                    _buildStep2(),
+                    _buildStep3(),
+                    _buildStep4(),
+                  ],
                 ),
+                const SizedBox(height: 20),
+                // Contrôles des étapes
+                _buildStepControls(),
               ],
             ),
           ),
@@ -680,16 +666,20 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
 }
 
 Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
-  return showDialog(
+  return showModalBottomSheet<bool>(
     context: context,
-    barrierDismissible: false,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
     builder: (context) {
       return ChangeNotifierProvider(
         create: (_) => PackageProvider(),
-        child: Dialog(
-          backgroundColor: Colors.white,
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: AddPackageToWarehouseForm(warehouseId: warehouseId),
         ),
       );

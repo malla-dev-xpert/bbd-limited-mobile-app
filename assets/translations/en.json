@@ -740,7 +740,8 @@
   "package_destination_label": "Destination",
   "package_cartons_count": "Number of cartons",
   "create_expedition_title": "Create Expedition",
-  "expedition_reference_label": "Expedition Reference",
+  "expedition_reference_label": "Package Reference",
+  "no_expeditions_found": "No package found",
   "expedition_weight_label": "Weight (kg)",
   "expedition_container": "Container",
   "expedition_items": "Items",
@@ -1998,5 +1999,6 @@
   "warehouse_package_modified_success": "Package {ref} modified successfully.",
   "warehouse_package_modification_error": "Error modifying package",
   "modify_warehouse_title": "Modify Warehouse",
-  "add_new_warehouse_title": "Add New Warehouse"
+  "add_new_warehouse_title": "Add New Warehouse",
+  "add_new_package_title": "Add New Package"
 }

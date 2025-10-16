@@ -319,6 +319,7 @@
   "no_payment_found": "Aucun paiement trouvé.",
   "see_all": "Voir tout",
   "no_eligible_items": "Aucun item éligible pour ce client.",
+  "no_expeditions_found": "Aucun colis trouvé",
   "no_device_found": "Aucune devise trouvée",
   "delivered": "Livrée",
   "in_transit": "En transit",
@@ -532,7 +533,7 @@
   "package_destination_unspecified": "Non spécifiée",
   "package_cartons_count": "Nombre de carton",
   "create_expedition_title": "Créer une expédition",
-  "expedition_reference_label": "Référence de l'expédition",
+  "expedition_reference_label": "Référence du colis",
   "expedition_weight_label": "Poids (kg)",
   "expedition_container": "Conteneur",
   "expedition_select_client": "Sélectionner un client",
@@ -1998,5 +1999,6 @@
   "warehouse_package_modified_success": "Colis {ref} modifiée avec succès.",
   "warehouse_package_modification_error": "Erreur lors de la modification du colis",
   "modify_warehouse_title": "Modifier l'entrepôt",
-  "add_new_warehouse_title": "Ajouter un nouveau entrepôt"
+  "add_new_warehouse_title": "Ajouter un nouveau entrepôt",
+  "add_new_package_title": "Ajouter un nouveau colis"
 }
