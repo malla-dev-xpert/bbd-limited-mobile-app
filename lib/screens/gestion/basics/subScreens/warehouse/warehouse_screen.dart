@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/core/localization/translation_helper.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({super.key});
@@ -100,7 +101,8 @@ class _WarehouseState extends State<WarehouseScreen> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = "Erreur de chargement: ${e.toString()}";
+        _errorMessage = TranslationHelper.tWithParams(
+            context, 'error_loading_warehouse_data', {'error': e.toString()});
       });
     } finally {
       setState(() => _isLoading = false);
@@ -139,7 +141,8 @@ class _WarehouseState extends State<WarehouseScreen> {
     if (user == null) {
       setState(() {
         _isLoading = false;
-        _errorMessage = "Erreur: Utilisateur non connecté";
+        _errorMessage =
+            TranslationHelper.t(context, 'error_user_not_connected');
       });
       return;
     }
@@ -154,8 +157,8 @@ class _WarehouseState extends State<WarehouseScreen> {
 
       if (success == "NAME_EXIST") {
         setState(() {
-          _errorMessage =
-              "Le nom '${_nameController.text}' existe déjà. Veuillez en choisir un autre.";
+          _errorMessage = TranslationHelper.tWithParams(
+              context, 'warehouse_name_exists', {'name': _nameController.text});
           _isLoading = false;
         });
         return;
@@ -163,8 +166,8 @@ class _WarehouseState extends State<WarehouseScreen> {
 
       if (success == "ADRESS_EXIST") {
         setState(() {
-          _errorMessage =
-              "L'adresse '${_adressController.text}' existe déjà. Veuillez en choisir une autre.";
+          _errorMessage = TranslationHelper.tWithParams(context,
+              'warehouse_address_exists', {'address': _adressController.text});
           _isLoading = false;
         });
         return;
@@ -181,13 +184,14 @@ class _WarehouseState extends State<WarehouseScreen> {
 
         Navigator.of(context).pop();
 
-        showSuccessTopSnackBar(context, 'Entrepôt créé avec succès!');
+        showSuccessTopSnackBar(
+            context, TranslationHelper.t(context, 'warehouse_created_success'));
         _refreshController.add(null);
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Erreur liée au serveur, veuillez réessayer plus tard.';
+        _errorMessage = TranslationHelper.t(context, 'server_error_try_again');
       });
     } finally {
       setState(() {
@@ -207,7 +211,8 @@ class _WarehouseState extends State<WarehouseScreen> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors de la modification: ${e.toString()}",
+          TranslationHelper.tWithParams(
+              context, 'error_modifying_warehouse', {'error': e.toString()}),
         );
       }
     }
@@ -217,20 +222,21 @@ class _WarehouseState extends State<WarehouseScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
+        title: Text(TranslationHelper.t(context, 'confirm_deletion_title')),
         backgroundColor: Colors.white,
-        content: Text("Supprimer le magasin ${warehouse.name}?"),
+        content: Text(TranslationHelper.tWithParams(context,
+            'delete_warehouse_confirmation', {'name': warehouse.name ?? ''})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(TranslationHelper.t(context, 'cancel')),
           ),
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete, color: Colors.red),
-            label: const Text(
-              "Supprimer",
-              style: TextStyle(color: Colors.red, fontSize: 18),
+            label: Text(
+              TranslationHelper.t(context, 'delete'),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -255,16 +261,18 @@ class _WarehouseState extends State<WarehouseScreen> {
         );
 
         if (result == "DELETED") {
-          showSuccessTopSnackBar(context, "Entrepôt supprimé avec succès");
+          showSuccessTopSnackBar(context,
+              TranslationHelper.t(context, 'warehouse_deleted_success'));
           _refreshController.add(null);
         } else if (result == "PACKAGE_FOUND") {
           showErrorTopSnackBar(
             context,
-            "Impossible de supprimer - Il y'a des colis existants pour ce magasin.",
+            TranslationHelper.t(context, 'cannot_delete_packages_exist'),
           );
         }
       } catch (e) {
-        showErrorTopSnackBar(context, "Erreur lors de la suppression");
+        showErrorTopSnackBar(
+            context, TranslationHelper.t(context, 'error_during_deletion'));
       } finally {
         if (mounted) {
           setState(() => _isLoading = false);
@@ -287,7 +295,8 @@ class _WarehouseState extends State<WarehouseScreen> {
       final user = await authService.getUserInfo();
       if (user == null) {
         setState(() {
-          _errorMessage = "Erreur: Utilisateur non connecté ou ID manquant";
+          _errorMessage = TranslationHelper.t(
+              context, 'error_user_not_connected_or_id_missing');
           _isLoading = false;
         });
         return;
@@ -297,7 +306,7 @@ class _WarehouseState extends State<WarehouseScreen> {
           _adressController.text.isEmpty ||
           _storageTypeController.text.isEmpty) {
         setState(() {
-          _errorMessage = "Tous les champs doivent être remplis";
+          _errorMessage = TranslationHelper.t(context, 'all_fields_required');
           _isLoading = false;
         });
         return;
@@ -319,18 +328,23 @@ class _WarehouseState extends State<WarehouseScreen> {
       if (result == true) {
         if (mounted) {
           Navigator.pop(context, true);
-          showSuccessTopSnackBar(context, "Entrepôt modifié avec succès");
+          showSuccessTopSnackBar(context,
+              TranslationHelper.t(context, 'warehouse_updated_success'));
           _refreshController.add(null);
         }
       } else {
         if (mounted) {
-          showErrorTopSnackBar(context, "Ce nom est déjà utilisé");
+          showErrorTopSnackBar(context,
+              TranslationHelper.t(context, 'warehouse_name_already_used'));
           setState(() => _isLoading = false);
         }
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur technique: ${e.toString()}");
+        showErrorTopSnackBar(
+            context,
+            TranslationHelper.tWithParams(
+                context, 'technical_error', {'error': e.toString()}));
         setState(() => _isLoading = false);
       }
     } finally {
@@ -401,11 +415,12 @@ class _WarehouseState extends State<WarehouseScreen> {
                   const SizedBox(height: 20),
                   buildTextField(
                     controller: _nameController,
-                    label: 'Nom de l\'entrepôt',
+                    label: TranslationHelper.t(context, 'warehouse_name_label'),
                     icon: Icons.warehouse,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Veuillez definir un nom';
+                        return TranslationHelper.t(
+                            context, 'please_define_name');
                       }
                       return null;
                     },
@@ -413,11 +428,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                   const SizedBox(height: 16),
                   buildTextField(
                     controller: _adressController,
-                    label: 'Adresse',
+                    label:
+                        TranslationHelper.t(context, 'warehouse_address_label'),
                     icon: Icons.map_outlined,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Veuillez definir une adresse';
+                        return TranslationHelper.t(
+                            context, 'please_define_address');
                       }
                       return null;
                     },
@@ -425,12 +442,14 @@ class _WarehouseState extends State<WarehouseScreen> {
                   const SizedBox(height: 16),
                   buildTextField(
                     controller: _storageTypeController,
-                    label: 'Type de stockage',
+                    label: TranslationHelper.t(
+                        context, 'warehouse_storage_type_label'),
                     icon: Icons.type_specimen,
                     keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Veuillez definir un type de stockage';
+                        return TranslationHelper.t(
+                            context, 'please_define_storage_type');
                       }
                       return null;
                     },
@@ -446,9 +465,10 @@ class _WarehouseState extends State<WarehouseScreen> {
                   confirmationButton(
                     isLoading: _isLoading,
                     onPressed: () => _handleWarehouseUpdate(warehouse),
-                    label: "Modifier",
+                    label: TranslationHelper.t(context, 'modify_button'),
                     icon: Icons.check_circle_outline_outlined,
-                    subLabel: "Modification...",
+                    subLabel:
+                        TranslationHelper.t(context, 'modifying_in_progress'),
                   ),
                 ],
               ),
@@ -475,9 +495,10 @@ class _WarehouseState extends State<WarehouseScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text(
-          "Gestion des entrepôts",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          TranslationHelper.t(context, 'warehouse_management_title'),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -545,11 +566,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                           const SizedBox(height: 20),
                           buildTextField(
                             controller: _nameController,
-                            label: 'Nom de l\'entrepôt',
+                            label: TranslationHelper.t(
+                                context, 'warehouse_name_label'),
                             icon: Icons.warehouse,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Veuillez definir un nom';
+                                return TranslationHelper.t(
+                                    context, 'please_define_name');
                               }
                               return null;
                             },
@@ -557,11 +580,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                           const SizedBox(height: 16),
                           buildTextField(
                             controller: _adressController,
-                            label: 'Adresse',
+                            label: TranslationHelper.t(
+                                context, 'warehouse_address_label'),
                             icon: Icons.map_outlined,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Veuillez definir une adresse';
+                                return TranslationHelper.t(
+                                    context, 'please_define_address');
                               }
                               return null;
                             },
@@ -569,12 +594,14 @@ class _WarehouseState extends State<WarehouseScreen> {
                           const SizedBox(height: 16),
                           buildTextField(
                             controller: _storageTypeController,
-                            label: 'Type de stockage',
+                            label: TranslationHelper.t(
+                                context, 'warehouse_storage_type_label'),
                             icon: Icons.type_specimen,
                             keyboardType: TextInputType.text,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Veuillez definir un type de stockage';
+                                return TranslationHelper.t(
+                                    context, 'please_define_storage_type');
                               }
                               return null;
                             },
@@ -590,9 +617,10 @@ class _WarehouseState extends State<WarehouseScreen> {
                           confirmationButton(
                             isLoading: _isLoading,
                             onPressed: _submitForm,
-                            label: "Enregistrer",
+                            label: TranslationHelper.t(context, 'save_button'),
                             icon: Icons.check_circle_outline_outlined,
-                            subLabel: "Enregistrement...",
+                            subLabel: TranslationHelper.t(
+                                context, 'saving_in_progress'),
                           ),
                         ],
                       ),
@@ -611,7 +639,7 @@ class _WarehouseState extends State<WarehouseScreen> {
           children: [
             buildTextField(
               controller: _searchController,
-              label: 'Rechercher un entrepôt...',
+              label: TranslationHelper.t(context, 'search_warehouse'),
               icon: Icons.search,
             ),
             const SizedBox(height: 20),
@@ -649,10 +677,10 @@ class _WarehouseState extends State<WarehouseScreen> {
     }
 
     if (_filteredWarehouse.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          "Aucun entrepôt trouvé",
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+          TranslationHelper.t(context, 'no_warehouse_found'),
+          style: const TextStyle(fontSize: 16, color: Colors.grey),
         ),
       );
     }
@@ -782,7 +810,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  warehouse.name ?? 'Entrepôt sans nom',
+                                  warehouse.name ??
+                                      TranslationHelper.t(
+                                          context, 'warehouse_without_name'),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -803,7 +833,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    warehouse.storageType ?? 'Type non défini',
+                                    warehouse.storageType ??
+                                        TranslationHelper.t(
+                                            context, 'type_not_defined'),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: Color(0xFF1A1E49),
@@ -826,19 +858,21 @@ class _WarehouseState extends State<WarehouseScreen> {
                       // Informations détaillées
                       _buildInfoRow(
                         icon: Icons.location_on_outlined,
-                        label: 'Adresse',
-                        value: warehouse.adresse ?? 'Adresse non définie',
+                        label: TranslationHelper.t(
+                            context, 'warehouse_address_label'),
+                        value: warehouse.adresse ??
+                            TranslationHelper.t(context, 'address_not_defined'),
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         icon: Icons.calendar_today_outlined,
-                        label: 'Créé le',
+                        label: TranslationHelper.t(context, 'created_on'),
                         value: formattedDate,
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         icon: Icons.inventory_2_outlined,
-                        label: 'Colis en attente',
+                        label: TranslationHelper.t(context, 'packages_pending'),
                         value:
                             '0', // TODO: Récupérer le nombre réel de colis pending
                         valueColor: Colors.orange,

@@ -9,6 +9,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
+import 'package:bbd_limited/core/localization/translation_helper.dart';
 
 class WarehouseDetailPage extends StatefulWidget {
   final int warehouseId;
@@ -80,7 +81,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
         _filteredPackages = packages;
       });
     } catch (e) {
-      print("Erreur de récupération des colis : $e");
+      print(TranslationHelper.tWithParams(
+          context, 'error_fetching_packages', {'error': e.toString()}));
     }
   }
 
@@ -156,7 +158,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
           ),
         ),
         title: Text(
-          'Détail : ${widget.name}',
+          TranslationHelper.tWithParams(
+              context, 'warehouse_detail_title', {'name': widget.name ?? ''}),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -193,9 +196,9 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
         backgroundColor: const Color(0xFF1A1E49),
         heroTag: 'warehouse_detail_fab',
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Ajouter un colis',
-          style: TextStyle(color: Colors.white),
+        label: Text(
+          TranslationHelper.t(context, 'add_package_button'),
+          style: const TextStyle(color: Colors.white),
         ),
       ),
       body: _fadeAnimation != null
@@ -241,7 +244,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                       onChanged: filterPackages,
                                       controller: searchController,
                                       decoration: InputDecoration(
-                                        hintText: 'Rechercher un colis...',
+                                        hintText: TranslationHelper.t(
+                                            context, 'search_warehouse'),
                                         prefixIcon: const Icon(
                                           Icons.search,
                                           color: Color(0xFF7F78AF),
@@ -276,7 +280,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    "Liste des colis${_currentFilter == null ? '' : _currentFilter == 'livres' ? ' livrés' : _currentFilter == 'en_transit' ? ' en transit' : ' en attente'}",
+                                    TranslationHelper.t(
+                                        context, 'packages_list_title'),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -301,7 +306,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                         Icons.clear_all,
                                         size: 18,
                                       ),
-                                      label: const Text("Voir tout"),
+                                      label: Text(TranslationHelper.t(
+                                          context, 'view_all_button')),
                                       style: TextButton.styleFrom(
                                         foregroundColor: const Color(
                                           0xFF7F78AF,
@@ -330,7 +336,8 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    "Aucun colis trouvé",
+                                    TranslationHelper.t(
+                                        context, 'no_packages_found'),
                                     style: TextStyle(
                                       fontSize: 18,
                                       color: Colors.grey[600],
@@ -394,7 +401,10 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                 if (context.mounted) {
                   showSuccessTopSnackBar(
                     context,
-                    "Colis ${updatedExpedition.ref} modifiée avec succès.",
+                    TranslationHelper.tWithParams(
+                        context,
+                        'package_modified_success',
+                        {'ref': updatedExpedition.ref ?? ''}),
                   );
                   fetchPackages(reset: true);
                 }
@@ -402,7 +412,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                 if (context.mounted) {
                   showErrorTopSnackBar(
                     context,
-                    "Erreur lors de la modification du colis",
+                    TranslationHelper.t(context, 'error_modifying_package'),
                   );
                 }
               }
@@ -456,19 +466,19 @@ class FiltreDropdown extends StatelessWidget {
         ],
       ),
       child: PopupMenuButton<String>(
-        icon: const Row(
+        icon: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.filter_list, color: Colors.white),
-            SizedBox(width: 8),
+            const Icon(Icons.filter_list, color: Colors.white),
+            const SizedBox(width: 8),
             Text(
-              'Filtrer',
-              style: TextStyle(
+              TranslationHelper.t(context, 'filter_button'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
           ],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -476,33 +486,33 @@ class FiltreDropdown extends StatelessWidget {
         color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         itemBuilder: (BuildContext context) => [
-          const PopupMenuItem<String>(
+          PopupMenuItem<String>(
             value: 'livres',
             child: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Colis livrés'),
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(TranslationHelper.t(context, 'packages_delivered')),
               ],
             ),
           ),
-          const PopupMenuItem<String>(
+          PopupMenuItem<String>(
             value: 'en_transit',
             child: Row(
               children: [
-                Icon(Icons.local_shipping, color: Colors.purple),
-                SizedBox(width: 8),
-                Text('Colis en transit'),
+                const Icon(Icons.local_shipping, color: Colors.purple),
+                const SizedBox(width: 8),
+                Text(TranslationHelper.t(context, 'packages_in_transit')),
               ],
             ),
           ),
-          const PopupMenuItem<String>(
+          PopupMenuItem<String>(
             value: 'en_attente',
             child: Row(
               children: [
-                Icon(Icons.hourglass_empty, color: Colors.orange),
-                SizedBox(width: 8),
-                Text('Colis en attente'),
+                const Icon(Icons.hourglass_empty, color: Colors.orange),
+                const SizedBox(width: 8),
+                Text(TranslationHelper.t(context, 'packages_pending')),
               ],
             ),
           ),
