@@ -281,23 +281,10 @@ class _WarehouseState extends State<WarehouseScreen> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
+                          buildTextField(
                             controller: _nameController,
-                            autocorrect: false,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.warehouse,
-                                color: Colors.black,
-                              ),
-                              labelText: 'Nom de l\'entrepôt',
-                              hintText: 'Ex: Entrepôt de la maison',
-                              fillColor: Colors.white,
-                              filled: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            textInputAction: TextInputAction.next,
+                            label: 'Nom de l\'entrepôt',
+                            icon: Icons.warehouse,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Veuillez definir un nom';
@@ -306,23 +293,10 @@ class _WarehouseState extends State<WarehouseScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
+                          buildTextField(
                             controller: _adressController,
-                            autocorrect: false,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.map_outlined,
-                                color: Colors.black,
-                              ),
-                              labelText: 'Adresse',
-                              hintText: 'Ex: Faladie SEMA',
-                              fillColor: Colors.white,
-                              filled: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            textInputAction: TextInputAction.next,
+                            label: 'Adresse',
+                            icon: Icons.map_outlined,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Veuillez definir une adresse';
@@ -331,24 +305,11 @@ class _WarehouseState extends State<WarehouseScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
+                          buildTextField(
                             controller: _storageTypeController,
-                            autocorrect: false,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.type_specimen,
-                                color: Colors.black,
-                              ),
-                              labelText: 'Type de stockage',
-                              hintText: 'Ex: Stockage de PC',
-                              fillColor: Colors.white,
-                              filled: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
-                            textInputAction: TextInputAction.done,
+                            label: 'Type de stockage',
+                            icon: Icons.type_specimen,
+                            keyboardType: TextInputType.text,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Veuillez definir un type de stockage';
@@ -428,191 +389,173 @@ class _WarehouseState extends State<WarehouseScreen> {
       displacement: 40,
       color: Theme.of(context).primaryColor,
       backgroundColor: Colors.white,
-      child: MasonryGridView.count(
+      child: GridView.builder(
         controller: _scrollController,
-        crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 2 : 1,
-        mainAxisSpacing: 28,
-        crossAxisSpacing: 28,
         padding: const EdgeInsets.only(bottom: 32),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.of(context).size.width >= 768 ? 2 : 1,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio:
+              MediaQuery.of(context).size.width >= 768 ? 1.2 : 1.5,
+        ),
         itemCount:
             _filteredWarehouse.length + (_hasMoreData && _isLoading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _filteredWarehouse.length) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: CircularProgressIndicator(),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: CircularProgressIndicator(),
+                ),
               ),
             );
           }
           final warehouse = _filteredWarehouse[index];
-          final formattedDate = DateFormat.yMMMMEEEEd().format(
+          final formattedDate = DateFormat('dd/MM/yyyy').format(
             warehouse.createdAt!,
           );
-          final gradient = index % 2 == 0
-              ? const LinearGradient(
-                  colors: [Color(0xFF1A1E49), Color(0xFF4F8FFF)])
-              : const LinearGradient(
-                  colors: [Color(0xFFFFA726), Color(0xFFFFD280)]);
-          final textColor = index % 2 == 0 ? Colors.white : Colors.black87;
-          return GestureDetector(
-            onTapDown: (_) => {}, // Pour effet tap si besoin
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              decoration: BoxDecoration(
-                gradient: gradient,
-                borderRadius: BorderRadius.circular(36),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.13),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(36),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 7),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.18),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: Text(
-                                warehouse.storageType ?? '',
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Colors.white.withOpacity(0.18),
-                                  foregroundColor: textColor,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18, vertical: 8),
-                                ),
-                                onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WarehouseDetailPage(
-                                        warehouseId: warehouse.id,
-                                        name: warehouse.name,
-                                        adresse: warehouse.adresse,
-                                        storageType: warehouse.storageType,
-                                        onWarehouseUpdated: () {
-                                          loadWarehouses(reset: true);
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    setState(() {
-                                      loadWarehouses(reset: true);
-                                    });
-                                  }
-                                },
-                                label: const Text('Voir'),
-                                icon: const Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 18),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.white.withOpacity(0.18),
-                              radius: 22,
-                              child: Icon(Icons.warehouse_rounded,
-                                  color: textColor, size: 28),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Text(
-                                warehouse.name ?? '',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: textColor,
-                                  letterSpacing: -1.2,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Divider(
-                          color: textColor.withOpacity(0.13),
-                          thickness: 1.1,
-                          height: 18,
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.map_rounded,
-                                size: 18, color: textColor.withOpacity(0.7)),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                warehouse.adresse ?? '',
-                                style: TextStyle(
-                                  color: textColor.withOpacity(0.85),
-                                  fontSize: 16,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.calendar_month,
-                                size: 18, color: textColor.withOpacity(0.7)),
-                            const SizedBox(width: 6),
-                            Text(
-                              formattedDate,
-                              style: TextStyle(
-                                color: textColor.withOpacity(0.85),
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WarehouseDetailPage(
+                        warehouseId: warehouse.id,
+                        name: warehouse.name,
+                        adresse: warehouse.adresse,
+                        storageType: warehouse.storageType,
+                        onWarehouseUpdated: () {
+                          loadWarehouses(reset: true);
+                        },
+                      ),
                     ),
+                  );
+                  if (result == true) {
+                    setState(() {
+                      loadWarehouses(reset: true);
+                    });
+                  }
+                },
+                child: Padding(
+                  padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width >= 768 ? 16 : 20,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // En-tête avec nom et badge
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1E49).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.warehouse_rounded,
+                              color: Color(0xFF1A1E49),
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  warehouse.name ?? 'Entrepôt sans nom',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1A1E49),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1A1E49)
+                                        .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    warehouse.storageType ?? 'Type non défini',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Color(0xFF1A1E49),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            color: Color(0xFF1A1E49),
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Informations détaillées
+                      _buildInfoRow(
+                        icon: Icons.location_on_outlined,
+                        label: 'Adresse',
+                        value: warehouse.adresse ?? 'Adresse non définie',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        icon: Icons.calendar_today_outlined,
+                        label: 'Créé le',
+                        value: formattedDate,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        icon: Icons.inventory_2_outlined,
+                        label: 'Colis en attente',
+                        value:
+                            '0', // TODO: Récupérer le nombre réel de colis pending
+                        valueColor: Colors.orange,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -620,6 +563,43 @@ class _WarehouseState extends State<WarehouseScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? valueColor,
+  }) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: Colors.grey[600],
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              color: valueColor ?? Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
