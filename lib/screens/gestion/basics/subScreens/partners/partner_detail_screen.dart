@@ -150,6 +150,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       });
 
       await _loadDebts();
+      await _calculateTotalVersementsUSD(); // Recalculer le total après le rafraîchissement
     } catch (e) {
       print('Error refreshing data: $e');
     }
@@ -299,21 +300,29 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       return;
     }
 
-    double totalUSD = 0.0;
+    double totalCNY = 0.0;
     for (var versement in _partner.versements!) {
       if (versement.montantVerser != null && versement.deviseCode != null) {
-        if (versement.deviseCode == 'USD') {
-          totalUSD += versement.montantVerser!;
+        if (versement.deviseCode == 'CNY') {
+          // Si la devise est déjà en CNY, ajouter directement
+          totalCNY += versement.montantVerser!;
         } else {
-          final rate =
-              await _exchangeRateService.getExchangeRate(versement.deviseCode!);
-          totalUSD += versement.montantVerser! / rate;
+          // Utiliser le taux utilisé lors du versement s'il existe
+          if (versement.tauxUtilise != null && versement.tauxUtilise! > 0) {
+            // Convertir en CNY en utilisant le taux utilisé lors du versement
+            totalCNY += versement.montantVerser! * versement.tauxUtilise!;
+          } else {
+            // Fallback: utiliser le taux de change actuel si tauxUtilise n'est pas disponible
+            final rate = await _exchangeRateService
+                .getExchangeRate(versement.deviseCode!);
+            totalCNY += versement.montantVerser! * rate;
+          }
         }
       }
     }
 
     setState(() {
-      _totalVersementsUSD = totalUSD;
+      _totalVersementsUSD = totalCNY; // Maintenant c'est en CNY
     });
   }
 
