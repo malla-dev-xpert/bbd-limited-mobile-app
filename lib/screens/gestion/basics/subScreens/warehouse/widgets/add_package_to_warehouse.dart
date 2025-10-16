@@ -11,8 +11,6 @@ import 'package:country_picker/country_picker.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/core/services/item_services.dart';
-import 'package:bbd_limited/core/localization/translation_helper.dart';
 
 class AddPackageToWarehouseForm extends StatefulWidget {
   final int warehouseId;
@@ -31,81 +29,14 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
   final _cbnController = TextEditingController();
   final _quantityController = TextEditingController();
 
-  int currentStep = 0;
-  bool isLoading = false;
-
-  List<Partner> _clients = [];
-  Partner? _selectedClient;
-  List<Containers> _containers = [];
-  Containers? _selectedContainer;
-
-  // Items
-  List<dynamic> _eligibleItems = [];
-  bool _isLoadingItems = false;
-
-  // Pays/dates
-  Country? _departureCountry;
-  Country? _arrivalCountry;
-  DateTime? _startDate;
-  DateTime? _estimatedArrivalDate;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadClients();
-      _loadContainers();
-    });
-  }
-
-  Future<void> _loadClients() async {
-    final provider = context.read<PackageProvider>();
-    await provider.loadClients();
-    setState(() {
-      _clients = provider.clients;
-    });
-  }
-
-  Future<void> _loadContainers() async {
-    final provider = context.read<PackageProvider>();
-    await provider.loadContainers();
-    setState(() {
-      _containers = provider.container;
-    });
-  }
-
-  Future<void> _loadEligibleItems(int clientId) async {
-    setState(() => _isLoadingItems = true);
-    try {
-      _eligibleItems = await ItemServices().findItemsByClient(clientId);
       final provider = context.read<PackageProvider>();
-      provider.clearSelectedItemIds();
-    } catch (e) {
-      setState(() {
-        _eligibleItems = [];
-      });
-      final provider = context.read<PackageProvider>();
-      provider.clearSelectedItemIds();
-      showErrorTopSnackBar(
-          context, "Erreur lors du chargement des items: " + e.toString());
-    } finally {
-      setState(() => _isLoadingItems = false);
-    }
-  }
-
-  void _onClientSelected(Partner? client) {
-    setState(() {
-      _selectedClient = client;
+      provider.loadClients();
+      provider.loadContainers();
     });
-    if (client?.id != null) {
-      _loadEligibleItems(client!.id);
-    } else {
-      setState(() {
-        _eligibleItems = [];
-      });
-      final provider = context.read<PackageProvider>();
-      provider.clearSelectedItemIds();
-    }
   }
 
   @override
@@ -117,98 +48,58 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     super.dispose();
   }
 
-  void _goToNextStep() {
-    if (currentStep == 0 && _selectedClient == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un client.");
-      return;
+  bool _validateStep1() {
+    if (_refController.text.isEmpty) {
+      showErrorTopSnackBar(context, "Veuillez entrer une référence");
+      return false;
     }
-    if (currentStep == 1 &&
-        _eligibleItems.isNotEmpty &&
-        context.read<PackageProvider>().selectedItemIds.isEmpty) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner au moins un item.");
-      return;
+    final provider = context.read<PackageProvider>();
+    if (provider.expeditionType == 'Avion' && _weightController.text.isEmpty) {
+      showErrorTopSnackBar(context, "Veuillez entrer un poids");
+      return false;
     }
-    if (currentStep == 2) {
-      if (_departureCountry == null) {
-        showErrorTopSnackBar(
-            context, "Veuillez sélectionner le pays de départ.");
-        return;
-      }
-      if (_arrivalCountry == null) {
-        showErrorTopSnackBar(
-            context, "Veuillez sélectionner le pays d'arrivée.");
-        return;
-      }
-      if (_startDate == null) {
-        showErrorTopSnackBar(
-            context, "Veuillez sélectionner la date de départ.");
-        return;
-      }
-      if (_estimatedArrivalDate == null) {
-        showErrorTopSnackBar(
-            context, "Veuillez sélectionner la date d'arrivée estimée.");
-        return;
-      }
+    if (provider.expeditionType == 'Bateau' && _cbnController.text.isEmpty) {
+      showErrorTopSnackBar(context, "Veuillez entrer un CBN");
+      return false;
     }
-    if (currentStep == 3) {
-      if (_selectedContainer == null) {
-        showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur.");
-        return;
-      }
+    if (_quantityController.text.isEmpty) {
+      showErrorTopSnackBar(context, "Veuillez entrer le nombre de cartons");
+      return false;
     }
-    setState(() => currentStep++);
-  }
-
-  void _goToPreviousStep() {
-    setState(() => currentStep--);
+    if (provider.selectedClient == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un client");
+      return false;
+    }
+    return true;
   }
 
   Future<void> _handleSubmit() async {
-    if (_selectedContainer == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur.");
+    final provider = context.read<PackageProvider>();
+    final weight = double.tryParse(_weightController.text);
+    final cbn = double.tryParse(_cbnController.text);
+    final quantity = double.tryParse(_quantityController.text);
+
+    if (provider.expeditionType == "Avion" && weight == null) {
+      showErrorTopSnackBar(context, "Le poids est invalid");
       return;
     }
-    if (_departureCountry == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner le pays de départ.");
+    if (provider.expeditionType == "Bateau" && cbn == null) {
+      showErrorTopSnackBar(context, "Le cbn est invalid");
       return;
     }
-    if (_arrivalCountry == null) {
-      showErrorTopSnackBar(context, "Veuillez sélectionner le pays d'arrivée.");
-      return;
-    }
-    setState(() => isLoading = true);
-    try {
-      final provider = context.read<PackageProvider>();
-      provider.selectedClient = _selectedClient;
-      provider.departureCountry = _departureCountry;
-      provider.arrivalCountry = _arrivalCountry;
-      provider.startDate = _startDate;
-      provider.estimatedArrivalDate = _estimatedArrivalDate;
-      final weight = double.tryParse(_weightController.text);
-      final cbn = double.tryParse(_cbnController.text);
-      final quantity = double.tryParse(_quantityController.text);
-      if (provider.expeditionType == "Avion" && weight == null) {
-        showErrorTopSnackBar(context, "Le poids est invalid");
-        return;
-      }
-      if (provider.expeditionType == "Bateau" && cbn == null) {
-        showErrorTopSnackBar(context, "Le cbn est invalid");
-        return;
-      }
-      final success = await provider.createPackage(
-        ref: _refController.text,
-        weight: weight,
-        cbn: cbn,
-        quantity: quantity ?? 0,
-        warehouseId: widget.warehouseId,
-        containerId: _selectedContainer?.id ?? 0,
-        context: context,
-      );
-      if (success) {
-        Navigator.pop(context, true);
-      }
-    } finally {
-      setState(() => isLoading = false);
+
+    final success = await provider.createPackage(
+      ref: _refController.text,
+      weight: weight,
+      cbn: cbn,
+      quantity: quantity ?? 0,
+      warehouseId: widget.warehouseId,
+      containerId: provider.selectedContainer?.id ?? 0,
+      context: context,
+    );
+
+    if (success) {
+      Navigator.pop(context, true);
     }
   }
 
@@ -220,55 +111,113 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
           key: _formKey,
           child: Padding(
             padding: EdgeInsets.only(
-              left: 30,
-              right: 30,
-              top: 30,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 30,
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        TranslationHelper.t(context, 'add_new_package_title'),
-                        style: const TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -1,
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 80.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                "Ajouter un nouveau colis",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              padding: EdgeInsets.zero,
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 40),
+                        Expanded(
+                          child: IndexedStack(
+                            index: provider.currentStep,
+                            children: [
+                              _buildStep1(provider),
+                              _buildStep2(provider),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 10,
                       ),
+                      child: _buildStepControls(provider),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Contenu des étapes
-                IndexedStack(
-                  index: currentStep,
-                  children: [
-                    _buildStep1(provider),
-                    _buildStep2(),
-                    _buildStep3(),
-                    _buildStep4(),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Contrôles des étapes
-                _buildStepControls(),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
       },
     );
+  }
+
+  Widget _buildStepControls(PackageProvider provider) {
+    if (provider.currentStep == 0) {
+      return confirmationButton(
+        isLoading: false,
+        label: "Suivant",
+        onPressed: () {
+          if (_validateStep1()) {
+            provider.currentStep++;
+          }
+        },
+        icon: Icons.arrow_forward_ios,
+        subLabel: "Chargement...",
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                provider.currentStep--;
+              },
+              label: const Text("Retour"),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: confirmationButton(
+              isLoading: provider.isLoading,
+              label: "Enregistrer",
+              subLabel: "Enregistrement...",
+              icon: Icons.check,
+              onPressed: _handleSubmit,
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildStep1(PackageProvider provider) {
@@ -297,9 +246,9 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value?.isEmpty ?? true)
-                          return "Ce champ est requis";
+                          return 'Ce champ est requis';
                         if (double.tryParse(value!) == null) {
-                          return "Veuillez entrer un nombre valide";
+                          return 'Veuillez entrer un nombre valide';
                         }
                         return null;
                       },
@@ -311,7 +260,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value?.isEmpty ?? true)
-                          return "Ce champ est requis";
+                          return 'Ce champ est requis';
                         if (double.tryParse(value!) == null) {
                           return 'Veuillez entrer un nombre valide';
                         }
@@ -338,164 +287,130 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
           ],
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              flex: 3,
-              child: DropDownCustom<Partner>(
-                items: _clients,
-                selectedItem: _selectedClient,
-                onChanged: _onClientSelected,
-                itemToString: (client) =>
-                    '${client.firstName} ${client.lastName} | ${client.phoneNumber}',
-                hintText: 'Choisir un client...',
-                prefixIcon: Icons.person,
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => const CreatePartnerBottomSheet(),
-                  ).then((_) {
-                    _loadClients();
-                  });
-                },
-                icon: Icon(Icons.add),
-              ),
-            ),
-          ],
-        ),
+        _buildClientSelector(provider),
+        const SizedBox(height: 20),
+        _buildContainerSelector(provider)
       ],
     );
   }
 
-  Widget _buildStep2() {
-    if (_isLoadingItems) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_eligibleItems.isEmpty) {
-      return const Center(child: Text("Aucun item éligible pour ce client."));
-    }
-    return ListView(
-      children: _eligibleItems.map((item) {
-        return CheckboxListTile(
-          value:
-              context.read<PackageProvider>().selectedItemIds.contains(item.id),
-          onChanged: (selected) {
-            final provider = context.read<PackageProvider>();
-            if (selected == true) {
-              provider.addSelectedItemId(item.id!);
-            } else {
-              provider.removeSelectedItemId(item.id!);
-            }
-          },
-          title: Text(item.description ?? "Sans description"),
-          subtitle: Text("Quantité: ${item.quantity?.toString() ?? "-"}"),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildStep3() {
+  Widget _buildStep2(PackageProvider provider) {
     return ListView(
       children: [
         _buildCountrySelector(
           label: 'Pays de départ',
-          selectedCountry: _departureCountry,
+          selectedCountry: provider.departureCountry,
           onCountrySelected: (country) {
-            setState(() {
-              _departureCountry = country;
-            });
+            provider.departureCountry = country;
           },
         ),
         const SizedBox(height: 20),
         _buildCountrySelector(
           label: 'Pays d\'arrivée',
-          selectedCountry: _arrivalCountry,
+          selectedCountry: provider.arrivalCountry,
           onCountrySelected: (country) {
-            setState(() {
-              _arrivalCountry = country;
-            });
+            provider.arrivalCountry = country;
           },
         ),
         const SizedBox(height: 20),
         DatePickerField(
           label: "Date de départ",
-          selectedDate: _startDate,
+          selectedDate: provider.startDate,
           onDateSelected: (date) {
-            setState(() {
-              _startDate = date;
-            });
+            provider.startDate = date;
           },
         ),
         const SizedBox(height: 20),
         DatePickerField(
           label: "Date d'arrivée estimée",
-          selectedDate: _estimatedArrivalDate,
+          selectedDate: provider.estimatedArrivalDate,
           onDateSelected: (date) {
-            setState(() {
-              _estimatedArrivalDate = date;
-            });
+            provider.estimatedArrivalDate = date;
           },
         ),
       ],
     );
   }
 
-  Widget _buildStep4() {
-    return ListView(
+  Widget _buildClientSelector(PackageProvider provider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          spacing: 10,
-          children: [
-            Expanded(
-              flex: 4,
-              child: DropDownCustom<Containers>(
-                items: _containers,
-                selectedItem: _selectedContainer,
-                onChanged: (container) {
-                  setState(() {
-                    _selectedContainer = container;
-                  });
-                },
-                itemToString: (container) => '${container.reference}',
-                hintText: 'Choisir un conténeur...',
-                prefixIcon: Icons.inventory_2,
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const CreateContainerForm(),
-                    ),
-                  ).then((_) {
-                    _loadContainers();
-                  });
-                },
-                icon: const Icon(Icons.add),
-              ),
-            ),
-          ],
+        Expanded(
+          flex: 3,
+          child: DropDownCustom<Partner>(
+            items: provider.clients,
+            selectedItem: provider.selectedClient,
+            onChanged: (client) {
+              provider.selectedClient = client;
+            },
+            itemToString: (client) =>
+                '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
+            hintText: 'Choisir un client...',
+            prefixIcon: Icons.person,
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: IconButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const CreatePartnerBottomSheet(),
+              ).then((_) {
+                provider.loadClients();
+              });
+            },
+            icon: Icon(Icons.add),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContainerSelector(PackageProvider provider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      spacing: 10,
+      children: [
+        Expanded(
+          flex: 4,
+          child: DropDownCustom<Containers>(
+            items: provider.container,
+            selectedItem: provider.selectedContainer,
+            onChanged: (container) {
+              provider.selectedContainer = container;
+            },
+            itemToString: (container) => '${container.reference}',
+            hintText: 'Choisir un conténeur...',
+            prefixIcon: Icons.inventory_2,
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: IconButton(
+            onPressed: () => {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const CreateContainerForm(),
+                ),
+              ).then((_) {
+                provider.loadContainers();
+              }),
+            },
+            icon: const Icon(Icons.add),
+          ),
         ),
       ],
     );
@@ -607,62 +522,6 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
       ),
     );
   }
-
-  Widget _buildStepControls() {
-    if (currentStep == 0) {
-      return confirmationButton(
-        isLoading: false,
-        label: "Suivant",
-        onPressed: _goToNextStep,
-        icon: Icons.arrow_forward_ios,
-        subLabel: "Chargement...",
-      );
-    } else if (currentStep == 3) {
-      return Row(
-        children: [
-          Expanded(
-            child: TextButton.icon(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: _goToPreviousStep,
-              label: const Text("Retour"),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: confirmationButton(
-              isLoading: isLoading,
-              label: "Enregistrer",
-              subLabel: "Enregistrement...",
-              icon: Icons.check,
-              onPressed: _handleSubmit,
-            ),
-          ),
-        ],
-      );
-    } else {
-      return Row(
-        children: [
-          Expanded(
-            child: TextButton.icon(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: _goToPreviousStep,
-              label: const Text("Retour"),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: confirmationButton(
-              isLoading: false,
-              label: "Suivant",
-              onPressed: _goToNextStep,
-              icon: Icons.arrow_forward_ios,
-              subLabel: "Chargement...",
-            ),
-          ),
-        ],
-      );
-    }
-  }
 }
 
 Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
@@ -671,17 +530,12 @@ Future<bool?> showAddPackageModal(BuildContext context, int warehouseId) async {
     isScrollControlled: true,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
     builder: (context) {
       return ChangeNotifierProvider(
         create: (_) => PackageProvider(),
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: AddPackageToWarehouseForm(warehouseId: warehouseId),
-        ),
+        child: AddPackageToWarehouseForm(warehouseId: warehouseId),
       );
     },
   );
