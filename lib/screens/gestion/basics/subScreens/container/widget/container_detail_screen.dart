@@ -1,4 +1,4 @@
-import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
@@ -30,11 +30,23 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   final ContainerServices containerServices = ContainerServices();
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     container = widget.container;
+    searchController.addListener(() {
+      setState(() {
+        searchQuery = searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   Color _getStatusColor(Status? status) {
@@ -55,15 +67,15 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   String _getStatusText(Status? status) {
     switch (status) {
       case Status.PENDING:
-        return AppLocalizations.of(context)!.translate('container_pending');
+        return AppLocalizations.of(context).translate('container_pending');
       case Status.INPROGRESS:
-        return AppLocalizations.of(context)!.translate('container_in_progress');
+        return AppLocalizations.of(context).translate('container_in_progress');
       case Status.RECEIVED:
-        return AppLocalizations.of(context)!.translate('container_arrived');
+        return AppLocalizations.of(context).translate('container_arrived');
       case Status.DELIVERED:
-        return AppLocalizations.of(context)!.translate('container_arrived');
+        return AppLocalizations.of(context).translate('container_arrived');
       default:
-        return AppLocalizations.of(context)!.translate('status_unknown');
+        return AppLocalizations.of(context).translate('status_unknown');
     }
   }
 
@@ -145,7 +157,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-              AppLocalizations.of(context)!.translate('container_details'),
+              AppLocalizations.of(context).translate('container_details'),
               style: TextStyle(
                   color: Color(0xFF1A1E49), fontWeight: FontWeight.bold)),
           centerTitle: true,
@@ -209,7 +221,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           });
                         }
                       },
-                      label: Text(AppLocalizations.of(context)!
+                      label: Text(AppLocalizations.of(context)
                           .translate('container_ungroup')),
                       icon: const Icon(Icons.person))
           ]),
@@ -341,22 +353,22 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     ),
                     const SizedBox(height: 12),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_size'),
                         "${container.size}",
                         icon: Icons.straighten),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_availability'),
                         container.isAvailable == true
-                            ? AppLocalizations.of(context)!
+                            ? AppLocalizations.of(context)
                                 .translate('container_available')
-                            : AppLocalizations.of(context)!
+                            : AppLocalizations.of(context)
                                 .translate('container_unavailable'),
                         icon: Icons.inventory_2),
                     if (container.startDeliveryDate != null)
                       _infoRow(
-                          AppLocalizations.of(context)!
+                          AppLocalizations.of(context)
                               .translate('container_delivery_start_date'),
                           container.startDeliveryDate != null
                               ? DateFormat.yMMMMEEEEd()
@@ -365,7 +377,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           icon: Icons.calendar_today),
                     if (container.confirmDeliveryDate != null)
                       _infoRow(
-                          AppLocalizations.of(context)!.translate(
+                          AppLocalizations.of(context).translate(
                               'container_delivery_confirmation_date'),
                           container.confirmDeliveryDate != null
                               ? DateFormat.yMMMMEEEEd()
@@ -380,7 +392,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle(AppLocalizations.of(context)!
+                    _sectionTitle(AppLocalizations.of(context)
                         .translate('container_supplier')),
                     Container(
                       padding: EdgeInsets.all(
@@ -470,7 +482,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle(AppLocalizations.of(context)!
+                    _sectionTitle(AppLocalizations.of(context)
                         .translate('container_supplier')),
                     Container(
                       padding: EdgeInsets.all(
@@ -487,7 +499,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           const Icon(Icons.business, color: Color(0xFF1A1E49)),
                           const SizedBox(width: 10),
                           Text(
-                              AppLocalizations.of(context)!
+                              AppLocalizations.of(context)
                                   .translate('container_bbd_limited'),
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16)),
@@ -497,7 +509,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   ],
                 ),
               // Bloc frais
-              _sectionTitle(AppLocalizations.of(context)!
+              _sectionTitle(AppLocalizations.of(context)
                   .translate('container_fees_charges')),
               Container(
                 padding: EdgeInsets.all(
@@ -510,56 +522,56 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 child: Column(
                   children: [
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_location_fee'),
                         container.locationFee != null
                             ? '${container.locationFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_loading_fee'),
                         container.loadingFee != null
                             ? '${container.loadingFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_local_charge'),
                         container.localCharge != null
                             ? '${container.localCharge} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_overweight_fee'),
                         container.overweightFee != null
                             ? '${container.overweightFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_checking_fee'),
                         container.checkingFee != null
                             ? '${container.checkingFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_telx_fee'),
                         container.telxFee != null
                             ? '${container.telxFee} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_other_fees'),
                         container.otherFees != null
                             ? '${container.otherFees} CNY'
                             : '0.0'),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_form_margin'),
                         container.margin != null
                             ? '${container.margin} CNY'
                             : '0.0'),
                     const Divider(),
                     _infoRow(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('container_total_fees'),
                         container.amount != null
                             ? '${container.amount} CNY'
@@ -569,26 +581,66 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
               ),
               // Liste des colis
-              _sectionTitle(AppLocalizations.of(context)!
-                  .translate('container_packages')),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth < 600) {
-                    // Layout vertical sur mobile
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!
-                              .translate('container_packages_list'),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 18),
-                        ),
-                        if (container.status == Status.PENDING) ...[
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: TextButton.icon(
+              if (container.packages != null &&
+                  container.packages!.isNotEmpty) ...[
+                _sectionTitle(AppLocalizations.of(context)
+                    .translate('container_packages')),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 600) {
+                      // Layout vertical sur mobile
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)
+                                .translate('container_packages_list'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 18),
+                          ),
+                          if (container.status == Status.PENDING) ...[
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: TextButton.icon(
+                                onPressed: () async {
+                                  final selectedPackages =
+                                      await showAddPackagesToContainerDialog(
+                                    context,
+                                    container.id!,
+                                    packageServices,
+                                  );
+                                  if (selectedPackages != null &&
+                                      selectedPackages.isNotEmpty) {
+                                    final updatedContainer =
+                                        await containerServices
+                                            .getContainerDetails(container.id!);
+                                    setState(() {
+                                      container = updatedContainer;
+                                    });
+                                  }
+                                },
+                                label: Text(AppLocalizations.of(context)
+                                    .translate('container_add_packages')),
+                                icon: const Icon(Icons.add),
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    } else {
+                      // Layout horizontal pour tablettes
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)
+                                .translate('container_packages_list'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 18),
+                          ),
+                          if (container.status == Status.PENDING)
+                            TextButton.icon(
                               onPressed: () async {
                                 final selectedPackages =
                                     await showAddPackagesToContainerDialog(
@@ -606,89 +658,28 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                   });
                                 }
                               },
-                              label: Text(AppLocalizations.of(context)!
+                              label: Text(AppLocalizations.of(context)
                                   .translate('container_add_packages')),
                               icon: const Icon(Icons.add),
                             ),
-                          ),
                         ],
-                      ],
-                    );
-                  } else {
-                    // Layout horizontal pour tablettes
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!
-                              .translate('container_packages_list'),
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 18),
-                        ),
-                        if (container.status == Status.PENDING)
-                          TextButton.icon(
-                            onPressed: () async {
-                              final selectedPackages =
-                                  await showAddPackagesToContainerDialog(
-                                context,
-                                container.id!,
-                                packageServices,
-                              );
-                              if (selectedPackages != null &&
-                                  selectedPackages.isNotEmpty) {
-                                final updatedContainer = await containerServices
-                                    .getContainerDetails(container.id!);
-                                setState(() {
-                                  container = updatedContainer;
-                                });
-                              }
-                            },
-                            label: Text(AppLocalizations.of(context)!
-                                .translate('container_add_packages')),
-                            icon: const Icon(Icons.add),
-                          ),
-                      ],
-                    );
-                  }
-                },
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 50,
-                child: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      searchQuery = value;
-                    });
+                      );
+                    }
                   },
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!
-                        .translate('container_search_packages'),
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    fillColor: Colors.white,
-                    filled: true,
-                    suffixIcon: searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.grey),
-                            onPressed: () {
-                              setState(() {
-                                searchQuery = '';
-                              });
-                            },
-                          )
-                        : null,
-                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                buildTextField(
+                  controller: searchController,
+                  label: AppLocalizations.of(context)
+                      .translate('container_search_packages'),
+                  icon: Icons.search,
+                ),
+                const SizedBox(height: 16),
+              ],
               Container(
                 padding: EdgeInsets.all(
                     MediaQuery.of(context).size.width < 600 ? 6.0 : 8.0),
+                margin: const EdgeInsets.only(top: 16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -701,8 +692,39 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   child: container.packages == null ||
                           container.packages!.isEmpty
                       ? Center(
-                          child: Text(AppLocalizations.of(context)!
-                              .translate('container_no_packages')),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(AppLocalizations.of(context)
+                                  .translate('container_no_packages')),
+                              if (container.status == Status.PENDING) ...[
+                                const SizedBox(height: 16),
+                                TextButton.icon(
+                                  onPressed: () async {
+                                    final selectedPackages =
+                                        await showAddPackagesToContainerDialog(
+                                      context,
+                                      container.id!,
+                                      packageServices,
+                                    );
+                                    if (selectedPackages != null &&
+                                        selectedPackages.isNotEmpty) {
+                                      final updatedContainer =
+                                          await containerServices
+                                              .getContainerDetails(
+                                                  container.id!);
+                                      setState(() {
+                                        container = updatedContainer;
+                                      });
+                                    }
+                                  },
+                                  label: Text(AppLocalizations.of(context)
+                                      .translate('container_add_packages')),
+                                  icon: const Icon(Icons.add),
+                                ),
+                              ],
+                            ],
+                          ),
                         )
                       : RefreshIndicator(
                           onRefresh: () async {
@@ -755,11 +777,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                     backgroundColor:
                                                         Colors.white,
                                                     title: Text(AppLocalizations
-                                                            .of(context)!
+                                                            .of(context)
                                                         .translate(
                                                             'confirmation')),
                                                     content: Text(AppLocalizations
-                                                            .of(context)!
+                                                            .of(context)
                                                         .translate(
                                                             'container_remove_package_confirm')),
                                                     actions: [
@@ -770,7 +792,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 .pop(false),
                                                         child: Text(
                                                             AppLocalizations.of(
-                                                                    context)!
+                                                                    context)
                                                                 .translate(
                                                                     'cancel')),
                                                       ),
@@ -782,11 +804,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                         child: Text(
                                                             isLoading
                                                                 ? AppLocalizations.of(
-                                                                        context)!
+                                                                        context)
                                                                     .translate(
                                                                         'container_removing')
                                                                 : AppLocalizations.of(
-                                                                        context)!
+                                                                        context)
                                                                     .translate(
                                                                         'confirm'),
                                                             style:
@@ -820,7 +842,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   showSuccessTopSnackBar(
                                                       context,
                                                       AppLocalizations.of(
-                                                              context)!
+                                                              context)
                                                           .translate(
                                                               'container_package_removed'));
                                                   return true;
@@ -829,7 +851,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   showErrorTopSnackBar(
                                                       context,
                                                       AppLocalizations.of(
-                                                              context)!
+                                                              context)
                                                           .translate(
                                                               'container_package_not_in_container'));
                                                 } else if (result ==
@@ -837,15 +859,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                   showErrorTopSnackBar(
                                                       context,
                                                       AppLocalizations.of(
-                                                              context)!
+                                                              context)
                                                           .translate(
                                                               'container_in_progress_remove_error'));
                                                 }
                                               } catch (e) {
                                                 showErrorTopSnackBar(
                                                     context,
-                                                    AppLocalizations.of(
-                                                            context)!
+                                                    AppLocalizations.of(context)
                                                         .translate(
                                                             'container_remove_error'));
                                               } finally {
@@ -1026,7 +1047,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                 Expanded(
                                                   child: _buildInfoText(
                                                       AppLocalizations.of(
-                                                              context)!
+                                                              context)
                                                           .translate(
                                                               'container_cartons'),
                                                       '${pkg.itemQuantity ?? 0}'),
@@ -1056,7 +1077,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                           Expanded(
                                                             child: _buildInfoText(
                                                                 AppLocalizations.of(
-                                                                        context)!
+                                                                        context)
                                                                     .translate(
                                                                         'container_departure'),
                                                                 '${pkg.startCountry ?? 'N/A'}'),
@@ -1076,7 +1097,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                           Expanded(
                                                             child: _buildInfoText(
                                                                 AppLocalizations.of(
-                                                                        context)!
+                                                                        context)
                                                                     .translate(
                                                                         'container_arrival'),
                                                                 '${pkg.destinationCountry ?? 'N/A'}'),
@@ -1096,14 +1117,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                       const SizedBox(width: 4),
                                                       _buildInfoText(
                                                           AppLocalizations.of(
-                                                                  context)!
+                                                                  context)
                                                               .translate(
                                                                   'container_departure'),
                                                           '${pkg.startCountry ?? 'N/A'}'),
                                                       const SizedBox(width: 10),
                                                       _buildInfoText(
                                                           AppLocalizations.of(
-                                                                  context)!
+                                                                  context)
                                                               .translate(
                                                                   'container_arrival'),
                                                           '${pkg.destinationCountry ?? 'N/A'}'),
@@ -1136,7 +1157,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                           Expanded(
                                                             child: _buildInfoText(
                                                                 AppLocalizations.of(
-                                                                        context)!
+                                                                        context)
                                                                     .translate(
                                                                         'container_departure'),
                                                                 pkg.startDate !=
@@ -1163,7 +1184,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                           Expanded(
                                                             child: _buildInfoText(
                                                                 AppLocalizations.of(
-                                                                        context)!
+                                                                        context)
                                                                     .translate(
                                                                         'container_arrival'),
                                                                 pkg.arrivalDate !=
@@ -1189,7 +1210,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                       const SizedBox(width: 4),
                                                       _buildInfoText(
                                                           AppLocalizations.of(
-                                                                  context)!
+                                                                  context)
                                                               .translate(
                                                                   'container_departure'),
                                                           pkg.startDate != null
@@ -1201,7 +1222,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                       const SizedBox(width: 10),
                                                       _buildInfoText(
                                                           AppLocalizations.of(
-                                                                  context)!
+                                                                  context)
                                                               .translate(
                                                                   'container_arrival'),
                                                           pkg.arrivalDate !=
@@ -1247,9 +1268,9 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       icon: const Icon(Icons.check, color: Colors.white),
                       label: Text(
                           isLoading
-                              ? AppLocalizations.of(context)!
+                              ? AppLocalizations.of(context)
                                   .translate('container_starting')
-                              : AppLocalizations.of(context)!
+                              : AppLocalizations.of(context)
                                   .translate('container_start_delivery'),
                           style: const TextStyle(
                               color: Colors.white,
@@ -1262,7 +1283,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             return StatefulBuilder(
                               builder: (context, setStateDialog) {
                                 return AlertDialog(
-                                  title: Text(AppLocalizations.of(context)!
+                                  title: Text(AppLocalizations.of(context)
                                       .translate('container_confirm_start')),
                                   backgroundColor: Colors.white,
                                   content: Column(
@@ -1270,17 +1291,16 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(AppLocalizations.of(context)!
-                                          .translate(
-                                              'container_confirm_start_message')),
+                                      Text(AppLocalizations.of(context).translate(
+                                          'container_confirm_start_message')),
                                       const SizedBox(height: 16),
                                       TextButton.icon(
                                         icon: const Icon(Icons.date_range),
                                         label: Text(
                                           tempSelectedDate != null
-                                              ? '${AppLocalizations.of(context)!.translate('container_delivery_date')} : '
+                                              ? '${AppLocalizations.of(context).translate('container_delivery_date')} : '
                                                   '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
-                                              : AppLocalizations.of(context)!
+                                              : AppLocalizations.of(context)
                                                   .translate(
                                                       'container_choose_delivery_date'),
                                         ),
@@ -1305,7 +1325,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           padding:
                                               const EdgeInsets.only(top: 8.0),
                                           child: Text(
-                                            '${AppLocalizations.of(context)!.translate('container_selected_date')} : '
+                                            '${AppLocalizations.of(context).translate('container_selected_date')} : '
                                             '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
@@ -1334,10 +1354,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           Navigator.of(context).pop(true),
                                       child: Text(
                                           isLoading
-                                              ? AppLocalizations.of(context)!
+                                              ? AppLocalizations.of(context)
                                                   .translate(
                                                       'container_starting')
-                                              : AppLocalizations.of(context)!
+                                              : AppLocalizations.of(context)
                                                   .translate('confirm'),
                                           style: const TextStyle(
                                               color: Colors.green)),
@@ -1375,19 +1395,19 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             }
                             showSuccessTopSnackBar(
                                 context,
-                                AppLocalizations.of(context)!
+                                AppLocalizations.of(context)
                                     .translate('container_delivery_started'));
                           } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
                             showErrorTopSnackBar(
                                 context,
-                                AppLocalizations.of(context)!.translate(
+                                AppLocalizations.of(context).translate(
                                     'container_no_packages_for_delivery'));
                           }
                         } catch (e) {
                           print(e);
                           showErrorTopSnackBar(
                               context,
-                              AppLocalizations.of(context)!
+                              AppLocalizations.of(context)
                                   .translate('container_delivery_start_error'));
                         } finally {
                           setState(() {
@@ -1417,9 +1437,9 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       icon: const Icon(Icons.flag, color: Colors.white),
                       label: Text(
                           isLoading
-                              ? AppLocalizations.of(context)!
+                              ? AppLocalizations.of(context)
                                   .translate('container_changing_status')
-                              : AppLocalizations.of(context)!
+                              : AppLocalizations.of(context)
                                   .translate('container_arrived_destination'),
                           style: const TextStyle(
                               color: Colors.white,
@@ -1432,7 +1452,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             return StatefulBuilder(
                               builder: (context, setStateDialog) {
                                 return AlertDialog(
-                                  title: Text(AppLocalizations.of(context)!
+                                  title: Text(AppLocalizations.of(context)
                                       .translate('container_confirm_arrival')),
                                   backgroundColor: Colors.white,
                                   content: Column(
@@ -1440,16 +1460,16 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(AppLocalizations.of(context)!.translate(
+                                      Text(AppLocalizations.of(context).translate(
                                           'container_confirm_arrival_message')),
                                       const SizedBox(height: 16),
                                       TextButton.icon(
                                         icon: const Icon(Icons.date_range),
                                         label: Text(
                                           tempSelectedConfirmDate != null
-                                              ? '${AppLocalizations.of(context)!.translate('container_confirmation_date')} : '
+                                              ? '${AppLocalizations.of(context).translate('container_confirmation_date')} : '
                                                   '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}'
-                                              : AppLocalizations.of(context)!
+                                              : AppLocalizations.of(context)
                                                   .translate(
                                                       'container_choose_confirmation_date'),
                                         ),
@@ -1540,23 +1560,23 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             }
                             showSuccessTopSnackBar(
                                 context,
-                                AppLocalizations.of(context)!
+                                AppLocalizations.of(context)
                                     .translate('container_arrival_confirmed'));
                           } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
                             showErrorTopSnackBar(
                                 context,
-                                AppLocalizations.of(context)!.translate(
+                                AppLocalizations.of(context).translate(
                                     'container_no_packages_for_reception'));
                           } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
                             showErrorTopSnackBar(
                                 context,
-                                AppLocalizations.of(context)!
+                                AppLocalizations.of(context)
                                     .translate('container_not_in_progress'));
                           }
                         } catch (e) {
                           showErrorTopSnackBar(
                               context,
-                              AppLocalizations.of(context)!
+                              AppLocalizations.of(context)
                                   .translate('container_reception_error'));
                         } finally {
                           setState(() {

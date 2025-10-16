@@ -190,7 +190,7 @@ class ContainerListItem extends StatelessWidget {
                                       style: TextStyle(
                                         color: _getStatusColor(),
                                         fontWeight: FontWeight.w600,
-                                        fontSize: isTablet ? 16 : 12,
+                                        fontSize: isTablet ? 18 : 16,
                                       ),
                                     ),
                                   ],
@@ -270,7 +270,7 @@ class ContainerListItem extends StatelessWidget {
                                       style: TextStyle(
                                         color: _getStatusColor(),
                                         fontWeight: FontWeight.w600,
-                                        fontSize: isTablet ? 16 : 12,
+                                        fontSize: isTablet ? 18 : 16,
                                       ),
                                     ),
                                   ],
@@ -298,7 +298,7 @@ class ContainerListItem extends StatelessWidget {
                             Text(
                               "${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} ${AppLocalizations.of(context)!.translate('container_packages_count')}",
                               style: TextStyle(
-                                fontSize: isTablet ? 18 : 14,
+                                fontSize: isTablet ? 18 : 16,
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -315,9 +315,9 @@ class ContainerListItem extends StatelessWidget {
                             ),
                             SizedBox(width: isTablet ? 8 : 4),
                             Text(
-                              "${container.size} ${AppLocalizations.of(context)!.translate('container_size_feet')}",
+                              "${container.size}",
                               style: TextStyle(
-                                fontSize: isTablet ? 18 : 14,
+                                fontSize: isTablet ? 18 : 16,
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -342,7 +342,7 @@ class ContainerListItem extends StatelessWidget {
                                 : AppLocalizations.of(context)!
                                     .translate('container_bbd_limited'),
                             style: TextStyle(
-                              fontSize: isTablet ? 18 : 14,
+                              fontSize: isTablet ? 18 : 16,
                               color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                             ),
