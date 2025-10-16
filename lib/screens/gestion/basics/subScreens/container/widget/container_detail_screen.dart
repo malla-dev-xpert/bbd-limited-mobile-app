@@ -585,88 +585,48 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   container.packages!.isNotEmpty) ...[
                 _sectionTitle(AppLocalizations.of(context)
                     .translate('container_packages')),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.maxWidth < 600) {
-                      // Layout vertical sur mobile
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (container.status == Status.PENDING) ...[
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              width: double.infinity,
-                              child: TextButton.icon(
-                                onPressed: () async {
-                                  final selectedPackages =
-                                      await showAddPackagesToContainerDialog(
-                                    context,
-                                    container.id!,
-                                    packageServices,
-                                  );
-                                  if (selectedPackages != null &&
-                                      selectedPackages.isNotEmpty) {
-                                    final updatedContainer =
-                                        await containerServices
-                                            .getContainerDetails(container.id!);
-                                    setState(() {
-                                      container = updatedContainer;
-                                    });
-                                  }
-                                },
-                                label: Text(AppLocalizations.of(context)
-                                    .translate('container_add_packages')),
-                                icon: const Icon(Icons.add),
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    } else {
-                      // Layout horizontal pour tablettes
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)
-                                .translate('container_packages_list'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 18),
-                          ),
-                          if (container.status == Status.PENDING)
-                            TextButton.icon(
-                              onPressed: () async {
-                                final selectedPackages =
-                                    await showAddPackagesToContainerDialog(
-                                  context,
-                                  container.id!,
-                                  packageServices,
-                                );
-                                if (selectedPackages != null &&
-                                    selectedPackages.isNotEmpty) {
-                                  final updatedContainer =
-                                      await containerServices
-                                          .getContainerDetails(container.id!);
-                                  setState(() {
-                                    container = updatedContainer;
-                                  });
-                                }
-                              },
-                              label: Text(AppLocalizations.of(context)
-                                  .translate('container_add_packages')),
-                              icon: const Icon(Icons.add),
-                            ),
-                        ],
-                      );
-                    }
-                  },
-                ),
                 const SizedBox(height: 16),
-                buildTextField(
-                  controller: searchController,
-                  label: AppLocalizations.of(context)
-                      .translate('container_search_packages'),
-                  icon: Icons.search,
+                Row(
+                  children: [
+                    if (container.status == Status.PENDING) ...[
+                      Expanded(
+                        child: buildTextField(
+                          controller: searchController,
+                          label: AppLocalizations.of(context)
+                              .translate('container_search_packages'),
+                          icon: Icons.search,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1E49),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          onPressed: () async {
+                            final selectedPackages =
+                                await showAddPackagesToContainerDialog(
+                              context,
+                              container.id!,
+                              packageServices,
+                            );
+                            if (selectedPackages != null &&
+                                selectedPackages.isNotEmpty) {
+                              final updatedContainer = await containerServices
+                                  .getContainerDetails(container.id!);
+                              setState(() {
+                                container = updatedContainer;
+                              });
+                            }
+                          },
+                          icon: const Icon(Icons.add, color: Colors.white),
+                          tooltip: AppLocalizations.of(context)
+                              .translate('container_add_packages'),
+                        ),
+                      ),
+                    ]
+                  ],
                 ),
                 const SizedBox(height: 16),
               ],
