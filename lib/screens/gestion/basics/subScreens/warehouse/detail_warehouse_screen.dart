@@ -10,6 +10,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:bbd_limited/core/localization/translation_helper.dart';
+import 'package:bbd_limited/components/text_input.dart';
 
 class WarehouseDetailPage extends StatefulWidget {
   final int warehouseId;
@@ -209,59 +210,26 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                   slivers: [
                     // Section des informations de l'entrepôt
 
-                    // Barre de recherche fixe
-                    SliverPersistentHeader(
-                      pinned: true,
-                      delegate: _SearchBarDelegate(
-                        child: Container(
-                          color: Colors.grey[50],
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 20,
-                          ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  spreadRadius: 1,
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      onChanged: filterPackages,
-                                      controller: searchController,
-                                      decoration: InputDecoration(
-                                        hintText: TranslationHelper.t(
-                                            context, 'search_warehouse'),
-                                        prefixIcon: const Icon(
-                                          Icons.search,
-                                          color: Color(0xFF7F78AF),
-                                        ),
-                                        border: InputBorder.none,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  FiltreDropdown(
-                                    onSelected: handleStatusFilter,
-                                  ),
-                                ],
+                    // Section de recherche et filtre
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Champ de recherche
+                            Expanded(
+                              child: buildTextField(
+                                controller: searchController,
+                                label: TranslationHelper.t(
+                                    context, 'search_package'),
+                                icon: Icons.search,
+                                onChanged: filterPackages,
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 10),
+                            FiltreDropdown(onSelected: handleStatusFilter),
+                          ],
                         ),
                       ),
                     ),
@@ -420,7 +388,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
               if (context.mounted) {
                 showErrorTopSnackBar(
                   context,
-                  "Erreur lors de la modification du colis",
+                  TranslationHelper.t(context, 'error_modifying_package'),
                 );
               }
             }
@@ -455,15 +423,7 @@ class FiltreDropdown extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF7F78AF),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF7F78AF).withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(4),
       ),
       child: PopupMenuButton<String>(
         icon: Row(
@@ -519,31 +479,5 @@ class FiltreDropdown extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  _SearchBarDelegate({required this.child});
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return child;
-  }
-
-  @override
-  double get maxExtent => 80.0;
-
-  @override
-  double get minExtent => 80.0;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
   }
 }

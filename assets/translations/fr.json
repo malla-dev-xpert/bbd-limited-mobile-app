@@ -1984,7 +1984,6 @@
   "warehouse_created_on": "Créé le",
   "warehouse_detail_title": "Détail : {name}",
   "warehouse_add_package_button": "Ajouter un colis",
-  "warehouse_search_package_hint": "Rechercher un colis...",
   "warehouse_filter_button": "Filtrer",
   "warehouse_packages_delivered": "Colis livrés",
   "warehouse_packages_in_transit": "Colis en transit",
@@ -1997,5 +1996,7 @@
   "warehouse_no_packages_found": "Aucun colis trouvé",
   "warehouse_packages_loading_error": "Erreur de récupération des colis : {error}",
   "warehouse_package_modified_success": "Colis {ref} modifiée avec succès.",
-  "warehouse_package_modification_error": "Erreur lors de la modification du colis"
+  "warehouse_package_modification_error": "Erreur lors de la modification du colis",
+  "modify_warehouse_title": "Modifier l'entrepôt",
+  "add_new_warehouse_title": "Ajouter un nouveau entrepôt"
 }

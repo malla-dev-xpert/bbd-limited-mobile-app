@@ -250,7 +250,8 @@ class _WarehouseState extends State<WarehouseScreen> {
         final user = await authService.getUserInfo();
 
         if (user == null) {
-          showErrorTopSnackBar(context, "Veuillez vous connecter.");
+          showErrorTopSnackBar(context,
+              TranslationHelper.t(context, 'error_user_not_connected'));
           setState(() => _isLoading = false);
           return;
         }
@@ -383,12 +384,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Padding(
-                          padding: EdgeInsets.only(right: 8.0),
+                          padding: const EdgeInsets.only(right: 8.0),
                           child: Text(
-                            'Modifier l\'entrepôt',
-                            style: TextStyle(
+                            TranslationHelper.t(
+                                context, 'modify_warehouse_title'),
+                            style: const TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                               letterSpacing: -1,
@@ -534,12 +536,13 @@ class _WarehouseState extends State<WarehouseScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Expanded(
+                              Expanded(
                                 child: Padding(
-                                  padding: EdgeInsets.only(right: 8.0),
+                                  padding: const EdgeInsets.only(right: 8.0),
                                   child: Text(
-                                    'Ajouter un nouveau entrepôt',
-                                    style: TextStyle(
+                                    TranslationHelper.t(
+                                        context, 'add_new_warehouse_title'),
+                                    style: const TextStyle(
                                       fontSize: 25,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: -1,

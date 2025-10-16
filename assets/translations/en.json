@@ -1984,7 +1984,6 @@
   "warehouse_created_on": "Created on",
   "warehouse_detail_title": "Detail: {name}",
   "warehouse_add_package_button": "Add package",
-  "warehouse_search_package_hint": "Search for a package...",
   "warehouse_filter_button": "Filter",
   "warehouse_packages_delivered": "Delivered packages",
   "warehouse_packages_in_transit": "Packages in transit",
@@ -1997,5 +1996,7 @@
   "warehouse_no_packages_found": "No packages found",
   "warehouse_packages_loading_error": "Error retrieving packages: {error}",
   "warehouse_package_modified_success": "Package {ref} modified successfully.",
-  "warehouse_package_modification_error": "Error modifying package"
+  "warehouse_package_modification_error": "Error modifying package",
+  "modify_warehouse_title": "Modify Warehouse",
+  "add_new_warehouse_title": "Add New Warehouse"
 }

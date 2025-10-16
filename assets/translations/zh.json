@@ -1962,7 +1962,6 @@
   "warehouse_created_on": "创建于",
   "warehouse_detail_title": "详情：{name}",
   "warehouse_add_package_button": "添加包裹",
-  "warehouse_search_package_hint": "搜索包裹...",
   "warehouse_filter_button": "筛选",
   "warehouse_packages_delivered": "已交付包裹",
   "warehouse_packages_in_transit": "运输中包裹",
@@ -1975,5 +1974,7 @@
   "warehouse_no_packages_found": "未找到包裹",
   "warehouse_packages_loading_error": "检索包裹时出错：{error}",
   "warehouse_package_modified_success": "包裹 {ref} 修改成功。",
-  "warehouse_package_modification_error": "修改包裹时出错"
+  "warehouse_package_modification_error": "修改包裹时出错",
+  "modify_warehouse_title": "修改仓库",
+  "add_new_warehouse_title": "添加新仓库"
 }
