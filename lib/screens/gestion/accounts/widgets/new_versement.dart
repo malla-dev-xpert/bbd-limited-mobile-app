@@ -233,19 +233,14 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   }
 
   bool _validateFirstStep() {
-    if (montantVerserController.text.isEmpty) {
-      showErrorTopSnackBar(context,
-          AppLocalizations.of(context).translate('please_enter_amount'));
-      return false;
-    }
     if (widget.isVersementScreen && selectedCLients == null) {
       showErrorTopSnackBar(context,
           AppLocalizations.of(context).translate('please_select_client'));
       return false;
     }
-    if (myDate == null) {
+    if (montantVerserController.text.isEmpty) {
       showErrorTopSnackBar(context,
-          AppLocalizations.of(context).translate('please_select_date'));
+          AppLocalizations.of(context).translate('please_enter_amount'));
       return false;
     }
     if (selectedType == null) {
@@ -253,6 +248,24 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
           context,
           AppLocalizations.of(context)
               .translate('please_select_versement_type'));
+      return false;
+    }
+    if (selectedDevise == null || selectedDevise!.id == null) {
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_valid_currency'));
+      return false;
+    }
+    if (tauxUtiliseController.text.isEmpty) {
+      showErrorTopSnackBar(
+          context, AppLocalizations.of(context).translate('please_enter_rate'));
+      return false;
+    }
+    final tauxUtilise = double.tryParse(tauxUtiliseController.text) ?? 0.0;
+    if (tauxUtilise <= 0) {
+      showErrorTopSnackBar(
+          context, AppLocalizations.of(context).translate('invalid_rate'));
       return false;
     }
     return true;
@@ -287,7 +300,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                               .translate('versement_information')
                           : currentStep == 1
                               ? AppLocalizations.of(context)
-                                  .translate('commissionnaire_information')
+                                  .translate('date_and_commissionnaire')
                               : AppLocalizations.of(context)
                                   .translate('additional_note'),
                       style: const TextStyle(
@@ -313,6 +326,23 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (widget.isVersementScreen)
+                            DropDownCustom<Partner>(
+                              items: clients,
+                              selectedItem: selectedCLients,
+                              onChanged: (client) {
+                                setState(() {
+                                  selectedCLients = client;
+                                });
+                              },
+                              itemToString: (client) =>
+                                  '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
+                              hintText: AppLocalizations.of(context)
+                                  .translate('choose_client'),
+                              prefixIcon: Icons.person_3,
+                            ),
+                          if (widget.isVersementScreen)
+                            const SizedBox(height: 10),
                           buildTextField(
                             controller: montantVerserController,
                             label: AppLocalizations.of(context)
@@ -334,53 +364,6 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             hintText: AppLocalizations.of(context)
                                 .translate('choose_versement_type'),
                             prefixIcon: Icons.category,
-                          ),
-                          const SizedBox(height: 10),
-                          if (widget.isVersementScreen)
-                            DropDownCustom<Partner>(
-                              items: clients,
-                              selectedItem: selectedCLients,
-                              onChanged: (client) {
-                                setState(() {
-                                  selectedCLients = client;
-                                });
-                              },
-                              itemToString: (client) =>
-                                  '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
-                              hintText: AppLocalizations.of(context)
-                                  .translate('choose_client'),
-                              prefixIcon: Icons.person_3,
-                            ),
-                          if (widget.isVersementScreen)
-                            const SizedBox(height: 10),
-                          DatePickerField(
-                            label: AppLocalizations.of(context)
-                                .translate('payment_date'),
-                            selectedDate: myDate,
-                            onDateSelected: (date) {
-                              setState(() {
-                                myDate = date;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          buildTextField(
-                            controller: commissionnaireNameController,
-                            label: AppLocalizations.of(context)
-                                .translate('commissionnaire_full_name'),
-                            icon: Icons.person,
-                          ),
-                          const SizedBox(height: 10),
-                          buildTextField(
-                            controller: commissionnairePhoneController,
-                            label: AppLocalizations.of(context)
-                                .translate('commissionnaire_phone'),
-                            icon: Icons.phone,
-                            keyboardType: TextInputType.phone,
                           ),
                           const SizedBox(height: 10),
                           Row(
@@ -421,6 +404,36 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                                 .translate('exchange_rate'),
                             icon: Icons.trending_up,
                             keyboardType: TextInputType.number,
+                          ),
+                        ],
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          buildTextField(
+                            controller: commissionnaireNameController,
+                            label: AppLocalizations.of(context)
+                                .translate('commissionnaire_full_name'),
+                            icon: Icons.person,
+                          ),
+                          const SizedBox(height: 10),
+                          buildTextField(
+                            controller: commissionnairePhoneController,
+                            label: AppLocalizations.of(context)
+                                .translate('commissionnaire_phone'),
+                            icon: Icons.phone,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 10),
+                          DatePickerField(
+                            label: AppLocalizations.of(context)
+                                .translate('payment_date'),
+                            selectedDate: myDate,
+                            onDateSelected: (date) {
+                              setState(() {
+                                myDate = date;
+                              });
+                            },
                           ),
                         ],
                       ),

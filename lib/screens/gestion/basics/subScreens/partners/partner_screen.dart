@@ -221,6 +221,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
               onEdit: _editPartner,
               onDelete: _deletePartner,
               onMerge: _mergePartner,
+              onPartnerUpdated: _updatePartnerInList,
             );
           },
         ),
@@ -369,5 +370,23 @@ class _PartnerScreenState extends State<PartnerScreen> {
         },
       ),
     );
+  }
+
+  void _updatePartnerInList(Partner updatedPartner) {
+    setState(() {
+      // Mettre à jour le partenaire dans _allPartners
+      final allIndex =
+          _allPartners.indexWhere((p) => p.id == updatedPartner.id);
+      if (allIndex != -1) {
+        _allPartners[allIndex] = updatedPartner;
+      }
+
+      // Mettre à jour le partenaire dans _filteredPartners
+      final filteredIndex =
+          _filteredPartners.indexWhere((p) => p.id == updatedPartner.id);
+      if (filteredIndex != -1) {
+        _filteredPartners[filteredIndex] = updatedPartner;
+      }
+    });
   }
 }

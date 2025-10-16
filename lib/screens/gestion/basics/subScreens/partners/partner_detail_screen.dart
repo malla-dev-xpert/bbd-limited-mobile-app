@@ -33,9 +33,13 @@ enum OperationType { versements, expeditions, debts }
 
 class PartnerDetailScreen extends StatefulWidget {
   final Partner partner;
+  final Function(Partner)? onPartnerUpdated;
 
-  const PartnerDetailScreen({Key? key, required this.partner})
-      : super(key: key);
+  const PartnerDetailScreen({
+    Key? key,
+    required this.partner,
+    this.onPartnerUpdated,
+  }) : super(key: key);
 
   @override
   State<PartnerDetailScreen> createState() => _PartnerDetailScreenState();
@@ -151,6 +155,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
       await _loadDebts();
       await _calculateTotalVersementsUSD(); // Recalculer le total après le rafraîchissement
+
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     } catch (e) {
       print('Error refreshing data: $e');
     }
@@ -1104,7 +1113,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       ),
     );
     if (result == true) {
-      _refreshData();
+      await _refreshData();
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     }
   }
 
@@ -1122,6 +1135,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
     if (result == true) {
       await _refreshData();
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     }
   }
 
@@ -1144,7 +1161,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
 
     if (result == true) {
-      _refreshData();
+      await _refreshData();
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     }
   }
 
@@ -1169,6 +1190,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     if (result == true) {
       await _refreshData();
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     }
   }
 
@@ -1187,6 +1212,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     if (result == true) {
       await _loadDebts();
       setState(() {});
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     }
   }
 

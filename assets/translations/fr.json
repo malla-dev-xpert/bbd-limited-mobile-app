@@ -660,6 +660,7 @@
   "end_date": "Date fin",
   "versement_information": "Informations du versement",
   "commissionnaire_information": "Informations du commissionnaire",
+  "date_and_commissionnaire": "Date et Commissionnaire",
   "additional_note": "Note additionnelle",
   "amount_to_pay": "Montant à versé",
   "choose_versement_type": "Choisir un type de versement...",

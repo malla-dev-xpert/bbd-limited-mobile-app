@@ -826,6 +826,7 @@
   "end_date": "结束日期",
   "versement_information": "付款信息",
   "commissionnaire_information": "专员信息",
+  "date_and_commissionnaire": "日期和专员",
   "additional_note": "附加说明",
   "choose_versement_type": "选择付款类型...",
   "choose_client": "选择客户...",

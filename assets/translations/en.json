@@ -872,6 +872,7 @@
   "end_date": "End date",
   "versement_information": "Payment Information",
   "commissionnaire_information": "Commissioner Information",
+  "date_and_commissionnaire": "Date and Commissionnaire",
   "additional_note": "Additional Note",
   "amount_to_pay": "Amount to pay",
   "choose_versement_type": "Choose a payment type...",

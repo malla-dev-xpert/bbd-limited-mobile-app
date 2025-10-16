@@ -10,6 +10,7 @@ class PartnerListItem extends StatelessWidget {
   final Function(Partner) onEdit;
   final Function(Partner) onDelete;
   final Function(Partner) onMerge;
+  final Function(Partner)? onPartnerUpdated;
 
   const PartnerListItem({
     Key? key,
@@ -17,6 +18,7 @@ class PartnerListItem extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onMerge,
+    this.onPartnerUpdated,
   }) : super(key: key);
 
   @override
@@ -59,13 +61,20 @@ class PartnerListItem extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PartnerDetailScreen(partner: partner),
+              builder: (context) => PartnerDetailScreen(
+                partner: partner,
+                onPartnerUpdated: onPartnerUpdated,
+              ),
             ),
           );
+          // Si le partenaire a été mis à jour, notifier le parent
+          if (result != null && onPartnerUpdated != null) {
+            onPartnerUpdated!(result);
+          }
         },
         child: ListTile(
           title: Text("${partner.firstName} ${partner.lastName}"),
