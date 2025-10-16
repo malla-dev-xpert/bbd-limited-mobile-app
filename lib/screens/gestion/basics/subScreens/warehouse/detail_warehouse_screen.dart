@@ -269,44 +269,47 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // En-tête de la liste
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Liste des colis${_currentFilter == null ? '' : _currentFilter == 'livres' ? ' livrés' : _currentFilter == 'en_transit' ? ' en transit' : ' en attente'}",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1A1E49),
-                                  ),
-                                ),
-                                if (_currentFilter != null)
-                                  TextButton.icon(
-                                    onPressed: () {
-                                      setState(() {
-                                        _currentFilter = null;
-                                        _filteredPackages = _allPackages;
-                                        if (searchController.text.isNotEmpty) {
-                                          filterPackages(
-                                            searchController.text,
-                                          );
-                                        }
-                                      });
-                                    },
-                                    icon: const Icon(
-                                      Icons.clear_all,
-                                      size: 18,
+                            // En-tête de la liste (affiché seulement si la liste n'est pas vide)
+                            if (_filteredPackages.isNotEmpty)
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Liste des colis${_currentFilter == null ? '' : _currentFilter == 'livres' ? ' livrés' : _currentFilter == 'en_transit' ? ' en transit' : ' en attente'}",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1E49),
                                     ),
-                                    label: const Text("Voir tout"),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(
-                                        0xFF7F78AF,
+                                  ),
+                                  if (_currentFilter != null)
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        setState(() {
+                                          _currentFilter = null;
+                                          _filteredPackages = _allPackages;
+                                          if (searchController
+                                              .text.isNotEmpty) {
+                                            filterPackages(
+                                              searchController.text,
+                                            );
+                                          }
+                                        });
+                                      },
+                                      icon: const Icon(
+                                        Icons.clear_all,
+                                        size: 18,
+                                      ),
+                                      label: const Text("Voir tout"),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color(
+                                          0xFF7F78AF,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
-                            ),
+                                ],
+                              ),
                             const SizedBox(height: 16),
                           ],
                         ),
