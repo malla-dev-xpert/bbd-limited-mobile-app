@@ -79,22 +79,6 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     }
   }
 
-  // Fonction helper pour créer du texte avec valeurs en gras
-  Widget _buildInfoText(String label, String value) {
-    return RichText(
-      text: TextSpan(
-        style: const TextStyle(fontSize: 16, color: Colors.black87),
-        children: [
-          TextSpan(text: '$label: '),
-          TextSpan(
-            text: value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _infoRow(String label, String? value, {IconData? icon}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -108,13 +92,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+              style: TextStyle(color: Colors.grey[600], fontSize: 17),
             ),
           ),
           Expanded(
             child: Text(
               value ?? '',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
             ),
           ),
@@ -137,11 +121,341 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
-// Vérifie si tous les colis sont pour le même client
+  // Vérifie si tous les colis sont pour le même client
   bool _allPackagesSameClient() {
     if (container.packages == null || container.packages!.isEmpty) return true;
     final firstClientId = container.packages!.first.clientId;
     return container.packages!.every((p) => p.clientId == firstClientId);
+  }
+
+  Widget _buildModernPackageCard(dynamic pkg) {
+    final isTablet = MediaQuery.of(context).size.width >= 600;
+    final cardPadding = isTablet ? 20.0 : 16.0;
+    final iconSize = isTablet ? 20.0 : 18.0;
+    final fontSize = isTablet ? 18.0 : 17.0;
+    final titleFontSize = isTablet ? 20.0 : 18.0;
+
+    return Container(
+      margin: EdgeInsets.symmetric(
+        vertical: isTablet ? 8.0 : 6.0,
+        horizontal: isTablet ? 4.0 : 2.0,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: isTablet ? 12.0 : 8.0,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+          onTap: () {
+            // Action on tap if needed
+          },
+          child: Padding(
+            padding: EdgeInsets.all(cardPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with reference and type
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pkg.ref ?? 'N/A',
+                            style: TextStyle(
+                              fontSize: titleFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A1E49),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isTablet ? 12.0 : 10.0,
+                              vertical: isTablet ? 6.0 : 4.0,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue[400]!,
+                                  Colors.blue[600]!,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius:
+                                  BorderRadius.circular(isTablet ? 20.0 : 16.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              pkg.expeditionType ?? 'N/A',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isTablet) ...[
+                      const SizedBox(width: 16),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.local_shipping,
+                          color: Colors.grey[600],
+                          size: iconSize,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Client information
+                _buildInfoRow(
+                  icon: Icons.person_outline,
+                  iconSize: iconSize,
+                  label: pkg.clientName ?? 'N/A',
+                  value: pkg.clientPhone ?? '',
+                  isTablet: isTablet,
+                  fontSize: fontSize,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Cartons information
+                _buildInfoRow(
+                  icon: Icons.inventory_2_outlined,
+                  iconSize: iconSize,
+                  label: AppLocalizations.of(context)
+                      .translate('container_cartons'),
+                  value: '${pkg.itemQuantity ?? 0}',
+                  isTablet: isTablet,
+                  fontSize: fontSize,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Location information in row
+                Row(
+                  children: [
+                    // Departure location
+                    Expanded(
+                      child: _buildCompactInfoRow(
+                        icon: Icons.location_on_outlined,
+                        iconSize: iconSize,
+                        label: AppLocalizations.of(context)
+                            .translate('container_departure'),
+                        value: pkg.startCountry ?? 'N/A',
+                        isTablet: isTablet,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                    SizedBox(width: isTablet ? 16.0 : 8.0),
+                    // Arrival location
+                    Expanded(
+                      child: _buildCompactInfoRow(
+                        icon: Icons.location_on_outlined,
+                        iconSize: iconSize,
+                        label: AppLocalizations.of(context)
+                            .translate('container_arrival'),
+                        value: pkg.destinationCountry ?? 'N/A',
+                        isTablet: isTablet,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Date information in row
+                Row(
+                  children: [
+                    // Departure date
+                    Expanded(
+                      child: _buildCompactInfoRow(
+                        icon: Icons.calendar_today_outlined,
+                        iconSize: iconSize,
+                        label: AppLocalizations.of(context)
+                            .translate('container_departure'),
+                        value: pkg.startDate != null
+                            ? DateFormat('dd/MM/yyyy').format(pkg.startDate!)
+                            : 'N/A',
+                        isTablet: isTablet,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                    SizedBox(width: isTablet ? 16.0 : 8.0),
+                    // Arrival date
+                    Expanded(
+                      child: _buildCompactInfoRow(
+                        icon: Icons.calendar_today_outlined,
+                        iconSize: iconSize,
+                        label: AppLocalizations.of(context)
+                            .translate('container_arrival'),
+                        value: pkg.arrivalDate != null
+                            ? DateFormat('dd/MM/yyyy').format(pkg.arrivalDate!)
+                            : 'N/A',
+                        isTablet: isTablet,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow({
+    required IconData icon,
+    required double iconSize,
+    required String label,
+    required String value,
+    required bool isTablet,
+    required double fontSize,
+    bool isCompact = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(isTablet ? 6.0 : 4.0),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            icon,
+            size: iconSize,
+            color: Colors.grey[600],
+          ),
+        ),
+        SizedBox(width: isTablet ? 12.0 : 8.0),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isCompact) ...[
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+              ],
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactInfoRow({
+    required IconData icon,
+    required double iconSize,
+    required String label,
+    required String value,
+    required bool isTablet,
+    required double fontSize,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(isTablet ? 4.0 : 3.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                icon,
+                size: iconSize * 0.8,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(width: isTablet ? 6.0 : 4.0),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: fontSize * 0.85,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: isTablet ? 4.0 : 2.0),
+        Padding(
+          padding: EdgeInsets.only(left: isTablet ? 28.0 : 22.0),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: fontSize,
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -502,7 +816,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               AppLocalizations.of(context)
                                   .translate('container_bbd_limited'),
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                                  fontWeight: FontWeight.bold, fontSize: 17)),
                         ],
                       ),
                     ),
@@ -831,369 +1145,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                               return false;
                                             }
                                           : null,
-                                      child: Container(
-                                        margin: EdgeInsets.symmetric(
-                                            vertical: 5,
-                                            horizontal: MediaQuery.of(context)
-                                                        .size
-                                                        .width <
-                                                    600
-                                                ? 1
-                                                : 2),
-                                        padding: EdgeInsets.all(
-                                            MediaQuery.of(context).size.width <
-                                                    600
-                                                ? 10.0
-                                                : 12.0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          border: Border.all(
-                                              color: Colors.grey[300]!),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.04),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            LayoutBuilder(
-                                              builder: (context, constraints) {
-                                                if (constraints.maxWidth <
-                                                    600) {
-                                                  // Layout vertical sur mobile
-                                                  return Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(pkg.ref ?? '',
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      15)),
-                                                      const SizedBox(height: 6),
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 10,
-                                                                vertical: 4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Colors.blue[50],
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(12),
-                                                        ),
-                                                        child: Text(
-                                                            pkg.expeditionType ??
-                                                                '',
-                                                            style: const TextStyle(
-                                                                color:
-                                                                    Colors.blue,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 16)),
-                                                      ),
-                                                    ],
-                                                  );
-                                                } else {
-                                                  // Layout horizontal pour tablettes
-                                                  return Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(pkg.ref ?? '',
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      15)),
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 10,
-                                                                vertical: 4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Colors.blue[50],
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(12),
-                                                        ),
-                                                        child: Text(
-                                                            pkg.expeditionType ??
-                                                                '',
-                                                            style: const TextStyle(
-                                                                color:
-                                                                    Colors.blue,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 16)),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.person,
-                                                    size: 14,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                    child: RichText(
-                                                  text: TextSpan(
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.black87),
-                                                    children: [
-                                                      TextSpan(
-                                                          text:
-                                                              '${pkg.clientName ?? ''}'),
-                                                      if (pkg.clientPhone !=
-                                                              null &&
-                                                          pkg.clientPhone!
-                                                              .isNotEmpty) ...[
-                                                        TextSpan(text: ' | '),
-                                                        TextSpan(
-                                                          text:
-                                                              pkg.clientPhone!,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ],
-                                                    ],
-                                                  ),
-                                                )),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.inventory_2,
-                                                    size: 14,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: _buildInfoText(
-                                                      AppLocalizations.of(
-                                                              context)
-                                                          .translate(
-                                                              'container_cartons'),
-                                                      '${pkg.itemQuantity ?? 0}'),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            LayoutBuilder(
-                                              builder: (context, constraints) {
-                                                if (constraints.maxWidth <
-                                                    600) {
-                                                  // Layout vertical sur mobile
-                                                  return Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          const Icon(
-                                                              Icons.location_on,
-                                                              size: 14,
-                                                              color:
-                                                                  Colors.grey),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                          Expanded(
-                                                            child: _buildInfoText(
-                                                                AppLocalizations.of(
-                                                                        context)
-                                                                    .translate(
-                                                                        'container_departure'),
-                                                                '${pkg.startCountry ?? 'N/A'}'),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          const Icon(
-                                                              Icons.location_on,
-                                                              size: 14,
-                                                              color:
-                                                                  Colors.grey),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                          Expanded(
-                                                            child: _buildInfoText(
-                                                                AppLocalizations.of(
-                                                                        context)
-                                                                    .translate(
-                                                                        'container_arrival'),
-                                                                '${pkg.destinationCountry ?? 'N/A'}'),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  );
-                                                } else {
-                                                  // Layout horizontal pour tablettes
-                                                  return Row(
-                                                    children: [
-                                                      const Icon(
-                                                          Icons.location_on,
-                                                          size: 14,
-                                                          color: Colors.grey),
-                                                      const SizedBox(width: 4),
-                                                      _buildInfoText(
-                                                          AppLocalizations.of(
-                                                                  context)
-                                                              .translate(
-                                                                  'container_departure'),
-                                                          '${pkg.startCountry ?? 'N/A'}'),
-                                                      const SizedBox(width: 10),
-                                                      _buildInfoText(
-                                                          AppLocalizations.of(
-                                                                  context)
-                                                              .translate(
-                                                                  'container_arrival'),
-                                                          '${pkg.destinationCountry ?? 'N/A'}'),
-                                                    ],
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                            const SizedBox(height: 4),
-                                            LayoutBuilder(
-                                              builder: (context, constraints) {
-                                                if (constraints.maxWidth <
-                                                    600) {
-                                                  // Layout vertical sur mobile
-                                                  return Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          const Icon(
-                                                              Icons
-                                                                  .calendar_today,
-                                                              size: 14,
-                                                              color:
-                                                                  Colors.grey),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                          Expanded(
-                                                            child: _buildInfoText(
-                                                                AppLocalizations.of(
-                                                                        context)
-                                                                    .translate(
-                                                                        'container_departure'),
-                                                                pkg.startDate !=
-                                                                        null
-                                                                    ? DateFormat(
-                                                                            'dd/MM/yyyy')
-                                                                        .format(
-                                                                            pkg.startDate!)
-                                                                    : ''),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          const Icon(
-                                                              Icons
-                                                                  .calendar_today,
-                                                              size: 14,
-                                                              color:
-                                                                  Colors.grey),
-                                                          const SizedBox(
-                                                              width: 4),
-                                                          Expanded(
-                                                            child: _buildInfoText(
-                                                                AppLocalizations.of(
-                                                                        context)
-                                                                    .translate(
-                                                                        'container_arrival'),
-                                                                pkg.arrivalDate !=
-                                                                        null
-                                                                    ? DateFormat(
-                                                                            'dd/MM/yyyy')
-                                                                        .format(
-                                                                            pkg.arrivalDate!)
-                                                                    : ''),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  );
-                                                } else {
-                                                  // Layout horizontal pour tablettes
-                                                  return Row(
-                                                    children: [
-                                                      const Icon(
-                                                          Icons.calendar_today,
-                                                          size: 14,
-                                                          color: Colors.grey),
-                                                      const SizedBox(width: 4),
-                                                      _buildInfoText(
-                                                          AppLocalizations.of(
-                                                                  context)
-                                                              .translate(
-                                                                  'container_departure'),
-                                                          pkg.startDate != null
-                                                              ? DateFormat(
-                                                                      'dd/MM/yyyy')
-                                                                  .format(pkg
-                                                                      .startDate!)
-                                                              : ''),
-                                                      const SizedBox(width: 10),
-                                                      _buildInfoText(
-                                                          AppLocalizations.of(
-                                                                  context)
-                                                              .translate(
-                                                                  'container_arrival'),
-                                                          pkg.arrivalDate !=
-                                                                  null
-                                                              ? DateFormat(
-                                                                      'dd/MM/yyyy')
-                                                                  .format(pkg
-                                                                      .arrivalDate!)
-                                                              : ''),
-                                                    ],
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      child: _buildModernPackageCard(pkg),
                                     );
                                   },
                                 ),
@@ -1291,7 +1243,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
                                             style: TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 17,
                                                 color: Colors.grey),
                                           ),
                                         ),
@@ -1460,7 +1412,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
                                             style: TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 17,
                                                 color: Colors.grey),
                                           ),
                                         ),
