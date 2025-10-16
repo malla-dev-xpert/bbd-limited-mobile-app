@@ -231,7 +231,7 @@ class _AddContainerToHarborDialogContentState
                             const SizedBox(width: 8),
                             Text(
                               'Ajouter (${_selectedContainers.length})',
-                              style: const TextStyle(fontSize: 14),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),

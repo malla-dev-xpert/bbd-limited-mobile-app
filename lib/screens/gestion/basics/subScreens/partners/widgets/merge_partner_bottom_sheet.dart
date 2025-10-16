@@ -245,7 +245,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                     Text(
                                       localizations.translate('main_partner'),
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         color: Colors.black87,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -254,7 +254,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                     Text(
                                       '${widget.mainPartner.firstName} ${widget.mainPartner.lastName}',
                                       style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF1A1E49),
                                       ),
@@ -265,7 +265,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                       Text(
                                         widget.mainPartner.phoneNumber,
                                         style: const TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 18,
                                           color: Colors.grey,
                                         ),
                                       ),
@@ -304,7 +304,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                               child: Text(
                                 localizations.translate('no_partner_found'),
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   color: Colors.grey,
                                 ),
                               ),
@@ -369,7 +369,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                                 Text(
                                                   '${partner.firstName} ${partner.lastName}',
                                                   style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 20,
                                                     fontWeight: FontWeight.w600,
                                                     color: isSelected
                                                         ? const Color(
@@ -385,7 +385,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                                   Text(
                                                     partner.phoneNumber,
                                                     style: const TextStyle(
-                                                      fontSize: 16,
+                                                      fontSize: 18,
                                                       color: Colors.grey,
                                                     ),
                                                   ),
@@ -397,7 +397,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                                         localizations.translate(
                                                             'balance'),
                                                         style: const TextStyle(
-                                                          fontSize: 14,
+                                                          fontSize: 16,
                                                           color: Colors.blue,
                                                           fontWeight:
                                                               FontWeight.w500,
@@ -409,7 +409,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                                       currencyFormat.format(
                                                           partner.balance ?? 0),
                                                       style: TextStyle(
-                                                        fontSize: 14,
+                                                        fontSize: 16,
                                                         color:
                                                             (partner.balance ??
                                                                         0) >=
@@ -485,7 +485,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                         Text(
                           localizations.translate('merge_summary'),
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1E49),
                           ),
@@ -550,7 +550,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                   localizations.translate('merge_now'),
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -586,7 +586,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -595,7 +595,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
           Text(
             '${partner.firstName} ${partner.lastName}',
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
             maxLines: 1,
@@ -605,7 +605,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
           Text(
             partner.phoneNumber,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.grey,
             ),
           ),
@@ -613,7 +613,7 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
           Text(
             currencyFormat.format(partner.balance ?? 0),
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: (partner.balance ?? 0) >= 0 ? Colors.green : Colors.red,
             ),

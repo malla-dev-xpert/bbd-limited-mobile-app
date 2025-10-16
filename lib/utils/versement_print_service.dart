@@ -194,7 +194,7 @@ class VersementPrintService {
                 children: [
                   pw.Text(localizations.translate('pdf_versement_reference'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: PdfColors.grey600,
                         fontWeight: pw.FontWeight.bold,
                         letterSpacing: 1.2,
@@ -215,7 +215,7 @@ class VersementPrintService {
                 children: [
                   pw.Text(localizations.translate('pdf_versement_date'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: PdfColors.grey600,
                         fontWeight: pw.FontWeight.bold,
                         letterSpacing: 1.2,
@@ -238,7 +238,7 @@ class VersementPrintService {
                 children: [
                   pw.Text(localizations.translate('pdf_amount_paid_label'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: PdfColors.grey600,
                         fontWeight: pw.FontWeight.bold,
                         letterSpacing: 1.2,
@@ -259,7 +259,7 @@ class VersementPrintService {
                 children: [
                   pw.Text(localizations.translate('pdf_remaining_amount_label'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: PdfColors.grey600,
                         fontWeight: pw.FontWeight.bold,
                         letterSpacing: 1.2,
@@ -306,7 +306,7 @@ class VersementPrintService {
               ]),
               if (versement.note != null && versement.note!.isNotEmpty)
                 pw.Text(versement.note!,
-                    style: const pw.TextStyle(fontSize: 14)),
+                    style: const pw.TextStyle(fontSize: 16)),
             ],
           ),
         ),
@@ -316,7 +316,7 @@ class VersementPrintService {
             children: [
               pw.Text(localizations.translate('pdf_commissionnaire'),
                   style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColor.fromHex('#1A1E49'),
                       fontWeight: pw.FontWeight.bold,
                       letterSpacing: 2,
@@ -326,10 +326,10 @@ class VersementPrintService {
                       fontFallback: [pw.Font.times(), pw.Font.courier()])),
               pw.Text(
                   '${localizations.translate('pdf_commissionnaire_name')} : ${versement.commissionnaireName}',
-                  style: pw.TextStyle(fontSize: 14)),
+                  style: pw.TextStyle(fontSize: 16)),
               pw.Text(
                   '${localizations.translate('pdf_commissionnaire_phone')} : ${versement.commissionnairePhone}',
-                  style: pw.TextStyle(fontSize: 14)),
+                  style: pw.TextStyle(fontSize: 16)),
             ],
           ),
         ),
@@ -347,7 +347,7 @@ class VersementPrintService {
       children: [
         pw.Text(localizations.translate("pdf_articles_list"),
             style: pw.TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
               font: localizations.locale.languageCode == 'zh'
@@ -419,28 +419,28 @@ class VersementPrintService {
                   pw.Container(
                       width: 120,
                       child: pw.Text(item.description ?? '',
-                          style: const pw.TextStyle(fontSize: 14))),
+                          style: const pw.TextStyle(fontSize: 16))),
                   pw.Container(
                       width: 40,
                       child: pw.Text('${item.carton ?? ''}',
-                          style: const pw.TextStyle(fontSize: 14))),
+                          style: const pw.TextStyle(fontSize: 16))),
                   pw.Container(
                       width: 50,
                       child: pw.Text('${item.quantityPerCarton ?? ''}',
-                          style: const pw.TextStyle(fontSize: 14))),
+                          style: const pw.TextStyle(fontSize: 16))),
                   pw.Container(
                       width: 60,
                       child: pw.Text('${item.salesRate ?? ''}',
-                          style: const pw.TextStyle(fontSize: 14))),
+                          style: const pw.TextStyle(fontSize: 16))),
                   pw.Container(
                       width: 80,
                       child: pw.Text(currencyFormat.format(item.unitPrice ?? 0),
-                          style: const pw.TextStyle(fontSize: 14))),
+                          style: const pw.TextStyle(fontSize: 16))),
                   pw.Container(
                       width: 80,
                       child: pw.Text(
                           currencyFormat.format(item.totalPrice ?? 0),
-                          style: const pw.TextStyle(fontSize: 14))),
+                          style: const pw.TextStyle(fontSize: 16))),
                 ],
               ),
             ),
@@ -468,7 +468,7 @@ class VersementPrintService {
                 pw.Text(
                   'Sous-total :',
                   style: pw.TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -476,7 +476,7 @@ class VersementPrintService {
                 pw.Text(
                   currencyFormat.format(sousTotal),
                   style: pw.TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -498,7 +498,7 @@ class VersementPrintService {
                         ? 'Marge par ligne (${options.lineMarginValue}%) :'
                         : 'Marge par ligne (${options.lineMarginValue}) :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -510,7 +510,7 @@ class VersementPrintService {
                             ? (sousTotal * options.lineMarginValue! / 100)
                             : options.lineMarginValue!),
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -533,7 +533,7 @@ class VersementPrintService {
                         ? 'Remise (${options.discountValue}%) :'
                         : 'Remise :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -542,7 +542,7 @@ class VersementPrintService {
                   pw.Text(
                     '-${currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -566,7 +566,7 @@ class VersementPrintService {
                         ? 'Frais d\'entreposage (${options.storageFeeAmount}%) :'
                         : 'Frais d\'entreposage :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -578,7 +578,7 @@ class VersementPrintService {
                             ? (sousTotal * options.storageFeeAmount! / 100)
                             : options.storageFeeAmount!),
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -602,7 +602,7 @@ class VersementPrintService {
                         ? 'Marge globale (${options.globalMarginValue}%) :'
                         : 'Marge globale (${options.globalMarginValue}) :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -614,7 +614,7 @@ class VersementPrintService {
                             ? (montantTotal * options.globalMarginValue! / 100)
                             : options.globalMarginValue!),
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -630,7 +630,7 @@ class VersementPrintService {
           pw.Text(
             'TOTAL FINAL : ${currencyFormat.format(montantTotal)}',
             style: pw.TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
             ),
@@ -650,7 +650,7 @@ class VersementPrintService {
       children: [
         pw.Text(localizations.translate("pdf_cash_withdrawals_list"),
             style: pw.TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
             )),
@@ -714,7 +714,7 @@ class VersementPrintService {
       children: [
         pw.Text(
             '${localizations.translate('pdf_total_withdrawals')} : ${currencyFormat.format(totalRetraits)}',
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
       ],
     );
   }
@@ -749,7 +749,7 @@ class VersementPrintService {
                 children: [
                   pw.Text(localizations.translate('pdf_reference_label'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: PdfColors.grey600,
                         fontWeight: pw.FontWeight.bold,
                         letterSpacing: 1.2,
@@ -770,7 +770,7 @@ class VersementPrintService {
                 children: [
                   pw.Text(localizations.translate('pdf_date_label'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: PdfColors.grey600,
                         fontWeight: pw.FontWeight.bold,
                         letterSpacing: 1.2,
@@ -803,7 +803,7 @@ class VersementPrintService {
       children: [
         pw.Text(localizations.translate("pdf_articles_list_label"),
             style: pw.TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
               font: localizations.locale.languageCode == 'zh'
@@ -823,7 +823,7 @@ class VersementPrintService {
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: pw.FontWeight.bold))),
               if (isProforma) // Colonne statut seulement pour pro-forma
                 pw.Container(
@@ -833,7 +833,7 @@ class VersementPrintService {
                             color: isProforma
                                 ? PdfColors.grey500
                                 : PdfColors.white,
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: pw.FontWeight.bold))),
               if (includeSupplierInfo &&
                   filteredItems?.isNotEmpty == true &&
@@ -845,7 +845,7 @@ class VersementPrintService {
                             color: isProforma
                                 ? PdfColors.grey500
                                 : PdfColors.white,
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 40,
@@ -853,7 +853,7 @@ class VersementPrintService {
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 50,
@@ -862,7 +862,7 @@ class VersementPrintService {
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 60,
@@ -870,7 +870,7 @@ class VersementPrintService {
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 80,
@@ -879,7 +879,7 @@ class VersementPrintService {
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 80,
@@ -887,7 +887,7 @@ class VersementPrintService {
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: pw.FontWeight.bold))),
             ],
           ),
@@ -900,7 +900,7 @@ class VersementPrintService {
               children: [
                 pw.Expanded(
                     child: pw.Text(item.description ?? '',
-                        style: const pw.TextStyle(fontSize: 14))),
+                        style: const pw.TextStyle(fontSize: 16))),
                 if (isProforma) // Colonne statut seulement pour pro-forma
                   pw.Container(
                     width: 60,
@@ -909,7 +909,7 @@ class VersementPrintService {
                           ? localizations.translate('pdf_received')
                           : localizations.translate('pdf_pending'),
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: item.status == Status.RECEIVED
                             ? PdfColors.green
                             : PdfColors.orange,
@@ -923,28 +923,28 @@ class VersementPrintService {
                   pw.Container(
                     width: 80,
                     child: pw.Text(item.supplierName ?? '',
-                        style: const pw.TextStyle(fontSize: 14)),
+                        style: const pw.TextStyle(fontSize: 16)),
                   ),
                 pw.Container(
                     width: 40,
                     child: pw.Text('${item.carton ?? ''}',
-                        style: const pw.TextStyle(fontSize: 14))),
+                        style: const pw.TextStyle(fontSize: 16))),
                 pw.Container(
                     width: 50,
                     child: pw.Text('${item.quantityPerCarton ?? ''}',
-                        style: const pw.TextStyle(fontSize: 14))),
+                        style: const pw.TextStyle(fontSize: 16))),
                 pw.Container(
                     width: 60,
                     child: pw.Text('${item.salesRate ?? ''}',
-                        style: const pw.TextStyle(fontSize: 14))),
+                        style: const pw.TextStyle(fontSize: 16))),
                 pw.Container(
                     width: 80,
                     child: pw.Text(currencyFormat.format(item.unitPrice ?? 0),
-                        style: const pw.TextStyle(fontSize: 14))),
+                        style: const pw.TextStyle(fontSize: 16))),
                 pw.Container(
                     width: 80,
                     child: pw.Text(currencyFormat.format(item.totalPrice ?? 0),
-                        style: const pw.TextStyle(fontSize: 14))),
+                        style: const pw.TextStyle(fontSize: 16))),
               ],
             ),
           ),
@@ -973,7 +973,7 @@ class VersementPrintService {
                 pw.Text(
                   'Sous-total :',
                   style: pw.TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -981,7 +981,7 @@ class VersementPrintService {
                 pw.Text(
                   currencyFormat.format(sousTotal),
                   style: pw.TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -1003,7 +1003,7 @@ class VersementPrintService {
                         ? 'Marge par ligne (${options.lineMarginValue}%) :'
                         : 'Marge par ligne (${options.lineMarginValue}) :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -1015,7 +1015,7 @@ class VersementPrintService {
                             ? (sousTotal * options.lineMarginValue! / 100)
                             : options.lineMarginValue!),
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -1038,7 +1038,7 @@ class VersementPrintService {
                         ? 'Remise (${options.discountValue}%) :'
                         : 'Remise :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -1047,7 +1047,7 @@ class VersementPrintService {
                   pw.Text(
                     '-${currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -1071,7 +1071,7 @@ class VersementPrintService {
                         ? 'Frais d\'entreposage (${options.storageFeeAmount}%) :'
                         : 'Frais d\'entreposage :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -1083,7 +1083,7 @@ class VersementPrintService {
                             ? (sousTotal * options.storageFeeAmount! / 100)
                             : options.storageFeeAmount!),
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -1107,7 +1107,7 @@ class VersementPrintService {
                         ? 'Marge globale (${options.globalMarginValue}%) :'
                         : 'Marge globale (${options.globalMarginValue}) :',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.normal,
                     ),
@@ -1119,7 +1119,7 @@ class VersementPrintService {
                             ? (montantTotal * options.globalMarginValue! / 100)
                             : options.globalMarginValue!),
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: PdfColors.grey700,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -1135,7 +1135,7 @@ class VersementPrintService {
           pw.Text(
             'TOTAL FINAL : ${currencyFormat.format(montantTotal)}',
             style: pw.TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
             ),

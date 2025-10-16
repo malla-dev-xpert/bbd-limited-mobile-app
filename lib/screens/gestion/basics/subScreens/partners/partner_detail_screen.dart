@@ -352,7 +352,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             textAlign: TextAlign.left,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           elevation: 0,
           backgroundColor: Colors.white,
@@ -484,7 +484,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                     child: Text(
                                       'Configuration et aperçu du rapport client',
                                       style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -506,7 +506,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                     child: Text(
                                       'Configuration et aperçu du rapport client',
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -544,7 +544,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
                                     const Text(
                                       'Options d\'impression',
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF1A1E49),
                                       ),

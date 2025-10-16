@@ -160,7 +160,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                   ? AppLocalizations.of(context)!
                       .translate('container_deleting')
                   : AppLocalizations.of(context)!.translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 16),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -289,7 +289,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                   AppLocalizations.of(context)!
                       .translate('container_packages_list'),
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

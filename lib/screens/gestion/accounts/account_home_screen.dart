@@ -272,7 +272,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: const Text(
               "Supprimer",
-              style: TextStyle(color: Colors.red, fontSize: 16),
+              style: TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -371,7 +371,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         const Text(
                           'Filtrer par date',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1A1E49),
                           ),
@@ -575,7 +575,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                   value: currencyFormat
                                       .format(_totalVersementsUSD),
                                   valueStyle: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF1A1E49),
                                   ),
@@ -747,7 +747,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         const Text(
                           "La liste des versements",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -863,7 +863,7 @@ class _StatItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(title, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+        Text(title, style: TextStyle(fontSize: 18, color: Colors.grey[600])),
         const SizedBox(height: 8),
         Text(value, style: valueStyle),
       ],

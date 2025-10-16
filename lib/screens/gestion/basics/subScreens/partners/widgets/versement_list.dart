@@ -57,7 +57,7 @@ class VersementListWidget extends StatelessWidget {
                 versement.reference ??
                     AppLocalizations.of(context).translate('without_reference'),
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -65,7 +65,7 @@ class VersementListWidget extends StatelessWidget {
                 versement.createdAt != null
                     ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
                     : AppLocalizations.of(context).translate('unknown_date'),
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 16),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -77,7 +77,7 @@ class VersementListWidget extends StatelessWidget {
                       Text(
                         versementCurrencyFormat.format(versement.montantVerser),
                         style:
-                            const TextStyle(fontSize: 14, color: Colors.blue),
+                            const TextStyle(fontSize: 16, color: Colors.blue),
                       ),
                       Text(
                         versementCurrencyFormat
@@ -85,7 +85,7 @@ class VersementListWidget extends StatelessWidget {
                         style: TextStyle(
                           color: statusColor,
                           fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          fontSize: 16,
                         ),
                       ),
                     ],

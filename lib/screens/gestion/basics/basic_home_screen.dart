@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   _user?.username ??
                                   localizations.translate('home_user'),
                               style: const TextStyle(
-                                  letterSpacing: 0, fontSize: 16),
+                                  letterSpacing: 0, fontSize: 18),
                             ),
                           ],
                         ),
@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       localizations.translate('home_statistics'),
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         letterSpacing: -1,
                         color: Colors.grey[700],
@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   localizations.translate('home_basic_info'),
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -1,
                     color: Colors.grey[700],

@@ -129,7 +129,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                     'Personnalisez vos factures avec des marges, remises et frais',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.9),
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -591,7 +591,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: isEnabled ? color : Colors.grey[700],
                         ),
@@ -600,7 +600,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       Text(
                         subtitle,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: isEnabled
                               ? color.withOpacity(0.8)
                               : Colors.grey[600],
@@ -869,7 +869,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                   child: Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1E49),
                     ),
@@ -924,7 +924,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: value
                               ? const Color(0xFF1A1E49)
@@ -935,7 +935,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       Text(
                         subtitle,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: value ? Colors.blue[600] : Colors.grey[600],
                         ),
                       ),
@@ -961,7 +961,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           'Actif',
                           style: TextStyle(
                             color: Colors.green[700],
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -991,7 +991,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           style: TextStyle(
                             color: Colors.blue[700],
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 16,
                           ),
                         ),
                       ],
@@ -1046,7 +1046,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                   child: Text(
                     'Résumé des options appliquées',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue[700],
                     ),
@@ -1107,7 +1107,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             label,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
           Container(
@@ -1121,7 +1121,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 16,
               ),
             ),
           ),

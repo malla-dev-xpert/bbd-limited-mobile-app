@@ -376,7 +376,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
             icon: const Icon(Icons.delete, color: Colors.red),
             label: const Text(
               "Supprimer",
-              style: TextStyle(color: Colors.red, fontSize: 16),
+              style: TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -513,7 +513,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                       const Text(
                                         "Informations de l'entrepôt",
                                         style: TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.grey,
                                         ),
@@ -642,7 +642,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                 Text(
                                   "Liste des colis${_currentFilter == null ? '' : _currentFilter == 'livres' ? ' livrés' : _currentFilter == 'en_transit' ? ' en transit' : ' en attente'}",
                                   style: const TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF1A1E49),
                                   ),
@@ -695,7 +695,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                   Text(
                                     "Aucun colis trouvé",
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       color: Colors.grey[600],
                                     ),
                                   ),
@@ -797,7 +797,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 16, color: Color(0xFF1A1E49)),
+            style: const TextStyle(fontSize: 18, color: Color(0xFF1A1E49)),
           ),
         ),
       ],

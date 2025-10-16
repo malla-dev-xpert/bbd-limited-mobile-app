@@ -52,7 +52,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                             .toUpperCase(),
                         style: const TextStyle(
                           color: Color(0xFF1A1E49),
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -67,7 +67,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           '${customer.firstName} ${customer.lastName}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -75,7 +75,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           customer.phoneNumber,
                           style: const TextStyle(
                             color: Colors.white70,
-                            fontSize: 14,
+                            fontSize: 16,
                           ),
                         ),
                       ],
@@ -146,7 +146,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
             Text(
               'Aucun achat trouvé',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
@@ -155,7 +155,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
             Text(
               'Ce client n\'a pas encore effectué d\'${AppLocalizations.of(context).translate('purchases_count')}',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 color: Colors.grey[500],
               ),
               textAlign: TextAlign.center,
@@ -212,7 +212,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           Text(
                             '${AppLocalizations.of(context).translate('reference_short')}: ${versement.reference ?? AppLocalizations.of(context).translate('not_available')}',
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF1A1E49),
                             ),
@@ -221,7 +221,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                             Text(
                               DateFormat('dd/MM/yyyy').format(date),
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
                             ),
@@ -241,7 +241,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       child: Text(
                         _getStatusText(achat.status, context),
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: _getStatusColor(achat.status),
                         ),
@@ -264,7 +264,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       Text(
                         item.description ?? 'Description non disponible',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF1A1E49),
                         ),
@@ -337,7 +337,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
@@ -348,7 +348,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1E49),
           ),

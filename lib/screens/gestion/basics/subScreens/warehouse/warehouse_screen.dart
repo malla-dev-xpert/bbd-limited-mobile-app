@@ -496,7 +496,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                                 style: TextStyle(
                                   color: textColor,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 ),
                               ),
                             ),
@@ -588,7 +588,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                                 warehouse.adresse ?? '',
                                 style: TextStyle(
                                   color: textColor.withOpacity(0.85),
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -606,7 +606,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                               formattedDate,
                               style: TextStyle(
                                 color: textColor.withOpacity(0.85),
-                                fontSize: 14,
+                                fontSize: 16,
                               ),
                             ),
                           ],

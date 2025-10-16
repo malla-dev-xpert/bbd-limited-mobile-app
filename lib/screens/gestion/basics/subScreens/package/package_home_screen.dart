@@ -179,7 +179,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? color : null,
             ),
@@ -313,7 +313,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                               .replaceAll('{count}',
                                   filteredPackages.length.toString()),
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: Colors.grey[600],
                             letterSpacing: 0.2,
                           ),

@@ -102,7 +102,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey[800],
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -145,7 +145,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   child: Text(
                       AppLocalizations.of(context)!
                           .translate('container_form_size'),
-                      style: const TextStyle(fontSize: 16)),
+                      style: const TextStyle(fontSize: 18)),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -207,7 +207,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   child: Text(
                       AppLocalizations.of(context)!
                           .translate('container_form_availability'),
-                      style: const TextStyle(fontSize: 16)),
+                      style: const TextStyle(fontSize: 18)),
                 ),
                 Switch(
                   value: _isAvailable,

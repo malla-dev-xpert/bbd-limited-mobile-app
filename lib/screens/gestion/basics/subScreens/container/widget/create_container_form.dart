@@ -136,7 +136,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           AppLocalizations.of(context)!
                               .translate('container_create'),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -202,7 +202,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           AppLocalizations.of(context)!
                               .translate('container_form_location_fee'),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -259,7 +259,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           AppLocalizations.of(context)!
                               .translate('container_form_other_fees'),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -555,7 +555,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             ),
             Text(
               "${totalFees.toStringAsFixed(2)}",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
           ],
         ),

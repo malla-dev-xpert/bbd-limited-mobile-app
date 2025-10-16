@@ -54,7 +54,7 @@ class PartnerBalanceCard extends StatelessWidget {
                   children: [
                     Text(
                       AppLocalizations.of(context).translate('current_balance'),
-                      style: TextStyle(fontSize: 16, color: Colors.grey[50]!),
+                      style: TextStyle(fontSize: 18, color: Colors.grey[50]!),
                     ),
                   ],
                 ),
@@ -108,7 +108,7 @@ class PartnerBalanceCard extends StatelessWidget {
                             symbol: 'CNY',
                           ).format(totalVersementsUSD),
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w900,
                             color: Colors.grey[100],
                           ),

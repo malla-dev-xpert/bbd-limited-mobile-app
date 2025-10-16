@@ -77,7 +77,7 @@ class DeviseListItem extends StatelessWidget {
                         devise.name,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontSize: 18,
                           color: Color(0xFF2C2C2C),
                         ),
                       ),
@@ -85,7 +85,7 @@ class DeviseListItem extends StatelessWidget {
                       Text(
                         devise.code,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -97,7 +97,7 @@ class DeviseListItem extends StatelessWidget {
                   style: TextStyle(
                     color: devise.rate != null ? rateColor : Colors.grey,
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 18,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -106,7 +106,7 @@ class DeviseListItem extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 16,
                   ),
                 ),
               ],

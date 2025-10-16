@@ -409,7 +409,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                     const Text(
                       "Liste des conteneurs",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -484,7 +484,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       Text(
                         "Aucun conteneur trouvé",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -493,7 +493,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       Text(
                         "Aucun conteneur ne correspond à votre recherche",
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: Colors.grey[500],
                         ),
                         textAlign: TextAlign.center,
@@ -603,7 +603,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                         item.reference ?? 'Sans référence',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 18,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -771,7 +771,7 @@ class _ContainerDetailsModal extends StatelessWidget {
           Text(
             'Colis (${packages?.length ?? 0})',
             textAlign: TextAlign.left,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 8),
           if (packages?.isEmpty ?? true)

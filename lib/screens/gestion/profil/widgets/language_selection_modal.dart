@@ -74,7 +74,7 @@ class LanguageSelectionModal extends ConsumerWidget {
                   language['name']!,
                   style: TextStyle(
                     color: isSelected ? Colors.blue[600] : Colors.grey[600],
-                    fontSize: 14,
+                    fontSize: 16,
                   ),
                 ),
                 trailing: isSelected
@@ -128,7 +128,7 @@ class LanguageSelectionModal extends ConsumerWidget {
                     localizations.translate('language_change_info'),
                     style: TextStyle(
                       color: Colors.blue[700],
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                   ),
                 ),

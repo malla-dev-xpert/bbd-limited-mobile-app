@@ -69,7 +69,7 @@ class DebtListWidget extends StatelessWidget {
                         child: Text(
                           '${AppLocalizations.of(context).translate('identifier')}: ${achat.id ?? "N/A"}',
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -174,7 +174,7 @@ class DebtListWidget extends StatelessWidget {
                       Text(
                         '${achat.montantTotal?.toStringAsFixed(2) ?? "0.00"} ¥',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1E49),
                         ),

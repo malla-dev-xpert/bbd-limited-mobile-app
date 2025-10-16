@@ -149,7 +149,7 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                           countryListTheme: CountryListThemeData(
                             flagSize: 25,
                             backgroundColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 16),
+                            textStyle: const TextStyle(fontSize: 18),
                             bottomSheetHeight: 300,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),

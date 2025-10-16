@@ -24,14 +24,14 @@ class ItemInfoDisplay extends StatelessWidget {
           "$label : ",
           style: TextStyle(
             color: Colors.grey[800],
-            fontSize: 14,
+            fontSize: 16,
           ),
         ),
         Text(
           value,
           style: TextStyle(
             color: valueColor ?? Colors.grey[900],
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),

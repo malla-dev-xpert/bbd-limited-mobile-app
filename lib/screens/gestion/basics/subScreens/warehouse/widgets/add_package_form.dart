@@ -475,7 +475,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
           countryListTheme: CountryListThemeData(
             flagSize: 25,
             backgroundColor: Colors.white,
-            textStyle: const TextStyle(fontSize: 16),
+            textStyle: const TextStyle(fontSize: 18),
             bottomSheetHeight: 300,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
@@ -500,7 +500,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
                 ),
                 const SizedBox(height: 4),
                 selectedCountry != null

@@ -59,7 +59,7 @@ class PaiementListItem extends StatelessWidget {
         leading: Icon(partnerIcon, color: Color(0xFF7F78AF)),
         title: Text(
           versement.reference!,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -67,11 +67,11 @@ class PaiementListItem extends StatelessWidget {
           children: [
             Text(
               DateFormat('dd/MM/yyyy').format(versement.createdAt!),
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 16),
             ),
             Text(
               versement.partnerName ?? '',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
           ],
         ),

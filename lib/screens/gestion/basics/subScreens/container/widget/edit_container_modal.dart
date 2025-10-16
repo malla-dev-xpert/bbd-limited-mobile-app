@@ -175,7 +175,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
                         const Text(
                           "Modifier le conteneur",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -241,7 +241,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
                         const Text(
                           "Frais principaux",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -296,7 +296,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
                         const Text(
                           "Frais additionnels",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,

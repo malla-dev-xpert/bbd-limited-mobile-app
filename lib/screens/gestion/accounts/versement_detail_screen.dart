@@ -169,7 +169,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       'Achat #${achat.id}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Color(0xFF1A1E49),
                       ),
                     ),
@@ -199,7 +199,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   Text(
                     'Montant: ' +
                         currencyFormat.format(achat.montantTotal ?? 0),
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -210,7 +210,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       Text(
                         'Factures: ${factureStats['payees']}/${factureStats['total']} payées',
                         style: const TextStyle(
-                            fontSize: 14, color: Color(0xFF7F78AF)),
+                            fontSize: 16, color: Color(0xFF7F78AF)),
                       ),
                     ],
                   ),
@@ -256,7 +256,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                 icon: const Icon(Icons.print),
                                 label: Text('Imprimer',
                                     style: TextStyle(
-                                        color: Colors.grey[700], fontSize: 14)),
+                                        color: Colors.grey[700], fontSize: 16)),
                               ),
                             ),
                           ],
@@ -301,7 +301,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 14)),
+                                      color: Colors.grey[700], fontSize: 16)),
                             ),
                           ),
                         ],
@@ -383,7 +383,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                         ligne.description ?? 'Article sans nom',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 18,
                           color: Color(0xFF1A1E49),
                         ),
                         maxLines: 2,
@@ -404,7 +404,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                           ligne.description ?? 'Article sans nom',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 18,
                             color: Color(0xFF1A1E49),
                           ),
                           maxLines: 2,
@@ -503,7 +503,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 style: TextStyle(
                   color: Colors.green[700],
                   fontWeight: FontWeight.w500,
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -535,7 +535,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       style: TextStyle(
                         color: Colors.red[700],
                         fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        fontSize: 16,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -594,7 +594,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             style: TextStyle(
               color: Color(0xFF1A1E49),
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 18,
             ),
           ),
           children: [
@@ -672,7 +672,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             style: TextStyle(
               color: Color(0xFF1A1E49),
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 18,
             ),
           ),
           children: [
@@ -857,7 +857,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             style: TextStyle(
               color: Color(0xFF1A1E49),
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 18,
             ),
           ),
           children: [
@@ -867,7 +867,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   ? const Center(
                       child: Text(
                         "Aucun retrait effectué pour ce versement.",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     )
                   : ListView.separated(
@@ -944,7 +944,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                 ? Colors.green[700]
                                                 : Colors.orange[700],
                                             fontWeight: FontWeight.w500,
-                                            fontSize: 14,
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ],
@@ -977,7 +977,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                     .trim()
                                                 : w.user.username,
                                         style: const TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.w500),
                                       ),
                                     ],
@@ -995,7 +995,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                     w.dateRetrait.toString()))
                                             : 'Date inconnue',
                                         style: const TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 16,
                                             color: Colors.black87),
                                       ),
                                     ],
@@ -1015,7 +1015,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                       child: Text(
                                         w.note!,
                                         style: const TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 16,
                                             color: Colors.black87),
                                       ),
                                     ),
@@ -1579,7 +1579,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     const Text(
                       'Configuration des options de facturation',
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1686,7 +1686,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                       child: Text(
                                         "Configuration et aperçu de l'achat",
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                         ),
                                         maxLines: 2,
@@ -1711,7 +1711,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                   child: Text(
                                     "Configuration et aperçu de l'achat",
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                     ),
                                     maxLines: 1,
@@ -1750,7 +1750,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                   const Text(
                                     'Options d\'impression',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF1A1E49),
                                     ),
@@ -2022,7 +2022,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   style: const TextStyle(
                     color: Color(0xFF1A1E49),
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 18,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -2040,7 +2040,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     'Configuré',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -2076,7 +2076,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                 style: TextStyle(
                                   color: Colors.blue[700],
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
@@ -2170,12 +2170,12 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1A1E49),
           ),

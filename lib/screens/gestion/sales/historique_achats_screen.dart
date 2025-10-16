@@ -138,7 +138,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                           style: TextStyle(
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -224,7 +224,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               AppLocalizations.of(context)
                                   .translate('purchase_history_no_purchases'),
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 color: Colors.grey[600],
                               ),
                             ),
@@ -282,7 +282,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                       Text(
                                                         '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy HH:mm').format(achat.createdAt ?? DateTime.now())}',
                                                         style: const TextStyle(
-                                                          fontSize: 16,
+                                                          fontSize: 18,
                                                           fontWeight:
                                                               FontWeight.bold,
                                                         ),
@@ -444,7 +444,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                 Text(
                                                   '${_formatAmount(achat.montantTotal)} ¥',
                                                   style: const TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 20,
                                                     fontWeight: FontWeight.bold,
                                                     color: Color(0xFF1A1E49),
                                                   ),
@@ -553,7 +553,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                       color: isSelected ? Colors.white : Colors.black87,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w500,
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                   ),
                 ],
@@ -595,7 +595,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey[700],
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
@@ -1189,7 +1189,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
               AppLocalizations.of(context)
                   .translate('purchase_history_no_items'),
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 color: Colors.grey[600],
               ),
             ),
@@ -1252,7 +1252,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                             Text(
                               item.description ?? 'N/A',
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                               maxLines: 2,
@@ -1262,7 +1262,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                             Text(
                               '${AppLocalizations.of(context).translate('invoice_number')}: ${item.invoiceNumber ?? 'N/A'}',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
                             ),
@@ -1368,7 +1368,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               Text(
                                 '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName ?? AppLocalizations.of(context).translate('not_available')}',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Colors.purple[900],
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1378,7 +1378,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                 Text(
                                   '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     color: Colors.purple[700],
                                   ),
                                 ),
@@ -1408,7 +1408,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               Text(
                                 '${AppLocalizations.of(context).translate('client')}: ${achat.client ?? 'N/A'}',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Colors.blue[900],
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1416,7 +1416,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               Text(
                                 '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy').format(achat.createdAt ?? DateTime.now())}',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Colors.blue[700],
                                 ),
                               ),
@@ -1437,7 +1437,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               AppLocalizations.of(context)
                                   .translate('purchase_history_debt'),
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Color(0xFF7F78AF),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1466,7 +1466,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               AppLocalizations.of(context)
                                   .translate('purchase_history_item_pending'),
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.orange[900],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1515,7 +1515,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               AppLocalizations.of(context)
                                   .translate('purchase_history_item_received'),
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.green[900],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1551,7 +1551,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   color: Colors.grey[800],
                   fontWeight: FontWeight.w500,
                 ),

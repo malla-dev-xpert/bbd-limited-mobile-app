@@ -239,7 +239,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
         Text(
           title,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             color: color.withOpacity(0.9),
             fontWeight: FontWeight.w500,
             letterSpacing: 0.3,
@@ -252,7 +252,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w900,
             color: color,
           ),
@@ -298,6 +298,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
@@ -312,14 +313,18 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: color.withOpacity(0.8),
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: color.withOpacity(0.8),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),

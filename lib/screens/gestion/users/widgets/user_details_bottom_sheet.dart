@@ -183,7 +183,7 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                           color: widget.isCurrentUser
                               ? Colors.grey[700]
                               : Colors.red[700],
-                          fontSize: 14,
+                          fontSize: 16,
                         ),
                       ),
                       if (!widget.isCurrentUser) ...[
@@ -276,7 +276,7 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
                   ),
@@ -285,7 +285,7 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                 Text(
                   value,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

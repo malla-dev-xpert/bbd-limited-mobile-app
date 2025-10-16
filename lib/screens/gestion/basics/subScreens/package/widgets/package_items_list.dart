@@ -132,7 +132,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
                       child: Text(
                         item['description'],
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -203,7 +203,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
                               "Total :",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 16,
                               ),
                             ),
                             Text(
@@ -211,7 +211,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
                                   (item['quantity'] as num)),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Theme.of(context).primaryColor,
                               ),
                             ),

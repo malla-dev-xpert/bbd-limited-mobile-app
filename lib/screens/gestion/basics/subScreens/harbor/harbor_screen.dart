@@ -300,7 +300,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                       style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        fontSize: 16,
+                                                        fontSize: 18,
                                                       ),
                                                       maxLines: 1,
                                                       overflow:
@@ -322,7 +322,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                                 'Non spécifiée',
                                                             style:
                                                                 const TextStyle(
-                                                              fontSize: 14,
+                                                              fontSize: 16,
                                                               color:
                                                                   Colors.grey,
                                                             ),
@@ -349,7 +349,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                           "${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length} conteneurs",
                                                           style:
                                                               const TextStyle(
-                                                            fontSize: 14,
+                                                            fontSize: 16,
                                                             color: Colors.grey,
                                                           ),
                                                         ),
@@ -414,7 +414,7 @@ class _HarborScreen extends State<HarborScreen> {
                               Text(
                                 "Aucun port trouvé",
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),

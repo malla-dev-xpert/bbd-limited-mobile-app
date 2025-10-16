@@ -470,7 +470,7 @@ class _PurchasePageState extends State<PurchasePage> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
@@ -479,7 +479,7 @@ class _PurchasePageState extends State<PurchasePage> {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
@@ -647,7 +647,7 @@ class _PurchasePageState extends State<PurchasePage> {
                         AppLocalizations.of(context)
                             .translate('customer_selection'),
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -690,7 +690,7 @@ class _PurchasePageState extends State<PurchasePage> {
                           AppLocalizations.of(context)
                               .translate('versement_selection'),
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -733,7 +733,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     AppLocalizations.of(context)
                                         .translate('no_versements_available'),
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       color: Colors.grey[600],
                                       fontStyle: FontStyle.italic,
                                     ),
@@ -767,7 +767,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                   AppLocalizations.of(context)
                                       .translate('debt_purchase'),
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     color: selectedVersement != null
                                         ? Colors.grey
                                         : Colors.black,
@@ -796,7 +796,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     AppLocalizations.of(context).translate(
                                         'no_versements_available_debt_mode'),
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       color: Colors.orange[700],
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -832,7 +832,7 @@ class _PurchasePageState extends State<PurchasePage> {
                       Text(
                         AppLocalizations.of(context).translate('purchase_info'),
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -859,7 +859,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     AppLocalizations.of(context)
                                         .translate('client'),
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       color: Colors.blue[600],
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -870,7 +870,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                         : AppLocalizations.of(context)
                                             .translate('loading'),
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.black87,
                                     ),
@@ -906,7 +906,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                       AppLocalizations.of(context)
                                           .translate('versement'),
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 16,
                                         color: Colors.green[600],
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -914,7 +914,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     Text(
                                       '${selectedVersement!.reference} - ${currencyFormat.format(selectedVersement!.montantRestant)}',
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.black87,
                                       ),
@@ -947,7 +947,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                       AppLocalizations.of(context)
                                           .translate('purchase_type'),
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 16,
                                         color: Colors.orange[600],
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -956,7 +956,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                       AppLocalizations.of(context)
                                           .translate('debt_purchase'),
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.black87,
                                       ),
@@ -997,7 +997,7 @@ class _PurchasePageState extends State<PurchasePage> {
                       Text(
                         AppLocalizations.of(context).translate('add_item'),
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1087,7 +1087,7 @@ class _PurchasePageState extends State<PurchasePage> {
                               AppLocalizations.of(context)
                                   .translate('price_calculation_mode'),
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey[700],
                               ),
@@ -1100,7 +1100,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     title: Text(
                                       AppLocalizations.of(context)
                                           .translate('price_per_carton'),
-                                      style: const TextStyle(fontSize: 14),
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                     value: true,
                                     groupValue: _isPricePerCarton,
@@ -1118,7 +1118,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     title: Text(
                                       AppLocalizations.of(context).translate(
                                           'price_per_total_quantity'),
-                                      style: const TextStyle(fontSize: 14),
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                     value: false,
                                     groupValue: _isPricePerCarton,
@@ -1168,7 +1168,7 @@ class _PurchasePageState extends State<PurchasePage> {
                               AppLocalizations.of(context)
                                   .translate('total_price'),
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.blue[700],
                               ),
@@ -1176,7 +1176,7 @@ class _PurchasePageState extends State<PurchasePage> {
                             Text(
                               currencyFormat.format(_calculateItemTotalPrice()),
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue[800],
                               ),
@@ -1273,14 +1273,14 @@ class _PurchasePageState extends State<PurchasePage> {
                             Text(
                               AppLocalizations.of(context).translate('items'),
                               style: const TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               '${AppLocalizations.of(context).translate('total')}: ${currencyFormat.format(_calculateTotal())}',
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue,
                               ),
@@ -1332,7 +1332,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                                         ?.toString() ??
                                                     '',
                                                 style: const TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: 18,
                                                   fontWeight: FontWeight.w600,
                                                   color: Colors.black87,
                                                 ),
@@ -1343,7 +1343,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                               Text(
                                                 '${AppLocalizations.of(context).translate('supplier')}: ${item['supplierName']?.toString() ?? ''}',
                                                 style: TextStyle(
-                                                  fontSize: 14,
+                                                  fontSize: 16,
                                                   color: Colors.grey[600],
                                                 ),
                                               ),
@@ -1530,7 +1530,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                                   currencyFormat.format(total),
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
+                                                    fontSize: 18,
                                                     color: Colors.blue[700],
                                                   ),
                                                 ),

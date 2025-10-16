@@ -655,7 +655,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                               AppLocalizations.of(context).translate(
                                   'purchase_history_invoice_options'),
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -676,7 +676,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   child: Text(
                                     AppLocalizations.of(context).translate(
                                         'purchase_history_include_supplier'),
-                                    style: const TextStyle(fontSize: 14),
+                                    style: const TextStyle(fontSize: 16),
                                   ),
                                 ),
                               ],
@@ -697,7 +697,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   child: Text(
                                     AppLocalizations.of(context).translate(
                                         'purchase_history_generate_proforma'),
-                                    style: const TextStyle(fontSize: 14),
+                                    style: const TextStyle(fontSize: 16),
                                   ),
                                 ),
                               ],
@@ -728,7 +728,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                   AppLocalizations.of(context)
                                       .translate('billing_options'),
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -1028,12 +1028,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1A1E49),
           ),
@@ -1172,7 +1172,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         AppLocalizations.of(context)
                             .translate('purchase_history_purchased_items'),
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1223,7 +1223,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             label,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1291,7 +1291,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                 AppLocalizations.of(context)
                                     .translate('unnamed_item'),
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                             maxLines: 2,
@@ -1301,7 +1301,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           Text(
                             '${AppLocalizations.of(context).translate('invoice_number')}: ${item.invoiceNumber ?? 'N/A'}',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               color: Colors.grey[600],
                             ),
                           ),
@@ -1405,7 +1405,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                             Text(
                               '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName ?? AppLocalizations.of(context).translate('not_available')}',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.purple[900],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1415,7 +1415,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                               Text(
                                 '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Colors.purple[700],
                                 ),
                               ),
@@ -1445,7 +1445,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                             AppLocalizations.of(context)
                                 .translate('purchase_history_item_pending'),
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               color: Colors.orange[900],
                               fontWeight: FontWeight.w500,
                             ),
@@ -1494,7 +1494,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                             AppLocalizations.of(context)
                                 .translate('purchase_history_item_received'),
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               color: Colors.green[900],
                               fontWeight: FontWeight.w500,
                             ),
@@ -1529,7 +1529,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   color: Colors.grey[800],
                   fontWeight: FontWeight.w500,
                 ),

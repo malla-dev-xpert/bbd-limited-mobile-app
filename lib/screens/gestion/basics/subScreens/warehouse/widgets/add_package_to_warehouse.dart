@@ -573,7 +573,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
           countryListTheme: const CountryListThemeData(
             flagSize: 25,
             backgroundColor: Colors.white,
-            textStyle: TextStyle(fontSize: 16),
+            textStyle: TextStyle(fontSize: 18),
             bottomSheetHeight: 300,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20),
@@ -598,7 +598,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
                 ),
                 const SizedBox(height: 4),
                 selectedCountry != null

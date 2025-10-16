@@ -24,7 +24,7 @@ Widget buildDetailRow(String label, String? value) {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             color: Colors.grey[700],
-            fontSize: 14,
+            fontSize: 16,
           ),
         ),
         Flexible(
@@ -36,7 +36,7 @@ Widget buildDetailRow(String label, String? value) {
             style: const TextStyle(
               color: Color(0xFF1A1E49),
               fontWeight: FontWeight.w600,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
         ),

@@ -71,7 +71,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   Widget _buildInfoText(String label, String value) {
     return RichText(
       text: TextSpan(
-        style: const TextStyle(fontSize: 14, color: Colors.black87),
+        style: const TextStyle(fontSize: 16, color: Colors.black87),
         children: [
           TextSpan(text: '$label: '),
           TextSpan(
@@ -96,13 +96,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
           ),
           Expanded(
             child: Text(
               value ?? '',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
             ),
           ),
@@ -118,7 +118,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
         title,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 18,
+          fontSize: 20,
           color: Color(0xFF1A1E49),
         ),
       ),
@@ -409,7 +409,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                         '${container.supplierName ?? ""}',
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14),
+                                            fontSize: 16),
                                       ),
                                     ),
                                   ],
@@ -425,7 +425,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                       Expanded(
                                         child: Text(container.supplierPhone!,
                                             style:
-                                                const TextStyle(fontSize: 14)),
+                                                const TextStyle(fontSize: 16)),
                                       ),
                                     ],
                                   ),
@@ -444,7 +444,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     '${container.supplierName ?? ""}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 14),
+                                        fontSize: 16),
                                   ),
                                 ),
                                 if (container.supplierPhone != null &&
@@ -455,7 +455,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           color: Colors.green, size: 18),
                                       const SizedBox(width: 4),
                                       Text(container.supplierPhone!,
-                                          style: const TextStyle(fontSize: 14)),
+                                          style: const TextStyle(fontSize: 16)),
                                     ],
                                   ),
                               ],
@@ -490,7 +490,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               AppLocalizations.of(context)!
                                   .translate('container_bbd_limited'),
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
                         ],
                       ),
                     ),
@@ -582,7 +582,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           AppLocalizations.of(context)!
                               .translate('container_packages_list'),
                           style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16),
+                              fontWeight: FontWeight.w700, fontSize: 18),
                         ),
                         if (container.status == Status.PENDING) ...[
                           const SizedBox(height: 8),
@@ -623,7 +623,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           AppLocalizations.of(context)!
                               .translate('container_packages_list'),
                           style: TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16),
+                              fontWeight: FontWeight.w700, fontSize: 18),
                         ),
                         if (container.status == Status.PENDING)
                           TextButton.icon(
@@ -931,7 +931,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                fontSize: 14)),
+                                                                fontSize: 16)),
                                                       ),
                                                     ],
                                                   );
@@ -973,7 +973,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                fontSize: 14)),
+                                                                fontSize: 16)),
                                                       ),
                                                     ],
                                                   );
@@ -991,7 +991,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                     child: RichText(
                                                   text: TextSpan(
                                                     style: const TextStyle(
-                                                        fontSize: 14,
+                                                        fontSize: 16,
                                                         color: Colors.black87),
                                                     children: [
                                                       TextSpan(
@@ -1317,7 +1317,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
                                             style: TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 16,
                                                 color: Colors.grey),
                                           ),
                                         ),
@@ -1486,7 +1486,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
                                             style: TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 16,
                                                 color: Colors.grey),
                                           ),
                                         ),

@@ -88,7 +88,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           "Entrez votre email pour réinitialiser votre mot de passe.",
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w400,
                             letterSpacing: -0.5,
                           ),
@@ -157,7 +157,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               const Text(
                                 "Vous allez recevoir un email de réinitialisation si l'adresse est valide.",
                                 style: TextStyle(
-                                    color: Colors.black54, fontSize: 14),
+                                    color: Colors.black54, fontSize: 16),
                                 textAlign: TextAlign.center,
                               ),
                             ],

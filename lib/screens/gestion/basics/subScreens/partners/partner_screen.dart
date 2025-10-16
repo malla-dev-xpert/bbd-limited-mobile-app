@@ -296,7 +296,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
               AppLocalizations.of(context).translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 16),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
