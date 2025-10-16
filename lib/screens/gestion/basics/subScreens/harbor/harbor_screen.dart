@@ -322,7 +322,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                                 'Non spécifiée',
                                                             style:
                                                                 const TextStyle(
-                                                              fontSize: 12,
+                                                              fontSize: 14,
                                                               color:
                                                                   Colors.grey,
                                                             ),
@@ -349,7 +349,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                           "${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length} conteneurs",
                                                           style:
                                                               const TextStyle(
-                                                            fontSize: 12,
+                                                            fontSize: 14,
                                                             color: Colors.grey,
                                                           ),
                                                         ),

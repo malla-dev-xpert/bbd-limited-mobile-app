@@ -17,11 +17,11 @@ class InfoIconText extends StatelessWidget {
         Icon(icon, size: 15, color: Colors.grey[600]),
         const SizedBox(width: 3),
         Text('$label: ',
-            style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600])),
         Text(value,
             style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 14,
                 color: Color(0xFF1A1E49))),
       ],
     );

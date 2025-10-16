@@ -176,7 +176,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
                               localizations.translate('privacy_last_updated'),
                               style: TextStyle(
                                 color: Colors.grey[600],
-                                fontSize: 12,
+                                fontSize: 14,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),

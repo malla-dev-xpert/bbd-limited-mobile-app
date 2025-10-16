@@ -71,7 +71,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   Widget _buildInfoText(String label, String value) {
     return RichText(
       text: TextSpan(
-        style: const TextStyle(fontSize: 13, color: Colors.black87),
+        style: const TextStyle(fontSize: 14, color: Colors.black87),
         children: [
           TextSpan(text: '$label: '),
           TextSpan(
@@ -409,7 +409,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                         '${container.supplierName ?? ""}',
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 15),
+                                            fontSize: 14),
                                       ),
                                     ),
                                   ],
@@ -444,7 +444,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     '${container.supplierName ?? ""}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 15),
+                                        fontSize: 14),
                                   ),
                                 ),
                                 if (container.supplierPhone != null &&
@@ -490,7 +490,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               AppLocalizations.of(context)!
                                   .translate('container_bbd_limited'),
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 15)),
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -931,7 +931,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                fontSize: 12)),
+                                                                fontSize: 14)),
                                                       ),
                                                     ],
                                                   );
@@ -973,7 +973,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                fontSize: 12)),
+                                                                fontSize: 14)),
                                                       ),
                                                     ],
                                                   );
@@ -991,7 +991,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                     child: RichText(
                                                   text: TextSpan(
                                                     style: const TextStyle(
-                                                        fontSize: 13,
+                                                        fontSize: 14,
                                                         color: Colors.black87),
                                                     children: [
                                                       TextSpan(
@@ -1317,7 +1317,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
                                             style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 14,
                                                 color: Colors.grey),
                                           ),
                                         ),
@@ -1486,7 +1486,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
                                             style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 14,
                                                 color: Colors.grey),
                                           ),
                                         ),

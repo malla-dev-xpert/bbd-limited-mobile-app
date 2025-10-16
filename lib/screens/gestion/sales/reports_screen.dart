@@ -215,7 +215,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.grey[700],
               ),

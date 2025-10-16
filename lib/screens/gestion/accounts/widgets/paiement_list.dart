@@ -67,11 +67,11 @@ class PaiementListItem extends StatelessWidget {
           children: [
             Text(
               DateFormat('dd/MM/yyyy').format(versement.createdAt!),
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 14),
             ),
             Text(
               versement.partnerName ?? '',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ],
         ),

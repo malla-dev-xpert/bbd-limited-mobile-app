@@ -157,7 +157,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               const Text(
                                 "Vous allez recevoir un email de réinitialisation si l'adresse est valide.",
                                 style: TextStyle(
-                                    color: Colors.black54, fontSize: 12),
+                                    color: Colors.black54, fontSize: 14),
                                 textAlign: TextAlign.center,
                               ),
                             ],

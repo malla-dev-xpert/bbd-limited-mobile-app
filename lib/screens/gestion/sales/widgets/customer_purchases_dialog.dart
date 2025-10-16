@@ -221,7 +221,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                             Text(
                               DateFormat('dd/MM/yyyy').format(date),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: Colors.grey[600],
                               ),
                             ),
@@ -241,7 +241,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       child: Text(
                         _getStatusText(achat.status, context),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: _getStatusColor(achat.status),
                         ),
@@ -337,7 +337,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),

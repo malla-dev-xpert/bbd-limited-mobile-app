@@ -961,7 +961,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           'Actif',
                           style: TextStyle(
                             color: Colors.green[700],
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1121,7 +1121,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ),

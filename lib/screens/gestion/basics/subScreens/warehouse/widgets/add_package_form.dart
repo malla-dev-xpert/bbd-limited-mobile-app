@@ -500,7 +500,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 selectedCountry != null

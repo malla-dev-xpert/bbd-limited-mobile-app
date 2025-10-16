@@ -211,7 +211,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
                                   (item['quantity'] as num)),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13,
+                                fontSize: 14,
                                 color: Theme.of(context).primaryColor,
                               ),
                             ),

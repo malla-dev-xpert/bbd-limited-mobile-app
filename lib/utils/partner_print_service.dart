@@ -220,8 +220,8 @@ class PartnerPrintService {
     return pw.Row(
       children: [
         pw.Text('$label: ',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
-        pw.Text(value ?? '-', style: const pw.TextStyle(fontSize: 12)),
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
+        pw.Text(value ?? '-', style: const pw.TextStyle(fontSize: 14)),
         pw.SizedBox(width: 20),
       ],
     );

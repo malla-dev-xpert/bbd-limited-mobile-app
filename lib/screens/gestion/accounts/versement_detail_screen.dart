@@ -210,7 +210,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       Text(
                         'Factures: ${factureStats['payees']}/${factureStats['total']} payées',
                         style: const TextStyle(
-                            fontSize: 13, color: Color(0xFF7F78AF)),
+                            fontSize: 14, color: Color(0xFF7F78AF)),
                       ),
                     ],
                   ),
@@ -301,7 +301,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 13)),
+                                      color: Colors.grey[700], fontSize: 14)),
                             ),
                           ),
                         ],
@@ -503,7 +503,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 style: TextStyle(
                   color: Colors.green[700],
                   fontWeight: FontWeight.w500,
-                  fontSize: 11,
+                  fontSize: 14,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -535,7 +535,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                       style: TextStyle(
                         color: Colors.red[700],
                         fontWeight: FontWeight.w500,
-                        fontSize: 11,
+                        fontSize: 14,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -867,7 +867,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   ? const Center(
                       child: Text(
                         "Aucun retrait effectué pour ce versement.",
-                        style: TextStyle(fontSize: 15, color: Colors.grey),
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     )
                   : ListView.separated(
@@ -944,7 +944,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                 ? Colors.green[700]
                                                 : Colors.orange[700],
                                             fontWeight: FontWeight.w500,
-                                            fontSize: 13,
+                                            fontSize: 14,
                                           ),
                                         ),
                                       ],
@@ -995,7 +995,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                     w.dateRetrait.toString()))
                                             : 'Date inconnue',
                                         style: const TextStyle(
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             color: Colors.black87),
                                       ),
                                     ],
@@ -1015,7 +1015,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                       child: Text(
                                         w.note!,
                                         style: const TextStyle(
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             color: Colors.black87),
                                       ),
                                     ),
@@ -2040,7 +2040,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     'Configuré',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -2170,12 +2170,12 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1A1E49),
           ),

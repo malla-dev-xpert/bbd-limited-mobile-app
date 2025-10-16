@@ -470,7 +470,7 @@ class _PurchasePageState extends State<PurchasePage> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
@@ -859,7 +859,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                     AppLocalizations.of(context)
                                         .translate('client'),
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 14,
                                       color: Colors.blue[600],
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -906,7 +906,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                       AppLocalizations.of(context)
                                           .translate('versement'),
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 14,
                                         color: Colors.green[600],
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -947,7 +947,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                       AppLocalizations.of(context)
                                           .translate('purchase_type'),
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 14,
                                         color: Colors.orange[600],
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -1343,7 +1343,7 @@ class _PurchasePageState extends State<PurchasePage> {
                                               Text(
                                                 '${AppLocalizations.of(context).translate('supplier')}: ${item['supplierName']?.toString() ?? ''}',
                                                 style: TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 14,
                                                   color: Colors.grey[600],
                                                 ),
                                               ),

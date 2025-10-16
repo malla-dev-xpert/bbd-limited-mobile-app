@@ -27,7 +27,7 @@ Widget buildNoteField(String? note) {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             color: Colors.grey[700],
-            fontSize: 15,
+            fontSize: 14,
           ),
         ),
         const SizedBox(height: 8),

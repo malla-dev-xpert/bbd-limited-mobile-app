@@ -211,7 +211,7 @@ class _LoginViewState extends State<_LoginView> {
                                                 .contains('désactivé')
                                             ? Colors.orange[700]
                                             : Colors.red[700],
-                                        fontSize: 12,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -243,7 +243,7 @@ class _LoginViewState extends State<_LoginView> {
                             style: TextStyle(
                                 color: Colors.grey,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12),
+                                fontSize: 14),
                           ),
                         ],
                       ),

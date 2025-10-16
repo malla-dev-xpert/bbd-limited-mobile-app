@@ -381,7 +381,7 @@ class _CustomersWithPurchasesBottomSheetState
           Text(
             text,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: color,
             ),

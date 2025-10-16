@@ -508,7 +508,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         ),
                         label: Text(
                             AppLocalizations.of(context).translate('add_items'),
-                            style: const TextStyle(fontSize: 12)),
+                            style: const TextStyle(fontSize: 14)),
                         icon: const Icon(Icons.add, size: 16)),
                   ],
                 ],
@@ -534,7 +534,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         label: Text(
                           AppLocalizations.of(context).translate('delete'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -556,7 +556,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         label: Text(
                           AppLocalizations.of(context).translate('expedite'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -583,7 +583,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('arrive_at_destination'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -608,7 +608,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('confirm_delivery'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -1021,7 +1021,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       child: Text(
                         AppLocalizations.of(context)
                             .translate('no_date_selected_info'),
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ),
                 ],
@@ -1261,7 +1261,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   text: TextSpan(
                     style: TextStyle(
                       color: Colors.blue[700],
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                     children: [
                       TextSpan(
@@ -1306,7 +1306,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       text: TextSpan(
                         style: TextStyle(
                           color: Colors.blue[700],
-                          fontSize: 12,
+                          fontSize: 14,
                         ),
                         children: [
                           TextSpan(
@@ -1341,7 +1341,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       '${item.supplierName} ${item.supplierPhone?.isNotEmpty ?? false ? '| ${item.supplierPhone}' : ''}',
                       style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1363,7 +1363,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                     text: TextSpan(
                       style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
                       children: [
                         TextSpan(
@@ -1394,7 +1394,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   text: TextSpan(
                     style: TextStyle(
                       color: Colors.grey[600],
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                     children: [
                       TextSpan(
@@ -1424,7 +1424,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   text: TextSpan(
                     style: TextStyle(
                       color: Colors.grey[600],
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                     children: [
                       TextSpan(
