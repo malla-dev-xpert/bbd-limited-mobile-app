@@ -745,6 +745,8 @@
   "devise_code_invalid": "代码必须由3个大写字母组成",
   "exchange_rate_invalid": "汇率必须是有效数字",
   "exchange_rate_negative": "汇率不能为负数",
+  "please_enter_rate": "请输入汇率",
+  "invalid_rate": "无效的汇率",
   "devise_created_success": "货币创建成功！",
   "devise_updated_success": "货币更新成功",
   "devise_deleted_success": "货币删除成功",

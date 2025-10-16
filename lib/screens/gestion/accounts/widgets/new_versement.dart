@@ -53,6 +53,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
+  final TextEditingController tauxUtiliseController = TextEditingController();
 
   final AuthService authService = AuthService();
   final PartnerServices partnerServices = PartnerServices();
@@ -97,7 +98,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         final clientData = await partnerServices.findCustomers(page: 0);
         final client = clientData.firstWhere(
           (c) => c.id.toString() == widget.clientId,
-          orElse: () => throw Exception(AppLocalizations.of(context).translate('client_not_found')),
+          orElse: () => throw Exception(
+              AppLocalizations.of(context).translate('client_not_found')),
         );
         setState(() {
           selectedCLients = client;
@@ -106,7 +108,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       }
     } catch (_) {
       setState(() => isLoading = false);
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('error_loading_data'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_loading_data'));
     }
   }
 
@@ -120,7 +123,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       });
     } catch (_) {
       setState(() => isLoading = false);
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('error_loading_data'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_loading_data'));
     }
   }
 
@@ -128,35 +132,56 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     try {
       // Validation des champs
       if (montantVerserController.text.isEmpty) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_amount'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_enter_amount'));
         return;
       }
 
       final montant = double.tryParse(montantVerserController.text) ?? 0.0;
       if (montant <= 0) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('invalid_amount'));
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('invalid_amount'));
         return;
       }
 
       if (widget.isVersementScreen && selectedCLients == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_client'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_client'));
         return;
       }
 
       if (myDate == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_date'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_date'));
         return;
       }
 
       if (selectedDevise == null || selectedDevise!.id == null) {
         showErrorTopSnackBar(
-            context, AppLocalizations.of(context).translate('please_select_valid_currency'));
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_valid_currency'));
+        return;
+      }
+
+      if (tauxUtiliseController.text.isEmpty) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_enter_rate'));
+        return;
+      }
+
+      final tauxUtilise = double.tryParse(tauxUtiliseController.text) ?? 0.0;
+      if (tauxUtilise <= 0) {
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('invalid_rate'));
         return;
       }
 
       if (selectedType == null) {
         showErrorTopSnackBar(
-            context, AppLocalizations.of(context).translate('please_select_versement_type'));
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_versement_type'));
         return;
       }
 
@@ -164,7 +189,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
       final user = await authService.getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('user_not_connected'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         setState(() => isLoading = false);
         return;
       }
@@ -179,6 +205,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         "commissionnairePhone": commissionnairePhoneController.text,
         "type": selectedType.toString().split('.').last,
         "note": noteController.text,
+        "tauxUtilise": tauxUtilise,
       });
 
       final result = await versementServices.create(
@@ -207,20 +234,25 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
   bool _validateFirstStep() {
     if (montantVerserController.text.isEmpty) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_amount'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_enter_amount'));
       return false;
     }
     if (widget.isVersementScreen && selectedCLients == null) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_client'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_client'));
       return false;
     }
     if (myDate == null) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_date'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_date'));
       return false;
     }
     if (selectedType == null) {
       showErrorTopSnackBar(
-          context, AppLocalizations.of(context).translate('please_select_versement_type'));
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_versement_type'));
       return false;
     }
     return true;
@@ -251,10 +283,13 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                   Expanded(
                     child: Text(
                       currentStep == 0
-                          ? AppLocalizations.of(context).translate('versement_information')
+                          ? AppLocalizations.of(context)
+                              .translate('versement_information')
                           : currentStep == 1
-                              ? AppLocalizations.of(context).translate('commissionnaire_information')
-                              : AppLocalizations.of(context).translate('additional_note'),
+                              ? AppLocalizations.of(context)
+                                  .translate('commissionnaire_information')
+                              : AppLocalizations.of(context)
+                                  .translate('additional_note'),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -280,7 +315,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                         children: [
                           buildTextField(
                             controller: montantVerserController,
-                            label: AppLocalizations.of(context).translate('amount_to_pay'),
+                            label: AppLocalizations.of(context)
+                                .translate('amount_to_pay'),
                             icon: Icons.attach_money,
                             keyboardType: TextInputType.number,
                           ),
@@ -295,7 +331,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             },
                             itemToString: (type) =>
                                 type.toString().split('.').last,
-                            hintText: AppLocalizations.of(context).translate('choose_versement_type'),
+                            hintText: AppLocalizations.of(context)
+                                .translate('choose_versement_type'),
                             prefixIcon: Icons.category,
                           ),
                           const SizedBox(height: 10),
@@ -310,13 +347,15 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                               },
                               itemToString: (client) =>
                                   '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
-                              hintText: AppLocalizations.of(context).translate('choose_client'),
+                              hintText: AppLocalizations.of(context)
+                                  .translate('choose_client'),
                               prefixIcon: Icons.person_3,
                             ),
                           if (widget.isVersementScreen)
                             const SizedBox(height: 10),
                           DatePickerField(
-                            label: AppLocalizations.of(context).translate('payment_date'),
+                            label: AppLocalizations.of(context)
+                                .translate('payment_date'),
                             selectedDate: myDate,
                             onDateSelected: (date) {
                               setState(() {
@@ -331,13 +370,15 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                         children: [
                           buildTextField(
                             controller: commissionnaireNameController,
-                            label: AppLocalizations.of(context).translate('commissionnaire_full_name'),
+                            label: AppLocalizations.of(context)
+                                .translate('commissionnaire_full_name'),
                             icon: Icons.person,
                           ),
                           const SizedBox(height: 10),
                           buildTextField(
                             controller: commissionnairePhoneController,
-                            label: AppLocalizations.of(context).translate('commissionnaire_phone'),
+                            label: AppLocalizations.of(context)
+                                .translate('commissionnaire_phone'),
                             icon: Icons.phone,
                             keyboardType: TextInputType.phone,
                           ),
@@ -351,10 +392,18 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                                   onChanged: (currency) {
                                     setState(() {
                                       selectedDevise = currency;
+                                      // Pré-remplir le taux avec le taux de la devise sélectionnée
+                                      if (currency?.rate != null) {
+                                        tauxUtiliseController.text =
+                                            currency!.rate.toString();
+                                      } else {
+                                        tauxUtiliseController.clear();
+                                      }
                                     });
                                   },
                                   itemToString: (currency) => currency.code,
-                                  hintText: AppLocalizations.of(context).translate('choose_currency'),
+                                  hintText: AppLocalizations.of(context)
+                                      .translate('choose_currency'),
                                   prefixIcon: Icons.currency_exchange,
                                 ),
                               ),
@@ -365,6 +414,14 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                               ),
                             ],
                           ),
+                          const SizedBox(height: 10),
+                          buildTextField(
+                            controller: tauxUtiliseController,
+                            label: AppLocalizations.of(context)
+                                .translate('exchange_rate'),
+                            icon: Icons.trending_up,
+                            keyboardType: TextInputType.number,
+                          ),
                         ],
                       ),
                       Column(
@@ -373,7 +430,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                           TextFormField(
                             controller: noteController,
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context).translate('note_optional'),
+                              labelText: AppLocalizations.of(context)
+                                  .translate('note_optional'),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -402,15 +460,19 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             currentStep--;
                           });
                         },
-                        label: Text(AppLocalizations.of(context).translate('back')),
+                        label: Text(
+                            AppLocalizations.of(context).translate('back')),
                         icon: const Icon(Icons.arrow_back),
                       ),
                     if (currentStep > 0) const SizedBox(width: 10),
                     Expanded(
                       child: confirmationButton(
                         isLoading: isLoading,
-                        label: currentStep == 2 ? AppLocalizations.of(context).translate('save') : AppLocalizations.of(context).translate('next'),
-                        subLabel: AppLocalizations.of(context).translate('saving'),
+                        label: currentStep == 2
+                            ? AppLocalizations.of(context).translate('save')
+                            : AppLocalizations.of(context).translate('next'),
+                        subLabel:
+                            AppLocalizations.of(context).translate('saving'),
                         icon: currentStep == 2
                             ? Icons.check
                             : Icons.arrow_forward,
@@ -443,6 +505,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     _nameController.dispose();
     _codeController.dispose();
     _rateController.dispose();
+    tauxUtiliseController.dispose();
     noteController.dispose();
     super.dispose();
   }
@@ -476,7 +539,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                       children: [
                         Expanded(
                           child: Text(
-                            AppLocalizations.of(context).translate('add_new_currency'),
+                            AppLocalizations.of(context)
+                                .translate('add_new_currency'),
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -502,7 +566,9 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                           final user = await authService.getUserInfo();
                           if (user == null) {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('invalid_user_session'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('invalid_user_session'));
                             return;
                           }
 
@@ -519,31 +585,48 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
                           if (result == "SUCCESS") {
                             Navigator.pop(context);
+                            // Recharger la liste des devises pour l'afficher dans le dropdown
+                            await _loadDevisesData();
                             showSuccessTopSnackBar(
-                                context, AppLocalizations.of(context).translate('currency_created_success'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('currency_created_success'));
                           } else if (result == "NAME_EXIST") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('currency_name_exists'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('currency_name_exists'));
                           } else if (result == "CODE_EXIST") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('currency_code_exists'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('currency_code_exists'));
                           } else if (result == "RATE_NOT_FOUND") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('conversion_rate_not_found'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('conversion_rate_not_found'));
                           } else if (result == "RATE_SERVICE_ERROR") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('rate_service_error'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('rate_service_error'));
                           } else if (result == "CONNECTION_ERROR") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('connection_error'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('connection_error'));
                           } else {
                             // Affiche le message d'erreur tel quel s'il provient du backend
                             showErrorTopSnackBar(
-                                context, result ?? AppLocalizations.of(context).translate('unknown_error'));
+                                context,
+                                result ??
+                                    AppLocalizations.of(context)
+                                        .translate('unknown_error'));
                           }
                         } catch (e) {
-                          showErrorTopSnackBar(
-                              context, '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
+                          showErrorTopSnackBar(context,
+                              '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
                         } finally {
                           setState(() => _isLoading = false);
                         }

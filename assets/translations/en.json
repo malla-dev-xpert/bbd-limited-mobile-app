@@ -786,6 +786,8 @@
   "devise_code_invalid": "Code must consist of 3 uppercase letters",
   "exchange_rate_invalid": "Rate must be a valid number",
   "exchange_rate_negative": "Rate cannot be negative",
+  "please_enter_rate": "Please enter exchange rate",
+  "invalid_rate": "Invalid exchange rate",
   "devise_created_success": "Currency created successfully!",
   "devise_updated_success": "Currency updated successfully",
   "devise_deleted_success": "Currency deleted successfully",
