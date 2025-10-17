@@ -7,10 +7,12 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/models/harbor.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class AddPackageToWarehouseForm extends StatefulWidget {
   final int warehouseId;
@@ -36,6 +38,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
       final provider = context.read<PackageProvider>();
       provider.loadClients();
       provider.loadContainers();
+      provider.loadHarbors();
     });
   }
 
@@ -245,8 +248,9 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       icon: Icons.scale,
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value?.isEmpty ?? true)
+                        if (value?.isEmpty ?? true) {
                           return 'Ce champ est requis';
+                        }
                         if (double.tryParse(value!) == null) {
                           return 'Veuillez entrer un nombre valide';
                         }
@@ -259,8 +263,9 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       icon: Icons.monitor_weight,
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value?.isEmpty ?? true)
+                        if (value?.isEmpty ?? true) {
                           return 'Ce champ est requis';
+                        }
                         if (double.tryParse(value!) == null) {
                           return 'Veuillez entrer un nombre valide';
                         }
@@ -297,24 +302,29 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
   Widget _buildStep2(PackageProvider provider) {
     return ListView(
       children: [
-        _buildCountrySelector(
-          label: 'Pays de départ',
-          selectedCountry: provider.departureCountry,
-          onCountrySelected: (country) {
-            provider.departureCountry = country;
+        _buildHarborSelector(
+          label:
+              AppLocalizations.of(context).translate('choose_departure_port'),
+          selectedHarbor: provider.selectedDepartureHarbor,
+          harbors: provider.harbors,
+          onHarborSelected: (harbor) {
+            provider.selectedDepartureHarbor = harbor;
           },
+          provider: provider,
         ),
         const SizedBox(height: 20),
-        _buildCountrySelector(
-          label: 'Pays d\'arrivée',
-          selectedCountry: provider.arrivalCountry,
-          onCountrySelected: (country) {
-            provider.arrivalCountry = country;
+        _buildHarborSelector(
+          label: AppLocalizations.of(context).translate('choose_arrival_port'),
+          selectedHarbor: provider.selectedArrivalHarbor,
+          harbors: provider.harbors,
+          onHarborSelected: (harbor) {
+            provider.selectedArrivalHarbor = harbor;
           },
+          provider: provider,
         ),
         const SizedBox(height: 20),
         DatePickerField(
-          label: "Date de départ",
+          label: AppLocalizations.of(context).translate('package_start_date'),
           selectedDate: provider.startDate,
           onDateSelected: (date) {
             provider.startDate = date;
@@ -322,7 +332,8 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
         ),
         const SizedBox(height: 20),
         DatePickerField(
-          label: "Date d'arrivée estimée",
+          label: AppLocalizations.of(context)
+              .translate('package_estimated_arrival_date'),
           selectedDate: provider.estimatedArrivalDate,
           onDateSelected: (date) {
             provider.estimatedArrivalDate = date;
@@ -364,7 +375,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                 provider.loadClients();
               });
             },
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
           ),
         ),
       ],
@@ -461,65 +472,39 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     );
   }
 
-  Widget _buildCountrySelector({
+  Widget _buildHarborSelector({
     required String label,
-    required Country? selectedCountry,
-    required Function(Country) onCountrySelected,
+    required Harbor? selectedHarbor,
+    required List<Harbor> harbors,
+    required Function(Harbor?) onHarborSelected,
+    required PackageProvider provider,
   }) {
-    return InkWell(
-      onTap: () {
-        showCountryPicker(
-          context: context,
-          showPhoneCode: true,
-          countryListTheme: const CountryListThemeData(
-            flagSize: 25,
-            backgroundColor: Colors.white,
-            textStyle: TextStyle(fontSize: 18),
-            bottomSheetHeight: 300,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          flex: 4,
+          child: DropDownCustom<Harbor>(
+            items: harbors,
+            selectedItem: selectedHarbor,
+            onChanged: onHarborSelected,
+            itemToString: (harbor) => harbor.name ?? '',
+            hintText: label,
+            prefixIcon: Icons.sailing,
           ),
-          onSelect: onCountrySelected,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                ),
-                const SizedBox(height: 4),
-                selectedCountry != null
-                    ? Row(
-                        children: [
-                          Text(
-                            selectedCountry.flagEmoji,
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(selectedCountry.name),
-                        ],
-                      )
-                    : const Text('Choisir un pays'),
-              ],
-            ),
-            const Icon(Icons.arrow_drop_down),
-          ],
+        Expanded(
+          flex: 1,
+          child: IconButton(
+            onPressed: () {
+              showAddHarborModal(context).then((_) {
+                provider.loadHarbors();
+              });
+            },
+            icon: const Icon(Icons.add),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
