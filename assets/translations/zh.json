@@ -1988,5 +1988,11 @@
   "item_deleted": "商品删除成功",
   "item_duplicated": "商品复制成功",
   "choose_action": "选择操作",
-  "choose_action_description": "您想对此商品做什么？"
+  "choose_action_description": "您想对此商品做什么？",
+  "swipe_for_actions": "滑动查看操作",
+  "total_items": "商品总数",
+  "delivered_items": "已交付发票",
+  "suppliers": "供应商",
+  "same_supplier": "同一供应商",
+  "different_suppliers": "不同供应商"
 }

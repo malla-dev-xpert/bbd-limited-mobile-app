@@ -2010,4 +2010,10 @@
   "item_deleted": "Item deleted successfully",
   "item_duplicated": "Item duplicated successfully",
   "choose_action": "Choose Action",
-  "choose_action_description": "What would you like to do with this item?"}
+  "choose_action_description": "What would you like to do with this item?",
+  "swipe_for_actions": "Swipe for actions",
+  "total_items": "Total Items",
+  "delivered_items": "Delivered Invoices",
+  "suppliers": "Suppliers",
+  "same_supplier": "Same Supplier",
+  "different_suppliers": "Different Suppliers"}

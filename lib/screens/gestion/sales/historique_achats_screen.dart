@@ -427,29 +427,87 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                               ),
                                             ],
                                             const SizedBox(height: 12),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'purchase_history_total_amount'),
-                                                  style: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontWeight: FontWeight.w500,
+                                            // Informations sur les articles
+                                            Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                    color: Colors.blue[200]!),
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  _buildArticleInfoRow(
+                                                    Icons.inventory_2,
+                                                    AppLocalizations.of(context)
+                                                        .translate(
+                                                            'total_items'),
+                                                    '${achat.items?.length ?? 0}',
+                                                    Colors.blue[700]!,
                                                   ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  '${_formatAmount(achat.montantTotal)} ¥',
-                                                  style: const TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color(0xFF1A1E49),
+                                                  const SizedBox(height: 12),
+                                                  _buildArticleInfoRow(
+                                                    Icons.check_circle,
+                                                    AppLocalizations.of(context)
+                                                        .translate(
+                                                            'delivered_items'),
+                                                    '${_getDeliveredItemsCount(achat)}/${_getTotalInvoicesCount(achat)}',
+                                                    Colors.green[700]!,
                                                   ),
-                                                ),
-                                              ],
+                                                  const SizedBox(height: 12),
+                                                  _buildArticleInfoRow(
+                                                    Icons.business,
+                                                    AppLocalizations.of(context)
+                                                        .translate('suppliers'),
+                                                    _getSuppliersInfo(achat),
+                                                    Colors.orange[700]!,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            // Montant total
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF1A1E49)
+                                                    .withOpacity(0.05),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                    color:
+                                                        const Color(0xFF1A1E49)
+                                                            .withOpacity(0.2)),
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(context)
+                                                        .translate(
+                                                            'purchase_history_total_amount'),
+                                                    style: TextStyle(
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${_formatAmount(achat.montantTotal)} ¥',
+                                                    style: const TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF1A1E49),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -488,6 +546,91 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       default:
         return Colors.grey;
     }
+  }
+
+  // Méthode pour compter les articles livrés (par numéro de facture)
+  int _getDeliveredItemsCount(Achat achat) {
+    if (achat.items == null) return 0;
+
+    final deliveredInvoices = <String>{};
+    for (var item in achat.items!) {
+      if (item.status == Status.RECEIVED &&
+          item.invoiceNumber != null &&
+          item.invoiceNumber!.isNotEmpty) {
+        deliveredInvoices.add(item.invoiceNumber!);
+      }
+    }
+    return deliveredInvoices.length;
+  }
+
+  // Méthode pour compter le total des factures
+  int _getTotalInvoicesCount(Achat achat) {
+    if (achat.items == null) return 0;
+
+    final allInvoices = <String>{};
+    for (var item in achat.items!) {
+      if (item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty) {
+        allInvoices.add(item.invoiceNumber!);
+      }
+    }
+    return allInvoices.length;
+  }
+
+  // Méthode pour obtenir les informations sur les fournisseurs
+  String _getSuppliersInfo(Achat achat) {
+    if (achat.items == null || achat.items!.isEmpty) {
+      return AppLocalizations.of(context).translate('none');
+    }
+
+    final suppliers = <String>{};
+    for (var item in achat.items!) {
+      if (item.supplierName != null && item.supplierName!.isNotEmpty) {
+        suppliers.add(item.supplierName!);
+      }
+    }
+
+    if (suppliers.isEmpty) {
+      return AppLocalizations.of(context).translate('none');
+    }
+
+    if (suppliers.length == 1) {
+      return AppLocalizations.of(context).translate('same_supplier');
+    } else {
+      return '${suppliers.length}';
+    }
+  }
+
+  // Méthode pour construire une ligne d'information sur les articles
+  Widget _buildArticleInfoRow(
+      IconData icon, String label, String value, Color color) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: color,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
   }
 
   void _showAchatDetails(BuildContext context, Achat achat) {

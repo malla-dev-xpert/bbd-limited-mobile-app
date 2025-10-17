@@ -2010,4 +2010,11 @@
   "item_deleted": "Article supprimé avec succès",
   "item_duplicated": "Article dupliqué avec succès",
   "choose_action": "Choisir une Action",
-  "choose_action_description": "Que souhaitez-vous faire avec cet article ?"}
+  "choose_action_description": "Que souhaitez-vous faire avec cet article ?",
+  "swipe_for_actions": "Glissez pour les actions",
+  "total_items": "Articles Totaux",
+  "delivered_items": "Factures Livrées",
+  "suppliers": "Fournisseurs",
+  "same_supplier": "Même Fournisseur",
+  "different_suppliers": "Fournisseurs Différents"
+}
