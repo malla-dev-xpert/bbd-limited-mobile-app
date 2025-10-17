@@ -2004,5 +2004,10 @@
   "no_items_yet": "Aucun article pour le moment",
   "add_first_item_description": "Commencez par ajouter votre premier article pour créer une commande d'achat",
   "add_new_item": "Ajouter un Nouvel Article",
-  "item_added_successfully": "Article ajouté avec succès"
-}
+  "item_added_successfully": "Article ajouté avec succès",
+  "confirm_delete": "Confirmer la Suppression",
+  "delete_item_confirmation": "Êtes-vous sûr de vouloir supprimer cet article ?",
+  "item_deleted": "Article supprimé avec succès",
+  "item_duplicated": "Article dupliqué avec succès",
+  "choose_action": "Choisir une Action",
+  "choose_action_description": "Que souhaitez-vous faire avec cet article ?"}

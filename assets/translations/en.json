@@ -2004,5 +2004,10 @@
   "no_items_yet": "No items yet",
   "add_first_item_description": "Start by adding your first item to create a purchase order",
   "add_new_item": "Add New Item",
-  "item_added_successfully": "Item added successfully"
-}
+  "item_added_successfully": "Item added successfully",
+  "confirm_delete": "Confirm Delete",
+  "delete_item_confirmation": "Are you sure you want to delete this item?",
+  "item_deleted": "Item deleted successfully",
+  "item_duplicated": "Item duplicated successfully",
+  "choose_action": "Choose Action",
+  "choose_action_description": "What would you like to do with this item?"}

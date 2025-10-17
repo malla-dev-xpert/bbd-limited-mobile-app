@@ -1982,5 +1982,11 @@
   "no_items_yet": "暂无商品",
   "add_first_item_description": "开始添加您的第一个商品来创建采购订单",
   "add_new_item": "添加新商品",
-  "item_added_successfully": "商品添加成功"
+  "item_added_successfully": "商品添加成功",
+  "confirm_delete": "确认删除",
+  "delete_item_confirmation": "您确定要删除此商品吗？",
+  "item_deleted": "商品删除成功",
+  "item_duplicated": "商品复制成功",
+  "choose_action": "选择操作",
+  "choose_action_description": "您想对此商品做什么？"
 }

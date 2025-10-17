@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
@@ -391,12 +392,6 @@ class _PurchasePageState extends State<PurchasePage> {
       // Revenir à la page 1 (liste des articles)
       _showAddItemForm = false;
     });
-
-    // Afficher un message de succès
-    showSuccessTopSnackBar(
-      context,
-      AppLocalizations.of(context).translate('item_added_successfully'),
-    );
   }
 
   void _removeItem(int index) {
@@ -460,12 +455,6 @@ class _PurchasePageState extends State<PurchasePage> {
       // Prix par quantité totale
       return quantity * unitPrice;
     }
-  }
-
-  double _calculateTotal() {
-    return localItems.fold(0.0, (sum, item) {
-      return sum + _calculateItemTotal(item);
-    });
   }
 
   Widget _buildDetailItem(String label, String value) {
@@ -680,10 +669,9 @@ class _PurchasePageState extends State<PurchasePage> {
         ),
       ),
       body: _showAddItemForm ? _buildAddItemFormPage() : _buildItemsListPage(),
-      // Boutons fixes en bas (seulement sur la page des articles)
+      // Total et boutons fixes en bas (seulement sur la page des articles)
       bottomNavigationBar: !_showAddItemForm
           ? Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -696,9 +684,20 @@ class _PurchasePageState extends State<PurchasePage> {
                 ],
               ),
               child: SafeArea(
-                child: localItems.isEmpty
-                    ? _buildEmptyStateButton()
-                    : _buildActionButtons(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Total fixe
+                    if (localItems.isNotEmpty) _buildTotalSection(),
+                    // Boutons d'action
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: localItems.isEmpty
+                          ? _buildEmptyStateButton()
+                          : _buildActionButtons(),
+                    ),
+                  ],
+                ),
               ),
             )
           : null,
@@ -913,53 +912,90 @@ class _PurchasePageState extends State<PurchasePage> {
 
   // Méthode pour construire la liste des articles
   Widget _buildItemsList() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('items'),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).translate('items'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '${AppLocalizations.of(context).translate('total')}: ${currencyFormat.format(_calculateTotal())}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: localItems.length,
-            itemBuilder: (context, index) {
-              final item = localItems[index];
-              final total = _calculateItemTotal(item);
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: localItems.length,
+          itemBuilder: (context, index) {
+            final item = localItems[index];
+            final total = _calculateItemTotal(item);
 
-              return Container(
+            return Slidable(
+              key: ValueKey('item_${index}_${item['description']}'),
+              endActionPane: ActionPane(
+                motion: const DrawerMotion(),
+                children: [
+                  SlidableAction(
+                    onPressed: (_) => _duplicateItem(index),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    icon: Icons.copy,
+                    label: AppLocalizations.of(context).translate('duplicate'),
+                  ),
+                  SlidableAction(
+                    onPressed: (_) => _editItem(index),
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    icon: Icons.edit,
+                    label: AppLocalizations.of(context).translate('edit'),
+                  ),
+                  SlidableAction(
+                    onPressed: (_) {
+                      showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(
+                            AppLocalizations.of(context)
+                                .translate('confirm_delete'),
+                          ),
+                          content: Text(
+                            AppLocalizations.of(context)
+                                .translate('delete_item_confirmation'),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text(
+                                AppLocalizations.of(context)
+                                    .translate('cancel'),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(true);
+                                _removeItem(index);
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)
+                                    .translate('delete'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    icon: Icons.delete,
+                    label: AppLocalizations.of(context).translate('delete'),
+                  ),
+                ],
+              ),
+              child: Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -1007,65 +1043,6 @@ class _PurchasePageState extends State<PurchasePage> {
                                 ),
                               ],
                             ),
-                          ),
-                          // Boutons d'action
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Bouton dupliquer
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(Icons.copy,
-                                      color: Colors.blue[600], size: 20),
-                                  onPressed: () => _duplicateItem(index),
-                                  tooltip: AppLocalizations.of(context)
-                                      .translate('duplicate'),
-                                  constraints: const BoxConstraints(
-                                      minWidth: 36, minHeight: 36),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              // Bouton modifier
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.orange[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(Icons.edit,
-                                      color: Colors.orange[600], size: 20),
-                                  onPressed: () => _editItem(index),
-                                  tooltip: AppLocalizations.of(context)
-                                      .translate('edit'),
-                                  constraints: const BoxConstraints(
-                                      minWidth: 36, minHeight: 36),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              // Bouton supprimer
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.red[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(Icons.delete_outline,
-                                      color: Colors.red[600], size: 20),
-                                  onPressed: () => _removeItem(index),
-                                  tooltip: AppLocalizations.of(context)
-                                      .translate('delete'),
-                                  constraints: const BoxConstraints(
-                                      minWidth: 36, minHeight: 36),
-                                  padding: const EdgeInsets.all(8),
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),
@@ -1164,8 +1141,45 @@ class _PurchasePageState extends State<PurchasePage> {
                     ],
                   ),
                 ),
-              );
-            },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // Méthode pour construire la section du total
+  Widget _buildTotalSection() {
+    final total = localItems.fold<double>(
+        0, (sum, item) => sum + _calculateItemTotal(item));
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        border: Border(
+          top: BorderSide(color: Colors.grey[200]!, width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '${AppLocalizations.of(context).translate('total')}:',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          Text(
+            currencyFormat.format(total),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[700],
+            ),
           ),
         ],
       ),
