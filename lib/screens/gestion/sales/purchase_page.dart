@@ -89,6 +89,9 @@ class _PurchasePageState extends State<PurchasePage> {
   // Mode de calcul du prix (par défaut: par carton)
   bool _isPricePerCarton = true;
 
+  // État pour gérer la navigation entre les pages
+  bool _showAddItemForm = false;
+
   @override
   void initState() {
     super.initState();
@@ -384,7 +387,16 @@ class _PurchasePageState extends State<PurchasePage> {
 
       // Forcer la reconstruction du dropdown fournisseur
       _supplierDropdownKey = UniqueKey();
+
+      // Revenir à la page 1 (liste des articles)
+      _showAddItemForm = false;
     });
+
+    // Afficher un message de succès
+    showSuccessTopSnackBar(
+      context,
+      AppLocalizations.of(context).translate('item_added_successfully'),
+    );
   }
 
   void _removeItem(int index) {
@@ -425,18 +437,12 @@ class _PurchasePageState extends State<PurchasePage> {
 
       // Forcer la reconstruction du dropdown avec le nouveau fournisseur
       _supplierDropdownKey = UniqueKey();
-    });
 
-    // Supprimer l'article de la liste
-    _removeItem(index);
+      // Supprimer l'article de la liste
+      localItems.removeAt(index);
 
-    // Faire défiler vers le formulaire d'ajout
-    Future.delayed(const Duration(milliseconds: 100), () {
-      Scrollable.ensureVisible(
-        context,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      // Passer à la page 2 pour éditer l'article
+      _showAddItemForm = true;
     });
   }
 
@@ -599,13 +605,60 @@ class _PurchasePageState extends State<PurchasePage> {
     }
   }
 
+  // Méthode pour construire la page 1 (liste des articles)
+  Widget _buildItemsListPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Informations du client/versement (si déjà défini)
+          if (widget.clientId != null) _buildClientInfoCard(),
+
+          const SizedBox(height: 16),
+
+          // Liste des articles ou état vide
+          if (localItems.isEmpty) ...[
+            _buildEmptyState(),
+          ] else ...[
+            _buildItemsList(),
+            // Ajouter un espace en bas pour les boutons fixes
+            const SizedBox(height: 80),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Méthode pour construire la page 2 (formulaire d'ajout)
+  Widget _buildAddItemFormPage() {
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Informations du client/versement (si déjà défini)
+            if (widget.clientId != null) _buildClientInfoCard(),
+
+            const SizedBox(height: 16),
+
+            // Formulaire d'ajout d'article
+            _buildAddItemForm(),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
-          AppLocalizations.of(context).translate('new_purchase'),
+          _showAddItemForm
+              ? AppLocalizations.of(context).translate('add_item')
+              : AppLocalizations.of(context).translate('new_purchase'),
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
@@ -615,966 +668,1106 @@ class _PurchasePageState extends State<PurchasePage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (_showAddItemForm) {
+              setState(() {
+                _showAddItemForm = false;
+              });
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Section sélection client/versement (seulement si pas déjà défini)
-              if (widget.clientId == null) ...[
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+      body: _showAddItemForm ? _buildAddItemFormPage() : _buildItemsListPage(),
+      // Boutons fixes en bas (seulement sur la page des articles)
+      bottomNavigationBar: !_showAddItemForm
+          ? Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                    offset: const Offset(0, -2),
                   ),
+                ],
+              ),
+              child: SafeArea(
+                child: localItems.isEmpty
+                    ? _buildEmptyStateButton()
+                    : _buildActionButtons(),
+              ),
+            )
+          : null,
+    );
+  }
+
+  // Méthode pour construire la carte d'informations du client
+  Widget _buildClientInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context).translate('purchase_info'),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Informations du client
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue[200]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.person, color: Colors.blue[600], size: 24),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppLocalizations.of(context)
-                            .translate('customer_selection'),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                        AppLocalizations.of(context).translate('client'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue[600],
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 16),
-
-                      // Sélection du client avec bouton d'ajout
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropDownCustom<Partner>(
-                              items: customers,
-                              selectedItem: selectedCustomer,
-                              onChanged: _onCustomerSelected,
-                              itemToString: (customer) =>
-                                  '${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}',
-                              hintText: AppLocalizations.of(context)
-                                  .translate('select_customer'),
-                              prefixIcon: Icons.person,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: Icon(Icons.add, color: Colors.blue[700]),
-                              onPressed: _showCreateClientBottomSheet,
-                              tooltip: AppLocalizations.of(context)
-                                  .translate('add_new_partner'),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        selectedCustomer != null
+                            ? '${selectedCustomer!.firstName} ${selectedCustomer!.lastName}'
+                            : AppLocalizations.of(context).translate('loading'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-                      if (selectedCustomer != null) ...[
-                        const SizedBox(height: 16),
+          // Informations du versement (si applicable)
+          if (widget.versementId != null && selectedVersement != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.payment, color: Colors.green[600], size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          AppLocalizations.of(context)
-                              .translate('versement_selection'),
+                          AppLocalizations.of(context).translate('versement'),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.green[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '${selectedVersement!.reference} - ${currencyFormat.format(selectedVersement!.montantRestant)}',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
+                            color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 8),
-
-                        // Sélection du versement (seulement si des versements existent)
-                        if (versements.isNotEmpty) ...[
-                          IgnorePointer(
-                            ignoring: isDebtPurchase,
-                            child: Opacity(
-                              opacity: isDebtPurchase ? 0.5 : 1.0,
-                              child: DropDownCustom<Versement>(
-                                items: versements,
-                                selectedItem: selectedVersement,
-                                onChanged: _onVersementSelected,
-                                itemToString: (versement) =>
-                                    '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
-                                hintText: AppLocalizations.of(context)
-                                    .translate('select_versement_or_debt'),
-                                prefixIcon: Icons.payment,
-                              ),
-                            ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (isDebtPurchase) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.account_balance_wallet,
+                      color: Colors.orange[600], size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('purchase_type'),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.orange[600],
+                            fontWeight: FontWeight.w500,
                           ),
-                        ] else ...[
-                          // Message quand aucun versement n'est disponible
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: Row(
+                        ),
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('debt_purchase'),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Méthode pour construire l'état vide
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.shopping_cart_outlined,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            AppLocalizations.of(context).translate('no_items_yet'),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)
+                .translate('add_first_item_description'),
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[500],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          // Ajouter un espace en bas pour le bouton fixe
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  // Méthode pour construire la liste des articles
+  Widget _buildItemsList() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context).translate('items'),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${AppLocalizations.of(context).translate('total')}: ${currencyFormat.format(_calculateTotal())}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: localItems.length,
+            itemBuilder: (context, index) {
+              final item = localItems[index];
+              final total = _calculateItemTotal(item);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // En-tête avec description et actions
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.payment,
-                                    color: Colors.grey[600], size: 24),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(context)
-                                        .translate('no_versements_available'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                                Text(
+                                  item['description']?.toString() ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${AppLocalizations.of(context).translate('supplier')}: ${item['supplierName']?.toString() ?? ''}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-
-                        // Option dette (seulement si des versements existent)
-                        if (versements.isNotEmpty) ...[
-                          const SizedBox(height: 8),
+                          // Boutons d'action
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Checkbox(
-                                value: isDebtPurchase,
-                                onChanged: selectedVersement != null
-                                    ? null // Désactiver si un versement est sélectionné
-                                    : (value) {
-                                        setState(() {
-                                          isDebtPurchase = value ?? false;
-                                          if (isDebtPurchase) {
-                                            selectedVersement = null;
-                                          }
-                                        });
-                                      },
+                              // Bouton dupliquer
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.copy,
+                                      color: Colors.blue[600], size: 20),
+                                  onPressed: () => _duplicateItem(index),
+                                  tooltip: AppLocalizations.of(context)
+                                      .translate('duplicate'),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 36, minHeight: 36),
+                                  padding: const EdgeInsets.all(8),
+                                ),
                               ),
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)
-                                      .translate('debt_purchase'),
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: selectedVersement != null
-                                        ? Colors.grey
-                                        : Colors.black,
-                                  ),
+                              const SizedBox(width: 4),
+                              // Bouton modifier
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.edit,
+                                      color: Colors.orange[600], size: 20),
+                                  onPressed: () => _editItem(index),
+                                  tooltip: AppLocalizations.of(context)
+                                      .translate('edit'),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 36, minHeight: 36),
+                                  padding: const EdgeInsets.all(8),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              // Bouton supprimer
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.delete_outline,
+                                      color: Colors.red[600], size: 20),
+                                  onPressed: () => _removeItem(index),
+                                  tooltip: AppLocalizations.of(context)
+                                      .translate('delete'),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 36, minHeight: 36),
+                                  padding: const EdgeInsets.all(8),
                                 ),
                               ),
                             ],
                           ),
-                        ] else ...[
-                          // Message informatif quand aucun versement n'est disponible
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.orange[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.orange[200]!),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.info_outline,
-                                    color: Colors.orange[600], size: 20),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(context).translate(
-                                        'no_versements_available_debt_mode'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.orange[700],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
-                      ],
-                    ],
-                  ),
-                ),
-              ] else ...[
-                // Affichage des informations du client/versement quand déjà défini
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).translate('purchase_info'),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
-                      // Informations du client
+                      // Détails de l'article
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.blue[50],
+                          color: Colors.grey[50],
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue[200]!),
                         ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Icon(Icons.person,
-                                color: Colors.blue[600], size: 24),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            // Ligne carton et quantité par carton
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _buildDetailItem(
+                                    AppLocalizations.of(context)
+                                        .translate('carton'),
+                                    '${item['carton']}'),
+                                _buildDetailItem(
+                                    AppLocalizations.of(context)
+                                        .translate('quantity_per_carton'),
+                                    '${item['quantityPerCarton']}'),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            // Ligne quantité totale et prix unitaire
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _buildDetailItem(
+                                    AppLocalizations.of(context)
+                                        .translate('total_quantity'),
+                                    '${item['quantity']}'),
+                                _buildDetailItem(
+                                    (item['isPricePerCarton'] ?? true)
+                                        ? AppLocalizations.of(context)
+                                            .translate('price_per_carton')
+                                        : AppLocalizations.of(context)
+                                            .translate('unit_price'),
+                                    currencyFormat.format(item['unitPrice'])),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            // Ligne numéro de facture et sales rate
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _buildDetailItem(
+                                    AppLocalizations.of(context)
+                                        .translate('invoice_number'),
+                                    item['invoiceNumber']?.toString() ?? 'N/A'),
+                                _buildDetailItem(
+                                    AppLocalizations.of(context)
+                                        .translate('sales_rate'),
+                                    '${item['salesRate']}'),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            // Ligne total
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    AppLocalizations.of(context)
-                                        .translate('client'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.blue[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Text(
-                                    selectedCustomer != null
-                                        ? '${selectedCustomer!.firstName} ${selectedCustomer!.lastName}'
-                                        : AppLocalizations.of(context)
-                                            .translate('loading'),
+                                    '${AppLocalizations.of(context).translate('total')}:',
                                     style: const TextStyle(
-                                      fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.black87,
                                     ),
                                   ),
+                                  Text(
+                                    currencyFormat.format(total),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      color: Colors.blue[700],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ],
                         ),
                       ),
-
-                      // Informations du versement (si applicable)
-                      if (widget.versementId != null &&
-                          selectedVersement != null) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green[50],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.green[200]!),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.payment,
-                                  color: Colors.green[600], size: 24),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)
-                                          .translate('versement'),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.green[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${selectedVersement!.reference} - ${currencyFormat.format(selectedVersement!.montantRestant)}',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ] else if (isDebtPurchase) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.orange[50],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.orange[200]!),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.account_balance_wallet,
-                                  color: Colors.orange[600], size: 24),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)
-                                          .translate('purchase_type'),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.orange[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      AppLocalizations.of(context)
-                                          .translate('debt_purchase'),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
-              ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-              const SizedBox(height: 16),
-
-              // Section ajout d'article
-              if (selectedCustomer != null || widget.clientId != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
+  // Méthode pour construire le bouton de l'état vide
+  Widget _buildEmptyStateButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.green[600],
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              setState(() {
+                _showAddItemForm = true;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.add, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('add_new_package_title'),
+                  style: const TextStyle(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).translate('add_item'),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Formulaire d'ajout d'article
-                      // Numéro de facture en première position
-                      buildTextField(
-                        controller: _invoiceNumberController,
-                        label: AppLocalizations.of(context)
-                            .translate('invoice_number'),
-                        icon: Icons.receipt,
-                      ),
-                      const SizedBox(height: 12),
-
-                      buildTextField(
-                        controller: _descriptionController,
-                        label: AppLocalizations.of(context)
-                            .translate('description'),
-                        icon: Icons.description,
-                      ),
-                      const SizedBox(height: 12),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: buildTextField(
-                              controller: _cartonController,
-                              label: AppLocalizations.of(context)
-                                  .translate('carton'),
-                              icon: Icons.inventory_2,
-                              keyboardType: TextInputType.number,
-                              onChanged: (value) => _calculateTotalQuantity(),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: buildTextField(
-                              controller: _quantityPerCartonController,
-                              label: AppLocalizations.of(context)
-                                  .translate('quantity_per_carton'),
-                              icon: Icons.format_list_numbered,
-                              keyboardType: TextInputType.number,
-                              onChanged: (value) => _calculateTotalQuantity(),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Champ quantité totale (lecture seule)
-                      TextFormField(
-                        controller: _quantityController,
-                        keyboardType: TextInputType.number,
-                        enabled: false, // Lecture seule
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)
-                              .translate('total_quantity'),
-                          prefixIcon:
-                              Icon(Icons.calculate, color: Colors.grey[600]),
-                          filled: true,
-                          fillColor: Colors.grey[100],
-                          hintText: AppLocalizations.of(context)
-                              .translate('calculated_automatically'),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Mode de calcul du prix
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)
-                                  .translate('price_calculation_mode'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: RadioListTile<bool>(
-                                    title: Text(
-                                      AppLocalizations.of(context)
-                                          .translate('price_per_carton'),
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                    value: true,
-                                    groupValue: _isPricePerCarton,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _isPricePerCarton = value ?? true;
-                                      });
-                                    },
-                                    dense: true,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: RadioListTile<bool>(
-                                    title: Text(
-                                      AppLocalizations.of(context).translate(
-                                          'price_per_total_quantity'),
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                    value: false,
-                                    groupValue: _isPricePerCarton,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _isPricePerCarton = value ?? false;
-                                      });
-                                    },
-                                    dense: true,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      buildTextField(
-                        controller: _unitPriceController,
-                        label: _isPricePerCarton
-                            ? AppLocalizations.of(context)
-                                .translate('price_per_carton')
-                            : AppLocalizations.of(context)
-                                .translate('unit_price'),
-                        icon: Icons.currency_yen,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) =>
-                            setState(() {}), // Pour recalculer l'affichage
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Prix total sur une ligne entière
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue[200]!),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)
-                                  .translate('total_price'),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue[700],
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(_calculateItemTotalPrice()),
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Sélection du fournisseur avec bouton d'ajout
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropDownCustom<Partner>(
-                              key:
-                                  _supplierDropdownKey, // Clé pour forcer la reconstruction
-                              items: suppliers,
-                              selectedItem: selectedSupplier,
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedSupplier = value;
-                                });
-                              },
-                              itemToString: (supplier) =>
-                                  '${supplier.firstName} ${supplier.lastName}',
-                              hintText: AppLocalizations.of(context)
-                                  .translate('supplier'),
-                              prefixIcon: Icons.business,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.green[50],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: Icon(Icons.add, color: Colors.green[700]),
-                              onPressed: _showCreateSupplierBottomSheet,
-                              tooltip: AppLocalizations.of(context)
-                                  .translate('add_new_supplier'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      buildTextField(
-                        controller: _salesRateController,
-                        label: AppLocalizations.of(context)
-                            .translate('sales_rate'),
-                        icon: Icons.trending_up,
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 16),
-
-                      confirmationButton(
-                        isLoading: false,
-                        onPressed: _addItem,
-                        label:
-                            AppLocalizations.of(context).translate('add_item'),
-                        icon: Icons.add,
-                        subLabel:
-                            AppLocalizations.of(context).translate('adding'),
-                      ),
-                    ],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-
-                const SizedBox(height: 16),
-
-                // Liste des articles
-                if (localItems.isNotEmpty) ...[
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context).translate('items'),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '${AppLocalizations.of(context).translate('total')}: ${currencyFormat.format(_calculateTotal())}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: localItems.length,
-                          itemBuilder: (context, index) {
-                            final item = localItems[index];
-                            // Calculer le total en utilisant la méthode unifiée
-                            final total = _calculateItemTotal(item);
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey[200]!),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    spreadRadius: 1,
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // En-tête avec description et actions
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item['description']
-                                                        ?.toString() ??
-                                                    '',
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black87,
-                                                ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                '${AppLocalizations.of(context).translate('supplier')}: ${item['supplierName']?.toString() ?? ''}',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Boutons d'action
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Bouton dupliquer
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue[50],
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: IconButton(
-                                                icon: Icon(Icons.copy,
-                                                    color: Colors.blue[600],
-                                                    size: 20),
-                                                onPressed: () =>
-                                                    _duplicateItem(index),
-                                                tooltip:
-                                                    AppLocalizations.of(context)
-                                                        .translate('duplicate'),
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        minWidth: 36,
-                                                        minHeight: 36),
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            // Bouton modifier
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.orange[50],
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: IconButton(
-                                                icon: Icon(Icons.edit,
-                                                    color: Colors.orange[600],
-                                                    size: 20),
-                                                onPressed: () =>
-                                                    _editItem(index),
-                                                tooltip:
-                                                    AppLocalizations.of(context)
-                                                        .translate('edit'),
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        minWidth: 36,
-                                                        minHeight: 36),
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            // Bouton supprimer
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.red[50],
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: IconButton(
-                                                icon: Icon(Icons.delete_outline,
-                                                    color: Colors.red[600],
-                                                    size: 20),
-                                                onPressed: () =>
-                                                    _removeItem(index),
-                                                tooltip:
-                                                    AppLocalizations.of(context)
-                                                        .translate('delete'),
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        minWidth: 36,
-                                                        minHeight: 36),
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    // Détails de l'article
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[50],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          // Ligne carton et quantité par carton
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              _buildDetailItem(
-                                                  AppLocalizations.of(context)
-                                                      .translate('carton'),
-                                                  '${item['carton']}'),
-                                              _buildDetailItem(
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'quantity_per_carton'),
-                                                  '${item['quantityPerCarton']}'),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          // Ligne quantité totale et prix unitaire
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              _buildDetailItem(
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'total_quantity'),
-                                                  '${item['quantity']}'),
-                                              _buildDetailItem(
-                                                  (item['isPricePerCarton'] ??
-                                                          true)
-                                                      ? AppLocalizations.of(
-                                                              context)
-                                                          .translate(
-                                                              'price_per_carton')
-                                                      : AppLocalizations.of(
-                                                              context)
-                                                          .translate(
-                                                              'unit_price'),
-                                                  currencyFormat.format(
-                                                      item['unitPrice'])),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          // Ligne numéro de facture et sales rate
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              _buildDetailItem(
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'invoice_number'),
-                                                  item['invoiceNumber']
-                                                          ?.toString() ??
-                                                      'N/A'),
-                                              _buildDetailItem(
-                                                  AppLocalizations.of(context)
-                                                      .translate('sales_rate'),
-                                                  '${item['salesRate']}'),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          // Ligne total
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8, horizontal: 12),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue[50],
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  '${AppLocalizations.of(context).translate('total')}:',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  currencyFormat.format(total),
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18,
-                                                    color: Colors.blue[700],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Bouton de validation
-                  confirmationButton(
-                    isLoading: isLoading,
-                    onPressed: _submitPurchase,
-                    label: isDebtPurchase
-                        ? AppLocalizations.of(context).translate('create_debt')
-                        : AppLocalizations.of(context)
-                            .translate('create_purchase'),
-                    icon: isDebtPurchase
-                        ? Icons.account_balance_wallet
-                        : Icons.shopping_cart,
-                    subLabel: isDebtPurchase
-                        ? AppLocalizations.of(context)
-                            .translate('creating_debt')
-                        : AppLocalizations.of(context)
-                            .translate('creating_purchase'),
-                  ),
-                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  // Méthode pour construire les boutons d'action
+  Widget _buildActionButtons() {
+    return Row(
+      children: [
+        // Bouton ajouter un nouvel article (couleur secondaire)
+        Expanded(
+          child: Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.green[600],
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.3),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () {
+                  setState(() {
+                    _showAddItemForm = true;
+                  });
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      AppLocalizations.of(context).translate('add_new_item'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Bouton confirmer l'achat (couleur primaire)
+        Expanded(
+          child: Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.blue[600],
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.3),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: isLoading ? null : _submitPurchase,
+                child: Container(
+                  alignment: Alignment.center,
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isDebtPurchase
+                                  ? Icons.account_balance_wallet
+                                  : Icons.shopping_cart,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isDebtPurchase
+                                  ? AppLocalizations.of(context)
+                                      .translate('create_debt')
+                                  : AppLocalizations.of(context)
+                                      .translate('create_purchase'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Méthode pour construire le formulaire d'ajout d'article
+  Widget _buildAddItemForm() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sélection client (seulement si clientId est null)
+          if (widget.clientId == null) ...[
+            _buildCustomerSelectionSection(),
+            const SizedBox(height: 20),
+          ],
+
+          Text(
+            AppLocalizations.of(context).translate('add_item'),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Formulaire d'ajout d'article
+          // Numéro de facture en première position
+          buildTextField(
+            controller: _invoiceNumberController,
+            label: AppLocalizations.of(context).translate('invoice_number'),
+            icon: Icons.receipt,
+          ),
+          const SizedBox(height: 12),
+
+          buildTextField(
+            controller: _descriptionController,
+            label: AppLocalizations.of(context).translate('description'),
+            icon: Icons.description,
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: buildTextField(
+                  controller: _cartonController,
+                  label: AppLocalizations.of(context).translate('carton'),
+                  icon: Icons.inventory_2,
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => _calculateTotalQuantity(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: buildTextField(
+                  controller: _quantityPerCartonController,
+                  label: AppLocalizations.of(context)
+                      .translate('quantity_per_carton'),
+                  icon: Icons.format_list_numbered,
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => _calculateTotalQuantity(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Champ quantité totale (lecture seule)
+          TextFormField(
+            controller: _quantityController,
+            keyboardType: TextInputType.number,
+            enabled: false, // Lecture seule
+            decoration: InputDecoration(
+              labelText:
+                  AppLocalizations.of(context).translate('total_quantity'),
+              prefixIcon: Icon(Icons.calculate, color: Colors.grey[600]),
+              filled: true,
+              fillColor: Colors.grey[100],
+              hintText: AppLocalizations.of(context)
+                  .translate('calculated_automatically'),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Mode de calcul du prix
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('price_calculation_mode'),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: RadioListTile<bool>(
+                        title: Text(
+                          AppLocalizations.of(context)
+                              .translate('price_per_carton'),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        value: true,
+                        groupValue: _isPricePerCarton,
+                        onChanged: (value) {
+                          setState(() {
+                            _isPricePerCarton = value ?? true;
+                          });
+                        },
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    Expanded(
+                      child: RadioListTile<bool>(
+                        title: Text(
+                          AppLocalizations.of(context)
+                              .translate('price_per_total_quantity'),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        value: false,
+                        groupValue: _isPricePerCarton,
+                        onChanged: (value) {
+                          setState(() {
+                            _isPricePerCarton = value ?? false;
+                          });
+                        },
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          buildTextField(
+            controller: _unitPriceController,
+            label: _isPricePerCarton
+                ? AppLocalizations.of(context).translate('price_per_carton')
+                : AppLocalizations.of(context).translate('unit_price'),
+            icon: Icons.currency_yen,
+            keyboardType: TextInputType.number,
+            onChanged: (value) =>
+                setState(() {}), // Pour recalculer l'affichage
+          ),
+          const SizedBox(height: 12),
+
+          // Prix total sur une ligne entière
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue[200]!),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  AppLocalizations.of(context).translate('total_price'),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue[700],
+                  ),
+                ),
+                Text(
+                  currencyFormat.format(_calculateItemTotalPrice()),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue[800],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Sélection du fournisseur avec bouton d'ajout
+          Row(
+            children: [
+              Expanded(
+                child: DropDownCustom<Partner>(
+                  key: _supplierDropdownKey,
+                  items: suppliers,
+                  selectedItem: selectedSupplier,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedSupplier = value;
+                    });
+                  },
+                  itemToString: (supplier) =>
+                      '${supplier.firstName} ${supplier.lastName}',
+                  hintText: AppLocalizations.of(context).translate('supplier'),
+                  prefixIcon: Icons.business,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.add, color: Colors.green[700]),
+                  onPressed: _showCreateSupplierBottomSheet,
+                  tooltip: AppLocalizations.of(context)
+                      .translate('add_new_supplier'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          buildTextField(
+            controller: _salesRateController,
+            label: AppLocalizations.of(context).translate('sales_rate'),
+            icon: Icons.trending_up,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+
+          confirmationButton(
+            isLoading: false,
+            onPressed: _addItem,
+            label: AppLocalizations.of(context).translate('add_item'),
+            icon: Icons.add,
+            subLabel: AppLocalizations.of(context).translate('adding'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Méthode pour construire la section de sélection du client
+  Widget _buildCustomerSelectionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('customer_selection'),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Sélection du client avec bouton d'ajout
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Partner>(
+                items: customers,
+                selectedItem: selectedCustomer,
+                onChanged: _onCustomerSelected,
+                itemToString: (customer) =>
+                    '${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}',
+                hintText:
+                    AppLocalizations.of(context).translate('select_customer'),
+                prefixIcon: Icons.person,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.add, color: Colors.blue[700]),
+                onPressed: _showCreateClientBottomSheet,
+                tooltip:
+                    AppLocalizations.of(context).translate('add_new_partner'),
+              ),
+            ),
+          ],
+        ),
+
+        if (selectedCustomer != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            AppLocalizations.of(context).translate('versement_selection'),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Sélection du versement (seulement si des versements existent)
+          if (versements.isNotEmpty) ...[
+            IgnorePointer(
+              ignoring: isDebtPurchase,
+              child: Opacity(
+                opacity: isDebtPurchase ? 0.5 : 1.0,
+                child: DropDownCustom<Versement>(
+                  items: versements,
+                  selectedItem: selectedVersement,
+                  onChanged: _onVersementSelected,
+                  itemToString: (versement) =>
+                      '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
+                  hintText: AppLocalizations.of(context)
+                      .translate('select_versement_or_debt'),
+                  prefixIcon: Icons.payment,
+                ),
+              ),
+            ),
+          ] else ...[
+            // Message quand aucun versement n'est disponible
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.payment, color: Colors.grey[600], size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)
+                          .translate('no_versements_available'),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // Option dette (seulement si des versements existent)
+          if (versements.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Checkbox(
+                  value: isDebtPurchase,
+                  onChanged: selectedVersement != null
+                      ? null // Désactiver si un versement est sélectionné
+                      : (value) {
+                          setState(() {
+                            isDebtPurchase = value ?? false;
+                            if (isDebtPurchase) {
+                              selectedVersement = null;
+                            }
+                          });
+                        },
+                ),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).translate('debt_purchase'),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: selectedVersement != null
+                          ? Colors.grey
+                          : Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            // Message informatif quand aucun versement n'est disponible
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange[600], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)
+                          .translate('no_versements_available_debt_mode'),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.orange[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ],
     );
   }
 }

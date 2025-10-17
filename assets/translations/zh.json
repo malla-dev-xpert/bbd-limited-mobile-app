@@ -1978,5 +1978,9 @@
   "warehouse_package_modification_error": "修改包裹时出错",
   "modify_warehouse_title": "修改仓库",
   "add_new_warehouse_title": "添加新仓库",
-  "add_new_package_title": "添加新包裹"
+  "add_new_package_title": "添加新包裹",
+  "no_items_yet": "暂无商品",
+  "add_first_item_description": "开始添加您的第一个商品来创建采购订单",
+  "add_new_item": "添加新商品",
+  "item_added_successfully": "商品添加成功"
 }

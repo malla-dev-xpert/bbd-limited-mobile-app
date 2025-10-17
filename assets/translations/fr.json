@@ -2000,5 +2000,9 @@
   "warehouse_package_modification_error": "Erreur lors de la modification du colis",
   "modify_warehouse_title": "Modifier l'entrepôt",
   "add_new_warehouse_title": "Ajouter un nouveau entrepôt",
-  "add_new_package_title": "Ajouter un nouveau colis"
+  "add_new_package_title": "Ajouter un nouveau colis",
+  "no_items_yet": "Aucun article pour le moment",
+  "add_first_item_description": "Commencez par ajouter votre premier article pour créer une commande d'achat",
+  "add_new_item": "Ajouter un Nouvel Article",
+  "item_added_successfully": "Article ajouté avec succès"
 }

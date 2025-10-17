@@ -2000,5 +2000,9 @@
   "warehouse_package_modification_error": "Error modifying package",
   "modify_warehouse_title": "Modify Warehouse",
   "add_new_warehouse_title": "Add New Warehouse",
-  "add_new_package_title": "Add New Package"
+  "add_new_package_title": "Add New Package",
+  "no_items_yet": "No items yet",
+  "add_first_item_description": "Start by adding your first item to create a purchase order",
+  "add_new_item": "Add New Item",
+  "item_added_successfully": "Item added successfully"
 }
