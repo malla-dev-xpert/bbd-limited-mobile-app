@@ -82,16 +82,16 @@ class HarborServices {
     }
   }
 
-  Future<String?> delete(int harborId) async {
+  Future<String?> delete(int harborId, int userId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/harbors/$harborId'),
+        Uri.parse('$baseUrl/harbors/delete/$harborId?userId=$userId'),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
         return "SUCCESS";
       } else if (response.statusCode == 409) {
-        return "HARBOR_HAS_CONTAINERS";
+        return "CANT_DELETED";
       } else {
         throw Exception("Erreur lors de la suppression du port");
       }
