@@ -184,16 +184,7 @@ class _HarborScreen extends State<HarborScreen> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+                  color: Colors.white, borderRadius: BorderRadius.circular(12)),
               child: buildTextField(
                 controller: searchController,
                 label: 'Rechercher un port...',
