@@ -682,6 +682,7 @@
   "supplier_created_success": "Fournisseur créé avec succès !",
   "supplier_registration_error": "Erreur lors de l'enregistrement du fournisseur",
   "choose_supplier": "Choisir un fournisseur...",
+  "packages_list_title": "Liste des colis",
   "invoice_number": "Numéro de facture",
   "purchase_rate": "Taux",
   "please_enter_description": "Veuillez entrer une description",

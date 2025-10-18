@@ -5,9 +5,11 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/harbor.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 
 class PackageProvider extends ChangeNotifier {
@@ -16,6 +18,7 @@ class PackageProvider extends ChangeNotifier {
   final PartnerServices _partnerServices = PartnerServices();
   final ContainerServices _containerServices = ContainerServices();
   final HarborServices _harborServices = HarborServices();
+  final ItemServices _itemServices = ItemServices();
 
   List<Partner> _clients = [];
   List<Containers> _container = [];
@@ -33,6 +36,8 @@ class PackageProvider extends ChangeNotifier {
 
   // Items
   Set<int> _selectedItemIds = {};
+  List<Items> _eligibleItems = [];
+  bool _isLoadingItems = false;
 
   // Getters
   List<Partner> get clients => _clients;
@@ -48,11 +53,19 @@ class PackageProvider extends ChangeNotifier {
   DateTime? get startDate => _startDate;
   DateTime? get estimatedArrivalDate => _estimatedArrivalDate;
   Set<int> get selectedItemIds => _selectedItemIds;
+  List<Items> get eligibleItems => _eligibleItems;
+  bool get isLoadingItems => _isLoadingItems;
 
   // Setters
   set selectedClient(Partner? value) {
     _selectedClient = value;
-    notifyListeners();
+    if (value != null) {
+      loadEligibleItems(value.id);
+    } else {
+      _eligibleItems = [];
+      _selectedItemIds.clear();
+      notifyListeners();
+    }
   }
 
   set selectedContainer(Containers? value) {
@@ -160,6 +173,25 @@ class PackageProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> loadEligibleItems(int clientId) async {
+    _isLoadingItems = true;
+    notifyListeners();
+
+    try {
+      final items = await _itemServices.findItemsByClient(clientId);
+      _eligibleItems = items;
+      _selectedItemIds.clear();
+    } catch (e) {
+      _eligibleItems = [];
+      _selectedItemIds.clear();
+      // L'erreur sera gérée par le widget qui utilise le provider
+      rethrow;
+    } finally {
+      _isLoadingItems = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> createPackage({
     required String ref,
     required double? weight,
@@ -253,6 +285,8 @@ class PackageProvider extends ChangeNotifier {
     _startDate = null;
     _estimatedArrivalDate = null;
     _selectedItemIds.clear();
+    _eligibleItems = [];
+    _isLoadingItems = false;
     notifyListeners();
   }
 }

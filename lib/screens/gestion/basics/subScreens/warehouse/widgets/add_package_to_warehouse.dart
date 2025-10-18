@@ -76,11 +76,79 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
     return true;
   }
 
+  bool _validateCurrentStep(PackageProvider provider) {
+    switch (provider.currentStep) {
+      case 1:
+        // Validation pour l'étape 2 (sélection des items)
+        if (provider.selectedItemIds.isEmpty) {
+          showErrorTopSnackBar(
+              context, "Veuillez sélectionner au moins un item");
+          return false;
+        }
+        return true;
+      case 2:
+        // Validation pour l'étape 3 (ports + dates)
+        if (provider.selectedDepartureHarbor == null) {
+          showErrorTopSnackBar(
+              context, "Veuillez sélectionner un port de départ");
+          return false;
+        }
+        if (provider.selectedArrivalHarbor == null) {
+          showErrorTopSnackBar(
+              context, "Veuillez sélectionner un port d'arrivée");
+          return false;
+        }
+        if (provider.startDate == null) {
+          showErrorTopSnackBar(
+              context, "Veuillez sélectionner une date de départ");
+          return false;
+        }
+        if (provider.estimatedArrivalDate == null) {
+          showErrorTopSnackBar(
+              context, "Veuillez sélectionner une date d'arrivée estimée");
+          return false;
+        }
+        return true;
+      case 3:
+        // Validation pour l'étape 4 (conteneur)
+        if (provider.selectedContainer == null) {
+          showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur");
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  }
+
   Future<void> _handleSubmit() async {
     final provider = context.read<PackageProvider>();
     final weight = double.tryParse(_weightController.text);
     final cbn = double.tryParse(_cbnController.text);
     final quantity = double.tryParse(_quantityController.text);
+
+    // Validations finales
+    if (provider.selectedContainer == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un conteneur");
+      return;
+    }
+    if (provider.selectedDepartureHarbor == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un port de départ");
+      return;
+    }
+    if (provider.selectedArrivalHarbor == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner un port d'arrivée");
+      return;
+    }
+    if (provider.startDate == null) {
+      showErrorTopSnackBar(context, "Veuillez sélectionner une date de départ");
+      return;
+    }
+    if (provider.estimatedArrivalDate == null) {
+      showErrorTopSnackBar(
+          context, "Veuillez sélectionner une date d'arrivée estimée");
+      return;
+    }
 
     if (provider.expeditionType == "Avion" && weight == null) {
       showErrorTopSnackBar(context, "Le poids est invalid");
@@ -153,7 +221,11 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                           child: IndexedStack(
                             index: provider.currentStep,
                             children: [
+                              // Étape 1 : Infos de base + sélection client
                               _buildStep1(provider),
+                              // Étape 2 : Sélection des items
+                              _buildItemSelectionStep(provider),
+                              // Étape 3 : Ports + dates + conteneur
                               _buildStep2(provider),
                             ],
                           ),
@@ -196,7 +268,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
         icon: Icons.arrow_forward_ios,
         subLabel: "Chargement...",
       );
-    } else {
+    } else if (provider.currentStep == 2) {
       return Row(
         children: [
           Expanded(
@@ -216,6 +288,34 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
               subLabel: "Enregistrement...",
               icon: Icons.check,
               onPressed: _handleSubmit,
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                provider.currentStep--;
+              },
+              label: const Text("Retour"),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: confirmationButton(
+              isLoading: false,
+              label: "Suivant",
+              onPressed: () {
+                if (_validateCurrentStep(provider)) {
+                  provider.currentStep++;
+                }
+              },
+              icon: Icons.arrow_forward_ios,
+              subLabel: "Chargement...",
             ),
           ),
         ],
@@ -302,43 +402,161 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
   Widget _buildStep2(PackageProvider provider) {
     return ListView(
       children: [
-        _buildHarborSelector(
-          label:
-              AppLocalizations.of(context).translate('choose_departure_port'),
-          selectedHarbor: provider.selectedDepartureHarbor,
-          harbors: provider.harbors,
-          onHarborSelected: (harbor) {
-            provider.selectedDepartureHarbor = harbor;
-          },
-          provider: provider,
+        // Port de départ
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              flex: 4,
+              child: DropDownCustom<Harbor>(
+                items: provider.harbors,
+                selectedItem: provider.selectedDepartureHarbor,
+                onChanged: (harbor) {
+                  provider.selectedDepartureHarbor = harbor;
+                },
+                itemToString: (harbor) => harbor.name ?? '',
+                hintText: AppLocalizations.of(context)
+                    .translate('choose_departure_port'),
+                prefixIcon: Icons.sailing,
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: IconButton(
+                onPressed: () {
+                  showAddHarborModal(context).then((_) {
+                    provider.loadHarbors();
+                  });
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 20),
-        _buildHarborSelector(
-          label: AppLocalizations.of(context).translate('choose_arrival_port'),
-          selectedHarbor: provider.selectedArrivalHarbor,
-          harbors: provider.harbors,
-          onHarborSelected: (harbor) {
-            provider.selectedArrivalHarbor = harbor;
-          },
-          provider: provider,
+        // Port d'arrivée
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              flex: 4,
+              child: DropDownCustom<Harbor>(
+                items: provider.harbors,
+                selectedItem: provider.selectedArrivalHarbor,
+                onChanged: (harbor) {
+                  provider.selectedArrivalHarbor = harbor;
+                },
+                itemToString: (harbor) => harbor.name ?? '',
+                hintText: AppLocalizations.of(context)
+                    .translate('choose_arrival_port'),
+                prefixIcon: Icons.sailing,
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: IconButton(
+                onPressed: () {
+                  showAddHarborModal(context).then((_) {
+                    provider.loadHarbors();
+                  });
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 20),
+        // Date de départ
         DatePickerField(
-          label: AppLocalizations.of(context).translate('package_start_date'),
+          label: AppLocalizations.of(context).translate('departure_date'),
           selectedDate: provider.startDate,
           onDateSelected: (date) {
             provider.startDate = date;
           },
         ),
         const SizedBox(height: 20),
+        // Date d'arrivée estimée
         DatePickerField(
-          label: AppLocalizations.of(context)
-              .translate('package_estimated_arrival_date'),
+          label:
+              AppLocalizations.of(context).translate('estimated_arrival_date'),
           selectedDate: provider.estimatedArrivalDate,
           onDateSelected: (date) {
             provider.estimatedArrivalDate = date;
           },
         ),
+        const SizedBox(height: 20),
+        _buildContainerSelector(provider),
+      ],
+    );
+  }
+
+  Widget _buildItemSelectionStep(PackageProvider provider) {
+    if (provider.isLoadingItems) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (provider.eligibleItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Aucun item éligible',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Veuillez sélectionner un client pour voir ses items.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView(
+      children: [
+        ...provider.eligibleItems.map((item) {
+          return CheckboxListTile(
+            value: provider.selectedItemIds.contains(item.id),
+            onChanged: (selected) {
+              if (selected == true) {
+                provider.addSelectedItemId(item.id!);
+              } else {
+                provider.removeSelectedItemId(item.id!);
+              }
+            },
+            title: Text(
+              item.description ??
+                  AppLocalizations.of(context).translate('no_description'),
+              style: const TextStyle(fontSize: 16),
+            ),
+            subtitle: Text(
+              '${AppLocalizations.of(context).translate('item_quantity_label')}: ${item.quantity?.toString() ?? "-"}',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+            secondary: Icon(
+              Icons.inventory_2,
+              color: provider.selectedItemIds.contains(item.id)
+                  ? Colors.blue[700]
+                  : Colors.grey[400],
+            ),
+          );
+        }).toList()
       ],
     );
   }
@@ -469,42 +687,6 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHarborSelector({
-    required String label,
-    required Harbor? selectedHarbor,
-    required List<Harbor> harbors,
-    required Function(Harbor?) onHarborSelected,
-    required PackageProvider provider,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          flex: 4,
-          child: DropDownCustom<Harbor>(
-            items: harbors,
-            selectedItem: selectedHarbor,
-            onChanged: onHarborSelected,
-            itemToString: (harbor) => harbor.name ?? '',
-            hintText: label,
-            prefixIcon: Icons.sailing,
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: IconButton(
-            onPressed: () {
-              showAddHarborModal(context).then((_) {
-                provider.loadHarbors();
-              });
-            },
-            icon: const Icon(Icons.add),
-          ),
-        ),
-      ],
     );
   }
 }
