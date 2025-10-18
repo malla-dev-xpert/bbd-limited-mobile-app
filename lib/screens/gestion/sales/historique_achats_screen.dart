@@ -13,6 +13,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/item_detail_chip.dart';
 
 class HistoriqueAchatsScreen extends StatefulWidget {
   const HistoriqueAchatsScreen({super.key});
@@ -1449,14 +1450,16 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildItemDetailChip(
-                        '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
-                        Icons.inventory,
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
+                        icon: Icons.inventory,
                       ),
                       const SizedBox(width: 8),
-                      _buildItemDetailChip(
-                        '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
-                        Icons.format_list_numbered,
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                        icon: Icons.format_list_numbered,
                       ),
                     ],
                   ),
@@ -1464,14 +1467,15 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildItemDetailChip(
-                        '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
-                        Icons.numbers,
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
+                        icon: Icons.numbers,
                       ),
                       const SizedBox(width: 8),
-                      _buildItemDetailChip(
-                        '${_formatAmount(item.unitPrice)} ¥',
-                        Icons.attach_money,
+                      ItemDetailChip(
+                        text: '${_formatAmount(item.unitPrice)} ¥',
+                        icon: Icons.attach_money,
                       ),
                     ],
                   ),
@@ -1479,14 +1483,18 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                   // Taux d'achat et total en colonne pour une meilleure lisibilité
                   Column(
                     children: [
-                      _buildItemDetailChipFullWidth(
-                        '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
-                        Icons.trending_up,
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
+                        icon: Icons.trending_up,
+                        fullWidth: true,
                       ),
                       const SizedBox(height: 8),
-                      _buildItemDetailChipFullWidth(
-                        '${AppLocalizations.of(context).translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
-                        Icons.calculate,
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                        icon: Icons.calculate,
+                        fullWidth: true,
                       ),
                     ],
                   ),
@@ -1673,103 +1681,6 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildItemDetailChip(String text, IconData icon) {
-    // Séparer le label et la valeur
-    final colonIndex = text.indexOf(':');
-    final label = colonIndex != -1 ? text.substring(0, colonIndex + 1) : text;
-    final value = colonIndex != -1 ? text.substring(colonIndex + 1).trim() : '';
-
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: Colors.grey[700]),
-            const SizedBox(width: 4),
-            Flexible(
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: label,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (value.isNotEmpty)
-                      TextSpan(
-                        text: ' $value',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[800],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                  ],
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemDetailChipFullWidth(String text, IconData icon) {
-    // Séparer le label et la valeur
-    final colonIndex = text.indexOf(':');
-    final label = colonIndex != -1 ? text.substring(0, colonIndex + 1) : text;
-    final value = colonIndex != -1 ? text.substring(colonIndex + 1).trim() : '';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: Colors.grey[700]),
-          const SizedBox(width: 8),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: label,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (value.isNotEmpty)
-                    TextSpan(
-                      text: ' $value',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[800],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
