@@ -2066,5 +2066,7 @@
   "versement_creation_error": "Erreur lors de la création du versement",
   "edit_versement_information": "Modifier les informations du versement",
   "edit_date_and_commissionnaire": "Modifier la date et le commissionnaire",
-  "edit_additional_note": "Modifier la note supplémentaire"
+  "edit_additional_note": "Modifier la note supplémentaire",
+  "delete_impossible_operations_associated": "Impossible de supprimer : des opérations sont déjà associées à ce versement.",
+  "payment_deleted_success_backend": "Paiement supprimé avec succès."
 }

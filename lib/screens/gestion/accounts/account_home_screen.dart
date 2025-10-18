@@ -4,7 +4,6 @@ import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/edit_paiement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -238,8 +237,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     }
   }
 
-  void _showEditPaiementModal(BuildContext context, Versement versement) {
-    showModalBottomSheet(
+  Future<void> _showEditPaiementModal(
+      BuildContext context, Versement versement) async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -247,12 +247,17 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return EditPaiementModal(
-          versement: versement,
-          onPaiementUpdated: () => fetchPaiements(reset: true),
+        return NewVersementModal(
+          isVersementScreen: true,
+          versementToEdit: versement,
+          onVersementCreated: () => fetchPaiements(reset: true),
         );
       },
     );
+
+    if (result == true) {
+      fetchPaiements(reset: true);
+    }
   }
 
   Future<void> _delete(Versement versement) async {
@@ -309,22 +314,22 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
       Navigator.of(context).pop();
 
-      if (result == "ACHATS_NOT_DELETED") {
+      if (result == "IMPOSSIBLE") {
         showErrorTopSnackBar(
           context,
           AppLocalizations.of(context)
-              .translate('error_cannot_delete_payment_with_purchases'),
+              .translate('delete_impossible_operations_associated'),
         );
-      } else if (result == "DELETED") {
+      } else {
+        // Succès - le backend retourne un message de succès
         setState(() {
           _allVersements.removeWhere((d) => d.id == versement.id);
           _filteredVersements.removeWhere((d) => d.id == versement.id);
         });
-        showSuccessTopSnackBar(context,
-            AppLocalizations.of(context).translate('payment_deleted_success'));
-      } else {
-        showErrorTopSnackBar(context,
-            AppLocalizations.of(context).translate('error_unknown_deletion'));
+        showSuccessTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('payment_deleted_success_backend'));
       }
     } catch (e) {
       Navigator.of(context).pop();

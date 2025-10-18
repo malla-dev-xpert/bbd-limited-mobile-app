@@ -1338,23 +1338,23 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
       Navigator.of(context).pop();
 
-      if (result == "ACHATS_NOT_DELETED") {
+      if (result == "IMPOSSIBLE") {
         showErrorTopSnackBar(
           context,
           AppLocalizations.of(context)
-              .translate('error_cannot_delete_payment_with_purchases'),
+              .translate('delete_impossible_operations_associated'),
         );
-      } else if (result == "DELETED") {
+      } else {
+        // Succès - le backend retourne un message de succès
         await _refreshData();
-        showSuccessTopSnackBar(context,
-            AppLocalizations.of(context).translate('payment_deleted_success'));
+        showSuccessTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('payment_deleted_success_backend'));
         // Notifier le parent que le partenaire a été mis à jour
         if (widget.onPartnerUpdated != null) {
           widget.onPartnerUpdated!(_partner);
         }
-      } else {
-        showErrorTopSnackBar(context,
-            AppLocalizations.of(context).translate('error_unknown_deletion'));
       }
     } catch (e) {
       Navigator.of(context).pop();

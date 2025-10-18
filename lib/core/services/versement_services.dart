@@ -111,8 +111,8 @@ class VersementServices {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "DELETED";
       } else if (response.body ==
-          "Impossible de supprimer: des achats sont déjà associés à ce versement") {
-        return "ACHATS_NOT_DELETED";
+          "Impossible de supprimer : des opérations sont déjà associées à ce versement.") {
+        return "IMPOSSIBLE";
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du colis : $e");

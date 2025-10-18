@@ -2044,5 +2044,7 @@
   "versement_creation_error": "创建付款时出错",
   "edit_versement_information": "编辑付款信息",
   "edit_date_and_commissionnaire": "编辑日期和佣金商",
-  "edit_additional_note": "编辑附加备注"
+  "edit_additional_note": "编辑附加备注",
+  "delete_impossible_operations_associated": "无法删除：此付款已有关联的操作。",
+  "payment_deleted_success_backend": "付款删除成功。"
 }

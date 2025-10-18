@@ -2066,5 +2066,7 @@
   "versement_creation_error": "Error creating payment",
   "edit_versement_information": "Edit payment information",
   "edit_date_and_commissionnaire": "Edit date and commissionnaire",
-  "edit_additional_note": "Edit additional note"
+  "edit_additional_note": "Edit additional note",
+  "delete_impossible_operations_associated": "Cannot delete: operations are already associated with this payment.",
+  "payment_deleted_success_backend": "Payment deleted successfully."
 }
