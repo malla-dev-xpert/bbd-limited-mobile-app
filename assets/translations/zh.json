@@ -1906,7 +1906,6 @@
   "warehouse_name_exists": "名称已存在",
   "warehouse_address_exists": "地址已存在",
   "server_error_message": "服务器错误，请稍后重试",
-  "error_during_deletion": "删除时出错",
   "cannot_delete_packages_exist": "无法删除 - 此仓库中有现有包裹",
   "please_connect": "请连接",
   "address_not_defined": "地址未定义",
@@ -2028,5 +2027,17 @@
   "status_unknown_text": "状态未知",
   "unknown_client_for_package": "此包裹的客户未知",
   "update_error": "更新错误",
-  "user_not_logged_in": "用户未登录"
+  "user_not_logged_in": "用户未登录",
+  "account_management_title": "付款管理",
+  "total_versements": "总付款数",
+  "search_by_reference_or_client": "按参考号或客户搜索...",
+  "versements_list": "付款列表",
+  "no_payments_found": "未找到付款。",
+  "confirm_delete_payment": "您确定要删除付款 {reference} 吗？",
+  "error_loading_payments": "加载付款时出错。",
+  "error_payment_not_exists": "错误：付款不存在",
+  "error_cannot_delete_payment_with_purchases": "无法删除付款，此付款有关联的购买记录",
+  "payment_deleted_success": "付款删除成功",
+  "error_unknown_deletion": "删除时发生未知错误",
+  "error_during_deletion": "删除时出错：{error}"
 }

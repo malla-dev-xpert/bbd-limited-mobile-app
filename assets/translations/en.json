@@ -1930,7 +1930,6 @@
   "warehouse_address_exists": "This address already exists",
   "warehouse_name_already_used": "This name is already used",
   "server_error_message": "Server error, please try again later",
-  "error_during_deletion": "Error during deletion",
   "cannot_delete_packages_exist": "Cannot delete - There are existing packages for this warehouse",
   "please_connect": "Please connect",
   "address_not_defined": "Address not defined",
@@ -2050,4 +2049,17 @@
   "status_unknown_text": "Unknown status",
   "unknown_client_for_package": "Unknown client for this package",
   "update_error": "Update error",
-  "user_not_logged_in": "User not logged in"}
+  "user_not_logged_in": "User not logged in",
+  "account_management_title": "Payment Management",
+  "total_versements": "Total payments",
+  "search_by_reference_or_client": "Search by reference or client...",
+  "versements_list": "Payments list",
+  "no_payments_found": "No payments found.",
+  "confirm_delete_payment": "Do you really want to delete payment {reference}?",
+  "error_loading_payments": "Error loading payments.",
+  "error_payment_not_exists": "Error: Payment does not exist",
+  "error_cannot_delete_payment_with_purchases": "Cannot delete payment, there are purchases associated with this payment",
+  "payment_deleted_success": "Payment deleted successfully",
+  "error_unknown_deletion": "Unknown error during deletion",
+  "error_during_deletion": "Error during deletion: {error}"
+}

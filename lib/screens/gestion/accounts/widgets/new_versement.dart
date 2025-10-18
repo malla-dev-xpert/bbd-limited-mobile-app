@@ -18,6 +18,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/widgets/devise/devise_form.dart';
 import 'package:bbd_limited/providers/devise_provider.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 
 class NewVersementModal extends ConsumerStatefulWidget {
   final Function(DateTime)? onDateChanged;
@@ -232,6 +233,17 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     }
   }
 
+  void _showCreateClientBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreatePartnerBottomSheet(),
+    ).then((_) {
+      _loadClientsData(); // Recharger la liste des clients après la création
+    });
+  }
+
   bool _validateFirstStep() {
     if (widget.isVersementScreen && selectedCLients == null) {
       showErrorTopSnackBar(context,
@@ -327,19 +339,35 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (widget.isVersementScreen)
-                            DropDownCustom<Partner>(
-                              items: clients,
-                              selectedItem: selectedCLients,
-                              onChanged: (client) {
-                                setState(() {
-                                  selectedCLients = client;
-                                });
-                              },
-                              itemToString: (client) =>
-                                  '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
-                              hintText: AppLocalizations.of(context)
-                                  .translate('choose_client'),
-                              prefixIcon: Icons.person_3,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: DropDownCustom<Partner>(
+                                    items: clients,
+                                    selectedItem: selectedCLients,
+                                    onChanged: (client) {
+                                      setState(() {
+                                        selectedCLients = client;
+                                      });
+                                    },
+                                    itemToString: (client) =>
+                                        '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
+                                    hintText: AppLocalizations.of(context)
+                                        .translate('choose_client'),
+                                    prefixIcon: Icons.person_3,
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateClientBottomSheet,
+                                    icon: const Icon(Icons.add),
+                                  ),
+                                ),
+                              ],
                             ),
                           if (widget.isVersementScreen)
                             const SizedBox(height: 10),

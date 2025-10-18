@@ -11,6 +11,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class AccountHomeScreen extends StatefulWidget {
   @override
@@ -124,7 +125,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       });
       await _calculateTotalVersementsUSD();
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur de récupération des paiements.");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_loading_payments'));
     } finally {
       setState(() {
         _isLoading = false;
@@ -257,22 +259,24 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirmer la suppression"),
+        title: Text(AppLocalizations.of(context).translate('confirm_deletion')),
         content: Text(
-          "Voulez-vous vraiment supprimer le paiement ${versement.reference}?",
+          AppLocalizations.of(context)
+              .translate('confirm_delete_payment')
+              .replaceAll('{reference}', versement.reference ?? ''),
         ),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Annuler"),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
           ),
           TextButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete, color: Colors.red),
-            label: const Text(
-              "Supprimer",
-              style: TextStyle(color: Colors.red, fontSize: 18),
+            label: Text(
+              AppLocalizations.of(context).translate('delete'),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -284,12 +288,14 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     try {
       final user = await _authService.getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_user_not_connected'));
         return;
       }
 
       if (versement.id == null) {
-        showErrorTopSnackBar(context, "Erreur: Le paiement n'existe pas");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_payment_not_exists'));
         return;
       }
 
@@ -306,22 +312,27 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       if (result == "ACHATS_NOT_DELETED") {
         showErrorTopSnackBar(
           context,
-          "Impossible de supprimer le paiement, il y a des achats associés à ce paiement",
+          AppLocalizations.of(context)
+              .translate('error_cannot_delete_payment_with_purchases'),
         );
       } else if (result == "DELETED") {
         setState(() {
           _allVersements.removeWhere((d) => d.id == versement.id);
           _filteredVersements.removeWhere((d) => d.id == versement.id);
         });
-        showSuccessTopSnackBar(context, "Paiement supprimé avec succès");
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context).translate('payment_deleted_success'));
       } else {
-        showErrorTopSnackBar(context, "Erreur inconnue lors de la suppression");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_unknown_deletion'));
       }
     } catch (e) {
       Navigator.of(context).pop();
       showErrorTopSnackBar(
         context,
-        "Erreur lors de la suppression: ${e.toString()}",
+        AppLocalizations.of(context)
+            .translate('error_during_deletion')
+            .replaceAll('{error}', e.toString()),
       );
     }
   }
@@ -329,15 +340,17 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   String _typeToLabel(VersementType type) {
     switch (type) {
       case VersementType.General:
-        return "Général";
+        return AppLocalizations.of(context).translate('versement_type_general');
       case VersementType.Dette:
-        return "Dette";
+        return AppLocalizations.of(context).translate('versement_type_dette');
       case VersementType.Commande:
-        return "Commande";
+        return AppLocalizations.of(context)
+            .translate('versement_type_commande');
       case VersementType.CompteBancaire:
-        return "Compte Bancaire";
+        return AppLocalizations.of(context)
+            .translate('versement_type_compte_bancaire');
       case VersementType.Autres:
-        return "Autres";
+        return AppLocalizations.of(context).translate('versement_type_autres');
     }
   }
 
@@ -368,9 +381,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                   children: [
                     Row(
                       children: [
-                        const Text(
-                          'Filtrer par date',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('filter_by_date'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1A1E49),
@@ -392,7 +406,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                             child: _DatePickerField(
                               context: context,
                               controller: _dateDebutController,
-                              label: 'Date début',
+                              label: AppLocalizations.of(context)
+                                  .translate('start_date'),
                               onTap: () => _selectDate(context, true),
                             ),
                           ),
@@ -401,7 +416,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                             child: _DatePickerField(
                               context: context,
                               controller: _dateFinController,
-                              label: 'Date fin',
+                              label: AppLocalizations.of(context)
+                                  .translate('end_date'),
                               onTap: () => _selectDate(context, false),
                             ),
                           ),
@@ -413,14 +429,16 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                           _DatePickerField(
                             context: context,
                             controller: _dateDebutController,
-                            label: 'Date début',
+                            label: AppLocalizations.of(context)
+                                .translate('start_date'),
                             onTap: () => _selectDate(context, true),
                           ),
                           const SizedBox(height: 12),
                           _DatePickerField(
                             context: context,
                             controller: _dateFinController,
-                            label: 'Date fin',
+                            label: AppLocalizations.of(context)
+                                .translate('end_date'),
                             onTap: () => _selectDate(context, false),
                           ),
                         ],
@@ -444,7 +462,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         return false;
       },
       child: _filteredVersements.isEmpty
-          ? const Center(child: Text("Aucun paiement trouvé."))
+          ? Center(
+              child: Text(
+                  AppLocalizations.of(context).translate('no_payments_found')))
           : ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -509,9 +529,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       spacing: 10,
                       children: [
-                        const Text(
-                          "Gestion des versements",
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('account_management_title'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -1,
@@ -521,7 +542,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                           onPressed: _refreshLoading
                               ? null
                               : () => fetchPaiements(reset: true),
-                          tooltip: 'Rafraîchir',
+                          tooltip: AppLocalizations.of(context)
+                              .translate('refresh_tooltip'),
                           icon: _refreshLoading
                               ? const SizedBox(
                                   width: 20,
@@ -550,7 +572,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: _StatItem(
-                                  title: 'Total des versements',
+                                  title: AppLocalizations.of(context)
+                                      .translate('total_versements'),
                                   value: _allVersements.length.toString(),
                                   valueStyle: const TextStyle(
                                     fontSize: 24,
@@ -571,7 +594,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: _StatItem(
-                                  title: 'Montant total',
+                                  title: AppLocalizations.of(context)
+                                      .translate('total_amount'),
                                   value: currencyFormat
                                       .format(_totalVersementsUSD),
                                   valueStyle: const TextStyle(
@@ -597,7 +621,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                             Expanded(
                               child: buildTextField(
                                 controller: searchController,
-                                label: 'Rechercher par référence ou client...',
+                                label: AppLocalizations.of(context)
+                                    .translate('search_by_reference_or_client'),
                                 icon: Icons.search,
                                 onChanged: filterPackages,
                               ),
@@ -690,11 +715,12 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                                 BorderRadius.circular(16),
                                           ),
                                           items: [
-                                            const PopupMenuItem<VersementType?>(
+                                            PopupMenuItem<VersementType?>(
                                               value: null,
                                               child: Text(
-                                                'Tous les types',
-                                                style: TextStyle(
+                                                AppLocalizations.of(context)
+                                                    .translate('all_types'),
+                                                style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.w600),
                                               ),
@@ -744,9 +770,10 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "La liste des versements",
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('versements_list'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -762,7 +789,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                 }
                               });
                             },
-                            child: const Text("Voir tout"),
+                            child: Text(AppLocalizations.of(context)
+                                .translate('view_all')),
                           ),
                       ],
                     ),
