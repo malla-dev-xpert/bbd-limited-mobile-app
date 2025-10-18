@@ -2039,5 +2039,10 @@
   "error_cannot_delete_payment_with_purchases": "无法删除付款，此付款有关联的购买记录",
   "payment_deleted_success": "付款删除成功",
   "error_unknown_deletion": "删除时发生未知错误",
-  "error_during_deletion": "删除时出错：{error}"
+  "error_during_deletion": "删除时出错：{error}",
+  "versement_update_error": "更新付款时出错",
+  "versement_creation_error": "创建付款时出错",
+  "edit_versement_information": "编辑付款信息",
+  "edit_date_and_commissionnaire": "编辑日期和佣金商",
+  "edit_additional_note": "编辑附加备注"
 }

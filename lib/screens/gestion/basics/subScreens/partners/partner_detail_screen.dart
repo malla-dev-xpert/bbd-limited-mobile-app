@@ -11,6 +11,8 @@ import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
@@ -1046,6 +1048,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             ),
           ),
         ),
+        onEditVersement: _showEditVersementModal,
+        onDeleteVersement: _deleteVersement,
       );
     } else if (_selectedOperationType == OperationType.expeditions) {
       return _buildExpeditionsList(context);
@@ -1249,5 +1253,117 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     final firstVersement = _partner.versements!.first;
     return firstVersement.deviseCode ??
         'CNY'; // Default to CNY if no deviseCode
+  }
+
+  Future<void> _showEditVersementModal(Versement versement) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return NewVersementModal(
+          isVersementScreen: false,
+          clientId: widget.partner.id.toString(),
+          versementToEdit: versement,
+          onVersementCreated: () async {
+            await _refreshData();
+          },
+        );
+      },
+    );
+
+    if (result == true) {
+      await _refreshData();
+      // Notifier le parent que le partenaire a été mis à jour
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
+    }
+  }
+
+  Future<void> _deleteVersement(Versement versement) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context).translate('confirm_deletion')),
+        content: Text(
+          AppLocalizations.of(context)
+              .translate('confirm_delete_payment')
+              .replaceAll('{reference}', versement.reference ?? ''),
+        ),
+        backgroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
+          ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: Text(
+              AppLocalizations.of(context).translate('delete'),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_user_not_connected'));
+        return;
+      }
+
+      if (versement.id == null) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_payment_not_exists'));
+        return;
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final result = await VersementServices().delete(versement.id!, user.id);
+
+      Navigator.of(context).pop();
+
+      if (result == "ACHATS_NOT_DELETED") {
+        showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('error_cannot_delete_payment_with_purchases'),
+        );
+      } else if (result == "DELETED") {
+        await _refreshData();
+        showSuccessTopSnackBar(context,
+            AppLocalizations.of(context).translate('payment_deleted_success'));
+        // Notifier le parent que le partenaire a été mis à jour
+        if (widget.onPartnerUpdated != null) {
+          widget.onPartnerUpdated!(_partner);
+        }
+      } else {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_unknown_deletion'));
+      }
+    } catch (e) {
+      Navigator.of(context).pop();
+      showErrorTopSnackBar(
+        context,
+        AppLocalizations.of(context)
+            .translate('error_during_deletion')
+            .replaceAll('{error}', e.toString()),
+      );
+    }
   }
 }

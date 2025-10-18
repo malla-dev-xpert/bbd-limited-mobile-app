@@ -25,6 +25,7 @@ class NewVersementModal extends ConsumerStatefulWidget {
   final bool isVersementScreen;
   final String? clientId;
   final Function()? onVersementCreated;
+  final Versement? versementToEdit; // Nouveau paramètre pour l'édition
 
   const NewVersementModal({
     super.key,
@@ -32,6 +33,7 @@ class NewVersementModal extends ConsumerStatefulWidget {
     this.isVersementScreen = false,
     this.clientId,
     this.onVersementCreated,
+    this.versementToEdit, // Nouveau paramètre optionnel
   });
 
   @override
@@ -82,8 +84,33 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   @override
   void initState() {
     super.initState();
+    _initializeFormData();
     _loadClientsData();
     _loadDevisesData();
+  }
+
+  void _initializeFormData() {
+    if (widget.versementToEdit != null) {
+      // Initialiser les champs avec les données du versement à modifier
+      montantVerserController.text =
+          widget.versementToEdit!.montantVerser?.toString() ?? '';
+      commissionnaireNameController.text =
+          widget.versementToEdit!.commissionnaireName ?? '';
+      commissionnairePhoneController.text =
+          widget.versementToEdit!.commissionnairePhone ?? '';
+      noteController.text = widget.versementToEdit!.note ?? '';
+      myDate = widget.versementToEdit!.createdAt ?? DateTime.now();
+      tauxUtiliseController.text =
+          widget.versementToEdit!.tauxUtilise?.toString() ?? '';
+
+      if (widget.versementToEdit!.type != null) {
+        selectedType = VersementType.values.firstWhere(
+          (type) =>
+              type.toString().split('.').last == widget.versementToEdit!.type,
+          orElse: () => VersementType.General,
+        );
+      }
+    }
   }
 
   Future<void> _loadClientsData() async {
@@ -93,6 +120,14 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         final clientData = await partnerServices.findCustomers(page: 0);
         setState(() {
           clients = clientData;
+          // Si on est en mode édition, sélectionner le client du versement
+          if (widget.versementToEdit != null &&
+              widget.versementToEdit!.partnerId != null) {
+            selectedCLients = clientData.firstWhere(
+              (c) => c.id == widget.versementToEdit!.partnerId,
+              orElse: () => clientData.first,
+            );
+          }
           isLoading = false;
         });
       } else if (widget.clientId != null) {
@@ -120,6 +155,14 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       final deviseData = await deviseServices.findAllDevises(page: 0);
       setState(() {
         devises = deviseData;
+        // Si on est en mode édition, sélectionner la devise du versement
+        if (widget.versementToEdit != null &&
+            widget.versementToEdit!.deviseCode != null) {
+          selectedDevise = deviseData.firstWhere(
+            (d) => d.code == widget.versementToEdit!.deviseCode,
+            orElse: () => deviseData.first,
+          );
+        }
         isLoading = false;
       });
     } catch (_) {
@@ -209,21 +252,47 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         "tauxUtilise": tauxUtilise,
       });
 
-      final result = await versementServices.create(
-        user.id,
-        widget.isVersementScreen
-            ? selectedCLients!.id
-            : int.parse(widget.clientId!),
-        selectedDevise!.id!,
-        versementDto,
-      );
+      bool success = false;
+      String successMessage = '';
 
-      if (result != null) {
+      if (widget.versementToEdit != null) {
+        // Mode modification
+        success = await versementServices.updatePaiement(
+          widget.versementToEdit!.id!,
+          user.id,
+          widget.isVersementScreen
+              ? selectedCLients!.id
+              : int.parse(widget.clientId!),
+          versementDto,
+        );
+        successMessage =
+            AppLocalizations.of(context).translate('versement_updated_success');
+      } else {
+        // Mode création
+        final result = await versementServices.create(
+          user.id,
+          widget.isVersementScreen
+              ? selectedCLients!.id
+              : int.parse(widget.clientId!),
+          selectedDevise!.id!,
+          versementDto,
+        );
+        success = result != null;
+        successMessage =
+            AppLocalizations.of(context).translate('new_versement_success');
+      }
+
+      if (success) {
         widget.onVersementCreated?.call();
         Navigator.pop(context, true);
-        showSuccessTopSnackBar(
+        showSuccessTopSnackBar(context, successMessage);
+      } else {
+        showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context).translate('new_versement_success'),
+          widget.versementToEdit != null
+              ? AppLocalizations.of(context).translate('versement_update_error')
+              : AppLocalizations.of(context)
+                  .translate('versement_creation_error'),
         );
       }
     } catch (e) {
@@ -307,14 +376,23 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                 children: [
                   Expanded(
                     child: Text(
-                      currentStep == 0
-                          ? AppLocalizations.of(context)
-                              .translate('versement_information')
-                          : currentStep == 1
+                      widget.versementToEdit != null
+                          ? (currentStep == 0
                               ? AppLocalizations.of(context)
-                                  .translate('date_and_commissionnaire')
-                              : AppLocalizations.of(context)
-                                  .translate('additional_note'),
+                                  .translate('edit_versement_information')
+                              : currentStep == 1
+                                  ? AppLocalizations.of(context).translate(
+                                      'edit_date_and_commissionnaire')
+                                  : AppLocalizations.of(context)
+                                      .translate('edit_additional_note'))
+                          : (currentStep == 0
+                              ? AppLocalizations.of(context)
+                                  .translate('versement_information')
+                              : currentStep == 1
+                                  ? AppLocalizations.of(context)
+                                      .translate('date_and_commissionnaire')
+                                  : AppLocalizations.of(context)
+                                      .translate('additional_note')),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
