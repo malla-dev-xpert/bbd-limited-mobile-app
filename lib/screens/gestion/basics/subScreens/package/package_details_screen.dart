@@ -11,7 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/add_items_to_package_modal.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/localization/translation_helper.dart';
-import 'package:bbd_limited/widgets/rounded_button.dart';
 
 class PackageDetailsScreen extends StatefulWidget {
   final Packages packages;
@@ -37,7 +36,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   List<Items> _items = [];
   final ItemServices _itemServices = ItemServices();
   DateTime? selectedDeliveryDate;
-  List<Items> _availableItems = [];
+  List<Items> availableItems = [];
 
   @override
   void initState() {
@@ -77,7 +76,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
       final items = await _itemServices.findItemsByClient(clientId);
       final alreadyInPackageIds = _items.map((e) => e.id!).toList();
       setState(() {
-        _availableItems = items
+        availableItems = items
             .where((item) => !alreadyInPackageIds.contains(item.id))
             .toList();
       });
@@ -1209,16 +1208,8 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: _items.map((item) => _buildItemRow(item)).toList(),
-      ),
+    return Column(
+      children: _items.map((item) => _buildItemRow(item)).toList(),
     );
   }
 
