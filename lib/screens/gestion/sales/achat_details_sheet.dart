@@ -1371,15 +1371,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Taux d'achat et total en colonne pour une meilleure lisibilité
+                Column(
                   children: [
-                    _buildItemDetailChip(
+                    _buildItemDetailChipFullWidth(
                       '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
                       Icons.trending_up,
                     ),
-                    const SizedBox(width: 8),
-                    _buildItemDetailChip(
+                    const SizedBox(height: 8),
+                    _buildItemDetailChipFullWidth(
                       '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
                       Icons.calculate,
                     ),
@@ -1513,6 +1513,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   }
 
   Widget _buildItemDetailChip(String text, IconData icon) {
+    // Séparer le label et la valeur
+    final colonIndex = text.indexOf(':');
+    final label = colonIndex != -1 ? text.substring(0, colonIndex + 1) : text;
+    final value = colonIndex != -1 ? text.substring(colonIndex + 1).trim() : '';
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -1526,18 +1531,80 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             Icon(icon, size: 14, color: Colors.grey[700]),
             const SizedBox(width: 4),
             Flexible(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[800],
-                  fontWeight: FontWeight.w500,
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: label,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (value.isNotEmpty)
+                      TextSpan(
+                        text: ' $value',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildItemDetailChipFullWidth(String text, IconData icon) {
+    // Séparer le label et la valeur
+    final colonIndex = text.indexOf(':');
+    final label = colonIndex != -1 ? text.substring(0, colonIndex + 1) : text;
+    final value = colonIndex != -1 ? text.substring(colonIndex + 1).trim() : '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[700]),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (value.isNotEmpty)
+                    TextSpan(
+                      text: ' $value',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1214,227 +1214,275 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   }
 
   Widget _buildItemRow(Items item) {
-    return Padding(
-      padding: const EdgeInsets.all(0.0),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Vérifier si c'est un écran mobile (largeur < 600px)
-            if (MediaQuery.of(context).size.width < 600) ...[
-              // Design mobile : nom de l'article en haut, quantité en dessous
-              Text(
-                item.description ??
-                    AppLocalizations.of(context).translate('no_description'),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            // En-tête de l'item avec icône
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1E49).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.inventory_2,
+                    color: Color(0xFF1A1E49),
+                    size: 20,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.blue[700],
-                      fontSize: 16,
-                    ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(
-                        text:
-                            '${AppLocalizations.of(context).translate('item_quantity')}: ',
-                        style: const TextStyle(fontWeight: FontWeight.normal),
-                      ),
-                      TextSpan(
-                        text: '${item.quantity ?? 0}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ] else ...[
-              // Design tablette : nom et quantité sur la même ligne
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      item.description ??
-                          AppLocalizations.of(context)
-                              .translate('no_description'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontSize: 16,
+                      Text(
+                        item.description ??
+                            AppLocalizations.of(context)
+                                .translate('no_description'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        children: [
-                          TextSpan(
-                            text:
-                                '${AppLocalizations.of(context).translate('item_quantity')}: ',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.normal),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (item.invoiceNumber != null &&
+                          item.invoiceNumber!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${AppLocalizations.of(context).translate('invoice_number')}: ${item.invoiceNumber}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
-                          TextSpan(
-                            text: '${item.quantity ?? 0}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (item.supplierName != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.business,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '${item.supplierName} ${item.supplierPhone?.isNotEmpty ?? false ? '| ${item.supplierPhone}' : ''}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (item.unitPrice != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.attach_money,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                      ),
-                      children: [
-                        TextSpan(
-                          text:
-                              '${AppLocalizations.of(context).translate('unit_price')}: ',
-                          style: const TextStyle(fontWeight: FontWeight.normal),
-                        ),
-                        TextSpan(
-                          text: '${item.unitPrice!.toStringAsFixed(2)} ¥',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(
-                  Icons.assignment_outlined,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
-                    ),
-                    children: [
-                      TextSpan(
-                        text:
-                            '${AppLocalizations.of(context).translate('total_price')}: ',
-                        style: const TextStyle(fontWeight: FontWeight.normal),
-                      ),
-                      TextSpan(
-                        text: '${item.totalPrice!.toStringAsFixed(2)} ¥',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
+            // Divider
+            Divider(color: Colors.grey[200], height: 1),
+            const SizedBox(height: 12),
+            // Détails de l'item avec chips
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.percent,
-                  size: 14,
-                  color: Colors.grey[600],
+                _buildItemDetailChip(
+                  '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
+                  Icons.inventory,
                 ),
-                const SizedBox(width: 4),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
-                    ),
-                    children: [
-                      TextSpan(
-                        text:
-                            '${AppLocalizations.of(context).translate('purchase_rate')}: ',
-                        style: const TextStyle(fontWeight: FontWeight.normal),
-                      ),
-                      TextSpan(
-                        text: '${item.salesRate} ¥',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                const SizedBox(width: 8),
+                _buildItemDetailChip(
+                  '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                  Icons.format_list_numbered,
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildItemDetailChip(
+                  '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
+                  Icons.numbers,
+                ),
+                const SizedBox(width: 8),
+                _buildItemDetailChip(
+                  '${_formatAmount(item.unitPrice)} ¥',
+                  Icons.attach_money,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Taux d'achat et total en colonne pour une meilleure lisibilité
+            Column(
+              children: [
+                _buildItemDetailChipFullWidth(
+                  '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
+                  Icons.trending_up,
+                ),
+                const SizedBox(height: 8),
+                _buildItemDetailChipFullWidth(
+                  '${AppLocalizations.of(context).translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                  Icons.calculate,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Information sur le fournisseur
+            if (item.supplierName != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.purple[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.purple[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.business, size: 16, color: Colors.purple[700]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.purple[900],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (item.supplierPhone != null &&
+                              (item.supplierPhone as String).isNotEmpty)
+                            Text(
+                              '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.purple[700],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemDetailChip(String text, IconData icon) {
+    // Séparer le label et la valeur
+    final colonIndex = text.indexOf(':');
+    final label = colonIndex != -1 ? text.substring(0, colonIndex + 1) : text;
+    final value = colonIndex != -1 ? text.substring(colonIndex + 1).trim() : '';
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: Colors.grey[700]),
+            const SizedBox(width: 4),
+            Flexible(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: label,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (value.isNotEmpty)
+                      TextSpan(
+                        text: ' $value',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildItemDetailChipFullWidth(String text, IconData icon) {
+    // Séparer le label et la valeur
+    final colonIndex = text.indexOf(':');
+    final label = colonIndex != -1 ? text.substring(0, colonIndex + 1) : text;
+    final value = colonIndex != -1 ? text.substring(colonIndex + 1).trim() : '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[700]),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (value.isNotEmpty)
+                    TextSpan(
+                      text: ' $value',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatAmount(double? amount) {
+    if (amount == null) return "0,00";
+    return amount
+        .toStringAsFixed(2)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match match) => '${match[1]} ',
+        )
+        .replaceAll('.', ',');
   }
 }
