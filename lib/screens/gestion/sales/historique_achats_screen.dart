@@ -986,8 +986,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                           .translate(
                                               'purchase_history_edit_save'),
                                       isLoading: isLoading,
-                                      subLabel: '',
+                                      subLabel: 'Modification...',
                                       onPressed: () async {
+                                        if (isLoading) return;
+                                        setState(() {
+                                          isLoading = true;
+                                        });
                                         final user =
                                             await AuthService().getUserInfo();
                                         if (user == null) {
@@ -996,6 +1000,9 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                               AppLocalizations.of(context)
                                                   .translate(
                                                       'user_not_connected'));
+                                          setState(() {
+                                            isLoading = false;
+                                          });
                                           return;
                                         }
                                         try {
@@ -1149,6 +1156,10 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                       'purchase_history_error_occurred')
                                                   .replaceAll(
                                                       '{error}', e.toString()));
+                                        } finally {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
                                         }
                                       },
                                     ),
