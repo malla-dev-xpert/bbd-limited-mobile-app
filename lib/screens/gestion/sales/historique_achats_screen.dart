@@ -790,6 +790,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         TextEditingController(text: item.unitPrice?.toString() ?? '');
     final salesRateController =
         TextEditingController(text: item.salesRate?.toString() ?? '');
+    final invoiceNumberController =
+        TextEditingController(text: item.invoiceNumber ?? '');
     Partner? selectedSupplier;
     List<Partner> suppliers = [];
     bool loadingSuppliers = true;
@@ -865,11 +867,20 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               ),
                               const SizedBox(height: 30),
                               buildTextField(
+                                controller: invoiceNumberController,
+                                label: AppLocalizations.of(context)
+                                    .translate('invoice_number'),
+                                icon: Icons.receipt_long,
+                              ),
+                              const SizedBox(height: 12),
+
+                              buildTextField(
                                 controller: descriptionController,
                                 label: AppLocalizations.of(context).translate(
                                     'purchase_history_edit_description'),
                                 icon: Icons.description,
                               ),
+
                               const SizedBox(height: 12),
                               Row(
                                 mainAxisAlignment:
@@ -884,6 +895,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                       keyboardType: TextInputType.number,
                                     ),
                                   ),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: buildTextField(
                                       controller: quantityPerCartonController,
@@ -1047,7 +1059,14 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                             salesRate: double.tryParse(
                                                 salesRateController.text),
                                             status: item.status,
-                                            invoiceNumber: item.invoiceNumber,
+                                            invoiceNumber:
+                                                invoiceNumberController.text
+                                                        .trim()
+                                                        .isEmpty
+                                                    ? null
+                                                    : invoiceNumberController
+                                                        .text
+                                                        .trim(),
                                           );
                                           final itemServices = ItemServices();
                                           final result =
@@ -1437,7 +1456,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
                           icon: Icons.inventory,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 16),
                         ItemDetailChip(
                           text:
                               '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
