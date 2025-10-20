@@ -328,52 +328,14 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                     ],
                                                   ),
                                                 ),
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 6,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: _getStatusColor(
-                                                            achat.status)
-                                                        .withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                  ),
-                                                  child: Text(
-                                                    achat.status?.name ==
-                                                            AppLocalizations.of(
-                                                                    context)
-                                                                .translate(
-                                                                    'completed')
-                                                        ? AppLocalizations.of(
-                                                                context)
-                                                            .translate(
-                                                                'purchase_history_filter_completed')
-                                                        : achat.status?.name ==
-                                                                AppLocalizations.of(
-                                                                        context)
-                                                                    .translate(
-                                                                        'pending')
-                                                            ? AppLocalizations
-                                                                    .of(context)
-                                                                .translate(
-                                                                    'purchase_history_filter_pending')
-                                                            : achat.status
-                                                                    ?.name ??
-                                                                AppLocalizations.of(
-                                                                        context)
-                                                                    .translate(
-                                                                        'not_available'),
-                                                    style: TextStyle(
-                                                      color: _getStatusColor(
-                                                          achat.status),
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
+                                                const SizedBox(width: 20),
+                                                Image.asset(
+                                                  achat.status ==
+                                                          Status.COMPLETED
+                                                      ? 'assets/images/delivery.png'
+                                                      : 'assets/images/no-delivery.png',
+                                                  width: 44,
+                                                  height: 44,
                                                 ),
                                               ],
                                             ),
