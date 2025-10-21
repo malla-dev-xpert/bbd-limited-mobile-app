@@ -535,13 +535,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             const SizedBox(width: 12),
             Text(
                 AppLocalizations.of(context)
-                    .translate('purchase_history_delete_confirm_title'),
+                    .translate('purchase_history_reverse_confirm_title'),
                 style:
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Text(AppLocalizations.of(context)
-            .translate('purchase_history_delete_confirm_message')
+            .translate('purchase_history_reverse_confirm_message')
             .replaceAll('{description}', item.description ?? '')),
         backgroundColor: Colors.white,
         actions: [
@@ -557,7 +557,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             },
             child: Text(
                 AppLocalizations.of(context)
-                    .translate('purchase_history_delete_confirm_delete'),
+                    .translate('purchase_history_reverse_confirm_reverse'),
                 style: const TextStyle(color: Colors.red)),
           ),
         ],
@@ -587,12 +587,18 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       );
       if (result == "DELETED_AND_REVERTED") {
         setState(() {
-          widget.achat.items?.remove(item);
+          // Mettre à jour le statut de l'item reversé et recalculer le statut de l'achat
+          final itemIndex =
+              widget.achat.items?.indexWhere((i) => i.id == item.id) ?? -1;
+          if (itemIndex != -1) {
+            widget.achat.items![itemIndex].status = Status.PENDING;
+            _updateAchatStatusFromItems(widget.achat);
+          }
         });
         showSuccessTopSnackBar(
             context,
             AppLocalizations.of(context)
-                .translate('purchase_history_item_deleted_success'));
+                .translate('purchase_history_item_reversed_success'));
         Navigator.of(context).pop(true);
       } else if (result == "ITEM_NOT_FOUND") {
         showErrorTopSnackBar(
@@ -620,7 +626,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       showErrorTopSnackBar(
           context,
           AppLocalizations.of(context)
-              .translate('purchase_history_error_during_deletion')
+              .translate('purchase_history_error_during_reverse')
               .replaceAll('{error}', e.toString()));
     } finally {
       setState(() {
@@ -1573,5 +1579,46 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         ),
       ),
     );
+  }
+
+  // Méthode pour compter les articles livrés (par numéro de facture)
+  int _getDeliveredItemsCount(Achat achat) {
+    if (achat.items == null) return 0;
+
+    final deliveredInvoices = <String>{};
+    for (var item in achat.items!) {
+      if (item.status == Status.RECEIVED &&
+          item.invoiceNumber != null &&
+          item.invoiceNumber!.isNotEmpty) {
+        deliveredInvoices.add(item.invoiceNumber!);
+      }
+    }
+    return deliveredInvoices.length;
+  }
+
+  // Méthode pour compter le total des factures
+  int _getTotalInvoicesCount(Achat achat) {
+    if (achat.items == null) return 0;
+
+    final allInvoices = <String>{};
+    for (var item in achat.items!) {
+      if (item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty) {
+        allInvoices.add(item.invoiceNumber!);
+      }
+    }
+    return allInvoices.length;
+  }
+
+  void _updateAchatStatusFromItems(Achat achat) {
+    final total = _getTotalInvoicesCount(achat);
+    final delivered = _getDeliveredItemsCount(achat);
+    if (total > 0 && delivered >= total) {
+      achat.status = Status.COMPLETED;
+    } else {
+      // S'il reste des factures non livrées, on considère l'achat comme en attente
+      if (achat.status == Status.COMPLETED) {
+        achat.status = Status.PENDING;
+      }
+    }
   }
 }

@@ -1194,14 +1194,14 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             Expanded(
               child: Text(
                   AppLocalizations.of(context)
-                      .translate('purchase_history_delete_confirm_title'),
+                      .translate('purchase_history_reverse_confirm_title'),
                   style: const TextStyle(
                       fontSize: 24, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
         content: Text(AppLocalizations.of(context)
-            .translate('purchase_history_delete_confirm_message')
+            .translate('purchase_history_reverse_confirm_message')
             .replaceAll('{description}', item.description ?? '')),
         backgroundColor: Colors.white,
         actions: [
@@ -1217,7 +1217,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             },
             child: Text(
                 AppLocalizations.of(context)
-                    .translate('purchase_history_delete_confirm_delete'),
+                    .translate('purchase_history_reverse_confirm_reverse'),
                 style: const TextStyle(color: Colors.red)),
           ),
         ],
@@ -1247,18 +1247,26 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       );
       if (result == "DELETED_AND_REVERTED") {
         setState(() {
-          // Supprimer l'item de tous les achats
+          // Mettre à jour le statut de l'item reversé et recalculer le statut de l'achat
           for (var a in _achats) {
-            a.items?.removeWhere((i) => i.id == item.id);
+            final itemIndex = a.items?.indexWhere((i) => i.id == item.id) ?? -1;
+            if (itemIndex != -1) {
+              a.items![itemIndex].status = Status.PENDING;
+              _updateAchatStatusFromItems(a);
+            }
           }
           for (var a in _filteredAchats) {
-            a.items?.removeWhere((i) => i.id == item.id);
+            final itemIndex = a.items?.indexWhere((i) => i.id == item.id) ?? -1;
+            if (itemIndex != -1) {
+              a.items![itemIndex].status = Status.PENDING;
+              _updateAchatStatusFromItems(a);
+            }
           }
         });
         showSuccessTopSnackBar(
             context,
             AppLocalizations.of(context)
-                .translate('purchase_history_item_deleted_success'));
+                .translate('purchase_history_item_reversed_success'));
       } else if (result == "ITEM_NOT_FOUND") {
         showErrorTopSnackBar(
             context,
@@ -1285,7 +1293,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       showErrorTopSnackBar(
           context,
           AppLocalizations.of(context)
-              .translate('purchase_history_error_during_deletion')
+              .translate('purchase_history_error_during_reverse')
               .replaceAll('{error}', e.toString()));
     } finally {
       setState(() {

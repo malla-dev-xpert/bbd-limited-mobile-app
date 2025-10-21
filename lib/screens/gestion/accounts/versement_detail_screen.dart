@@ -1100,8 +1100,13 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       );
       if (result == "DELETED_AND_REVERTED") {
         setState(() {
+          // Mettre à jour le statut de l'item reversé
           for (var achat in _achats) {
-            achat.items?.remove(ligne);
+            final itemIndex =
+                achat.items?.indexWhere((i) => i.id == ligne.id) ?? -1;
+            if (itemIndex != -1) {
+              achat.items![itemIndex].status = Status.PENDING;
+            }
           }
         });
         showSuccessTopSnackBar(context, "Article reversé avec succès");
@@ -1116,7 +1121,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         showErrorTopSnackBar(context, result?.toString() ?? "Erreur inconnue");
       }
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors du reverse : $e");
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('purchase_history_error_during_reverse')
+              .replaceAll('{error}', e.toString()));
     } finally {
       setState(() {
         isLoading = false;
