@@ -1176,7 +1176,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     );
   }
 
-  void _confirmDeleteArticle(Items item, Achat achat) {
+  void _confirmReverseArticle(Items item, Achat achat) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1212,7 +1212,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
           ),
           TextButton(
             onPressed: () {
-              _deleteArticle(item, achat);
+              _reverseItem(item, achat);
               Navigator.pop(context);
             },
             child: Text(
@@ -1225,7 +1225,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     );
   }
 
-  void _deleteArticle(Items item, Achat achat) async {
+  void _reverseItem(Items item, Achat achat) async {
     setState(() {
       isLoading = true;
     });
@@ -1240,12 +1240,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         return;
       }
       final itemServices = ItemServices();
-      final result = await itemServices.deleteItem(
+      final result = await itemServices.reverseItem(
         item.id!,
         user.id,
         achat.clientId ?? 0,
       );
-      if (result == AppLocalizations.of(context).translate('deleted')) {
+      if (result == "DELETED_AND_REVERTED") {
         setState(() {
           // Supprimer l'item de tous les achats
           for (var a in _achats) {
@@ -1259,21 +1259,17 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_item_deleted_success'));
-      } else if (result ==
-          AppLocalizations.of(context).translate('item_not_found')) {
+      } else if (result == "ITEM_NOT_FOUND") {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_item_not_found'));
-      } else if (result ==
-          AppLocalizations.of(context)
-              .translate('client_not_found_or_mismatch')) {
+      } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_client_mismatch'));
-      } else if (result ==
-          AppLocalizations.of(context).translate('user_not_found')) {
+      } else if (result == "USER_NOT_FOUND") {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
@@ -1363,11 +1359,15 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                   label: AppLocalizations.of(context).translate('edit'),
                 ),
                 SlidableAction(
-                  onPressed: (_) => _confirmDeleteArticle(item, achat),
-                  backgroundColor: const Color(0xFFD32F2F),
+                  onPressed: (item.status == Status.RECEIVED)
+                      ? (_) => _confirmReverseArticle(item, achat)
+                      : null,
+                  backgroundColor: (item.status == Status.RECEIVED)
+                      ? Colors.orange
+                      : Colors.grey[300]!,
                   foregroundColor: Colors.white,
-                  icon: Icons.delete_outline,
-                  label: AppLocalizations.of(context).translate('delete'),
+                  icon: Icons.undo_outlined,
+                  label: AppLocalizations.of(context).translate('reverse'),
                 ),
               ],
             ),

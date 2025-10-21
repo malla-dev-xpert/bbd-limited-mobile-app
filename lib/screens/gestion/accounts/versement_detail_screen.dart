@@ -19,7 +19,6 @@ import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
-import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -342,11 +341,15 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             label: 'Modifier',
           ),
           SlidableAction(
-            onPressed: (_) => _confirmDeleteArticle(ligne),
-            backgroundColor: Colors.red,
+            onPressed: (ligne.status == Status.RECEIVED)
+                ? (_) => _confirmReverseArticle(ligne)
+                : null,
+            backgroundColor: (ligne.status == Status.RECEIVED)
+                ? Colors.orange
+                : Colors.grey[300]!,
             foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: 'Supprimer',
+            icon: Icons.undo_outlined,
+            label: 'Reverse',
             borderRadius:
                 const BorderRadius.horizontal(right: Radius.circular(16)),
           ),
@@ -1034,7 +1037,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  void _confirmDeleteArticle(dynamic ligne) {
+  void _confirmReverseArticle(dynamic ligne) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1057,7 +1060,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ],
         ),
         content: Text(
-            'Vous allez supprimer  l\'article "${ligne.description}" de votre liste d\'achats.\nCette action est irréversible.'),
+            'Vous allez reverser l\'article "${ligne.description}" de votre liste d\'achats.\nCette action est irréversible.'),
         backgroundColor: Colors.white,
         actions: [
           TextButton(
@@ -1066,17 +1069,17 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           ),
           TextButton(
             onPressed: () {
-              _deleteArticle(ligne);
+              _reverseItem(ligne);
               Navigator.pop(context);
             },
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+            child: const Text('Reverser', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  void _deleteArticle(dynamic ligne) async {
+  void _reverseItem(dynamic ligne) async {
     setState(() {
       isLoading = true;
     });
@@ -1090,18 +1093,18 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         return;
       }
       final itemServices = ItemServices();
-      final result = await itemServices.deleteItem(
+      final result = await itemServices.reverseItem(
         ligne.id,
         user.id,
         widget.versement.partnerId!,
       );
-      if (result == "DELETED") {
+      if (result == "DELETED_AND_REVERTED") {
         setState(() {
           for (var achat in _achats) {
             achat.items?.remove(ligne);
           }
         });
-        showSuccessTopSnackBar(context, "Article supprimé avec succès");
+        showSuccessTopSnackBar(context, "Article reversé avec succès");
         widget.onVersementUpdated?.call();
       } else if (result == "ITEM_NOT_FOUND") {
         showErrorTopSnackBar(context, "Article non trouvé.");
@@ -1113,7 +1116,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         showErrorTopSnackBar(context, result?.toString() ?? "Erreur inconnue");
       }
     } catch (e) {
-      showErrorTopSnackBar(context, "Erreur lors de la suppression : $e");
+      showErrorTopSnackBar(context, "Erreur lors du reverse : $e");
     } finally {
       setState(() {
         isLoading = false;

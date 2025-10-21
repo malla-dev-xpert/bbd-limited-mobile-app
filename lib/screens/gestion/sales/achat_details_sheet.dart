@@ -518,7 +518,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     );
   }
 
-  void _confirmDeleteArticle(Items item) {
+  void _confirmReverseArticle(Items item) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -552,7 +552,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           ),
           TextButton(
             onPressed: () {
-              _deleteArticle(item);
+              _reverseItem(item);
               Navigator.pop(context);
             },
             child: Text(
@@ -565,7 +565,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     );
   }
 
-  void _deleteArticle(Items item) async {
+  void _reverseItem(Items item) async {
     setState(() {
       isLoading = true;
     });
@@ -580,12 +580,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         return;
       }
       final itemServices = ItemServices();
-      final result = await itemServices.deleteItem(
+      final result = await itemServices.reverseItem(
         item.id!,
         user.id,
         widget.achat.clientId ?? 0,
       );
-      if (result == AppLocalizations.of(context).translate('deleted')) {
+      if (result == "DELETED_AND_REVERTED") {
         setState(() {
           widget.achat.items?.remove(item);
         });
@@ -594,21 +594,17 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             AppLocalizations.of(context)
                 .translate('purchase_history_item_deleted_success'));
         Navigator.of(context).pop(true);
-      } else if (result ==
-          AppLocalizations.of(context).translate('item_not_found')) {
+      } else if (result == "ITEM_NOT_FOUND") {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_item_not_found'));
-      } else if (result ==
-          AppLocalizations.of(context)
-              .translate('client_not_found_or_mismatch')) {
+      } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
                 .translate('purchase_history_client_mismatch'));
-      } else if (result ==
-          AppLocalizations.of(context).translate('user_not_found')) {
+      } else if (result == "USER_NOT_FOUND") {
         showErrorTopSnackBar(
             context,
             AppLocalizations.of(context)
@@ -1293,11 +1289,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             label: AppLocalizations.of(context).translate('edit'),
           ),
           SlidableAction(
-            onPressed: (_) => _confirmDeleteArticle(item),
-            backgroundColor: const Color(0xFFD32F2F),
+            onPressed: (item.status == Status.RECEIVED)
+                ? (_) => _confirmReverseArticle(item)
+                : null,
+            backgroundColor: (item.status == Status.RECEIVED)
+                ? Colors.orange
+                : Colors.grey[300]!,
             foregroundColor: Colors.white,
-            icon: Icons.delete_outline,
-            label: AppLocalizations.of(context).translate('delete'),
+            icon: Icons.undo_outlined,
+            label: AppLocalizations.of(context).translate('reverse'),
           ),
         ],
       ),
