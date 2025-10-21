@@ -2,31 +2,24 @@ import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildDetailRow.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildNoteField.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/infoIconText.dart';
-import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
-import 'package:bbd_limited/core/services/achat_services.dart';
 import 'widgets/cash_withdrawal_form.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/cashWithdrawal.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
-import 'package:bbd_limited/core/services/item_services.dart';
-import 'package:bbd_limited/core/services/partner_services.dart';
-import 'package:bbd_limited/components/custom_dropdown.dart';
-import 'package:bbd_limited/components/confirm_btn.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/invoice_options_config.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -43,19 +36,14 @@ class VersementDetailScreen extends StatefulWidget {
 }
 
 class _VersementDetailScreenState extends State<VersementDetailScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final AchatServices _achatServices = AchatServices();
   final DeviseServices _deviseServices = DeviseServices();
   bool isLoading = false;
   bool _isInfoExpanded = true;
   bool _isArticlesExpanded = false;
   bool _isWithdrawalsExpanded = false;
   late NumberFormat currencyFormat;
-  final Set<String> _confirmedArticles = {};
   bool showOperationButtons = false;
   late List<Achat> _achats = [];
-  // Ajout d'une map pour stocker la recherche par achat
-  final Map<int, String> _searchQueries = {};
 
   // Options de facturation configurables
   InvoiceOptions _invoiceOptions = const InvoiceOptions();
@@ -91,7 +79,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -120,10 +107,93 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     };
   }
 
+  // Méthode pour obtenir les informations sur les fournisseurs
+  String _getSuppliersInfo(Achat achat) {
+    if (achat.items == null || achat.items!.isEmpty) {
+      return 'Aucun';
+    }
+
+    final suppliers = <String>{};
+    for (var item in achat.items!) {
+      if (item.supplierName != null && item.supplierName!.isNotEmpty) {
+        suppliers.add(item.supplierName!);
+      }
+    }
+
+    if (suppliers.isEmpty) {
+      return 'Aucun';
+    }
+
+    if (suppliers.length == 1) {
+      return 'Même fournisseur';
+    } else {
+      return '${suppliers.length}';
+    }
+  }
+
+  // Méthode pour construire une ligne d'information sur les articles
+  Widget _buildArticleInfoRow(
+      IconData icon, String label, String value, Color color) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: color,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAchatDetails(BuildContext context, Achat achat) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AchatDetailsSheet(achat: achat),
+    );
+  }
+
   Widget _buildAchatList() {
     if (_achats.isEmpty) {
-      return const Center(
-        child: Text("Aucun achat trouvé pour ce versement."),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Aucun achat trouvé pour ce versement.",
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
       );
     }
     return ListView.builder(
@@ -133,440 +203,194 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       itemBuilder: (context, index) {
         final achat = _achats[index];
         final factureStats = _getFactureStats(achat);
-        final achatId = achat.id ?? index;
-        final searchQuery = _searchQueries[achatId] ?? '';
-        final items = achat.items ?? [];
-        final filteredItems = searchQuery.isEmpty
-            ? items
-            : items.where((ligne) {
-                final desc = (ligne.description ?? '').toLowerCase();
-                final invoice = (ligne.invoiceNumber ?? '').toLowerCase();
-                final search = searchQuery.toLowerCase();
-                return desc.contains(search) || invoice.contains(search);
-              }).toList();
         return Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
+          margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
             color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
-            border: Border.all(color: Colors.grey[200]!),
           ),
-          child: Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              title: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Achat #${achat.id}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Color(0xFF1A1E49),
-                      ),
-                    ),
-                  ),
-                  if (achat.isDebt == true)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF7F78AF).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF7F78AF)),
-                      ),
-                      child: Text(
-                        'Dette #${achat.id}',
-                        style: const TextStyle(
-                          color: Color(0xFF7F78AF),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Montant: ' +
-                        currencyFormat.format(achat.montantTotal ?? 0),
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(Icons.receipt_long,
-                          size: 16, color: Color(0xFF7F78AF)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Factures: ${factureStats['payees']}/${factureStats['total']} payées',
-                        style: const TextStyle(
-                            fontSize: 16, color: Color(0xFF7F78AF)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              children: [
-                // Section de recherche et impression - Design responsive
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isMobile = constraints.maxWidth < 600;
-
-                    if (isMobile) {
-                      // Layout vertical pour mobile
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        child: Column(
-                          children: [
-                            buildTextField(
-                              controller: _searchController,
-                              label: 'Rechercher un article ou une facture...',
-                              icon: Icons.search,
-                              onChanged: (value) {
-                                setState(() {
-                                  _searchQueries[achatId] = value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: TextButton.icon(
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Colors.grey[200]!),
-                                  foregroundColor: MaterialStateProperty.all(
-                                      Colors.grey[700]!),
-                                  padding: MaterialStateProperty.all(
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                  ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _showAchatDetails(context, achat),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Achat #${achat.id}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                onPressed: () => _handlePrintAchat(achat),
-                                icon: const Icon(Icons.print),
-                                label: Text('Imprimer',
-                                    style: TextStyle(
-                                        color: Colors.grey[700], fontSize: 16)),
                               ),
-                            ),
-                          ],
+                              if (achat.isDebt == true)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF7F78AF)
+                                        .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: const Color(0xFF7F78AF)),
+                                  ),
+                                  child: Text(
+                                    'Dette #${achat.id}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF7F78AF),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                )
+                            ],
+                          ),
                         ),
-                      );
-                    } else {
-                      // Layout horizontal pour tablettes et desktop
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: buildTextField(
-                                controller: _searchController,
-                                label:
-                                    'Rechercher un article ou une facture...',
-                                icon: Icons.search,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _searchQueries[achatId] = value;
-                                  });
-                                },
-                              ),
+                        const SizedBox(width: 20),
+                        Image.asset(
+                          achat.status == Status.COMPLETED
+                              ? 'assets/images/delivery.png'
+                              : 'assets/images/no-delivery.png',
+                          width: 44,
+                          height: 44,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 16,
+                          color: Colors.grey[700]!,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            (achat.client != null && achat.client!.isNotEmpty)
+                                ? achat.client!
+                                : (achat.isDebt == true &&
+                                        achat.clientId != null)
+                                    ? 'Client #${achat.clientId}'
+                                    : 'N/A',
+                            style: TextStyle(
+                              color: Colors.grey[700]!,
                             ),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: TextButton.icon(
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    Colors.grey[200]!),
-                                foregroundColor: MaterialStateProperty.all(
-                                    Colors.grey[700]!),
-                              ),
-                              onPressed: () => _handlePrintAchat(achat),
-                              icon: const Icon(Icons.print),
-                              label: Text('Imprimer',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 16)),
+                        ),
+                      ],
+                    ),
+                    if (achat.clientPhone != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone_outlined,
+                            size: 16,
+                            color: Colors.grey[700]!,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            achat.clientPhone!,
+                            style: TextStyle(
+                              color: Colors.grey[700]!,
                             ),
                           ),
                         ],
-                      );
-                    }
-                  },
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    // Informations sur les articles
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue[200]!),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildArticleInfoRow(
+                            Icons.inventory_2,
+                            'Total articles',
+                            '${achat.items?.length ?? 0}',
+                            Colors.blue[700]!,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildArticleInfoRow(
+                            Icons.check_circle,
+                            'Factures payées',
+                            '${factureStats['payees']}/${factureStats['total']}',
+                            Colors.green[700]!,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildArticleInfoRow(
+                            Icons.business,
+                            'Fournisseurs',
+                            _getSuppliersInfo(achat),
+                            Colors.orange[700]!,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Montant total
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1E49).withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFF1A1E49).withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Montant total',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            currencyFormat.format(achat.montantTotal ?? 0),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1E49),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                if (filteredItems.isNotEmpty)
-                  ...filteredItems
-                      .map((ligne) => _buildAchatArticleCard(ligne, achat))
-                      .toList()
-                else
-                  const Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: Text(
-                        "Aucun article pour cet achat ou cette recherche."),
-                  ),
-              ],
+              ),
             ),
           ),
         );
       },
     );
-  }
-
-  Widget _buildAchatArticleCard(dynamic ligne, Achat achat) {
-    final isConfirmed = _confirmedArticles.contains(ligne.id?.toString());
-    return Slidable(
-      key: Key('article_${ligne.id ?? ligne.hashCode}'),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (_) => _showEditArticleDialog(ligne),
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            icon: Icons.edit,
-            label: 'Modifier',
-          ),
-          SlidableAction(
-            onPressed: (ligne.status == Status.RECEIVED)
-                ? (_) => _confirmReverseArticle(ligne)
-                : null,
-            backgroundColor: (ligne.status == Status.RECEIVED)
-                ? Colors.orange
-                : Colors.grey[300]!,
-            foregroundColor: Colors.white,
-            icon: Icons.undo_outlined,
-            label: 'Reverse',
-            borderRadius:
-                const BorderRadius.horizontal(right: Radius.circular(16)),
-          ),
-        ],
-      ),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        padding: const EdgeInsets.all(16),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.10),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Article Header Row - Fixed to use Flexible widgets
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < 600) {
-                  // Mobile layout - vertical stack
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ligne.description ?? 'Article sans nom',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Color(0xFF1A1E49),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildStatusWidget(ligne, isConfirmed),
-                    ],
-                  );
-                } else {
-                  // Tablet layout - horizontal row
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          ligne.description ?? 'Article sans nom',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Color(0xFF1A1E49),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 1,
-                        child: _buildStatusWidget(ligne, isConfirmed),
-                      ),
-                    ],
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-
-            // Article Details - Quantity and Price
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                InfoIconText(
-                  icon: Icons.numbers,
-                  label: 'Quantité',
-                  value: '${ligne.quantity ?? 0}',
-                ),
-                InfoIconText(
-                  icon: Icons.attach_money,
-                  label: 'Prix unitaire',
-                  value: currencyFormat.format(ligne.unitPrice ?? 0),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Supplier Information
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                InfoIconText(
-                  icon: Icons.business_outlined,
-                  label: 'Fournisseur',
-                  value: ligne.supplierName ?? 'N/A',
-                ),
-                if (ligne.supplierPhone != null &&
-                    (ligne.supplierPhone as String).isNotEmpty)
-                  InfoIconText(
-                    icon: Icons.phone,
-                    label: 'Téléphone',
-                    value: ligne.supplierPhone ?? '',
-                  ),
-                InfoIconText(
-                  icon: Icons.percent,
-                  label: 'Taux achat',
-                  value: (ligne.salesRate?.toString() ?? ''),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Total Price
-            InfoIconText(
-              icon: Icons.calculate,
-              label: 'Total',
-              value: currencyFormat.format(
-                ligne.totalPrice ??
-                    (ligne.quantity ?? 0) * (ligne.unitPrice ?? 0),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-// Widget pour l’affichage du statut
-  Widget _buildStatusWidget(dynamic ligne, bool isConfirmed) {
-    if (ligne.status == Status.RECEIVED) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.green[100],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.receipt_long, color: Colors.green, size: 14),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                ligne.invoiceNumber ?? '',
-                style: TextStyle(
-                  color: Colors.green[700],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (!isConfirmed && ligne.status != Status.RECEIVED) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.red[100],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.receipt_long, color: Colors.red, size: 14),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      ligne.invoiceNumber ?? '',
-                      style: TextStyle(
-                        color: Colors.red[700],
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: TextButton.icon(
-              onPressed: () => _confirmArticle(ligne.id?.toString() ?? ''),
-              icon: const Icon(Icons.check_circle_outline, color: Colors.white),
-              label: Text(isLoading ? "Chargement..." : "Confirmer",
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF1A1E49),
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return const SizedBox.shrink();
   }
 
   Widget _buildCollapsibleInfo() {
@@ -647,7 +471,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  Widget _buildCollapsibleArticles() {
+  Widget _buildCollapsibleAchats() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -687,54 +511,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _confirmArticle(String itemId) async {
-    if (isLoading) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final user = await AuthService().getUserInfo();
-      if (user == null) {
-        showErrorTopSnackBar(context, "Utilisateur non connecté");
-        return;
-      }
-      final result = await _achatServices.confirmDelivery(
-        itemIds: [int.parse(itemId)],
-        userId: user.id,
-      );
-
-      if (result.isSuccess) {
-        for (var achat in _achats) {
-          for (var item in achat.items ?? []) {
-            if (item.id?.toString() == itemId) {
-              item.status = Status.RECEIVED;
-              break;
-            }
-          }
-        }
-
-        setState(() {
-          _confirmedArticles.add(itemId);
-        });
-        showSuccessTopSnackBar(context, "Article reçu avec succès");
-
-        widget.onVersementUpdated?.call();
-      } else {
-        showErrorTopSnackBar(
-            context, result.errorMessage ?? "Erreur lors de la confirmation");
-      }
-    } catch (e) {
-      showErrorTopSnackBar(
-          context, "Une erreur est survenue lors de la confirmation");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
 
   void _handleWithdrawal() {
@@ -1037,365 +813,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  void _confirmReverseArticle(dynamic ligne) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                child: const Icon(Icons.warning_amber_rounded,
-                    color: Colors.orange)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text('Attention',
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        content: Text(
-            'Vous allez reverser l\'article "${ligne.description}" de votre liste d\'achats.\nCette action est irréversible.'),
-        backgroundColor: Colors.white,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () {
-              _reverseItem(ligne);
-              Navigator.pop(context);
-            },
-            child: const Text('Reverser', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _reverseItem(dynamic ligne) async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      final user = await AuthService().getUserInfo();
-      if (user == null) {
-        showErrorTopSnackBar(context, "Utilisateur non connecté");
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-      final itemServices = ItemServices();
-      final result = await itemServices.reverseItem(
-        ligne.id,
-        user.id,
-        widget.versement.partnerId!,
-      );
-      if (result == "DELETED_AND_REVERTED") {
-        setState(() {
-          // Mettre à jour le statut de l'item reversé
-          for (var achat in _achats) {
-            final itemIndex =
-                achat.items?.indexWhere((i) => i.id == ligne.id) ?? -1;
-            if (itemIndex != -1) {
-              achat.items![itemIndex].status = Status.PENDING;
-            }
-          }
-        });
-        showSuccessTopSnackBar(context, "Article reversé avec succès");
-        widget.onVersementUpdated?.call();
-      } else if (result == "ITEM_NOT_FOUND") {
-        showErrorTopSnackBar(context, "Article non trouvé.");
-      } else if (result == "CLIENT_NOT_FOUND_OR_MISMATCH") {
-        showErrorTopSnackBar(context, "Client non trouvé ou ne correspond pas");
-      } else if (result == "USER_NOT_FOUND") {
-        showErrorTopSnackBar(context, "Utilisateur non trouvé.");
-      } else {
-        showErrorTopSnackBar(context, result?.toString() ?? "Erreur inconnue");
-      }
-    } catch (e) {
-      showErrorTopSnackBar(
-          context,
-          AppLocalizations.of(context)
-              .translate('purchase_history_error_during_reverse')
-              .replaceAll('{error}', e.toString()));
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void _showEditArticleDialog(Items ligne) async {
-    final descriptionController =
-        TextEditingController(text: ligne.description);
-    final quantityController =
-        TextEditingController(text: ligne.quantity?.toString() ?? '');
-    final unitPriceController =
-        TextEditingController(text: ligne.unitPrice?.toString() ?? '');
-    final salesRateController =
-        TextEditingController(text: ligne.salesRate?.toString() ?? '');
-    Partner? selectedSupplier;
-    List<Partner> suppliers = [];
-    bool loadingSuppliers = true;
-    String? errorMsg;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateModal) {
-            if (loadingSuppliers) {
-              PartnerServices().findSuppliers().then((list) {
-                setStateModal(() {
-                  suppliers = list;
-                  if (suppliers.isNotEmpty) {
-                    selectedSupplier = suppliers.firstWhere(
-                      (s) => s.id == ligne.supplierId,
-                      orElse: () => suppliers[0],
-                    );
-                  } else {
-                    selectedSupplier = null;
-                  }
-                  loadingSuppliers = false;
-                });
-              }).catchError((e) {
-                setStateModal(() {
-                  errorMsg = 'Erreur lors du chargement des fournisseurs';
-                  loadingSuppliers = false;
-                });
-              });
-            }
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              padding: EdgeInsets.fromLTRB(
-                  24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
-              child: loadingSuppliers
-                  ? const SizedBox(
-                      height: 200,
-                      child: Center(child: CircularProgressIndicator()))
-                  : errorMsg != null
-                      ? Text(errorMsg!)
-                      : SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                "Modifier l'article",
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    letterSpacing: -0.5),
-                              ),
-                              const SizedBox(height: 30),
-                              buildTextField(
-                                controller: descriptionController,
-                                label: 'Description',
-                                icon: Icons.description,
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                spacing: 16,
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Expanded(
-                                    child: buildTextField(
-                                      controller: quantityController,
-                                      label: 'Quantité',
-                                      icon: Icons.numbers,
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: buildTextField(
-                                      controller: unitPriceController,
-                                      label: 'Prix unitaire',
-                                      icon: Icons.attach_money,
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                              decimal: true),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              buildTextField(
-                                controller: salesRateController,
-                                label: 'Taux d\'achat',
-                                icon: Icons.percent,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                              ),
-                              const SizedBox(height: 12),
-                              DropDownCustom<Partner>(
-                                items: suppliers,
-                                selectedItem: selectedSupplier,
-                                onChanged: (val) =>
-                                    setStateModal(() => selectedSupplier = val),
-                                itemToString: (p) => ((p.firstName +
-                                        (p.lastName.isNotEmpty
-                                            ? ' ' + p.lastName
-                                            : ''))
-                                    .trim()),
-                                hintText: 'Sélectionner...',
-                                prefixIcon: Icons.person,
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Annuler'),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: confirmationButton(
-                                      isLoading: loadingSuppliers,
-                                      onPressed: () async {
-                                        final user =
-                                            await AuthService().getUserInfo();
-                                        if (user == null) {
-                                          showErrorTopSnackBar(context,
-                                              'Utilisateur non connecté');
-                                          return;
-                                        }
-                                        try {
-                                          final updatedItem = Items(
-                                            id: ligne.id,
-                                            description:
-                                                descriptionController.text,
-                                            quantity: int.tryParse(
-                                                quantityController.text),
-                                            unitPrice: double.tryParse(
-                                                unitPriceController.text),
-                                            totalPrice: (int.tryParse(
-                                                        quantityController
-                                                            .text) ??
-                                                    0) *
-                                                (double.tryParse(
-                                                        unitPriceController
-                                                            .text) ??
-                                                    0),
-                                            supplierId: selectedSupplier?.id,
-                                            supplierName: ((selectedSupplier
-                                                                ?.firstName ??
-                                                            '') +
-                                                        ((selectedSupplier
-                                                                        ?.lastName ??
-                                                                    '')
-                                                                .isNotEmpty
-                                                            ? ' ' +
-                                                                (selectedSupplier
-                                                                        ?.lastName ??
-                                                                    '')
-                                                            : ''))
-                                                    .trim()
-                                                    .isNotEmpty
-                                                ? ((selectedSupplier
-                                                            ?.firstName ??
-                                                        '') +
-                                                    ((selectedSupplier
-                                                                    ?.lastName ??
-                                                                '')
-                                                            .isNotEmpty
-                                                        ? ' ' +
-                                                            (selectedSupplier
-                                                                    ?.lastName ??
-                                                                '')
-                                                        : ''))
-                                                : null,
-                                            supplierPhone:
-                                                selectedSupplier?.phoneNumber,
-                                            packageId: ligne.packageId,
-                                            salesRate: double.tryParse(
-                                                salesRateController.text),
-                                            status: ligne.status,
-                                          );
-                                          final itemServices = ItemServices();
-                                          final result =
-                                              await itemServices.updateItem(
-                                            itemId: ligne.id!,
-                                            userId: user.id,
-                                            clientId:
-                                                widget.versement.partnerId!,
-                                            item: updatedItem,
-                                          );
-                                          if (result == 'SUCCESS') {
-                                            setState(() {
-                                              for (var achat in _achats) {
-                                                final idx = achat.items
-                                                        ?.indexWhere((i) =>
-                                                            i.id == ligne.id) ??
-                                                    -1;
-                                                if (idx != -1) {
-                                                  achat.items![idx] =
-                                                      updatedItem;
-                                                }
-                                              }
-                                            });
-                                            showSuccessTopSnackBar(context,
-                                                'Article modifié avec succès');
-                                            Navigator.pop(context);
-                                          } else if (result ==
-                                              'ITEM_NOT_FOUND') {
-                                            showErrorTopSnackBar(
-                                                context, 'Article non trouvé.');
-                                          } else if (result ==
-                                              'USER_NOT_FOUND') {
-                                            showErrorTopSnackBar(context,
-                                                'Utilisateur non trouvé.');
-                                          } else if (result ==
-                                              'CLIENT_MISMATCH') {
-                                            showErrorTopSnackBar(context,
-                                                'Client ne correspond pas.');
-                                          } else if (result ==
-                                              'SUPPLIER_NOT_FOUND') {
-                                            showErrorTopSnackBar(context,
-                                                'Fournisseur non trouvé.');
-                                          } else {
-                                            showErrorTopSnackBar(
-                                                context, result);
-                                          }
-                                        } catch (e) {
-                                          showErrorTopSnackBar(
-                                              context, 'Erreur : $e');
-                                        }
-                                      },
-                                      label: 'Enregistrer',
-                                      icon: Icons.save,
-                                      subLabel: 'Enregistrement...',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   // Remettre la méthode _handlePurchase ici :
   void _handlePurchase() async {
     setState(() {
@@ -1662,346 +1079,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  void _handlePrintAchat(Achat achat) {
-    bool includeSupplierInfo = false;
-    bool isProforma = false;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.white,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: Column(
-                  children: [
-                    // En-tête fixe
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isMobile = constraints.maxWidth < 600;
-
-                          if (isMobile) {
-                            // Layout vertical pour mobile
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Configuration et aperçu de l'achat",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      icon: const Icon(Icons.close),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          } else {
-                            // Layout horizontal pour tablettes et desktop
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    "Configuration et aperçu de l'achat",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  icon: const Icon(Icons.close),
-                                ),
-                              ],
-                            );
-                          }
-                        },
-                      ),
-                    ),
-
-                    // Contenu scrollable
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          children: [
-                            // Section options d'impression
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[50],
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey[300]!),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Options d\'impression',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1A1E49),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-
-                                  // Type de document - Design responsive
-                                  LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      final isMobile =
-                                          constraints.maxWidth < 600;
-
-                                      if (isMobile) {
-                                        // Layout vertical pour mobile
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              "Type de document:",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Row(
-                                              children: [
-                                                Radio<bool>(
-                                                  value: false,
-                                                  groupValue: isProforma,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      isProforma = false;
-                                                      if (value != null)
-                                                        includeSupplierInfo =
-                                                            value;
-                                                    });
-                                                  },
-                                                ),
-                                                const Text('Facture réel'),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                Radio<bool>(
-                                                  value: true,
-                                                  groupValue: isProforma,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      isProforma = true;
-                                                      includeSupplierInfo =
-                                                          false;
-                                                    });
-                                                  },
-                                                ),
-                                                const Text('Pro-forma'),
-                                              ],
-                                            ),
-                                          ],
-                                        );
-                                      } else {
-                                        // Layout horizontal pour tablettes et desktop
-                                        return Row(
-                                          children: [
-                                            const Text("Type de document:"),
-                                            const SizedBox(width: 20),
-                                            Row(
-                                              children: [
-                                                Radio<bool>(
-                                                  value: false,
-                                                  groupValue: isProforma,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      isProforma = false;
-                                                      if (value != null)
-                                                        includeSupplierInfo =
-                                                            value;
-                                                    });
-                                                  },
-                                                ),
-                                                const Text('Facture réel'),
-                                              ],
-                                            ),
-                                            const SizedBox(width: 20),
-                                            Row(
-                                              children: [
-                                                Radio<bool>(
-                                                  value: true,
-                                                  groupValue: isProforma,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      isProforma = true;
-                                                      includeSupplierInfo =
-                                                          false;
-                                                    });
-                                                  },
-                                                ),
-                                                const Text('Pro-forma'),
-                                              ],
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                    },
-                                  ),
-
-                                  // Option fournisseur (seulement pour facture standard)
-                                  if (!isProforma) ...[
-                                    const SizedBox(height: 16),
-                                    CheckboxListTile(
-                                      title: const Text(
-                                          "Inclure les informations du fournisseur"),
-                                      value: includeSupplierInfo,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          includeSupplierInfo = value ?? false;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Configuration des options de facturation
-                            InvoiceOptionsConfig(
-                              options: _invoiceOptions,
-                              onOptionsChanged: _updateInvoiceOptions,
-                              currencySymbol:
-                                  widget.versement.deviseCode ?? '¥',
-                            ),
-
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Boutons d'action fixes en bas - Design responsive
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isMobile = constraints.maxWidth < 600;
-
-                          if (isMobile) {
-                            // Layout vertical pour mobile
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    _showAchatPdfPreviewDialog(context, achat,
-                                        includeSupplierInfo, isProforma);
-                                  },
-                                  icon: const Icon(Icons.visibility),
-                                  label: const Text('Voir l\'aperçu PDF'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1A1E49),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Annuler'),
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
-                                  ),
-                                ),
-                              ],
-                            );
-                          } else {
-                            // Layout horizontal pour tablettes et desktop
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Annuler'),
-                                ),
-                                const SizedBox(width: 16),
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    _showAchatPdfPreviewDialog(context, achat,
-                                        includeSupplierInfo, isProforma);
-                                  },
-                                  icon: const Icon(Icons.visibility),
-                                  label: const Text('Voir l\'aperçu PDF'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1A1E49),
-                                    foregroundColor: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showAchatPdfPreviewDialog(BuildContext context, Achat achat,
-      bool includeSupplierInfo, bool isProforma) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: PdfPreview(
-            build: (format) => VersementPrintService.buildAchatPdfBytes(
-              achat,
-              includeSupplierInfo: includeSupplierInfo,
-              currencyFormat: currencyFormat,
-              localizations: AppLocalizations.of(context),
-              isProforma: isProforma,
-              invoiceOptions: _invoiceOptions,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildCollapsibleInvoiceOptions() {
     return Container(
       decoration: BoxDecoration(
@@ -2233,7 +1310,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   children: [
                     _buildCollapsibleInfo(),
                     const SizedBox(height: 16),
-                    _buildCollapsibleArticles(),
+                    _buildCollapsibleAchats(),
                     const SizedBox(height: 16),
                     _buildCollapsibleWithdrawals(),
                     const SizedBox(height: 16),
