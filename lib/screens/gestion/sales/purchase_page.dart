@@ -1522,7 +1522,7 @@ class _PurchasePageState extends State<PurchasePage> {
                 ? AppLocalizations.of(context).translate('price_per_carton')
                 : AppLocalizations.of(context).translate('unit_price'),
             icon: Icons.currency_yen,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (value) =>
                 setState(() {}), // Pour recalculer l'affichage
           ),
@@ -1601,7 +1601,7 @@ class _PurchasePageState extends State<PurchasePage> {
             controller: _salesRateController,
             label: AppLocalizations.of(context).translate('sales_rate'),
             icon: Icons.trending_up,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 16),
 

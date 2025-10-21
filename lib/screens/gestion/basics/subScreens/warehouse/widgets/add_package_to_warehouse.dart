@@ -346,7 +346,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       controller: _weightController,
                       label: "Poids (kg)",
                       icon: Icons.scale,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'Ce champ est requis';
@@ -361,7 +361,7 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       controller: _cbnController,
                       label: "CBN",
                       icon: Icons.monitor_weight,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'Ce champ est requis';

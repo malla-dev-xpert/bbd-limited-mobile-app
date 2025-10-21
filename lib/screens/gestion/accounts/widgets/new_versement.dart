@@ -454,7 +454,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             label: AppLocalizations.of(context)
                                 .translate('amount_to_pay'),
                             icon: Icons.attach_money,
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           ),
                           const SizedBox(height: 10),
                           DropDownCustom<VersementType>(
@@ -509,7 +509,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             label: AppLocalizations.of(context)
                                 .translate('exchange_rate'),
                             icon: Icons.trending_up,
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           ),
                         ],
                       ),

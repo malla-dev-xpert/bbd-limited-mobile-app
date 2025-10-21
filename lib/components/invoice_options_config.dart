@@ -216,7 +216,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           icon: _options.lineMarginType == MarginType.percentage
                               ? Icons.percent
                               : Icons.attach_money,
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           onChanged: (value) {
                             final amount = double.tryParse(value);
                             if (amount != null &&
