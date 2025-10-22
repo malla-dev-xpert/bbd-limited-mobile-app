@@ -1130,7 +1130,25 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AchatDetailsSheet(achat: achat),
+      builder: (context) => AchatDetailsSheet(
+        achat: achat,
+        onItemConfirmed: () async {
+          // Rafraîchir les données du partenaire quand un article est confirmé
+          await _refreshData();
+          // Notifier le parent que le partenaire a été mis à jour
+          if (widget.onPartnerUpdated != null) {
+            widget.onPartnerUpdated!(_partner);
+          }
+        },
+        onItemReversed: () async {
+          // Rafraîchir les données du partenaire quand un article est reversé
+          await _refreshData();
+          // Notifier le parent que le partenaire a été mis à jour
+          if (widget.onPartnerUpdated != null) {
+            widget.onPartnerUpdated!(_partner);
+          }
+        },
+      ),
     );
   }
 

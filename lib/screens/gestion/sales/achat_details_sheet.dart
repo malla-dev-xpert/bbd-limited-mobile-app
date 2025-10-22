@@ -21,8 +21,15 @@ import 'package:bbd_limited/components/item_detail_chip.dart';
 
 class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
+  final VoidCallback? onItemConfirmed;
+  final VoidCallback? onItemReversed;
 
-  const AchatDetailsSheet({super.key, required this.achat});
+  const AchatDetailsSheet({
+    super.key,
+    required this.achat,
+    this.onItemConfirmed,
+    this.onItemReversed,
+  });
 
   @override
   State<AchatDetailsSheet> createState() => _AchatDetailsSheetState();
@@ -104,6 +111,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             widget.achat.items![idx].status = Status.RECEIVED;
           }
         });
+
+        // Appeler le callback pour notifier le parent
+        if (widget.onItemConfirmed != null) {
+          widget.onItemConfirmed!();
+        }
+
         showSuccessTopSnackBar(
             context,
             AppLocalizations.of(context)
@@ -595,6 +608,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             _updateAchatStatusFromItems(widget.achat);
           }
         });
+
+        // Appeler le callback pour notifier le parent
+        if (widget.onItemReversed != null) {
+          widget.onItemReversed!();
+        }
+
         showSuccessTopSnackBar(
             context,
             AppLocalizations.of(context)
