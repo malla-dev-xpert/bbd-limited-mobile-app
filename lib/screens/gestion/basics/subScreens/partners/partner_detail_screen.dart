@@ -1126,24 +1126,12 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   void _showAchatDetails(BuildContext context, Achat achat) async {
-    final result = await showModalBottomSheet<bool>(
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return AchatDetailsSheet(achat: achat);
-      },
+      backgroundColor: Colors.transparent,
+      builder: (context) => AchatDetailsSheet(achat: achat),
     );
-    if (result == true) {
-      await _refreshData();
-      // Notifier le parent que le partenaire a été mis à jour
-      if (widget.onPartnerUpdated != null) {
-        widget.onPartnerUpdated!(_partner);
-      }
-    }
   }
 
   Future<void> _showCreateExpeditionBottomSheet(BuildContext context) async {
