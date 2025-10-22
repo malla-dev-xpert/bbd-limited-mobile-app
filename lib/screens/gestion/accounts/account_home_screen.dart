@@ -2,9 +2,13 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
+import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/partner_notification_service.dart';
 import 'package:bbd_limited/models/versement.dart';
+import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -22,6 +26,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final VersementServices _versementServices = VersementServices();
   final AuthService _authService = AuthService();
   final ExchangeRateService _exchangeRateService = ExchangeRateService();
+  final PartnerServices _partnerServices = PartnerServices();
+  final PartnerNotificationService _partnerNotificationService =
+      PartnerNotificationService();
 
   List<Versement> _allVersements = [];
   List<Versement> _filteredVersements = [];
@@ -359,6 +366,59 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     }
   }
 
+  Future<void> _showTransferVersementModal(Versement versement) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TransferVersementModal(
+        versement: versement,
+        currentPartnerId: versement.partnerId ?? 0,
+        onTransferSuccess: () async {
+          // Rafraîchir les données après le transfert
+          await fetchPaiements(reset: true);
+          // Notifier les mises à jour de partenaires
+          await _notifyPartnerUpdates(versement);
+        },
+      ),
+    );
+
+    if (result == true) {
+      // Le transfert a été effectué avec succès
+      await fetchPaiements(reset: true);
+      // Notifier les mises à jour de partenaires
+      await _notifyPartnerUpdates(versement);
+    }
+  }
+
+  Future<void> _notifyPartnerUpdates(Versement versement) async {
+    try {
+      // Récupérer les informations mises à jour des deux partenaires
+      final partners = await _partnerServices.findCustomers(page: 0);
+
+      // Trouver le partenaire source (ancien propriétaire)
+      final sourcePartner = partners.firstWhere(
+        (p) => p.id == versement.partnerId,
+        orElse: () => Partner(
+          id: versement.partnerId ?? 0,
+          firstName: 'Client',
+          lastName: '#${versement.partnerId}',
+          phoneNumber: '',
+          email: '',
+          country: '',
+          adresse: '',
+          accountType: 'CLIENT',
+        ),
+      );
+
+      // Notifier la mise à jour du partenaire source
+      _partnerNotificationService.notifyPartnerUpdate(sourcePartner);
+    } catch (e) {
+      print(
+          'Erreur lors de la notification des mises à jour de partenaires: $e');
+    }
+  }
+
   Widget _buildDateFilter() {
     final isTablet =
         MediaQuery.of(context).size.width > 600; // Seuil pour tablette
@@ -489,6 +549,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                     versement: paiement,
                     onEdit: () => _showEditPaiementModal(context, paiement),
                     onDelete: () => _delete(paiement),
+                    onTransfer: () => _showTransferVersementModal(paiement),
                     onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/partner_notification_service.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
@@ -21,6 +23,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
   final TextEditingController searchController = TextEditingController();
   final PartnerServices _partnerServices = PartnerServices();
   final AuthService authService = AuthService();
+  final PartnerNotificationService _partnerNotificationService =
+      PartnerNotificationService();
 
   List<Partner> _allPartners = [];
   List<Partner> _filteredPartners = [];
@@ -29,16 +33,30 @@ class _PartnerScreenState extends State<PartnerScreen> {
   bool _hasMoreData = true;
   int currentPage = 0;
 
+  StreamSubscription<Partner>? _partnerUpdateSubscription;
+
   @override
   void initState() {
     super.initState();
     loadPartners();
+    _setupPartnerUpdateListener();
   }
 
   @override
   void dispose() {
     searchController.dispose();
+    _partnerUpdateSubscription?.cancel();
     super.dispose();
+  }
+
+  void _setupPartnerUpdateListener() {
+    _partnerUpdateSubscription =
+        _partnerNotificationService.partnerUpdateStream.listen(
+      (updatedPartner) {
+        // Mettre à jour le partenaire dans la liste locale
+        _updatePartnerInList(updatedPartner);
+      },
+    );
   }
 
   Future<void> loadPartners({bool reset = false, String? searchQuery}) async {

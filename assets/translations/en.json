@@ -2074,5 +2074,20 @@
   "edit_date_and_commissionnaire": "Edit date and commissionnaire",
   "edit_additional_note": "Edit additional note",
   "delete_impossible_operations_associated": "Cannot delete: operations are already associated with this payment.",
-  "payment_deleted_success_backend": "Payment deleted successfully."
+  "payment_deleted_success_backend": "Payment deleted successfully.",
+  "transfer_versement": "Transfer Payment",
+  "select_destination_client": "Select destination client",
+  "versement_details": "Payment Details",
+  "select_client": "Select client",
+  "transfer": "Transfer",
+  "versement_transferred_successfully": "Payment transferred successfully",
+  "cannot_transfer_same_client": "Cannot transfer: It's the same client.",
+  "cannot_transfer_operations_done": "Cannot transfer: Operations have already been performed on this payment.",
+  "cannot_transfer_wrong_partner": "The payment does not belong to this client.",
+  "cannot_transfer_insufficient_balance": "Transfer impossible: the client's balance is insufficient.",
+  "transfer_unknown_error": "An unknown error occurred during the transfer.",
+  "transfer_failed": "Transfer failed",
+  "transfer_error": "Error during transfer: {error}",
+  "please_select_destination_client": "Please select a destination client",
+  "transferring": "Transferring..."
 }

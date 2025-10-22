@@ -10,6 +10,7 @@ class VersementListWidget extends StatelessWidget {
   final Function(Versement) onVersementTap;
   final Function(Versement)? onEditVersement;
   final Function(Versement)? onDeleteVersement;
+  final Function(Versement)? onTransferVersement;
 
   const VersementListWidget({
     Key? key,
@@ -18,6 +19,7 @@ class VersementListWidget extends StatelessWidget {
     required this.onVersementTap,
     this.onEditVersement,
     this.onDeleteVersement,
+    this.onTransferVersement,
   }) : super(key: key);
 
   @override
@@ -56,11 +58,23 @@ class VersementListWidget extends StatelessWidget {
 
           return Container(
             padding: const EdgeInsets.all(0),
-            child: (onEditVersement != null || onDeleteVersement != null)
+            child: (onEditVersement != null ||
+                    onDeleteVersement != null ||
+                    onTransferVersement != null)
                 ? Slidable(
                     endActionPane: ActionPane(
                       motion: const DrawerMotion(),
                       children: [
+                        if (onTransferVersement != null)
+                          SlidableAction(
+                            onPressed: (context) =>
+                                onTransferVersement!(versement),
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            icon: Icons.swap_horiz,
+                            label: AppLocalizations.of(context)
+                                .translate('transfer'),
+                          ),
                         if (onEditVersement != null)
                           SlidableAction(
                             onPressed: (context) => onEditVersement!(versement),

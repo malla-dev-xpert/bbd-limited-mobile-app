@@ -2052,5 +2052,20 @@
   "edit_date_and_commissionnaire": "编辑日期和佣金商",
   "edit_additional_note": "编辑附加备注",
   "delete_impossible_operations_associated": "无法删除：此付款已有关联的操作。",
-  "payment_deleted_success_backend": "付款删除成功。"
+  "payment_deleted_success_backend": "付款删除成功。",
+  "transfer_versement": "转账付款",
+  "select_destination_client": "选择目标客户",
+  "versement_details": "付款详情",
+  "select_client": "选择客户",
+  "transfer": "转账",
+  "versement_transferred_successfully": "付款转账成功",
+  "cannot_transfer_same_client": "无法转账：这是同一个客户。",
+  "cannot_transfer_operations_done": "无法转账：此付款已执行过操作。",
+  "cannot_transfer_wrong_partner": "此付款不属于该客户。",
+  "cannot_transfer_insufficient_balance": "转账不可能：客户余额不足。",
+  "transfer_unknown_error": "转账时发生未知错误。",
+  "transfer_failed": "转账失败",
+  "transfer_error": "转账时出错：{error}",
+  "please_select_destination_client": "请选择目标客户",
+  "transferring": "转账中..."
 }

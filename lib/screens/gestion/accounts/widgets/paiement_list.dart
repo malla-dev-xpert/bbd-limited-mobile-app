@@ -8,6 +8,7 @@ class PaiementListItem extends StatelessWidget {
   final Function() onEdit;
   final Function() onDelete;
   final Function() onTap;
+  final Function()? onTransfer;
 
   const PaiementListItem({
     super.key,
@@ -15,6 +16,7 @@ class PaiementListItem extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onTap,
+    this.onTransfer,
   });
 
   @override
@@ -38,6 +40,14 @@ class PaiementListItem extends StatelessWidget {
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
         children: [
+          if (onTransfer != null)
+            SlidableAction(
+              onPressed: (context) => onTransfer!(),
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              icon: Icons.swap_horiz,
+              label: 'Transférer',
+            ),
           SlidableAction(
             onPressed: (context) => onEdit(),
             backgroundColor: Colors.blue,

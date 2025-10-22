@@ -14,6 +14,7 @@ import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
+import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
@@ -1050,6 +1051,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         ),
         onEditVersement: _showEditVersementModal,
         onDeleteVersement: _deleteVersement,
+        onTransferVersement: _showTransferVersementModal,
       );
     } else if (_selectedOperationType == OperationType.expeditions) {
       return _buildExpeditionsList(context);
@@ -1370,6 +1372,34 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             .translate('error_during_deletion')
             .replaceAll('{error}', e.toString()),
       );
+    }
+  }
+
+  Future<void> _showTransferVersementModal(Versement versement) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TransferVersementModal(
+        versement: versement,
+        currentPartnerId: _partner.id,
+        onTransferSuccess: () async {
+          // Rafraîchir les données du partenaire après le transfert
+          await _refreshData();
+          // Notifier le parent que le partenaire a été mis à jour
+          if (widget.onPartnerUpdated != null) {
+            widget.onPartnerUpdated!(_partner);
+          }
+        },
+      ),
+    );
+
+    if (result == true) {
+      // Le transfert a été effectué avec succès
+      await _refreshData();
+      if (widget.onPartnerUpdated != null) {
+        widget.onPartnerUpdated!(_partner);
+      }
     }
   }
 }
