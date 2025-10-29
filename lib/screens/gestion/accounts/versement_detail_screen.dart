@@ -5,6 +5,8 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/buildNoteField.dart
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/models/achats/update_achat_dto.dart';
+import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +22,8 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/invoice_options_config.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/components/confirm_btn.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -37,6 +41,7 @@ class VersementDetailScreen extends StatefulWidget {
 
 class _VersementDetailScreenState extends State<VersementDetailScreen> {
   final DeviseServices _deviseServices = DeviseServices();
+  final AchatServices _achatServices = AchatServices();
   bool isLoading = false;
   bool _isInfoExpanded = true;
   bool _isArticlesExpanded = false;
@@ -173,6 +178,120 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
+  void _showEditDateDialog(Achat achat) {
+    DateTime selectedDate = achat.createdAt ?? DateTime.now();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(AppLocalizations.of(context).translate('edit_date')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: () async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: selectedDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now(),
+                );
+                if (picked != null) {
+                  selectedDate = picked;
+                  (context as Element).markNeedsBuild();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: Colors.grey[600]),
+                    const SizedBox(width: 12),
+                    Text(
+                      DateFormat('dd/MM/yyyy').format(selectedDate),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          confirmationButton(
+            isLoading: isLoading,
+            onPressed: () => _updateAchatDate(achat, selectedDate),
+            label: AppLocalizations.of(context).translate('save'),
+            icon: Icons.save,
+            subLabel: AppLocalizations.of(context).translate('saving'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateAchatDate(Achat achat, DateTime newDate) async {
+    if (achat.id == null) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
+        return;
+      }
+
+      final dto = UpdateAchatDto(createdAt: newDate);
+      final result = await _achatServices.updateAchat(
+        achatId: achat.id!,
+        dto: dto,
+      );
+
+      if (result.isSuccess) {
+        setState(() {
+          // Mettre à jour la date dans la liste locale
+          for (int i = 0; i < _achats.length; i++) {
+            if (_achats[i].id == achat.id) {
+              _achats[i] = _achats[i].copyWith(createdAt: newDate);
+            }
+          }
+        });
+        showSuccessTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('date_updated_successfully'));
+        Navigator.pop(context);
+        widget.onVersementUpdated?.call();
+      } else {
+        showErrorTopSnackBar(
+            context,
+            result.errorMessage ??
+                AppLocalizations.of(context).translate('error_updating_date'));
+      }
+    } catch (e) {
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_updating_date'));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Widget _buildAchatList() {
     if (_achats.isEmpty) {
       return Center(
@@ -203,212 +322,228 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       itemBuilder: (context, index) {
         final achat = _achats[index];
         final factureStats = _getFactureStats(achat);
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+        return Slidable(
+          key: ValueKey('achat_${achat.id ?? index}'),
+          endActionPane: ActionPane(
+            motion: const DrawerMotion(),
+            extentRatio: 0.25,
+            children: [
+              SlidableAction(
+                onPressed: (_) => _showEditDateDialog(achat),
+                backgroundColor: const Color(0xFF1976D2),
+                foregroundColor: Colors.white,
+                icon: Icons.edit_calendar,
+                label: AppLocalizations.of(context).translate('edit_date'),
               ),
             ],
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              onTap: () => _showAchatDetails(context, achat),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today,
-                                    size: 16,
-                                    color: Colors.grey[700]!,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => _showAchatDetails(context, achat),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    DateFormat('dd/MM/yyyy').format(
-                                        achat.createdAt ?? DateTime.now()),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 16,
                                       color: Colors.grey[700]!,
                                     ),
-                                  ),
-                                ],
-                              ),
-                              if (achat.isDebt == true)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF7F78AF)
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: const Color(0xFF7F78AF)),
-                                    ),
-                                    child: Text(
-                                      AppLocalizations.of(context)
-                                          .translate('purchase_history_debt'),
-                                      style: const TextStyle(
-                                        color: Color(0xFF7F78AF),
-                                        fontWeight: FontWeight.bold,
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      DateFormat('dd/MM/yyyy').format(
+                                          achat.createdAt ?? DateTime.now()),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey[700]!,
                                       ),
                                     ),
-                                  ),
-                                )
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        Image.asset(
-                          achat.status == Status.COMPLETED
-                              ? 'assets/images/delivery.png'
-                              : 'assets/images/no-delivery.png',
-                          width: 44,
-                          height: 44,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.person_outline,
-                          size: 16,
-                          color: Colors.grey[700]!,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            (achat.client != null && achat.client!.isNotEmpty)
-                                ? achat.client!
-                                : (achat.isDebt == true &&
-                                        achat.clientId != null)
-                                    ? '${AppLocalizations.of(context).translate('client')} #${achat.clientId}'
-                                    : AppLocalizations.of(context)
-                                        .translate('not_available'),
-                            style: TextStyle(
-                              color: Colors.grey[700]!,
-                              fontWeight: FontWeight.w900,
+                                  ],
+                                ),
+                                if (achat.isDebt == true)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF7F78AF)
+                                            .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            color: const Color(0xFF7F78AF)),
+                                      ),
+                                      child: Text(
+                                        AppLocalizations.of(context)
+                                            .translate('purchase_history_debt'),
+                                        style: const TextStyle(
+                                          color: Color(0xFF7F78AF),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    if (achat.clientPhone != null) ...[
-                      const SizedBox(height: 8),
+                          const SizedBox(width: 20),
+                          Image.asset(
+                            achat.status == Status.COMPLETED
+                                ? 'assets/images/delivery.png'
+                                : 'assets/images/no-delivery.png',
+                            width: 44,
+                            height: 44,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Icon(
-                            Icons.phone_outlined,
+                            Icons.person_outline,
                             size: 16,
                             color: Colors.grey[700]!,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            achat.clientPhone!,
-                            style: TextStyle(
+                          Expanded(
+                            child: Text(
+                              (achat.client != null && achat.client!.isNotEmpty)
+                                  ? achat.client!
+                                  : (achat.isDebt == true &&
+                                          achat.clientId != null)
+                                      ? '${AppLocalizations.of(context).translate('client')} #${achat.clientId}'
+                                      : AppLocalizations.of(context)
+                                          .translate('not_available'),
+                              style: TextStyle(
+                                color: Colors.grey[700]!,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (achat.clientPhone != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.phone_outlined,
+                              size: 16,
                               color: Colors.grey[700]!,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              achat.clientPhone!,
+                              style: TextStyle(
+                                color: Colors.grey[700]!,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      // Informations sur les articles
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue[200]!),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildArticleInfoRow(
+                              Icons.inventory_2,
+                              'Total articles',
+                              '${achat.items?.length ?? 0}',
+                              Colors.blue[700]!,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildArticleInfoRow(
+                              Icons.check_circle,
+                              'Factures payées',
+                              '${factureStats['payees']}/${factureStats['total']}',
+                              Colors.green[700]!,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildArticleInfoRow(
+                              Icons.business,
+                              'Fournisseurs',
+                              _getSuppliersInfo(achat),
+                              Colors.orange[700]!,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Montant total
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1E49).withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: const Color(0xFF1A1E49).withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Montant total',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              currencyFormat.format(achat.montantTotal ?? 0),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1E49),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    // Informations sur les articles
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue[200]!),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildArticleInfoRow(
-                            Icons.inventory_2,
-                            'Total articles',
-                            '${achat.items?.length ?? 0}',
-                            Colors.blue[700]!,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildArticleInfoRow(
-                            Icons.check_circle,
-                            'Factures payées',
-                            '${factureStats['payees']}/${factureStats['total']}',
-                            Colors.green[700]!,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildArticleInfoRow(
-                            Icons.business,
-                            'Fournisseurs',
-                            _getSuppliersInfo(achat),
-                            Colors.orange[700]!,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Montant total
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A1E49).withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: const Color(0xFF1A1E49).withOpacity(0.2)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Montant total',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            currencyFormat.format(achat.montantTotal ?? 0),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1E49),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

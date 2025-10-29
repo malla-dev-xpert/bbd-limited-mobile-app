@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/create_achat_dto.dart';
+import 'package:bbd_limited/models/achats/update_achat_dto.dart';
 import 'package:bbd_limited/core/api/api_result.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -185,6 +186,91 @@ class AchatServices {
       }
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<ApiResult<Achat>> updateAchat({
+    required int achatId,
+    required UpdateAchatDto dto,
+  }) async {
+    final url = Uri.parse('$baseUrl/achats/$achatId/update');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(dto.toJson()),
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          try {
+            final responseBody =
+                jsonDecode(response.body) as Map<String, dynamic>;
+
+            // Essayer de parser l'achat complet
+            try {
+              final updatedAchat = Achat.fromJson(responseBody);
+              return ApiResult.success(updatedAchat);
+            } catch (e) {
+              final minimalJson = <String, dynamic>{'id': achatId};
+              if (dto.createdAt != null) {
+                minimalJson['createdAt'] = dto.createdAt!.toIso8601String();
+              }
+              return ApiResult.success(Achat.fromJson(minimalJson));
+            }
+          } on FormatException catch (e) {
+            final minimalJson = <String, dynamic>{'id': achatId};
+            if (dto.createdAt != null) {
+              minimalJson['createdAt'] = dto.createdAt!.toIso8601String();
+            }
+            return ApiResult.success(Achat.fromJson(minimalJson));
+          }
+
+        case 404:
+          return ApiResult.failure(
+            errorMessage: 'Achat non trouvé',
+            errorCode: response.statusCode,
+          );
+
+        case 400:
+          try {
+            final responseBody =
+                jsonDecode(response.body) as Map<String, dynamic>;
+            final errorMessage =
+                responseBody['message'] ?? 'Erreur de validation';
+            return ApiResult.failure(
+              errorMessage: errorMessage,
+              errorCode: response.statusCode,
+            );
+          } catch (e) {
+            return ApiResult.failure(
+              errorMessage: 'Erreur de validation',
+              errorCode: response.statusCode,
+            );
+          }
+
+        default:
+          return ApiResult.failure(
+            errorMessage: 'Erreur inattendue: ${response.statusCode}',
+            errorCode: response.statusCode,
+          );
+      }
+    } on FormatException catch (e) {
+      return ApiResult.failure(
+        errorMessage: 'Erreur de format de réponse du serveur',
+        errorCode: 0,
+      );
+    } on SocketException {
+      return ApiResult.failure(
+        errorMessage: 'Pas de connexion Internet',
+        errorCode: 0,
+      );
+    } catch (e) {
+      return ApiResult.failure(
+        errorMessage: 'Erreur de connexion: ${e.toString()}',
+        errorCode: 0,
+      );
     }
   }
 }
