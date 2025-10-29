@@ -235,29 +235,52 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy HH:mm').format(achat.createdAt ?? DateTime.now())}',
+                                '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (achat.isDebt == true)
-                                Container(
-                                  margin: const EdgeInsets.only(top: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF7F78AF)
-                                        .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: const Color(0xFF7F78AF)),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today,
+                                    size: 16,
+                                    color: Colors.grey[700]!,
                                   ),
-                                  child: Text(
-                                    'Dette #${achat.id}',
-                                    style: const TextStyle(
-                                      color: Color(0xFF7F78AF),
-                                      fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    DateFormat('dd/MM/yyyy').format(
+                                        achat.createdAt ?? DateTime.now()),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[700]!,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (achat.isDebt == true)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF7F78AF)
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: const Color(0xFF7F78AF)),
+                                    ),
+                                    child: Text(
+                                      AppLocalizations.of(context)
+                                          .translate('purchase_history_debt'),
+                                      style: const TextStyle(
+                                        color: Color(0xFF7F78AF),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 )
@@ -289,10 +312,12 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                 ? achat.client!
                                 : (achat.isDebt == true &&
                                         achat.clientId != null)
-                                    ? 'Client #${achat.clientId}'
-                                    : 'N/A',
+                                    ? '${AppLocalizations.of(context).translate('client')} #${achat.clientId}'
+                                    : AppLocalizations.of(context)
+                                        .translate('not_available'),
                             style: TextStyle(
                               color: Colors.grey[700]!,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
