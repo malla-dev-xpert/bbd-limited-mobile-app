@@ -2089,5 +2089,6 @@
   "transfer_error": "Erreur lors du transfert: {error}",
   "please_select_destination_client": "Veuillez sélectionner un client de destination",
   "transferring": "Transfert en cours...",
-  "retry": "Réessayer"
+  "retry": "Réessayer",
+  "purchase_number": "Achat N°"
 }

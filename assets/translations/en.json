@@ -2089,5 +2089,6 @@
   "transfer_failed": "Transfer failed",
   "transfer_error": "Error during transfer: {error}",
   "please_select_destination_client": "Please select a destination client",
-  "transferring": "Transferring..."
+  "transferring": "Transferring...",
+  "purchase_number": "Register N°"
 }

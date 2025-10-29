@@ -2067,5 +2067,6 @@
   "transfer_failed": "转账失败",
   "transfer_error": "转账时出错：{error}",
   "please_select_destination_client": "请选择目标客户",
-  "transferring": "转账中..."
+  "transferring": "转账中...",
+  "purchase_number": "注册 N°"
 }
