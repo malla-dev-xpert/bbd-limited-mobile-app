@@ -2090,5 +2090,8 @@
   "please_select_destination_client": "Veuillez sélectionner un client de destination",
   "transferring": "Transfert en cours...",
   "retry": "Réessayer",
-  "purchase_number": "Achat N°"
+  "purchase_number": "Achat N°",
+  "edit_date": "Modifier la date",
+  "date_updated_successfully": "Date mise à jour avec succès",
+  "error_updating_date": "Erreur lors de la mise à jour de la date"
 }

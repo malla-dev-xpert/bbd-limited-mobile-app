@@ -2090,5 +2090,8 @@
   "transfer_error": "Error during transfer: {error}",
   "please_select_destination_client": "Please select a destination client",
   "transferring": "Transferring...",
-  "purchase_number": "Register N°"
+  "purchase_number": "Register N°",
+  "edit_date": "Edit date",
+  "date_updated_successfully": "Date updated successfully",
+  "error_updating_date": "Error updating date"
 }
