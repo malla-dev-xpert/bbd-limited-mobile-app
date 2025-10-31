@@ -23,7 +23,8 @@ class CardData {
   });
 }
 
-List<CardData> getCardDataList(BuildContext context, AppLocalizations localizations) {
+List<CardData> getCardDataList(
+    BuildContext context, AppLocalizations localizations) {
   return [
     CardData(
       icon: Icons.inventory_2,
@@ -46,6 +47,17 @@ List<CardData> getCardDataList(BuildContext context, AppLocalizations localizati
         Navigator.of(context).pushNamed('/partners');
       },
       description: localizations.translate('home_manage_partners_desc'),
+    ),
+    CardData(
+      icon: Icons.local_shipping,
+      title: localizations.translate('home_manage_suppliers_title'),
+      backgroundColor: Colors.grey[50]!,
+      iconColor: const Color(0xFF13084F),
+      titleColor: const Color(0xFF13084F),
+      onPressed: (context) {
+        Navigator.of(context).pushNamed('/suppliers');
+      },
+      description: localizations.translate('home_manage_suppliers_desc'),
     ),
     CardData(
       icon: Icons.warehouse,

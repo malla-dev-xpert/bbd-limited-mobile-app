@@ -4,6 +4,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/devises/devices_sc
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/harbor_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/purchase_page.dart';
 
@@ -22,6 +23,7 @@ class Routes {
   static const String package = '/package';
   static const String harbor = '/harbor';
   static const String partners = '/partners';
+  static const String suppliers = '/suppliers';
   static const String containers = '/container';
   static const String purchase = '/purchase';
 
@@ -45,6 +47,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => HarborScreen());
       case partners:
         return MaterialPageRoute(builder: (_) => const PartnerScreen());
+      case suppliers:
+        return MaterialPageRoute(builder: (_) => const SupplierScreen());
       case containers:
         return MaterialPageRoute(builder: (_) => const ContainerScreen());
       case purchase:
