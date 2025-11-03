@@ -42,6 +42,29 @@ class ItemServices {
     }
   }
 
+  Future<List<Items>> findItemsBySupplier(int supplierId) async {
+    try {
+      final url = Uri.parse('$baseUrl/items/supplier?supplierId=$supplierId');
+
+      final response = await http.get(url);
+
+      print(response.body);
+      print(response.statusCode.toString());
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final List<dynamic> jsonBody =
+            json.decode(utf8.decode(response.bodyBytes));
+        final items = jsonBody.map((e) => Items.fromJson(e)).toList();
+        return items;
+      } else {
+        throw Exception(
+            "Erreur lors du chargement des articles du fournisseur (${response.statusCode}): ${response.body}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<String?> reverseItem(int id, int? userId, int clientId) async {
     final url = Uri.parse(
       "$baseUrl/items/reverse/$id?userId=$userId&clientId=$clientId",

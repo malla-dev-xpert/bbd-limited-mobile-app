@@ -2076,5 +2076,9 @@
   "purchase_number": "注册 N°",
   "edit_date": "修改日期",
   "date_updated_successfully": "日期更新成功",
-  "error_updating_date": "更新日期时出错"
+  "error_updating_date": "更新日期时出错",
+  "supplier_details": "供应商详情",
+  "purchased_items": "已购买项目",
+  "no_items_purchased": "无已购买项目",
+  "no_items_purchased_description": "暂无从该供应商购买的项目。"
 }

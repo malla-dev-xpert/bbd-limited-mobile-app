@@ -2098,5 +2098,9 @@
   "purchase_number": "Register N°",
   "edit_date": "Edit date",
   "date_updated_successfully": "Date updated successfully",
-  "error_updating_date": "Error updating date"
+  "error_updating_date": "Error updating date",
+  "supplier_details": "Supplier details",
+  "purchased_items": "Purchased items",
+  "no_items_purchased": "No purchased items",
+  "no_items_purchased_description": "No items have been purchased from this supplier yet."
 }

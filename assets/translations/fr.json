@@ -2098,5 +2098,9 @@
   "purchase_number": "Achat N°",
   "edit_date": "Modifier la date",
   "date_updated_successfully": "Date mise à jour avec succès",
-  "error_updating_date": "Erreur lors de la mise à jour de la date"
+  "error_updating_date": "Erreur lors de la mise à jour de la date",
+  "supplier_details": "Détails du fournisseur",
+  "purchased_items": "Articles achetés",
+  "no_items_purchased": "Aucun article acheté",
+  "no_items_purchased_description": "Aucun article n'a été acheté chez ce fournisseur pour le moment."
 }

@@ -3,6 +3,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_detail_screen.dart';
 
 class SupplierListItem extends StatelessWidget {
   final Partner supplier;
@@ -51,6 +52,14 @@ class SupplierListItem extends StatelessWidget {
         ],
       ),
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SupplierDetailScreen(supplier: supplier),
+            ),
+          );
+        },
         title: Text("${supplier.firstName} ${supplier.lastName}"),
         subtitle: Text(supplier.phoneNumber),
         trailing: Row(
@@ -82,4 +91,3 @@ class SupplierListItem extends StatelessWidget {
     );
   }
 }
-
