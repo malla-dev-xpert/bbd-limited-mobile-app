@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_detail_screen.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 
-class SupplierListItem extends StatelessWidget {
+class SupplierListItem extends StatefulWidget {
   final Partner supplier;
   final Function(Partner) onEdit;
   final Function(Partner) onDelete;
@@ -20,30 +20,52 @@ class SupplierListItem extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<SupplierListItem> createState() => _SupplierListItemState();
+}
+
+class _SupplierListItemState extends State<SupplierListItem> {
+  final ItemServices itemServices = ItemServices();
+  double? totalAmount;
+  bool isLoadingTotal = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTotalAmount();
+  }
+
+  Future<void> _loadTotalAmount() async {
+    try {
+      final items = await itemServices.findItemsBySupplier(widget.supplier.id);
+      final total = items.length.toDouble();
+      setState(() {
+        totalAmount = total;
+        isLoadingTotal = false;
+      });
+    } catch (e) {
+      setState(() {
+        totalAmount = 0.0;
+        isLoadingTotal = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final balance = supplier.balance ?? 0.0;
-    final isNegative = balance <= 0;
-    final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
-
-    final currencyFormat = NumberFormat.currency(
-      locale: 'fr_FR',
-      symbol: 'CNY',
-    );
-
     return Slidable(
-      key: ValueKey(supplier.id),
+      key: ValueKey(widget.supplier.id),
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
         children: [
           SlidableAction(
-            onPressed: (_) => onEdit(supplier),
+            onPressed: (_) => widget.onEdit(widget.supplier),
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             icon: Icons.edit,
             label: AppLocalizations.of(context).translate('edit'),
           ),
           SlidableAction(
-            onPressed: (_) => onDelete(supplier),
+            onPressed: (_) => widget.onDelete(widget.supplier),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
@@ -56,12 +78,13 @@ class SupplierListItem extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SupplierDetailScreen(supplier: supplier),
+              builder: (context) =>
+                  SupplierDetailScreen(supplier: widget.supplier),
             ),
           );
         },
-        title: Text("${supplier.firstName} ${supplier.lastName}"),
-        subtitle: Text(supplier.phoneNumber),
+        title: Text("${widget.supplier.firstName} ${widget.supplier.lastName}"),
+        subtitle: Text(widget.supplier.phoneNumber),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -69,21 +92,22 @@ class SupplierListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  supplier.accountType,
-                  style: const TextStyle(color: Colors.blue),
-                ),
-                Text(
-                  currencyFormat.format(balance),
-                  style: TextStyle(color: statusColor),
-                ),
+                if (isLoadingTotal)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  Text(
+                    '${(totalAmount ?? 0).toInt()} articles',
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
               ],
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              isNegative ? Icons.arrow_downward : Icons.arrow_upward,
-              color: statusColor,
-              size: 20,
             ),
           ],
         ),
