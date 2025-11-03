@@ -2102,5 +2102,20 @@
   "supplier_details": "Supplier details",
   "purchased_items": "Purchased items",
   "no_items_purchased": "No purchased items",
-  "no_items_purchased_description": "No items have been purchased from this supplier yet."
+  "no_items_purchased_description": "No items have been purchased from this supplier yet.",
+  "pay": "Pay",
+  "supplier_payment": "Supplier payment",
+  "amount_exceeds_total": "Amount cannot exceed total",
+  "payment_success": "Payment successful",
+  "payment_error": "Payment error",
+  "total_unpaid_amount": "Total unpaid amount",
+  "pay_full_amount": "Pay full amount",
+  "amount_not_paid": "Amount to pay",
+  "confirm_payment": "Confirm payment",
+  "select_payment_type": "Select payment type",
+  "payment_on_delivery": "Payment on delivery",
+  "payment_on_delivery_description": "Payment was made upon delivery",
+  "other_payment": "Other payment type",
+  "other_payment_description": "Select the date when payment was made",
+  "select_payment_date": "Select payment date"
 }

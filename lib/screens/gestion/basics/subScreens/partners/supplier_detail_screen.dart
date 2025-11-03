@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_payment_screen.dart';
 
 class SupplierDetailScreen extends StatefulWidget {
   final Partner supplier;
@@ -170,150 +172,184 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
   Widget _buildItemsList() {
     return Column(
       children: items.map((item) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
+        return Slidable(
+          key: ValueKey('item_${item.id}'),
+          endActionPane: ActionPane(
+            motion: const DrawerMotion(),
+            extentRatio: 0.25,
+            children: [
+              if (item.paid != true)
+                SlidableAction(
+                  onPressed: (_) => _openPaymentScreen(item),
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  icon: Icons.payment,
+                  label: AppLocalizations.of(context).translate('pay'),
+                ),
             ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // En-tête de l'item avec image de statut
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A1E49).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.inventory_2,
-                        color: Color(0xFF1A1E49),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.description ?? 'N/A',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
-                              children: [
-                                TextSpan(
-                                  text:
-                                      '${AppLocalizations.of(context).translate('invoice_number')}: ',
-                                ),
-                                TextSpan(
-                                  text: item.invoiceNumber ?? 'N/A',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    item.paid == true
-                        ? Image.asset(
-                            'assets/images/paid.png',
-                            width: 44,
-                            height: 44,
-                          )
-                        : const SizedBox.shrink(),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Divider
-                Divider(color: Colors.grey[200], height: 1),
-                const SizedBox(height: 12),
-                // Détails de l'item
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ItemDetailChip(
-                      text:
-                          '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
-                      icon: Icons.inventory,
-                    ),
-                    const SizedBox(width: 16),
-                    ItemDetailChip(
-                      text:
-                          '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
-                      icon: Icons.format_list_numbered,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ItemDetailChip(
-                      text:
-                          '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
-                      icon: Icons.numbers,
-                    ),
-                    const SizedBox(width: 8),
-                    ItemDetailChip(
-                      text: '${_formatAmount(item.unitPrice)} ¥',
-                      icon: Icons.attach_money,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Taux d'achat et total en colonne pour une meilleure lisibilité
-                Column(
-                  children: [
-                    ItemDetailChip(
-                      text:
-                          '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
-                      icon: Icons.trending_up,
-                      fullWidth: true,
-                    ),
-                    const SizedBox(height: 8),
-                    ItemDetailChip(
-                      text:
-                          '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
-                      icon: Icons.calculate,
-                      fullWidth: true,
-                    ),
-                  ],
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // En-tête de l'item avec image de statut
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1E49).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.inventory_2,
+                          color: Color(0xFF1A1E49),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.description ?? 'N/A',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        '${AppLocalizations.of(context).translate('invoice_number')}: ',
+                                  ),
+                                  TextSpan(
+                                    text: item.invoiceNumber ?? 'N/A',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      item.paid == true
+                          ? Image.asset(
+                              'assets/images/paid.png',
+                              width: 44,
+                              height: 44,
+                            )
+                          : const SizedBox.shrink(),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Divider
+                  Divider(color: Colors.grey[200], height: 1),
+                  const SizedBox(height: 12),
+                  // Détails de l'item
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
+                        icon: Icons.inventory,
+                      ),
+                      const SizedBox(width: 16),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                        icon: Icons.format_list_numbered,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
+                        icon: Icons.numbers,
+                      ),
+                      const SizedBox(width: 8),
+                      ItemDetailChip(
+                        text: '${_formatAmount(item.unitPrice)} ¥',
+                        icon: Icons.attach_money,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Taux d'achat et total en colonne pour une meilleure lisibilité
+                  Column(
+                    children: [
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
+                        icon: Icons.trending_up,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 8),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                        icon: Icons.calculate,
+                        fullWidth: true,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
       }).toList(),
     );
+  }
+
+  void _openPaymentScreen(Items item) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SupplierPaymentScreen(
+          item: item,
+          supplier: widget.supplier,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      // Rafraîchir la liste des items après le paiement
+      _loadSupplierItems();
+    }
   }
 }

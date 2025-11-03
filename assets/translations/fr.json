@@ -2102,5 +2102,20 @@
   "supplier_details": "Détails du fournisseur",
   "purchased_items": "Articles achetés",
   "no_items_purchased": "Aucun article acheté",
-  "no_items_purchased_description": "Aucun article n'a été acheté chez ce fournisseur pour le moment."
+  "no_items_purchased_description": "Aucun article n'a été acheté chez ce fournisseur pour le moment.",
+  "pay": "Payer",
+  "supplier_payment": "Paiement fournisseur",
+  "amount_exceeds_total": "Le montant ne peut pas dépasser le total",
+  "payment_success": "Paiement effectué avec succès",
+  "payment_error": "Erreur lors du paiement",
+  "total_unpaid_amount": "Montant total non payé",
+  "pay_full_amount": "Payer le montant total",
+  "amount_not_paid": "Montant à payer",
+  "confirm_payment": "Confirmer le paiement",
+  "select_payment_type": "Sélectionner le type de paiement",
+  "payment_on_delivery": "Paiement à livraison",
+  "payment_on_delivery_description": "Le paiement a été effectué lors de la livraison",
+  "other_payment": "Autre type de paiement",
+  "other_payment_description": "Sélectionner la date à laquelle le paiement a été effectué",
+  "select_payment_date": "Sélectionner la date de paiement"
 }
