@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/item_detail_chip.dart';
 
 class SupplierDetailScreen extends StatefulWidget {
   final Partner supplier;
@@ -22,12 +22,10 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
   final ItemServices itemServices = ItemServices();
   List<Items> items = [];
   bool isLoading = true;
-  late NumberFormat currencyFormat;
 
   @override
   void initState() {
     super.initState();
-    currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
     _loadSupplierItems();
   }
 
@@ -56,37 +54,16 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
     }
   }
 
-  // Méthode pour calculer le total d'un article
-  double _calculateItemTotal(Items item) {
-    return item.totalPrice ?? 0.0;
-  }
-
-  // Méthode pour construire un détail d'article
-  Widget _buildDetailItem(String label, String value) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
+  // Méthode pour formater le montant
+  String _formatAmount(double? amount) {
+    if (amount == null) return "0,00";
+    return amount
+        .toStringAsFixed(2)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match match) => '${match[1]} ',
+        )
+        .replaceAll('.', ',');
   }
 
   @override
@@ -193,20 +170,16 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
   Widget _buildItemsList() {
     return Column(
       children: items.map((item) {
-        final total = _calculateItemTotal(item);
-
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey[200]!),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -215,10 +188,23 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // En-tête avec description
+                // En-tête de l'item avec image de statut
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1E49).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.inventory_2,
+                        color: Color(0xFF1A1E49),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,112 +213,101 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
                             item.description ?? 'N/A',
                             style: const TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (item.invoiceNumber != null &&
-                              item.invoiceNumber!.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              '${AppLocalizations.of(context).translate('invoice_number')}: ${item.invoiceNumber}',
+                          const SizedBox(height: 4),
+                          RichText(
+                            text: TextSpan(
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
+                              children: [
+                                TextSpan(
+                                  text:
+                                      '${AppLocalizations.of(context).translate('invoice_number')}: ',
+                                ),
+                                TextSpan(
+                                  text: item.invoiceNumber ?? 'N/A',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ],
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    item.paid == true
+                        ? Image.asset(
+                            'assets/images/paid.png',
+                            width: 44,
+                            height: 44,
+                          )
+                        : const SizedBox.shrink(),
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Détails de l'article
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      // Ligne carton et quantité par carton
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildDetailItem(
-                              AppLocalizations.of(context).translate('carton'),
-                              '${item.carton ?? 0}'),
-                          _buildDetailItem(
-                              AppLocalizations.of(context)
-                                  .translate('quantity_per_carton'),
-                              '${item.quantityPerCarton ?? 0}'),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Ligne quantité totale et prix unitaire
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildDetailItem(
-                              AppLocalizations.of(context)
-                                  .translate('total_quantity'),
-                              '${item.quantity ?? 0}'),
-                          _buildDetailItem(
-                              AppLocalizations.of(context)
-                                  .translate('unit_price'),
-                              currencyFormat.format(item.unitPrice ?? 0.0)),
-                        ],
-                      ),
-                      if (item.salesRate != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildDetailItem(
-                                AppLocalizations.of(context)
-                                    .translate('sales_rate'),
-                                '${item.salesRate}'),
-                            const Spacer(),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      // Ligne total
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${AppLocalizations.of(context).translate('total')}:',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(total),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.blue[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                // Divider
+                Divider(color: Colors.grey[200], height: 1),
+                const SizedBox(height: 12),
+                // Détails de l'item
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ItemDetailChip(
+                      text:
+                          '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
+                      icon: Icons.inventory,
+                    ),
+                    const SizedBox(width: 16),
+                    ItemDetailChip(
+                      text:
+                          '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                      icon: Icons.format_list_numbered,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ItemDetailChip(
+                      text:
+                          '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
+                      icon: Icons.numbers,
+                    ),
+                    const SizedBox(width: 8),
+                    ItemDetailChip(
+                      text: '${_formatAmount(item.unitPrice)} ¥',
+                      icon: Icons.attach_money,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Taux d'achat et total en colonne pour une meilleure lisibilité
+                Column(
+                  children: [
+                    ItemDetailChip(
+                      text:
+                          '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
+                      icon: Icons.trending_up,
+                      fullWidth: true,
+                    ),
+                    const SizedBox(height: 8),
+                    ItemDetailChip(
+                      text:
+                          '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                      icon: Icons.calculate,
+                      fullWidth: true,
+                    ),
+                  ],
                 ),
               ],
             ),

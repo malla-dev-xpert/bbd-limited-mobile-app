@@ -116,7 +116,7 @@ class Items {
   final double? salesRate;
   final String? invoiceNumber;
   Status? status;
-
+  bool? paid;
   Items({
     this.id,
     this.description,
@@ -132,6 +132,7 @@ class Items {
     this.salesRate,
     this.invoiceNumber,
     this.status,
+    this.paid,
   });
 
   Items copyWith({
@@ -149,6 +150,7 @@ class Items {
     double? salesRate,
     String? invoiceNumber,
     Status? status,
+    bool? paid,
   }) {
     return Items(
       id: id ?? this.id,
@@ -165,6 +167,7 @@ class Items {
       salesRate: salesRate ?? this.salesRate,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
+      paid: paid ?? this.paid,
     );
   }
 
@@ -184,6 +187,7 @@ class Items {
       'salesRate': salesRate,
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
+      'paid': paid,
     };
   }
 
@@ -221,6 +225,7 @@ class Items {
           : null,
       invoiceNumber: json['invoiceNumber'] as String?,
       status: status,
+      paid: json['paid'] as bool?,
     );
   }
 }
