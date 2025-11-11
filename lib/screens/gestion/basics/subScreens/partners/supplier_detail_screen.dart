@@ -268,7 +268,11 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
                               width: 44,
                               height: 44,
                             )
-                          : const SizedBox.shrink(),
+                          : Image.asset(
+                              'assets/images/not-paid.png',
+                              width: 44,
+                              height: 44,
+                            ),
                     ],
                   ),
                   const SizedBox(height: 12),
