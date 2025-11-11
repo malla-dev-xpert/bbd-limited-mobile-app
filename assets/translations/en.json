@@ -856,6 +856,7 @@
   "total_amount_paid": "Total paid",
   "paid_by": "Paid by",
   "paid_date": "Payment date",
+  "purchase_date": "Purchase date",
   "versements": "Payments",
   "debts": "Debts",
   "no_versements_found": "No payments found.",

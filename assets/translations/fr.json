@@ -640,6 +640,7 @@
   "total_amount_paid": "Total payé",
   "paid_by": "Payé par",
   "paid_date": "Date de paiement",
+  "purchase_date": "Date d'achat",
   "versements": "Versements",
   "debts": "Dettes",
   "no_versements_found": "Aucun versement trouvé.",

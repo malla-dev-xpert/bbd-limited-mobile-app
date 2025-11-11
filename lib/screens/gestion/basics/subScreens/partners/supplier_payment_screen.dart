@@ -370,7 +370,7 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                 children: [
                                   Text(
                                     AppLocalizations.of(context)
-                                        .translate('payment_date'),
+                                        .translate('purchase_date'),
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.grey[600],
@@ -425,13 +425,6 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                 label: AppLocalizations.of(context)
                                     .translate('total_amount_paid'),
                                 value: '${_formatAmount(_alreadyPaid)} ¥',
-                              ),
-                              const SizedBox(height: 12),
-                              _buildSummaryItem(
-                                icon: Icons.account_balance_wallet_outlined,
-                                label: AppLocalizations.of(context)
-                                    .translate('total_unpaid_amount'),
-                                value: '${_formatAmount(_remainingAmount)} ¥',
                               ),
                             ],
                           ),
@@ -488,7 +481,7 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                       labelText: AppLocalizations.of(context)
                           .translate('amount_not_paid'),
                       prefixIcon:
-                          Icon(Icons.attach_money, color: Colors.grey[600]),
+                          Icon(Icons.currency_yen, color: Colors.grey[600]),
                       filled: true,
                       fillColor:
                           _payFullAmount ? Colors.grey[100] : Colors.white,

@@ -8,6 +8,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_payment_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 
 class SupplierDetailScreen extends StatefulWidget {
   final Partner supplier;
@@ -23,13 +24,16 @@ class SupplierDetailScreen extends StatefulWidget {
 
 class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
   final ItemServices itemServices = ItemServices();
+  final AuthService authService = AuthService();
   List<Items> items = [];
   bool isLoading = true;
+  bool _isCurrentUserAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _loadSupplierItems();
+    _loadCurrentUserRole();
   }
 
   Future<void> _loadSupplierItems() async {
@@ -54,6 +58,23 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
           AppLocalizations.of(context).translate('error_loading_items'),
         );
       }
+    }
+  }
+
+  Future<void> _loadCurrentUserRole() async {
+    try {
+      final user = await authService.getUserInfo();
+      if (!mounted || user == null) return;
+      final roleName = user.roleName ?? user.role?.name;
+      final isAdmin =
+          roleName != null && roleName.toLowerCase().contains('admin');
+      if (isAdmin != _isCurrentUserAdmin) {
+        setState(() {
+          _isCurrentUserAdmin = isAdmin;
+        });
+      }
+    } catch (_) {
+      // Ignorer les erreurs de récupération d'utilisateur
     }
   }
 
@@ -351,20 +372,22 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
                         icon: Icons.account_balance_wallet,
                         fullWidth: true,
                       ),
-                      const SizedBox(height: 8),
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('paid_by')}: ${item.paidByUserId ?? 'N/A'}',
-                        icon: Icons.person,
-                        fullWidth: true,
-                      ),
-                      const SizedBox(height: 8),
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('paid_date')}: ${item.paiementDate != null ? DateFormat('dd/MM/yyyy').format(item.paiementDate!) : 'N/A'}',
-                        icon: Icons.date_range,
-                        fullWidth: true,
-                      ),
+                      if (_isCurrentUserAdmin) ...[
+                        const SizedBox(height: 8),
+                        ItemDetailChip(
+                          text:
+                              '${AppLocalizations.of(context).translate('paid_by')}: ${item.paidByUserName ?? 'N/A'}',
+                          icon: Icons.person,
+                          fullWidth: true,
+                        ),
+                        const SizedBox(height: 8),
+                        ItemDetailChip(
+                          text:
+                              '${AppLocalizations.of(context).translate('paid_date')}: ${item.paiementDate != null ? DateFormat('dd/MM/yyyy').format(item.paiementDate!) : 'N/A'}',
+                          icon: Icons.date_range,
+                          fullWidth: true,
+                        ),
+                      ],
                     ],
                   ),
                 ],
