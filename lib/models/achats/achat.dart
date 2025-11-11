@@ -119,6 +119,7 @@ class Items {
   bool? paid;
   final DateTime? paiementDate;
   final int? paidByUserId;
+  final double? amountPaid;
   Items({
     this.id,
     this.description,
@@ -137,6 +138,7 @@ class Items {
     this.paid,
     this.paiementDate,
     this.paidByUserId,
+    this.amountPaid,
   });
 
   Items copyWith({
@@ -174,6 +176,7 @@ class Items {
       paid: paid ?? this.paid,
       paiementDate: paiementDate ?? this.paiementDate,
       paidByUserId: paidByUserId ?? this.paidByUserId,
+      amountPaid: amountPaid ?? this.amountPaid,
     );
   }
 
@@ -196,6 +199,7 @@ class Items {
       'paid': paid,
       'paiementDate': paiementDate,
       'paidByUserId': paidByUserId,
+      'amountPaid': amountPaid,
     };
   }
 
@@ -238,6 +242,9 @@ class Items {
           ? DateTime.parse(json['paiementDate'])
           : null,
       paidByUserId: json['paidByUserId'] as int?,
+      amountPaid: json['amountPaid'] != null
+          ? (json['amountPaid'] as num).toDouble()
+          : null,
     );
   }
 }
