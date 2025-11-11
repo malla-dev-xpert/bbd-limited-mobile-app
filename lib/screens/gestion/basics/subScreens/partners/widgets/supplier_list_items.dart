@@ -25,26 +25,33 @@ class SupplierListItem extends StatefulWidget {
 
 class _SupplierListItemState extends State<SupplierListItem> {
   final ItemServices itemServices = ItemServices();
-  double? totalAmount;
+  int? totalItems;
+  int? paidItems;
   bool isLoadingTotal = true;
 
   @override
   void initState() {
     super.initState();
-    _loadTotalAmount();
+    _loadTotalItems();
   }
 
-  Future<void> _loadTotalAmount() async {
+  Future<void> _loadTotalItems() async {
     try {
-      final items = await itemServices.findItemsBySupplier(widget.supplier.id);
-      final total = items.length.toDouble();
+      final supplierId = widget.supplier.id.toInt();
+      final items = await itemServices.findItemsBySupplier(supplierId);
+      final total = items.length;
+      final paidCount = items.where((item) => item.paid == true).length;
+      if (!mounted) return;
       setState(() {
-        totalAmount = total;
+        totalItems = total;
+        paidItems = paidCount;
         isLoadingTotal = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        totalAmount = 0.0;
+        totalItems = 0;
+        paidItems = 0;
         isLoadingTotal = false;
       });
     }
@@ -100,7 +107,7 @@ class _SupplierListItemState extends State<SupplierListItem> {
                   )
                 else
                   Text(
-                    '${(totalAmount ?? 0).toInt()} articles',
+                    '${paidItems ?? 0}/${totalItems ?? 0}',
                     style: const TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.bold,

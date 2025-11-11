@@ -48,9 +48,6 @@ class ItemServices {
 
       final response = await http.get(url);
 
-      print(response.body);
-      print(response.statusCode.toString());
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final List<dynamic> jsonBody =
             json.decode(utf8.decode(response.bodyBytes));

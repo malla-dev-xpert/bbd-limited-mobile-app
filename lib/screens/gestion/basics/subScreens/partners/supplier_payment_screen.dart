@@ -364,15 +364,19 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('total_unpaid_amount'),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.orange[900],
-                                  fontWeight: FontWeight.w600,
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)
+                                      .translate('total_unpaid_amount'),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.orange[900],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  // overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 '${_formatAmount(totalAmount)} ¥',
                                 style: TextStyle(
