@@ -201,22 +201,25 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
   Widget _buildItemsList() {
     return Column(
       children: items.map((item) {
+        final bool isPaid = item.paid == true;
         return Slidable(
           key: ValueKey('item_${item.id}'),
-          endActionPane: ActionPane(
-            motion: const DrawerMotion(),
-            extentRatio: 0.25,
-            children: [
-              if (item.paid != true)
-                SlidableAction(
-                  onPressed: (_) => _openPaymentScreen(item),
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  icon: Icons.payment,
-                  label: AppLocalizations.of(context).translate('pay'),
+          enabled: !isPaid,
+          endActionPane: isPaid
+              ? null
+              : ActionPane(
+                  motion: const DrawerMotion(),
+                  extentRatio: 0.25,
+                  children: [
+                    SlidableAction(
+                      onPressed: (_) => _openPaymentScreen(item),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      icon: Icons.payment,
+                      label: AppLocalizations.of(context).translate('pay'),
+                    ),
+                  ],
                 ),
-            ],
-          ),
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
