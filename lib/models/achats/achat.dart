@@ -117,6 +117,8 @@ class Items {
   final String? invoiceNumber;
   Status? status;
   bool? paid;
+  final DateTime? paiementDate;
+  final int? paidByUserId;
   Items({
     this.id,
     this.description,
@@ -133,6 +135,8 @@ class Items {
     this.invoiceNumber,
     this.status,
     this.paid,
+    this.paiementDate,
+    this.paidByUserId,
   });
 
   Items copyWith({
@@ -168,6 +172,8 @@ class Items {
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
       paid: paid ?? this.paid,
+      paiementDate: paiementDate ?? this.paiementDate,
+      paidByUserId: paidByUserId ?? this.paidByUserId,
     );
   }
 
@@ -188,6 +194,8 @@ class Items {
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
       'paid': paid,
+      'paiementDate': paiementDate,
+      'paidByUserId': paidByUserId,
     };
   }
 
@@ -226,6 +234,10 @@ class Items {
       invoiceNumber: json['invoiceNumber'] as String?,
       status: status,
       paid: json['paid'] as bool?,
+      paiementDate: json['paiementDate'] != null
+          ? DateTime.parse(json['paiementDate'])
+          : null,
+      paidByUserId: json['paidByUserId'] as int?,
     );
   }
 }
