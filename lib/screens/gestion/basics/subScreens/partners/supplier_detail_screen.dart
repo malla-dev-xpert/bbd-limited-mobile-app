@@ -7,6 +7,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_payment_screen.dart';
+import 'package:intl/intl.dart';
 
 class SupplierDetailScreen extends StatefulWidget {
   final Partner supplier;
@@ -66,6 +67,13 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
           (Match match) => '${match[1]} ',
         )
         .replaceAll('.', ',');
+  }
+
+  double _calculateRemainingAmount(Items item) {
+    final total = item.totalPrice ?? 0.0;
+    final paid = item.amountPaid ?? 0.0;
+    final remaining = total - paid;
+    return remaining > 0 ? remaining : 0.0;
   }
 
   @override
@@ -327,6 +335,34 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
                         text:
                             '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
                         icon: Icons.calculate,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 8),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('total_amount_paid')}: ${_formatAmount(item.amountPaid)} ¥',
+                        icon: Icons.payments,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 8),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('remaining_amount')}: ${_formatAmount(_calculateRemainingAmount(item))} ¥',
+                        icon: Icons.account_balance_wallet,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 8),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('paid_by')}: ${item.paidByUserId ?? 'N/A'}',
+                        icon: Icons.person,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 8),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('paid_date')}: ${item.paiementDate != null ? DateFormat('dd/MM/yyyy').format(item.paiementDate!) : 'N/A'}',
+                        icon: Icons.date_range,
                         fullWidth: true,
                       ),
                     ],

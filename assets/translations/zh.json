@@ -812,6 +812,8 @@
   "total": "总计：",
   "current_balance": "当前余额",
   "total_amount_paid": "总付款金额",
+  "paid_by": "付款人",
+  "paid_date": "付款日期",
   "debts": "债务",
   "no_debts_found": "未找到债务。",
   "unknown_date": "未知日期",

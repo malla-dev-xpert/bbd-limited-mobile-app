@@ -32,13 +32,23 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
   bool _payFullAmount = false;
   bool isLoading = false;
   bool isLoadingAchat = true;
-  late double totalAmount;
+  late double _totalPrice;
+  late double _alreadyPaid;
+  late double _remainingAmount;
   Achat? achat;
 
   @override
   void initState() {
     super.initState();
-    totalAmount = widget.item.totalPrice ?? 0.0;
+    _totalPrice = widget.item.totalPrice ?? 0.0;
+    _alreadyPaid = widget.item.amountPaid ?? 0.0;
+    _remainingAmount = _calculateRemainingAmount();
+
+    if (_remainingAmount > 0) {
+      _payFullAmount = true;
+      _amountController.text = _remainingAmount.toStringAsFixed(2);
+    }
+
     _loadAchat();
   }
 
@@ -91,16 +101,54 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
     setState(() {
       _payFullAmount = value;
       if (value) {
-        _amountController.text = totalAmount.toStringAsFixed(2);
+        _amountController.text = _remainingAmount.toStringAsFixed(2);
       } else {
         _amountController.clear();
       }
     });
   }
 
+  double _calculateRemainingAmount() {
+    final remaining = _totalPrice - _alreadyPaid;
+    return remaining > 0 ? remaining : 0.0;
+  }
+
+  Widget _buildSummaryItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    final Color accentColor = Colors.orange[900]!;
+
+    return Row(
+      children: [
+        Icon(icon, color: accentColor, size: 22),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              color: accentColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: accentColor,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _confirmPayment() async {
     final amountText = _amountController.text.trim();
-    if (amountText.isEmpty) {
+    if (!_payFullAmount && amountText.isEmpty) {
       showErrorTopSnackBar(
         context,
         AppLocalizations.of(context).translate('please_enter_amount'),
@@ -108,7 +156,10 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
       return;
     }
 
-    final amount = double.tryParse(amountText);
+    final parsedAmountText =
+        _payFullAmount ? _remainingAmount.toStringAsFixed(2) : amountText;
+    final sanitizedAmountText = parsedAmountText.replaceAll(',', '.');
+    final amount = double.tryParse(sanitizedAmountText);
     if (amount == null || amount <= 0) {
       showErrorTopSnackBar(
         context,
@@ -117,7 +168,7 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
       return;
     }
 
-    if (amount > totalAmount) {
+    if (amount > _remainingAmount) {
       showErrorTopSnackBar(
         context,
         AppLocalizations.of(context).translate('amount_exceeds_total'),
@@ -152,30 +203,28 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
         return;
       }
 
-      // Mettre à jour l'item avec le paiement
-      final updatedItem = widget.item.copyWith(
-        paid: amount >= totalAmount,
+      final DateTime paymentDate = (paymentResult['date'] as DateTime);
+
+      final paymentResponse = await itemServices.processSupplierPayment(
+        itemId: widget.item.id!.toInt(),
+        amount: amount,
+        paymentDate: paymentDate,
+        paidBy: user.id,
       );
 
-      // Ici, vous devrez peut-être créer un endpoint spécifique pour le paiement
-      // Pour l'instant, on utilise updateItem
-      final result = await itemServices.updateItem(
-        itemId: widget.item.id!,
-        userId: user.id,
-        clientId: 0, // Pas de clientId pour les paiements fournisseur
-        item: updatedItem,
-      );
-
-      if (result == 'SUCCESS') {
+      if (paymentResponse['success'] == true) {
         showSuccessTopSnackBar(
           context,
-          AppLocalizations.of(context).translate('payment_success'),
+          paymentResponse['message']?.toString() ??
+              AppLocalizations.of(context).translate('payment_success'),
         );
         Navigator.pop(context, true);
       } else {
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context).translate('payment_error'),
+          paymentResponse['error']?.toString() ??
+              paymentResponse['message']?.toString() ??
+              AppLocalizations.of(context).translate('payment_error'),
         );
       }
     } catch (e) {
@@ -361,29 +410,28 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.orange[200]!),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)
-                                      .translate('total_unpaid_amount'),
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.orange[900],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  // overflow: TextOverflow.ellipsis,
-                                ),
+                              _buildSummaryItem(
+                                icon: Icons.calculate_outlined,
+                                label: AppLocalizations.of(context)
+                                    .translate('total'),
+                                value: '${_formatAmount(_totalPrice)} ¥',
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${_formatAmount(totalAmount)} ¥',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange[900],
-                                ),
+                              const SizedBox(height: 12),
+                              _buildSummaryItem(
+                                icon: Icons.payments_outlined,
+                                label: AppLocalizations.of(context)
+                                    .translate('total_amount_paid'),
+                                value: '${_formatAmount(_alreadyPaid)} ¥',
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSummaryItem(
+                                icon: Icons.account_balance_wallet_outlined,
+                                label: AppLocalizations.of(context)
+                                    .translate('total_unpaid_amount'),
+                                value: '${_formatAmount(_remainingAmount)} ¥',
                               ),
                             ],
                           ),

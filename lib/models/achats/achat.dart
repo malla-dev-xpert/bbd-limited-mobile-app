@@ -120,6 +120,7 @@ class Items {
   final DateTime? paiementDate;
   final int? paidByUserId;
   final double? amountPaid;
+  final String? paidByUserName;
   Items({
     this.id,
     this.description,
@@ -139,6 +140,7 @@ class Items {
     this.paiementDate,
     this.paidByUserId,
     this.amountPaid,
+    this.paidByUserName,
   });
 
   Items copyWith({
@@ -157,6 +159,7 @@ class Items {
     String? invoiceNumber,
     Status? status,
     bool? paid,
+    String? paidByUserName,
   }) {
     return Items(
       id: id ?? this.id,
@@ -177,6 +180,7 @@ class Items {
       paiementDate: paiementDate ?? this.paiementDate,
       paidByUserId: paidByUserId ?? this.paidByUserId,
       amountPaid: amountPaid ?? this.amountPaid,
+      paidByUserName: paidByUserName ?? this.paidByUserName,
     );
   }
 
@@ -200,6 +204,7 @@ class Items {
       'paiementDate': paiementDate,
       'paidByUserId': paidByUserId,
       'amountPaid': amountPaid,
+      'paidByUserName': paidByUserName,
     };
   }
 
@@ -245,6 +250,7 @@ class Items {
       amountPaid: json['amountPaid'] != null
           ? (json['amountPaid'] as num).toDouble()
           : null,
+      paidByUserName: json['paidByUserName'] as String?,
     );
   }
 }
