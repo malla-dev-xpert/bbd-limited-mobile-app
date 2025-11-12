@@ -2,17 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class VersementListWidget extends StatelessWidget {
   final List<dynamic>? versements;
   final Future<void> Function() onRefresh;
   final Function(Versement) onVersementTap;
+  final Function(Versement)? onEditVersement;
+  final Function(Versement)? onDeleteVersement;
+  final Function(Versement)? onTransferVersement;
 
   const VersementListWidget({
     Key? key,
     required this.versements,
     required this.onRefresh,
     required this.onVersementTap,
+    this.onEditVersement,
+    this.onDeleteVersement,
+    this.onTransferVersement,
   }) : super(key: key);
 
   @override
@@ -51,54 +58,104 @@ class VersementListWidget extends StatelessWidget {
 
           return Container(
             padding: const EdgeInsets.all(0),
-            child: ListTile(
-              onTap: () => onVersementTap(versement),
-              title: Text(
-                versement.reference ?? AppLocalizations.of(context).translate('without_reference'),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Text(
-                versement.createdAt != null
-                    ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
-                    : AppLocalizations.of(context).translate('unknown_date'),
-                style: const TextStyle(fontSize: 12),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        versementCurrencyFormat.format(versement.montantVerser),
-                        style:
-                            const TextStyle(fontSize: 13, color: Colors.blue),
-                      ),
-                      Text(
-                        versementCurrencyFormat
-                            .format(versement.montantRestant),
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Icon(
-                    isNegative ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: statusColor,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
+            child: (onEditVersement != null ||
+                    onDeleteVersement != null ||
+                    onTransferVersement != null)
+                ? Slidable(
+                    endActionPane: ActionPane(
+                      motion: const DrawerMotion(),
+                      children: [
+                        if (onTransferVersement != null)
+                          SlidableAction(
+                            onPressed: (context) =>
+                                onTransferVersement!(versement),
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            icon: Icons.swap_horiz,
+                            label: AppLocalizations.of(context)
+                                .translate('transfer'),
+                          ),
+                        if (onEditVersement != null)
+                          SlidableAction(
+                            onPressed: (context) => onEditVersement!(versement),
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            icon: Icons.edit,
+                            label:
+                                AppLocalizations.of(context).translate('edit'),
+                          ),
+                        if (onDeleteVersement != null)
+                          SlidableAction(
+                            onPressed: (context) =>
+                                onDeleteVersement!(versement),
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            icon: Icons.delete,
+                            label: AppLocalizations.of(context)
+                                .translate('delete'),
+                          ),
+                      ],
+                    ),
+                    child: _buildListTile(context, versement,
+                        versementCurrencyFormat, statusColor, isNegative),
+                  )
+                : _buildListTile(context, versement, versementCurrencyFormat,
+                    statusColor, isNegative),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildListTile(
+      BuildContext context,
+      Versement versement,
+      NumberFormat versementCurrencyFormat,
+      Color? statusColor,
+      bool isNegative) {
+    return ListTile(
+      onTap: () => onVersementTap(versement),
+      title: Text(
+        versement.reference ??
+            AppLocalizations.of(context).translate('without_reference'),
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        versement.createdAt != null
+            ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
+            : AppLocalizations.of(context).translate('unknown_date'),
+        style: const TextStyle(fontSize: 16),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                versementCurrencyFormat.format(versement.montantVerser),
+                style: const TextStyle(fontSize: 16, color: Colors.blue),
+              ),
+              Text(
+                versementCurrencyFormat.format(versement.montantRestant),
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          Icon(
+            isNegative ? Icons.arrow_downward : Icons.arrow_upward,
+            color: statusColor,
+            size: 20,
+          ),
+        ],
       ),
     );
   }

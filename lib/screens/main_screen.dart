@@ -34,6 +34,15 @@ class MainScreenState extends State<MainScreen> {
 
   Future<void> _loadUserInfo() async {
     final user = await _authService.getUserInfo();
+
+    // Si l'utilisateur est null (token invalide/expiré), rediriger vers login
+    if (user == null) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+      return;
+    }
+
     setState(() {
       _user = user;
 
@@ -42,7 +51,7 @@ class MainScreenState extends State<MainScreen> {
         if (isAdmin) ManageUsersScreen(),
         const SalesHomeScreen(),
         AccountHomeScreen(),
-        ProfilePage(user: user!),
+        ProfilePage(user: user),
       ];
     });
   }

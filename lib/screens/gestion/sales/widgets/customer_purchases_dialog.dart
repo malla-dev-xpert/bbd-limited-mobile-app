@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:intl/intl.dart';
@@ -51,7 +52,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                             .toUpperCase(),
                         style: const TextStyle(
                           color: Color(0xFF1A1E49),
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -66,7 +67,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           '${customer.firstName} ${customer.lastName}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -74,7 +75,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           customer.phoneNumber,
                           style: const TextStyle(
                             color: Colors.white70,
-                            fontSize: 14,
+                            fontSize: 16,
                           ),
                         ),
                       ],
@@ -104,7 +105,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildPurchasesList(),
+                    _buildPurchasesList(context),
                   ],
                 ),
               ),
@@ -115,7 +116,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildPurchasesList() {
+  Widget _buildPurchasesList(BuildContext context) {
     final allPurchases = <Map<String, dynamic>>[];
 
     // Collecter tous les achats de tous les versements
@@ -145,16 +146,16 @@ class CustomerPurchasesDialog extends StatelessWidget {
             Text(
               'Aucun achat trouvé',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Ce client n\'a pas encore effectué d\'achats',
+              'Ce client n\'a pas encore effectué d\'${AppLocalizations.of(context).translate('purchases_count')}',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 color: Colors.grey[500],
               ),
               textAlign: TextAlign.center,
@@ -209,9 +210,9 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Réf: ${versement.reference ?? 'N/A'}',
+                            '${AppLocalizations.of(context).translate('reference_short')}: ${versement.reference ?? AppLocalizations.of(context).translate('not_available')}',
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF1A1E49),
                             ),
@@ -220,7 +221,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                             Text(
                               DateFormat('dd/MM/yyyy').format(date),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
                             ),
@@ -238,9 +239,9 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        _getStatusText(achat.status),
+                        _getStatusText(achat.status, context),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: _getStatusColor(achat.status),
                         ),
@@ -263,7 +264,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       Text(
                         item.description ?? 'Description non disponible',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF1A1E49),
                         ),
@@ -273,7 +274,8 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _buildItemDetail(
-                              'Quantité',
+                              AppLocalizations.of(context)
+                                  .translate('quantity'),
                               '${item.quantity ?? 0}',
                               Icons.shopping_cart,
                             ),
@@ -295,7 +297,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildItemDetail(
-                            'Total',
+                            AppLocalizations.of(context).translate('total'),
                             NumberFormat.currency(
                               locale: 'fr_FR',
                               symbol: 'CNY',
@@ -305,7 +307,8 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           if (item.supplierName != null) ...[
                             const SizedBox(height: 8),
                             _buildItemDetail(
-                              'Fournisseur',
+                              AppLocalizations.of(context)
+                                  .translate('supplier'),
                               item.supplierName,
                               Icons.business,
                             ),
@@ -334,7 +337,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 16,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
@@ -345,7 +348,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1E49),
           ),
@@ -369,18 +372,18 @@ class CustomerPurchasesDialog extends StatelessWidget {
     }
   }
 
-  String _getStatusText(Status? status) {
+  String _getStatusText(Status? status, BuildContext context) {
     switch (status) {
       case Status.PENDING:
         return 'En attente';
       case Status.COMPLETED:
-        return 'Terminé';
+        return AppLocalizations.of(context).translate('status_completed');
       case Status.RECEIVED:
-        return 'Reçu';
+        return AppLocalizations.of(context).translate('status_received');
       case Status.DELETE:
-        return 'Supprimé';
+        return AppLocalizations.of(context).translate('status_deleted');
       default:
-        return 'Créé';
+        return AppLocalizations.of(context).translate('status_created');
     }
   }
 }

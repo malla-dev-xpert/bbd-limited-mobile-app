@@ -8,6 +8,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/c
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -159,7 +160,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                   ? AppLocalizations.of(context)!
                       .translate('container_deleting')
                   : AppLocalizations.of(context)!.translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 16),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -251,17 +252,11 @@ class _ContainerScreen extends State<ContainerScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: TextField(
+                  child: buildTextField(
                     controller: searchController,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!
-                          .translate('container_search'),
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                    ),
+                    label: AppLocalizations.of(context)!
+                        .translate('container_search'),
+                    icon: Icons.search,
                   ),
                 ),
               ],
@@ -294,7 +289,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                   AppLocalizations.of(context)!
                       .translate('container_packages_list'),
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

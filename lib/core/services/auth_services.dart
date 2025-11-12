@@ -14,6 +14,8 @@ class AuthService {
   final storage = const FlutterSecureStorage();
   static const String _usernameKey = 'username';
   static const String _tokenKey = 'jwt';
+  static const String _tokenTimestampKey = 'token_timestamp';
+  static const int _tokenValidityHours = 24; // Token valide pendant 24h
 
   Future<bool> login(String username, String password) async {
     try {
@@ -27,8 +29,10 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final token = response.body;
+        final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
         await storage.write(key: _tokenKey, value: token);
         await storage.write(key: _usernameKey, value: username);
+        await storage.write(key: _tokenTimestampKey, value: timestamp);
         return true;
       } else if ((response.statusCode == 401 || response.statusCode == 403) &&
           response.body == "Votre compte est suspendu pour le moment.") {
@@ -53,13 +57,44 @@ class AuthService {
     }
   }
 
+  /// Vérifie si le token est expiré (plus de 24h)
+  Future<bool> isTokenExpired() async {
+    try {
+      final timestampStr = await storage.read(key: _tokenTimestampKey);
+      if (timestampStr == null) return true;
+
+      final timestamp = int.parse(timestampStr);
+      final tokenTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(tokenTime);
+
+      return difference.inHours >= _tokenValidityHours;
+    } catch (e) {
+      // En cas d'erreur de parsing, considérer le token comme expiré
+      return true;
+    }
+  }
+
+  /// Nettoie les données d'authentification expirées
+  Future<void> clearExpiredAuth() async {
+    await storage.delete(key: _tokenKey);
+    await storage.delete(key: _usernameKey);
+    await storage.delete(key: _tokenTimestampKey);
+  }
+
   Future<String?> getToken() async {
-    return await storage.read(key: "jwt");
+    // Vérifier si le token est expiré avant de le retourner
+    if (await isTokenExpired()) {
+      await clearExpiredAuth();
+      return null;
+    }
+    return await storage.read(key: _tokenKey);
   }
 
   Future<String?> logout() async {
-    await storage.delete(key: "jwt");
+    await storage.delete(key: _tokenKey);
     await storage.delete(key: _usernameKey);
+    await storage.delete(key: _tokenTimestampKey);
     return null;
   }
 

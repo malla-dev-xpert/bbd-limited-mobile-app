@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/add_items_to_package_modal.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/localization/translation_helper.dart';
+import 'package:bbd_limited/components/item_detail_chip.dart';
 
 class PackageDetailsScreen extends StatefulWidget {
   final Packages packages;
@@ -36,11 +37,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   List<Items> _items = [];
   final ItemServices _itemServices = ItemServices();
   DateTime? selectedDeliveryDate;
+  List<Items> availableItems = [];
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+    _loadAvailableItems();
   }
 
   Future<void> _loadItems() async {
@@ -63,6 +66,23 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
       if (mounted) {
         showErrorTopSnackBar(context, "Erreur lors du chargement des articles");
       }
+    }
+  }
+
+  Future<void> _loadAvailableItems() async {
+    final clientId = widget.packages.clientId;
+    if (clientId == null) return;
+
+    try {
+      final items = await _itemServices.findItemsByClient(clientId);
+      final alreadyInPackageIds = _items.map((e) => e.id!).toList();
+      setState(() {
+        availableItems = items
+            .where((item) => !alreadyInPackageIds.contains(item.id))
+            .toList();
+      });
+    } catch (e) {
+      // Gérer l'erreur silencieusement
     }
   }
 
@@ -165,14 +185,14 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('package_reference'),
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 14),
+                              TextStyle(color: Colors.grey[600], fontSize: 16),
                         ),
                         Text(
                           widget.packages.ref ??
                               AppLocalizations.of(context).translate('na'),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 18,
                           ),
                         ),
                       ],
@@ -185,7 +205,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('package_type'),
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 14),
+                              TextStyle(color: Colors.grey[600], fontSize: 16),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -241,7 +261,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('package_status'),
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 14),
+                              TextStyle(color: Colors.grey[600], fontSize: 16),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -292,13 +312,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                             AppLocalizations.of(context)
                                 .translate('package_delivered_on'),
                             style: TextStyle(
-                                color: Colors.grey[600], fontSize: 14),
+                                color: Colors.grey[600], fontSize: 16),
                           ),
                           Text(
                             DateFormat('dd/MM/yyyy')
                                 .format(widget.packages.receivedDate!),
                             style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w600),
+                                fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -413,82 +433,83 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   ),
                   if (widget.packages.status == Status.PENDING) ...[
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: TextButton.icon(
-                          onPressed: () async {
-                            final clientId = widget.packages.clientId;
-                            if (clientId == null) {
-                              showErrorTopSnackBar(
-                                  context,
-                                  AppLocalizations.of(context)
-                                      .translate('unknown_client_for_package'));
-                              return;
-                            }
-                            // Récupérer les IDs des articles déjà dans le colis
-                            final alreadyInPackageIds =
-                                _items.map((e) => e.id!).toList();
-                            final result = await showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.white,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20)),
-                              ),
-                              builder: (context) {
-                                return SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.7,
-                                  child: AddItemsToPackageModal(
-                                    clientId: clientId,
-                                    alreadyInPackageIds: alreadyInPackageIds,
-                                    onValidate: (selectedItems) async {
-                                      final user =
-                                          await AuthService().getUserInfo();
-                                      if (user == null || user.id == null) {
-                                        showErrorTopSnackBar(
-                                            context,
-                                            AppLocalizations.of(context)
-                                                .translate(
-                                                    'user_not_logged_in'));
-                                        return;
-                                      }
-                                      final result = await PackageServices()
-                                          .addItemsToPackage(
-                                        packageId: widget.packages.id!,
-                                        itemIds: selectedItems
-                                            .map((e) => e.id!)
-                                            .toList(),
-                                        userId: user.id,
-                                      );
-                                      if (result == "SUCCESS") {
-                                        await _loadItems();
-                                        Navigator.pop(context, true);
-                                        showSuccessTopSnackBar(
-                                            context,
-                                            AppLocalizations.of(context).translate(
-                                                'items_added_to_package_success'));
-                                      } else {
-                                        showErrorTopSnackBar(context, result);
-                                      }
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                            if (result == true) {
-                              showSuccessTopSnackBar(
-                                  context,
-                                  AppLocalizations.of(context).translate(
-                                      'items_added_to_package_success'));
-                            }
-                          },
-                          label: Text(
-                              AppLocalizations.of(context)
-                                  .translate('add_items'),
-                              overflow: TextOverflow.ellipsis),
-                          icon: const Icon(Icons.add)),
-                    )
+                    TextButton.icon(
+                        onPressed: () async {
+                          final clientId = widget.packages.clientId;
+                          if (clientId == null) {
+                            showErrorTopSnackBar(
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('unknown_client_for_package'));
+                            return;
+                          }
+                          // Récupérer les IDs des articles déjà dans le colis
+                          final alreadyInPackageIds =
+                              _items.map((e) => e.id!).toList();
+                          final result = await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            builder: (context) {
+                              return SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.7,
+                                child: AddItemsToPackageModal(
+                                  clientId: clientId,
+                                  alreadyInPackageIds: alreadyInPackageIds,
+                                  onValidate: (selectedItems) async {
+                                    final user =
+                                        await AuthService().getUserInfo();
+                                    if (user == null) {
+                                      showErrorTopSnackBar(
+                                          context,
+                                          AppLocalizations.of(context)
+                                              .translate('user_not_logged_in'));
+                                      return;
+                                    }
+                                    final result = await PackageServices()
+                                        .addItemsToPackage(
+                                      packageId: widget.packages.id!,
+                                      itemIds: selectedItems
+                                          .map((e) => e.id!)
+                                          .toList(),
+                                      userId: user.id,
+                                    );
+                                    if (result == "SUCCESS") {
+                                      await _loadItems();
+                                      await _loadAvailableItems();
+                                      Navigator.pop(context, true);
+                                      showSuccessTopSnackBar(
+                                          context,
+                                          AppLocalizations.of(context).translate(
+                                              'items_added_to_package_success'));
+                                    } else {
+                                      showErrorTopSnackBar(context, result);
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                          if (result == true) {
+                            showSuccessTopSnackBar(
+                                context,
+                                AppLocalizations.of(context).translate(
+                                    'items_added_to_package_success'));
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        label: Text(
+                            AppLocalizations.of(context).translate('add_items'),
+                            style: const TextStyle(fontSize: 16)),
+                        icon: const Icon(Icons.add, size: 16)),
                   ],
                 ],
               ),
@@ -513,7 +534,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         label: Text(
                           AppLocalizations.of(context).translate('delete'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -535,7 +556,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         label: Text(
                           AppLocalizations.of(context).translate('expedite'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -562,7 +583,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('arrive_at_destination'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -587,7 +608,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('confirm_delivery'),
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -613,13 +634,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            style: TextStyle(color: Colors.grey[600], fontSize: 16),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             textAlign: TextAlign.right,
           ),
         ),
@@ -645,7 +666,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
           ),
           content: Text(
             AppLocalizations.of(context).translate('confirm_delete_package'),
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 18),
           ),
           actions: [
             TextButton(
@@ -745,7 +766,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(
                     AppLocalizations.of(context)
                         .translate('confirm_start_expedition'),
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ],
               ),
@@ -851,7 +872,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(
                     AppLocalizations.of(context)
                         .translate('confirm_arrival_package'),
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ],
               ),
@@ -960,7 +981,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(
                     AppLocalizations.of(context)
                         .translate('confirm_package_delivery'),
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(height: 16),
                   TextButton.icon(
@@ -1000,7 +1021,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       child: Text(
                         AppLocalizations.of(context)
                             .translate('no_date_selected_info'),
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     ),
                 ],
@@ -1179,7 +1200,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
         child: Center(
           child: Text(
             AppLocalizations.of(context).translate('no_items_in_package'),
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.grey,
               fontStyle: FontStyle.italic,
             ),
@@ -1188,241 +1209,191 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: _items.map((item) => _buildItemRow(item)).toList(),
-      ),
+    return Column(
+      children: _items.map((item) => _buildItemRow(item)).toList(),
     );
   }
 
   Widget _buildItemRow(Items item) {
-    return Padding(
-      padding: const EdgeInsets.all(0.0),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Vérifier si c'est un écran mobile (largeur < 600px)
-            if (MediaQuery.of(context).size.width < 600) ...[
-              // Design mobile : nom de l'article en haut, quantité en dessous
-              Text(
-                item.description ??
-                    AppLocalizations.of(context).translate('no_description'),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+            // En-tête de l'item avec icône
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1E49).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.inventory_2,
+                    color: Color(0xFF1A1E49),
+                    size: 20,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.blue[700],
-                      fontSize: 12,
-                    ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(
-                        text:
-                            '${AppLocalizations.of(context).translate('item_quantity')}: ',
-                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      Text(
+                        item.description ??
+                            AppLocalizations.of(context)
+                                .translate('no_description'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      TextSpan(
-                        text: '${item.quantity ?? 0}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                      if (item.invoiceNumber != null &&
+                          item.invoiceNumber!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${AppLocalizations.of(context).translate('invoice_number')}: ${item.invoiceNumber}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
-              ),
-            ] else ...[
-              // Design tablette : nom et quantité sur la même ligne
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      item.description ??
-                          AppLocalizations.of(context)
-                              .translate('no_description'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontSize: 12,
-                        ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Divider
+            Divider(color: Colors.grey[200], height: 1),
+            const SizedBox(height: 12),
+            // Détails de l'item avec chips
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ItemDetailChip(
+                  text:
+                      '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
+                  icon: Icons.inventory,
+                ),
+                const SizedBox(width: 8),
+                ItemDetailChip(
+                  text:
+                      '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                  icon: Icons.format_list_numbered,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ItemDetailChip(
+                  text:
+                      '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
+                  icon: Icons.numbers,
+                ),
+                const SizedBox(width: 8),
+                ItemDetailChip(
+                  text: '${_formatAmount(item.unitPrice)} ¥',
+                  icon: Icons.attach_money,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Taux d'achat et total en colonne pour une meilleure lisibilité
+            Column(
+              children: [
+                ItemDetailChip(
+                  text:
+                      '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
+                  icon: Icons.trending_up,
+                  fullWidth: true,
+                ),
+                const SizedBox(height: 8),
+                ItemDetailChip(
+                  text:
+                      '${AppLocalizations.of(context).translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                  icon: Icons.calculate,
+                  fullWidth: true,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Information sur le fournisseur
+            if (item.supplierName != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.purple[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.purple[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.business, size: 16, color: Colors.purple[700]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TextSpan(
-                            text:
-                                '${AppLocalizations.of(context).translate('item_quantity')}: ',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.normal),
+                          Text(
+                            '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.purple[900],
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          TextSpan(
-                            text: '${item.quantity ?? 0}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                          if (item.supplierPhone != null &&
+                              (item.supplierPhone as String).isNotEmpty)
+                            Text(
+                              '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.purple[700],
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(height: 12),
             ],
-            if (item.supplierName != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.business,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '${item.supplierName} | ${item.supplierPhone}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (item.unitPrice != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.attach_money,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                      children: [
-                        TextSpan(
-                          text:
-                              '${AppLocalizations.of(context).translate('unit_price')}: ',
-                          style: const TextStyle(fontWeight: FontWeight.normal),
-                        ),
-                        TextSpan(
-                          text: '${item.unitPrice!.toStringAsFixed(2)} ¥',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(
-                  Icons.assignment_outlined,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                    children: [
-                      TextSpan(
-                        text:
-                            '${AppLocalizations.of(context).translate('total_price')}: ',
-                        style: const TextStyle(fontWeight: FontWeight.normal),
-                      ),
-                      TextSpan(
-                        text: '${item.totalPrice!.toStringAsFixed(2)} ¥',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(
-                  Icons.percent,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                    children: [
-                      TextSpan(
-                        text:
-                            '${AppLocalizations.of(context).translate('purchase_rate')}: ',
-                        style: const TextStyle(fontWeight: FontWeight.normal),
-                      ),
-                      TextSpan(
-                        text: '${item.salesRate} ¥',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatAmount(double? amount) {
+    if (amount == null) return "0,00";
+    return amount
+        .toStringAsFixed(2)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match match) => '${match[1]} ',
+        )
+        .replaceAll('.', ',');
   }
 }

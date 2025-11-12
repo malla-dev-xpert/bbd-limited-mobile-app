@@ -20,55 +20,62 @@ class PersonalInfoCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  localizations.translate('personal_info_title'),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3748),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      localizations.translate('personal_info_title'),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.close)),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildInfoRow(
-              icon: Icons.person_outline,
-              label: localizations.translate('last_name'),
-              value: '${user.firstName ?? ''} ${user.lastName ?? ''}',
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow(
-              icon: Icons.email_outlined,
-              label: localizations.translate('email'),
-              value: user.email ?? localizations.translate('no_data_available'),
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow(
-              icon: Icons.phone_outlined,
-              label: localizations.translate('phone'),
-              value: user.phoneNumber ??
-                  localizations.translate('no_data_available'),
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow(
-              icon: Icons.work_outline,
-              label: localizations.translate('role'),
-              value: user.role!.name ??
-                  localizations.translate('no_data_available'),
-            ),
-          ],
+                  IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.close)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildInfoRow(
+                icon: Icons.person_outline,
+                label: localizations.translate('last_name'),
+                value: '${user.firstName ?? ''} ${user.lastName ?? ''}',
+              ),
+              const SizedBox(height: 16),
+              _buildInfoRow(
+                icon: Icons.email_outlined,
+                label: localizations.translate('email'),
+                value:
+                    user.email ?? localizations.translate('no_data_available'),
+              ),
+              const SizedBox(height: 16),
+              _buildInfoRow(
+                icon: Icons.phone_outlined,
+                label: localizations.translate('phone'),
+                value: user.phoneNumber ??
+                    localizations.translate('no_data_available'),
+              ),
+              const SizedBox(height: 16),
+              _buildInfoRow(
+                icon: Icons.work_outline,
+                label: localizations.translate('role'),
+                value: user.role!.name ??
+                    localizations.translate('no_data_available'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -101,7 +108,7 @@ class PersonalInfoCard extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   color: Color(0xFF718096),
                 ),
               ),
@@ -109,7 +116,7 @@ class PersonalInfoCard extends StatelessWidget {
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF2D3748),
                 ),

@@ -176,7 +176,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
                               localizations.translate('privacy_last_updated'),
                               style: TextStyle(
                                 color: Colors.grey[600],
-                                fontSize: 12,
+                                fontSize: 16,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -223,7 +223,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
@@ -235,7 +235,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
           Text(
             content,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               height: 1.5,
             ),
           ),

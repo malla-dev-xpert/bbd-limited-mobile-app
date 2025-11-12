@@ -18,11 +18,13 @@ class PackageItemForm extends StatefulWidget {
     double salesRate,
   ) onAddItem;
   final List<Partner> suppliers;
+  final VoidCallback? onSuppliersReload;
 
   const PackageItemForm({
     Key? key,
     required this.onAddItem,
     required this.suppliers,
+    this.onSuppliersReload,
   }) : super(key: key);
 
   @override
@@ -90,14 +92,18 @@ class _PackageItemFormState extends State<PackageItemForm> {
                       builder: (context) => CreateSupplierBottomSheet(
                         onSupplierCreated: () async {
                           // Recharger la liste des fournisseurs
-                          // await _loadSupplier();
+                          if (widget.onSuppliersReload != null) {
+                            widget.onSuppliersReload!();
+                          }
                         },
                       ),
                     );
 
                     if (result == true) {
                       // Le fournisseur a été créé avec succès
-                      // await _loadSupplier();
+                      if (widget.onSuppliersReload != null) {
+                        widget.onSuppliersReload!();
+                      }
                     }
                   },
                   icon: Icon(Icons.add, color: Colors.grey[500]),

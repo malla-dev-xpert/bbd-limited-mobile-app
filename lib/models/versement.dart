@@ -24,6 +24,7 @@ class Versement {
   final String? deviseCode;
   final String? type;
   final String? note;
+  final double? tauxUtilise;
 
   Versement copyWith(
       {int? id,
@@ -44,7 +45,8 @@ class Versement {
       int? deviseId,
       String? deviseCode,
       String? type,
-      String? note}) {
+      String? note,
+      double? tauxUtilise}) {
     return Versement(
         id: id ?? this.id,
         reference: reference ?? this.reference,
@@ -65,7 +67,8 @@ class Versement {
         deviseId: deviseId ?? this.deviseId,
         deviseCode: deviseCode ?? this.deviseCode,
         type: type ?? this.type,
-        note: note ?? this.note);
+        note: note ?? this.note,
+        tauxUtilise: tauxUtilise ?? this.tauxUtilise);
   }
 
   Versement(
@@ -87,7 +90,8 @@ class Versement {
       this.deviseId,
       this.deviseCode,
       this.type,
-      this.note});
+      this.note,
+      this.tauxUtilise});
 
   Map<String, dynamic> toJson() {
     return {
@@ -110,7 +114,8 @@ class Versement {
       'deviseId': deviseId,
       'deviseCode': deviseCode,
       'type': type,
-      'note': note
+      'note': note,
+      'tauxUtilise': tauxUtilise
     };
   }
 
@@ -140,10 +145,6 @@ class Versement {
           .map((cashWithdrawal) => CashWithdrawal.fromJson(cashWithdrawal))
           .toList();
     }
-    int? parseNullableInt(dynamic value) {
-      if (value == null) return null;
-      return int.tryParse(value.toString());
-    }
 
     return Versement(
         id: json['id'] as int?,
@@ -171,6 +172,9 @@ class Versement {
         deviseId: json['deviseId'] as int?,
         deviseCode: json['deviseCode'] as String?,
         type: json['type'] as String?,
-        note: json['note'] as String?);
+        note: json['note'] as String?,
+        tauxUtilise: json['tauxUtilise'] != null
+            ? (json['tauxUtilise'] as num).toDouble()
+            : null);
   }
 }

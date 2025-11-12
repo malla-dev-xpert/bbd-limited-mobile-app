@@ -105,6 +105,8 @@ class Items {
   final int? id;
   final String? description;
   final int? quantity;
+  final int? carton; // Nouveau champ : nombre de cartons
+  final int? quantityPerCarton; // Nouveau champ : quantité par carton
   final double? unitPrice;
   final double? totalPrice;
   final int? supplierId;
@@ -114,11 +116,17 @@ class Items {
   final double? salesRate;
   final String? invoiceNumber;
   Status? status;
-
+  bool? paid;
+  final DateTime? paiementDate;
+  final int? paidByUserId;
+  final double? amountPaid;
+  final String? paidByUserName;
   Items({
     this.id,
     this.description,
     this.quantity,
+    this.carton,
+    this.quantityPerCarton,
     this.unitPrice,
     this.totalPrice,
     this.supplierId,
@@ -128,12 +136,19 @@ class Items {
     this.salesRate,
     this.invoiceNumber,
     this.status,
+    this.paid,
+    this.paiementDate,
+    this.paidByUserId,
+    this.amountPaid,
+    this.paidByUserName,
   });
 
   Items copyWith({
     int? id,
     String? description,
     int? quantity,
+    int? carton,
+    int? quantityPerCarton,
     double? unitPrice,
     double? totalPrice,
     int? supplierId,
@@ -143,11 +158,15 @@ class Items {
     double? salesRate,
     String? invoiceNumber,
     Status? status,
+    bool? paid,
+    String? paidByUserName,
   }) {
     return Items(
       id: id ?? this.id,
       description: description ?? this.description,
       quantity: quantity ?? this.quantity,
+      carton: carton ?? this.carton,
+      quantityPerCarton: quantityPerCarton ?? this.quantityPerCarton,
       unitPrice: unitPrice ?? this.unitPrice,
       totalPrice: totalPrice ?? this.totalPrice,
       supplierId: supplierId ?? this.supplierId,
@@ -157,6 +176,11 @@ class Items {
       salesRate: salesRate ?? this.salesRate,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
+      paid: paid ?? this.paid,
+      paiementDate: paiementDate ?? this.paiementDate,
+      paidByUserId: paidByUserId ?? this.paidByUserId,
+      amountPaid: amountPaid ?? this.amountPaid,
+      paidByUserName: paidByUserName ?? this.paidByUserName,
     );
   }
 
@@ -167,6 +191,8 @@ class Items {
       'totalPrice': totalPrice,
       'description': description,
       'quantity': quantity,
+      'carton': carton,
+      'quantityPerCarton': quantityPerCarton,
       'supplierId': supplierId,
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
@@ -174,6 +200,11 @@ class Items {
       'salesRate': salesRate,
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
+      'paid': paid,
+      'paiementDate': paiementDate,
+      'paidByUserId': paidByUserId,
+      'amountPaid': amountPaid,
+      'paidByUserName': paidByUserName,
     };
   }
 
@@ -194,6 +225,8 @@ class Items {
       id: json['id'] as int?,
       quantity: json['quantity'] as int?,
       description: json['description'] as String?,
+      carton: json['carton'] as int?,
+      quantityPerCarton: json['quantityPerCarton'] as int?,
       unitPrice: json['unitPrice'] != null
           ? (json['unitPrice'] as num).toDouble()
           : null,
@@ -209,6 +242,15 @@ class Items {
           : null,
       invoiceNumber: json['invoiceNumber'] as String?,
       status: status,
+      paid: json['paid'] as bool?,
+      paiementDate: json['paiementDate'] != null
+          ? DateTime.parse(json['paiementDate'])
+          : null,
+      paidByUserId: json['paidByUserId'] as int?,
+      amountPaid: json['amountPaid'] != null
+          ? (json['amountPaid'] as num).toDouble()
+          : null,
+      paidByUserName: json['paidByUserName'] as String?,
     );
   }
 }

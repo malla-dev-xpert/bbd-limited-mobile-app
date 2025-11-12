@@ -154,440 +154,460 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: widget.isPackageScreen == true
-              ? MediaQuery.of(context).size.height * 0.7
-              : MediaQuery.of(context).size.height * 0.6,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
-        padding: const EdgeInsets.all(20),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 80.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context)
-                              .translate('create_expedition_title'),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: widget.isPackageScreen == true
+                ? MediaQuery.of(context).size.height * 0.7
+                : MediaQuery.of(context).size.height * 0.6,
+          ),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 80.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)
+                                .translate('create_expedition_title'),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: Colors.grey),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  Expanded(
-                    child: IndexedStack(
-                      index: currentStep,
-                      children: [
-                        // Étape 1 : Infos de base + sélection client
-                        ListView(
-                          children: [
-                            // Type d'expédition
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey[300]!),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      AppLocalizations.of(context)
-                                          .translate('expedition_type_title'),
-                                      style: TextStyle(color: Colors.grey[600]),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    Expanded(
+                      child: IndexedStack(
+                        index: currentStep,
+                        children: [
+                          // Étape 1 : Infos de base + sélection client
+                          ListView(
+                            children: [
+                              // Type d'expédition
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        AppLocalizations.of(context)
+                                            .translate('expedition_type_title'),
+                                        style:
+                                            TextStyle(color: Colors.grey[600]),
+                                      ),
                                     ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: RadioListTile<String>(
-                                          title: Text(
-                                              AppLocalizations.of(context)
-                                                  .translate(
-                                                      'expedition_type_boat')),
-                                          value: 'Bateau',
-                                          groupValue: _expeditionType,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _expeditionType = value!;
-                                            });
-                                          },
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: RadioListTile<String>(
+                                            title: Text(AppLocalizations.of(
+                                                    context)
+                                                .translate(
+                                                    'expedition_type_boat')),
+                                            value: 'Bateau',
+                                            groupValue: _expeditionType,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _expeditionType = value!;
+                                              });
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                      Expanded(
-                                        child: RadioListTile<String>(
-                                          title: Text(
-                                              AppLocalizations.of(context)
-                                                  .translate(
-                                                      'expedition_type_plane')),
-                                          value: 'Avion',
-                                          groupValue: _expeditionType,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _expeditionType = value!;
-                                            });
-                                          },
+                                        Expanded(
+                                          child: RadioListTile<String>(
+                                            title: Text(AppLocalizations.of(
+                                                    context)
+                                                .translate(
+                                                    'expedition_type_plane')),
+                                            value: 'Avion',
+                                            groupValue: _expeditionType,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _expeditionType = value!;
+                                              });
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            buildTextField(
-                              controller: _refController,
-                              label: AppLocalizations.of(context)
-                                  .translate('expedition_reference_label'),
-                              icon: Icons.numbers,
-                              validator: (value) => value?.isEmpty ?? true
-                                  ? AppLocalizations.of(context)
-                                      .translate('field_required')
-                                  : null,
-                            ),
-                            const SizedBox(height: 20),
+                              const SizedBox(height: 20),
+                              buildTextField(
+                                controller: _refController,
+                                label: AppLocalizations.of(context)
+                                    .translate('expedition_reference_label'),
+                                icon: Icons.numbers,
+                                validator: (value) => value?.isEmpty ?? true
+                                    ? AppLocalizations.of(context)
+                                        .translate('field_required')
+                                    : null,
+                              ),
+                              const SizedBox(height: 20),
 
-                            // Champ Poids ou CBN selon le type
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: _expeditionType == 'Avion'
-                                      ? buildTextField(
-                                          controller: _weightController,
-                                          label: AppLocalizations.of(context)
-                                              .translate(
-                                                  'expedition_weight_label'),
-                                          icon: Icons.scale,
-                                          keyboardType: TextInputType.number,
-                                          validator: (value) {
-                                            if (value?.isEmpty ?? true) {
-                                              return AppLocalizations.of(
-                                                      context)
-                                                  .translate('field_required');
-                                            }
-                                            if (double.tryParse(value!) ==
-                                                null) {
-                                              return AppLocalizations.of(
-                                                      context)
-                                                  .translate(
-                                                      'please_enter_valid_number');
-                                            }
-                                            return null;
-                                          },
-                                        )
-                                      : buildTextField(
-                                          controller: _cbnController,
-                                          label: AppLocalizations.of(context)
-                                              .translate(
-                                                  'expedition_cbn_label'),
-                                          icon: Icons.monitor_weight,
-                                          keyboardType: TextInputType.number,
-                                          validator: (value) {
-                                            if (value?.isEmpty ?? true) {
-                                              return AppLocalizations.of(
-                                                      context)
-                                                  .translate('field_required');
-                                            }
-                                            if (double.tryParse(value!) ==
-                                                null) {
-                                              return AppLocalizations.of(
-                                                      context)
-                                                  .translate(
-                                                      'please_enter_valid_number');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: buildTextField(
-                                    controller: _quantityController,
-                                    label: AppLocalizations.of(context)
-                                        .translate('expedition_cartons_count'),
-                                    icon: Icons
-                                        .production_quantity_limits_outlined,
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value?.isEmpty ?? true) {
-                                        return AppLocalizations.of(context)
-                                            .translate('field_required');
-                                      }
-                                      if (double.tryParse(value!) == null) {
-                                        return AppLocalizations.of(context)
-                                            .translate(
-                                                'please_enter_valid_number');
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-
-                            if (widget.isPackageScreen)
+                              // Champ Poids ou CBN selon le type
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
-                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
-                                    flex: 3,
-                                    child: DropDownCustom<Partner>(
-                                      items: _clients,
-                                      selectedItem: _selectedClient,
-                                      onChanged: _onClientSelected,
-                                      itemToString: (client) =>
-                                          '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
+                                    child: _expeditionType == 'Avion'
+                                        ? buildTextField(
+                                            controller: _weightController,
+                                            label: AppLocalizations.of(context)
+                                                .translate(
+                                                    'expedition_weight_label'),
+                                            icon: Icons.scale,
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value?.isEmpty ?? true) {
+                                                return AppLocalizations.of(
+                                                        context)
+                                                    .translate(
+                                                        'field_required');
+                                              }
+                                              if (double.tryParse(value!) ==
+                                                  null) {
+                                                return AppLocalizations.of(
+                                                        context)
+                                                    .translate(
+                                                        'please_enter_valid_number');
+                                              }
+                                              return null;
+                                            },
+                                          )
+                                        : buildTextField(
+                                            controller: _cbnController,
+                                            label: AppLocalizations.of(context)
+                                                .translate(
+                                                    'expedition_cbn_label'),
+                                            icon: Icons.monitor_weight,
+                                            keyboardType: TextInputType.number,
+                                            validator: (value) {
+                                              if (value?.isEmpty ?? true) {
+                                                return AppLocalizations.of(
+                                                        context)
+                                                    .translate(
+                                                        'field_required');
+                                              }
+                                              if (double.tryParse(value!) ==
+                                                  null) {
+                                                return AppLocalizations.of(
+                                                        context)
+                                                    .translate(
+                                                        'please_enter_valid_number');
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: buildTextField(
+                                      controller: _quantityController,
+                                      label: AppLocalizations.of(context)
+                                          .translate(
+                                              'expedition_cartons_count'),
+                                      icon: Icons
+                                          .production_quantity_limits_outlined,
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value?.isEmpty ?? true) {
+                                          return AppLocalizations.of(context)
+                                              .translate('field_required');
+                                        }
+                                        if (double.tryParse(value!) == null) {
+                                          return AppLocalizations.of(context)
+                                              .translate(
+                                                  'please_enter_valid_number');
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+
+                              if (widget.isPackageScreen)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: DropDownCustom<Partner>(
+                                        items: _clients,
+                                        selectedItem: _selectedClient,
+                                        onChanged: _onClientSelected,
+                                        itemToString: (client) =>
+                                            '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
+                                        hintText: AppLocalizations.of(context)
+                                            .translate('choose_client'),
+                                        prefixIcon: Icons.person,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: IconButton(
+                                        onPressed: _showCreateClientBottomSheet,
+                                        icon: const Icon(Icons.add),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                          // Étape 2 : Sélection des items
+                          _buildItemSelectionStep(),
+                          // Étape 3
+                          ListView(
+                            children: [
+                              // Port de départ
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: DropDownCustom<Harbor>(
+                                      items: _harbors,
+                                      selectedItem: _selectedDepartureHarbor,
+                                      onChanged: (harbor) {
+                                        setState(() {
+                                          _selectedDepartureHarbor = harbor;
+                                        });
+                                      },
+                                      itemToString: (harbor) =>
+                                          harbor.name ?? '',
                                       hintText: AppLocalizations.of(context)
-                                          .translate('choose_client'),
-                                      prefixIcon: Icons.person,
+                                          .translate('choose_departure_port'),
+                                      prefixIcon: Icons.sailing,
                                     ),
                                   ),
                                   Expanded(
                                     flex: 1,
                                     child: IconButton(
-                                      onPressed: _showCreateClientBottomSheet,
+                                      onPressed: _showCreateHarborModal,
                                       icon: const Icon(Icons.add),
                                     ),
                                   ),
                                 ],
                               ),
-                          ],
-                        ),
-                        // Étape 2 : Sélection des items
-                        _buildItemSelectionStep(),
-                        // Étape 3
-                        ListView(
-                          children: [
-                            // Port de départ
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: DropDownCustom<Harbor>(
-                                    items: _harbors,
-                                    selectedItem: _selectedDepartureHarbor,
-                                    onChanged: (harbor) {
-                                      setState(() {
-                                        _selectedDepartureHarbor = harbor;
-                                      });
-                                    },
-                                    itemToString: (harbor) => harbor.name ?? '',
-                                    hintText: AppLocalizations.of(context)
-                                        .translate('choose_departure_port'),
-                                    prefixIcon: Icons.sailing,
+                              const SizedBox(height: 20),
+                              // Port d'arrivée
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: DropDownCustom<Harbor>(
+                                      items: _harbors,
+                                      selectedItem: _selectedArrivalHarbor,
+                                      onChanged: (harbor) {
+                                        setState(() {
+                                          _selectedArrivalHarbor = harbor;
+                                        });
+                                      },
+                                      itemToString: (harbor) =>
+                                          harbor.name ?? '',
+                                      hintText: AppLocalizations.of(context)
+                                          .translate('choose_arrival_port'),
+                                      prefixIcon: Icons.sailing,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: IconButton(
-                                    onPressed: _showCreateHarborModal,
-                                    icon: const Icon(Icons.add),
+                                  Expanded(
+                                    flex: 1,
+                                    child: IconButton(
+                                      onPressed: _showCreateHarborModal,
+                                      icon: const Icon(Icons.add),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            // Port d'arrivée
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: DropDownCustom<Harbor>(
-                                    items: _harbors,
-                                    selectedItem: _selectedArrivalHarbor,
-                                    onChanged: (harbor) {
-                                      setState(() {
-                                        _selectedArrivalHarbor = harbor;
-                                      });
-                                    },
-                                    itemToString: (harbor) => harbor.name ?? '',
-                                    hintText: AppLocalizations.of(context)
-                                        .translate('choose_arrival_port'),
-                                    prefixIcon: Icons.sailing,
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              // Date de départ
+                              DatePickerField(
+                                label: AppLocalizations.of(context)
+                                    .translate('departure_date'),
+                                selectedDate: _startDate,
+                                onDateSelected: (date) {
+                                  setState(() {
+                                    _startDate = date;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              // Date d'arrivée estimée
+                              DatePickerField(
+                                label: AppLocalizations.of(context)
+                                    .translate('estimated_arrival_date'),
+                                selectedDate: _estimatedArrivalDate,
+                                onDateSelected: (date) {
+                                  setState(() {
+                                    _estimatedArrivalDate = date;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          // Step 4 - Container and Warehouse Selection
+                          ListView(
+                            children: [
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                spacing: 10,
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: DropDownCustom<Containers>(
+                                      items: _containers,
+                                      selectedItem: _selectedContainer,
+                                      onChanged: (container) {
+                                        setState(() {
+                                          _selectedContainer = container;
+                                        });
+                                      },
+                                      itemToString: (container) =>
+                                          '${container.reference}',
+                                      hintText: AppLocalizations.of(context)
+                                          .translate('choose_container'),
+                                      prefixIcon: Icons.inventory_2,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: IconButton(
-                                    onPressed: _showCreateHarborModal,
-                                    icon: const Icon(Icons.add),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            // Date de départ
-                            DatePickerField(
-                              label: AppLocalizations.of(context)
-                                  .translate('departure_date'),
-                              selectedDate: _startDate,
-                              onDateSelected: (date) {
-                                setState(() {
-                                  _startDate = date;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            // Date d'arrivée estimée
-                            DatePickerField(
-                              label: AppLocalizations.of(context)
-                                  .translate('estimated_arrival_date'),
-                              selectedDate: _estimatedArrivalDate,
-                              onDateSelected: (date) {
-                                setState(() {
-                                  _estimatedArrivalDate = date;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        // Step 4 - Container and Warehouse Selection
-                        ListView(
-                          children: [
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              spacing: 10,
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: DropDownCustom<Containers>(
-                                    items: _containers,
-                                    selectedItem: _selectedContainer,
-                                    onChanged: (container) {
-                                      setState(() {
-                                        _selectedContainer = container;
-                                      });
-                                    },
-                                    itemToString: (container) =>
-                                        '${container.reference}',
-                                    hintText: AppLocalizations.of(context)
-                                        .translate('choose_container'),
-                                    prefixIcon: Icons.inventory_2,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: IconButton(
-                                    onPressed: _showCreateContainerBottomSheet,
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                        Colors.grey[100],
-                                      ),
-                                      fixedSize: MaterialStateProperty.all(
-                                        const Size(55, 55),
-                                      ),
-                                      padding: MaterialStateProperty.all(
-                                        EdgeInsets.zero,
-                                      ),
-                                      shape: MaterialStateProperty.all(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
+                                  Expanded(
+                                    flex: 1,
+                                    child: IconButton(
+                                      onPressed:
+                                          _showCreateContainerBottomSheet,
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                          Colors.grey[100],
+                                        ),
+                                        fixedSize: MaterialStateProperty.all(
+                                          const Size(55, 55),
+                                        ),
+                                        padding: MaterialStateProperty.all(
+                                          EdgeInsets.zero,
+                                        ),
+                                        shape: MaterialStateProperty.all(
+                                          RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                         ),
                                       ),
+                                      icon: const Icon(Icons.add),
                                     ),
-                                    icon: const Icon(Icons.add),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              spacing: 10,
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: DropDownCustom<Warehouses>(
-                                    items: _warehouses,
-                                    selectedItem: _selectedWarehouse,
-                                    onChanged: (warehouse) {
-                                      setState(() {
-                                        _selectedWarehouse = warehouse;
-                                      });
-                                    },
-                                    itemToString: (warehouse) =>
-                                        '${warehouse.name} - ${warehouse.adresse}',
-                                    hintText: AppLocalizations.of(context)
-                                        .translate('choose_warehouse'),
-                                    prefixIcon: Icons.warehouse,
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                spacing: 10,
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: DropDownCustom<Warehouses>(
+                                      items: _warehouses,
+                                      selectedItem: _selectedWarehouse,
+                                      onChanged: (warehouse) {
+                                        setState(() {
+                                          _selectedWarehouse = warehouse;
+                                        });
+                                      },
+                                      itemToString: (warehouse) =>
+                                          '${warehouse.name} - ${warehouse.adresse}',
+                                      hintText: AppLocalizations.of(context)
+                                          .translate('choose_warehouse'),
+                                      prefixIcon: Icons.warehouse,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: IconButton(
-                                    onPressed: _showCreateWarehouseBottomSheet,
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                        Colors.grey[100],
-                                      ),
-                                      fixedSize: MaterialStateProperty.all(
-                                        const Size(55, 55),
-                                      ),
-                                      padding: MaterialStateProperty.all(
-                                        EdgeInsets.zero,
-                                      ),
-                                      shape: MaterialStateProperty.all(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
+                                  Expanded(
+                                    flex: 1,
+                                    child: IconButton(
+                                      onPressed:
+                                          _showCreateWarehouseBottomSheet,
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                          Colors.grey[100],
+                                        ),
+                                        fixedSize: MaterialStateProperty.all(
+                                          const Size(55, 55),
+                                        ),
+                                        padding: MaterialStateProperty.all(
+                                          EdgeInsets.zero,
+                                        ),
+                                        shape: MaterialStateProperty.all(
+                                          RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                         ),
                                       ),
+                                      icon: const Icon(Icons.add),
                                     ),
-                                    icon: const Icon(Icons.add),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 10,
+                  ],
                 ),
-                child: _buildStepControls(),
               ),
-            ),
-          ],
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 10,
+                  ),
+                  child: _buildStepControls(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

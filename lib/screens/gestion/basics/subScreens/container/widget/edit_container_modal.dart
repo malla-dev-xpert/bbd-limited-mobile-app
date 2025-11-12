@@ -6,7 +6,8 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/c
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart'
-    show MainFeesForm, ExtraFeesForm, Partner;
+    show MainFeesForm, ExtraFeesForm;
+import 'package:bbd_limited/models/partner.dart';
 
 class EditContainerModal extends StatefulWidget {
   final Containers container;
@@ -42,6 +43,10 @@ class _EditContainerModalState extends State<EditContainerModal> {
 
   bool isLoading = false;
 
+  // Store form values
+  bool isAvailable = false;
+  Partner? selectedSupplier;
+
   final AuthService authService = AuthService();
   final ContainerServices containerService = ContainerServices();
 
@@ -67,6 +72,9 @@ class _EditContainerModalState extends State<EditContainerModal> {
         text: widget.container.otherFees?.toString() ?? '');
     marginController =
         TextEditingController(text: widget.container.margin?.toString() ?? '');
+
+    // Initialize form values
+    isAvailable = widget.container.isAvailable ?? false;
   }
 
   void _goToNextStep() {
@@ -99,8 +107,6 @@ class _EditContainerModalState extends State<EditContainerModal> {
       }
       final reference = refController.text.trim();
       final size = sizeController.text.trim();
-      final isAvailable = _containerInfoKey.currentState?.isAvailable ?? false;
-      final selectedSupplier = _containerInfoKey.currentState?.selectedSupplier;
       double parseFee(String text) {
         final value = text.trim();
         return value.isEmpty ? 0.0 : (double.tryParse(value) ?? 0.0);
@@ -169,7 +175,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
                         const Text(
                           "Modifier le conteneur",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -187,6 +193,16 @@ class _EditContainerModalState extends State<EditContainerModal> {
                       size: sizeController,
                       initialAvailability:
                           widget.container.isAvailable ?? false,
+                      onAvailabilityChanged: (value) {
+                        setState(() {
+                          isAvailable = value;
+                        });
+                      },
+                      onSupplierChanged: (value) {
+                        setState(() {
+                          selectedSupplier = value;
+                        });
+                      },
                       // initialSupplierId: widget.container.supplier_id, // à activer si ContainerInfoForm le supporte
                     ),
                     const SizedBox(height: 24),
@@ -225,7 +241,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
                         const Text(
                           "Frais principaux",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -280,7 +296,7 @@ class _EditContainerModalState extends State<EditContainerModal> {
                         const Text(
                           "Frais additionnels",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,

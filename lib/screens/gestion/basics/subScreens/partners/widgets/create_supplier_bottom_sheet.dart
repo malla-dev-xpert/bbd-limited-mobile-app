@@ -134,7 +134,7 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                           countryListTheme: const CountryListThemeData(
                             flagSize: 25,
                             backgroundColor: Colors.white,
-                            textStyle: TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 18),
                             bottomSheetHeight: 300,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),

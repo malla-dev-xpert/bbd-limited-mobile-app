@@ -175,7 +175,7 @@ class PartnerPrintService {
       children: [
         pw.Text(localizations.translate('pdf_client_information'),
             style: pw.TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColor.fromHex('#1A1E49'),
                 font: font,
@@ -220,8 +220,8 @@ class PartnerPrintService {
     return pw.Row(
       children: [
         pw.Text('$label: ',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
-        pw.Text(value ?? '-', style: const pw.TextStyle(fontSize: 12)),
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16)),
+        pw.Text(value ?? '-', style: const pw.TextStyle(fontSize: 16)),
         pw.SizedBox(width: 20),
       ],
     );
@@ -247,7 +247,7 @@ class PartnerPrintService {
       children: [
         pw.Text(localizations.translate('pdf_summary'),
             style: pw.TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColor.fromHex('#1A1E49'),
                 font: font,
@@ -325,7 +325,7 @@ class PartnerPrintService {
         pw.SizedBox(height: 20),
         pw.Text(localizations.translate('pdf_versements'),
             style: pw.TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColor.fromHex('#1A1E49'),
                 font: font,
@@ -371,7 +371,7 @@ class PartnerPrintService {
         pw.SizedBox(height: 20),
         pw.Text(localizations.translate('pdf_packages'),
             style: pw.TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColor.fromHex('#1A1E49'),
                 font: font,
@@ -620,7 +620,7 @@ class PartnerPrintService {
           pw.Text(
             'TOTAL FINAL : ${_currencyFormat.format(montantTotal)}',
             style: pw.TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
             ),

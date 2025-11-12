@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/providers/reports_provider.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -114,7 +115,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               Text(
                 'Période de rapport',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[800],
                 ),
@@ -214,7 +215,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.grey[700],
               ),
@@ -240,7 +241,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           Text(
             'Erreur lors du chargement des rapports',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.w500,
               color: Colors.grey[600],
             ),
@@ -249,7 +250,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           Text(
             error,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.grey[500],
             ),
             textAlign: TextAlign.center,
@@ -268,7 +269,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Réessayer'),
+            child: Text(AppLocalizations.of(context).translate('retry')),
           ),
         ],
       ),
@@ -296,7 +297,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           // Clients avec le plus d'achats
           _buildCollapsibleSection(
             key: 'customers',
-            title: 'Clients avec le plus d\'achats',
+            title:
+                'Clients avec le plus d\'${AppLocalizations.of(context).translate('purchases_count')}',
             icon: Icons.people,
             content: reportsState.topCustomers.isNotEmpty
                 ? _buildCustomersList(reportsState.topCustomers)
@@ -367,7 +369,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   child: Text(
                     '${index + 1}',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue[800],
                     ),
@@ -382,7 +384,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       product.description,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -393,7 +395,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         Text(
                           '${product.frequency} achats • ${product.totalQuantity.toInt()} unités • ¥${NumberFormat('#,##0.00').format(product.totalValue)}',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: Colors.grey[600],
                           ),
                         ),
@@ -450,7 +452,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   child: Text(
                     '${index + 1}',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.green[800],
                     ),
@@ -465,7 +467,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       customer.customerName,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -473,7 +475,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       '${customer.purchaseCount} achats • ¥${NumberFormat('#,##0.00').format(customer.totalSpent)}',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -528,7 +530,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   child: Text(
                     '${index + 1}',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.orange[800],
                     ),
@@ -543,7 +545,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       supplier.supplierName,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -551,7 +553,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       '${supplier.itemCount} articles • ${supplier.containerCount} conteneurs • ¥${NumberFormat('#,##0.00').format(supplier.totalValue)}',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -597,7 +599,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   child: Text(
                     '${index + 1}',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.purple[800],
                     ),
@@ -612,7 +614,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       harbor.harborName,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -620,7 +622,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     Text(
                       '${harbor.packageCount} colis • ${harbor.containerCount} conteneurs',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -649,7 +651,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             Text(
               message,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
@@ -712,7 +714,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     child: Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1E49),
                       ),
@@ -758,7 +760,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           Text(
             'Sélectionner une période',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.grey[800],
             ),
@@ -806,7 +808,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w500,
             color: Colors.grey[700],
           ),
@@ -845,7 +847,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
                         : 'Sélectionner',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: date != null ? Colors.grey[800] : Colors.grey[500],
                     ),
                   ),

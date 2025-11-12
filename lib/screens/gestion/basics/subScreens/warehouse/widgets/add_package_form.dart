@@ -5,12 +5,14 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:provider/provider.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/providers/package_provider.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/models/harbor.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class AddPackageForm extends StatefulWidget {
   final int warehouseId;
@@ -35,6 +37,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
       final provider = context.read<PackageProvider>();
       provider.loadClients();
       provider.loadContainers();
+      provider.loadHarbors();
     });
   }
 
@@ -108,102 +111,109 @@ class _AddPackageFormState extends State<AddPackageForm> {
       builder: (context, provider, child) {
         return Form(
           key: _formKey,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.95,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
             ),
-            padding: const EdgeInsets.all(20),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 80.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              "Ajouter un nouveau colis",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -1,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.95,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 80.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                "Ajouter un nouveau colis",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -1,
+                                ),
                               ),
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                      Expanded(
-                        child: IndexedStack(
-                          index: provider.currentStep,
-                          children: [
-                            _buildStep1(provider),
-                            _buildStep2(provider),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              padding: EdgeInsets.zero,
+                            ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 10),
-                    child: Row(
-                      children: [
-                        if (provider.currentStep > 0)
-                          Expanded(
-                            child: TextButton.icon(
-                              icon: const Icon(Icons.arrow_back),
-                              onPressed: () {
-                                provider.currentStep--;
-                              },
-                              label: const Text("Retour"),
-                            ),
+                        const SizedBox(height: 40),
+                        Expanded(
+                          child: IndexedStack(
+                            index: provider.currentStep,
+                            children: [
+                              _buildStep1(provider),
+                              _buildStep2(provider),
+                            ],
                           ),
-                        if (provider.currentStep == 0)
-                          Expanded(
-                            child: confirmationButton(
-                              isLoading: false,
-                              label: "Suivant",
-                              onPressed: () {
-                                if (_validateStep1()) {
-                                  provider.currentStep++;
-                                }
-                              },
-                              icon: Icons.arrow_forward_ios,
-                              subLabel: "Chargement...",
-                            ),
-                          )
-                        else
-                          Expanded(
-                            child: confirmationButton(
-                              isLoading: provider.isLoading,
-                              label: "Enregistrer",
-                              subLabel: "Enregistrement...",
-                              icon: Icons.check,
-                              onPressed: _handleSubmit,
-                            ),
-                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 10),
+                      child: Row(
+                        children: [
+                          if (provider.currentStep > 0)
+                            Expanded(
+                              child: TextButton.icon(
+                                icon: const Icon(Icons.arrow_back),
+                                onPressed: () {
+                                  provider.currentStep--;
+                                },
+                                label: const Text("Retour"),
+                              ),
+                            ),
+                          if (provider.currentStep == 0)
+                            Expanded(
+                              child: confirmationButton(
+                                isLoading: false,
+                                label: "Suivant",
+                                onPressed: () {
+                                  if (_validateStep1()) {
+                                    provider.currentStep++;
+                                  }
+                                },
+                                icon: Icons.arrow_forward_ios,
+                                subLabel: "Chargement...",
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: confirmationButton(
+                                isLoading: provider.isLoading,
+                                label: "Enregistrer",
+                                subLabel: "Enregistrement...",
+                                icon: Icons.check,
+                                onPressed: _handleSubmit,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -234,7 +244,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       controller: _weightController,
                       label: "Poids (kg)",
                       icon: Icons.scale,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true)
                           return 'Ce champ est requis';
@@ -248,7 +258,7 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       controller: _cbnController,
                       label: "CBN",
                       icon: Icons.monitor_weight,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true)
                           return 'Ce champ est requis';
@@ -288,24 +298,29 @@ class _AddPackageFormState extends State<AddPackageForm> {
   Widget _buildStep2(PackageProvider provider) {
     return ListView(
       children: [
-        _buildCountrySelector(
-          label: 'Pays de départ',
-          selectedCountry: provider.departureCountry,
-          onCountrySelected: (country) {
-            provider.departureCountry = country;
+        _buildHarborSelector(
+          label:
+              AppLocalizations.of(context).translate('choose_departure_port'),
+          selectedHarbor: provider.selectedDepartureHarbor,
+          harbors: provider.harbors,
+          onHarborSelected: (harbor) {
+            provider.selectedDepartureHarbor = harbor;
           },
+          provider: provider,
         ),
         const SizedBox(height: 20),
-        _buildCountrySelector(
-          label: 'Pays d\'arrivée',
-          selectedCountry: provider.arrivalCountry,
-          onCountrySelected: (country) {
-            provider.arrivalCountry = country;
+        _buildHarborSelector(
+          label: AppLocalizations.of(context).translate('choose_arrival_port'),
+          selectedHarbor: provider.selectedArrivalHarbor,
+          harbors: provider.harbors,
+          onHarborSelected: (harbor) {
+            provider.selectedArrivalHarbor = harbor;
           },
+          provider: provider,
         ),
         const SizedBox(height: 20),
         DatePickerField(
-          label: "Date de départ",
+          label: AppLocalizations.of(context).translate('package_start_date'),
           selectedDate: provider.startDate,
           onDateSelected: (date) {
             provider.startDate = date;
@@ -313,7 +328,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
         ),
         const SizedBox(height: 20),
         DatePickerField(
-          label: "Date d'arrivée estimée",
+          label: AppLocalizations.of(context)
+              .translate('package_estimated_arrival_date'),
           selectedDate: provider.estimatedArrivalDate,
           onDateSelected: (date) {
             provider.estimatedArrivalDate = date;
@@ -455,65 +471,39 @@ class _AddPackageFormState extends State<AddPackageForm> {
     );
   }
 
-  Widget _buildCountrySelector({
+  Widget _buildHarborSelector({
     required String label,
-    required Country? selectedCountry,
-    required Function(Country) onCountrySelected,
+    required Harbor? selectedHarbor,
+    required List<Harbor> harbors,
+    required Function(Harbor?) onHarborSelected,
+    required PackageProvider provider,
   }) {
-    return InkWell(
-      onTap: () {
-        showCountryPicker(
-          context: context,
-          showPhoneCode: true,
-          countryListTheme: CountryListThemeData(
-            flagSize: 25,
-            backgroundColor: Colors.white,
-            textStyle: const TextStyle(fontSize: 16),
-            bottomSheetHeight: 300,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          flex: 4,
+          child: DropDownCustom<Harbor>(
+            items: harbors,
+            selectedItem: selectedHarbor,
+            onChanged: onHarborSelected,
+            itemToString: (harbor) => harbor.name ?? '',
+            hintText: label,
+            prefixIcon: Icons.sailing,
           ),
-          onSelect: onCountrySelected,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                selectedCountry != null
-                    ? Row(
-                        children: [
-                          Text(
-                            selectedCountry.flagEmoji,
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(selectedCountry.name),
-                        ],
-                      )
-                    : const Text('Choisir un pays'),
-              ],
-            ),
-            const Icon(Icons.arrow_drop_down),
-          ],
+        Expanded(
+          flex: 1,
+          child: IconButton(
+            onPressed: () {
+              showAddHarborModal(context).then((_) {
+                provider.loadHarbors();
+              });
+            },
+            icon: const Icon(Icons.add),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

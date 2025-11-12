@@ -25,8 +25,13 @@ class _CreateWarehouseFormState extends State<CreateWarehouseForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -51,27 +56,24 @@ class _CreateWarehouseFormState extends State<CreateWarehouseForm> {
               controller: _nameController,
               label: "Nom de l'entrepôt",
               icon: Icons.warehouse,
-              validator:
-                  (value) =>
-                      value?.isEmpty ?? true ? 'Ce champ est requis' : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Ce champ est requis' : null,
             ),
             const SizedBox(height: 10),
             buildTextField(
               controller: _adresseController,
               label: "Adresse",
               icon: Icons.location_on,
-              validator:
-                  (value) =>
-                      value?.isEmpty ?? true ? 'Ce champ est requis' : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Ce champ est requis' : null,
             ),
             const SizedBox(height: 10),
             buildTextField(
               controller: _storageTypeController,
               label: "Type de stockage",
               icon: Icons.storage,
-              validator:
-                  (value) =>
-                      value?.isEmpty ?? true ? 'Ce champ est requis' : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Ce champ est requis' : null,
             ),
             const SizedBox(height: 20),
             confirmationButton(

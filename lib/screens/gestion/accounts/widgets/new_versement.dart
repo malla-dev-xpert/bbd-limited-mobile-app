@@ -18,12 +18,14 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/widgets/devise/devise_form.dart';
 import 'package:bbd_limited/providers/devise_provider.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 
 class NewVersementModal extends ConsumerStatefulWidget {
   final Function(DateTime)? onDateChanged;
   final bool isVersementScreen;
   final String? clientId;
   final Function()? onVersementCreated;
+  final Versement? versementToEdit; // Nouveau paramètre pour l'édition
 
   const NewVersementModal({
     super.key,
@@ -31,6 +33,7 @@ class NewVersementModal extends ConsumerStatefulWidget {
     this.isVersementScreen = false,
     this.clientId,
     this.onVersementCreated,
+    this.versementToEdit, // Nouveau paramètre optionnel
   });
 
   @override
@@ -53,6 +56,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
+  final TextEditingController tauxUtiliseController = TextEditingController();
 
   final AuthService authService = AuthService();
   final PartnerServices partnerServices = PartnerServices();
@@ -80,8 +84,33 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   @override
   void initState() {
     super.initState();
+    _initializeFormData();
     _loadClientsData();
     _loadDevisesData();
+  }
+
+  void _initializeFormData() {
+    if (widget.versementToEdit != null) {
+      // Initialiser les champs avec les données du versement à modifier
+      montantVerserController.text =
+          widget.versementToEdit!.montantVerser?.toString() ?? '';
+      commissionnaireNameController.text =
+          widget.versementToEdit!.commissionnaireName ?? '';
+      commissionnairePhoneController.text =
+          widget.versementToEdit!.commissionnairePhone ?? '';
+      noteController.text = widget.versementToEdit!.note ?? '';
+      myDate = widget.versementToEdit!.createdAt ?? DateTime.now();
+      tauxUtiliseController.text =
+          widget.versementToEdit!.tauxUtilise?.toString() ?? '';
+
+      if (widget.versementToEdit!.type != null) {
+        selectedType = VersementType.values.firstWhere(
+          (type) =>
+              type.toString().split('.').last == widget.versementToEdit!.type,
+          orElse: () => VersementType.General,
+        );
+      }
+    }
   }
 
   Future<void> _loadClientsData() async {
@@ -91,13 +120,22 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         final clientData = await partnerServices.findCustomers(page: 0);
         setState(() {
           clients = clientData;
+          // Si on est en mode édition, sélectionner le client du versement
+          if (widget.versementToEdit != null &&
+              widget.versementToEdit!.partnerId != null) {
+            selectedCLients = clientData.firstWhere(
+              (c) => c.id == widget.versementToEdit!.partnerId,
+              orElse: () => clientData.first,
+            );
+          }
           isLoading = false;
         });
       } else if (widget.clientId != null) {
         final clientData = await partnerServices.findCustomers(page: 0);
         final client = clientData.firstWhere(
           (c) => c.id.toString() == widget.clientId,
-          orElse: () => throw Exception(AppLocalizations.of(context).translate('client_not_found')),
+          orElse: () => throw Exception(
+              AppLocalizations.of(context).translate('client_not_found')),
         );
         setState(() {
           selectedCLients = client;
@@ -106,7 +144,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       }
     } catch (_) {
       setState(() => isLoading = false);
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('error_loading_data'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_loading_data'));
     }
   }
 
@@ -116,11 +155,20 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       final deviseData = await deviseServices.findAllDevises(page: 0);
       setState(() {
         devises = deviseData;
+        // Si on est en mode édition, sélectionner la devise du versement
+        if (widget.versementToEdit != null &&
+            widget.versementToEdit!.deviseCode != null) {
+          selectedDevise = deviseData.firstWhere(
+            (d) => d.code == widget.versementToEdit!.deviseCode,
+            orElse: () => deviseData.first,
+          );
+        }
         isLoading = false;
       });
     } catch (_) {
       setState(() => isLoading = false);
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('error_loading_data'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('error_loading_data'));
     }
   }
 
@@ -128,35 +176,56 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     try {
       // Validation des champs
       if (montantVerserController.text.isEmpty) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_amount'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_enter_amount'));
         return;
       }
 
       final montant = double.tryParse(montantVerserController.text) ?? 0.0;
       if (montant <= 0) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('invalid_amount'));
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('invalid_amount'));
         return;
       }
 
       if (widget.isVersementScreen && selectedCLients == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_client'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_client'));
         return;
       }
 
       if (myDate == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_date'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_select_date'));
         return;
       }
 
       if (selectedDevise == null || selectedDevise!.id == null) {
         showErrorTopSnackBar(
-            context, AppLocalizations.of(context).translate('please_select_valid_currency'));
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_valid_currency'));
+        return;
+      }
+
+      if (tauxUtiliseController.text.isEmpty) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('please_enter_rate'));
+        return;
+      }
+
+      final tauxUtilise = double.tryParse(tauxUtiliseController.text) ?? 0.0;
+      if (tauxUtilise <= 0) {
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('invalid_rate'));
         return;
       }
 
       if (selectedType == null) {
         showErrorTopSnackBar(
-            context, AppLocalizations.of(context).translate('please_select_versement_type'));
+            context,
+            AppLocalizations.of(context)
+                .translate('please_select_versement_type'));
         return;
       }
 
@@ -164,7 +233,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
       final user = await authService.getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(context, AppLocalizations.of(context).translate('user_not_connected'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         setState(() => isLoading = false);
         return;
       }
@@ -179,23 +249,50 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         "commissionnairePhone": commissionnairePhoneController.text,
         "type": selectedType.toString().split('.').last,
         "note": noteController.text,
+        "tauxUtilise": tauxUtilise,
       });
 
-      final result = await versementServices.create(
-        user.id,
-        widget.isVersementScreen
-            ? selectedCLients!.id
-            : int.parse(widget.clientId!),
-        selectedDevise!.id!,
-        versementDto,
-      );
+      bool success = false;
+      String successMessage = '';
 
-      if (result != null) {
+      if (widget.versementToEdit != null) {
+        // Mode modification
+        success = await versementServices.updatePaiement(
+          widget.versementToEdit!.id!,
+          user.id,
+          widget.isVersementScreen
+              ? selectedCLients!.id
+              : int.parse(widget.clientId!),
+          versementDto,
+        );
+        successMessage =
+            AppLocalizations.of(context).translate('versement_updated_success');
+      } else {
+        // Mode création
+        final result = await versementServices.create(
+          user.id,
+          widget.isVersementScreen
+              ? selectedCLients!.id
+              : int.parse(widget.clientId!),
+          selectedDevise!.id!,
+          versementDto,
+        );
+        success = result != null;
+        successMessage =
+            AppLocalizations.of(context).translate('new_versement_success');
+      }
+
+      if (success) {
         widget.onVersementCreated?.call();
         Navigator.pop(context, true);
-        showSuccessTopSnackBar(
+        showSuccessTopSnackBar(context, successMessage);
+      } else {
+        showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context).translate('new_versement_success'),
+          widget.versementToEdit != null
+              ? AppLocalizations.of(context).translate('versement_update_error')
+              : AppLocalizations.of(context)
+                  .translate('versement_creation_error'),
         );
       }
     } catch (e) {
@@ -205,22 +302,51 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     }
   }
 
+  void _showCreateClientBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreatePartnerBottomSheet(),
+    ).then((_) {
+      _loadClientsData(); // Recharger la liste des clients après la création
+    });
+  }
+
   bool _validateFirstStep() {
-    if (montantVerserController.text.isEmpty) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_enter_amount'));
-      return false;
-    }
     if (widget.isVersementScreen && selectedCLients == null) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_client'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_select_client'));
       return false;
     }
-    if (myDate == null) {
-      showErrorTopSnackBar(context, AppLocalizations.of(context).translate('please_select_date'));
+    if (montantVerserController.text.isEmpty) {
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('please_enter_amount'));
       return false;
     }
     if (selectedType == null) {
       showErrorTopSnackBar(
-          context, AppLocalizations.of(context).translate('please_select_versement_type'));
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_versement_type'));
+      return false;
+    }
+    if (selectedDevise == null || selectedDevise!.id == null) {
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_valid_currency'));
+      return false;
+    }
+    if (tauxUtiliseController.text.isEmpty) {
+      showErrorTopSnackBar(
+          context, AppLocalizations.of(context).translate('please_enter_rate'));
+      return false;
+    }
+    final tauxUtilise = double.tryParse(tauxUtiliseController.text) ?? 0.0;
+    if (tauxUtilise <= 0) {
+      showErrorTopSnackBar(
+          context, AppLocalizations.of(context).translate('invalid_rate'));
       return false;
     }
     return true;
@@ -250,11 +376,23 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                 children: [
                   Expanded(
                     child: Text(
-                      currentStep == 0
-                          ? AppLocalizations.of(context).translate('versement_information')
-                          : currentStep == 1
-                              ? AppLocalizations.of(context).translate('commissionnaire_information')
-                              : AppLocalizations.of(context).translate('additional_note'),
+                      widget.versementToEdit != null
+                          ? (currentStep == 0
+                              ? AppLocalizations.of(context)
+                                  .translate('edit_versement_information')
+                              : currentStep == 1
+                                  ? AppLocalizations.of(context).translate(
+                                      'edit_date_and_commissionnaire')
+                                  : AppLocalizations.of(context)
+                                      .translate('edit_additional_note'))
+                          : (currentStep == 0
+                              ? AppLocalizations.of(context)
+                                  .translate('versement_information')
+                              : currentStep == 1
+                                  ? AppLocalizations.of(context)
+                                      .translate('date_and_commissionnaire')
+                                  : AppLocalizations.of(context)
+                                      .translate('additional_note')),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -278,11 +416,45 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (widget.isVersementScreen)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: DropDownCustom<Partner>(
+                                    items: clients,
+                                    selectedItem: selectedCLients,
+                                    onChanged: (client) {
+                                      setState(() {
+                                        selectedCLients = client;
+                                      });
+                                    },
+                                    itemToString: (client) =>
+                                        '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
+                                    hintText: AppLocalizations.of(context)
+                                        .translate('choose_client'),
+                                    prefixIcon: Icons.person_3,
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: IconButton(
+                                    onPressed: _showCreateClientBottomSheet,
+                                    icon: const Icon(Icons.add),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          if (widget.isVersementScreen)
+                            const SizedBox(height: 10),
                           buildTextField(
                             controller: montantVerserController,
-                            label: AppLocalizations.of(context).translate('amount_to_pay'),
+                            label: AppLocalizations.of(context)
+                                .translate('amount_to_pay'),
                             icon: Icons.attach_money,
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           ),
                           const SizedBox(height: 10),
                           DropDownCustom<VersementType>(
@@ -295,28 +467,73 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             },
                             itemToString: (type) =>
                                 type.toString().split('.').last,
-                            hintText: AppLocalizations.of(context).translate('choose_versement_type'),
+                            hintText: AppLocalizations.of(context)
+                                .translate('choose_versement_type'),
                             prefixIcon: Icons.category,
                           ),
                           const SizedBox(height: 10),
-                          if (widget.isVersementScreen)
-                            DropDownCustom<Partner>(
-                              items: clients,
-                              selectedItem: selectedCLients,
-                              onChanged: (client) {
-                                setState(() {
-                                  selectedCLients = client;
-                                });
-                              },
-                              itemToString: (client) =>
-                                  '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''}  ${client.phoneNumber}',
-                              hintText: AppLocalizations.of(context).translate('choose_client'),
-                              prefixIcon: Icons.person_3,
-                            ),
-                          if (widget.isVersementScreen)
-                            const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropDownCustom<Devise>(
+                                  items: devises,
+                                  selectedItem: selectedDevise,
+                                  onChanged: (currency) {
+                                    setState(() {
+                                      selectedDevise = currency;
+                                      // Pré-remplir le taux avec le taux de la devise sélectionnée
+                                      if (currency?.rate != null) {
+                                        tauxUtiliseController.text =
+                                            currency!.rate.toString();
+                                      } else {
+                                        tauxUtiliseController.clear();
+                                      }
+                                    });
+                                  },
+                                  itemToString: (currency) => currency.code,
+                                  hintText: AppLocalizations.of(context)
+                                      .translate('choose_currency'),
+                                  prefixIcon: Icons.currency_exchange,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              IconButton(
+                                onPressed: _showAddDeviseDialog,
+                                icon: const Icon(Icons.add),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          buildTextField(
+                            controller: tauxUtiliseController,
+                            label: AppLocalizations.of(context)
+                                .translate('exchange_rate'),
+                            icon: Icons.trending_up,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          buildTextField(
+                            controller: commissionnaireNameController,
+                            label: AppLocalizations.of(context)
+                                .translate('commissionnaire_full_name'),
+                            icon: Icons.person,
+                          ),
+                          const SizedBox(height: 10),
+                          buildTextField(
+                            controller: commissionnairePhoneController,
+                            label: AppLocalizations.of(context)
+                                .translate('commissionnaire_phone'),
+                            icon: Icons.phone,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 10),
                           DatePickerField(
-                            label: AppLocalizations.of(context).translate('payment_date'),
+                            label: AppLocalizations.of(context)
+                                .translate('payment_date'),
                             selectedDate: myDate,
                             onDateSelected: (date) {
                               setState(() {
@@ -329,51 +546,11 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          buildTextField(
-                            controller: commissionnaireNameController,
-                            label: AppLocalizations.of(context).translate('commissionnaire_full_name'),
-                            icon: Icons.person,
-                          ),
-                          const SizedBox(height: 10),
-                          buildTextField(
-                            controller: commissionnairePhoneController,
-                            label: AppLocalizations.of(context).translate('commissionnaire_phone'),
-                            icon: Icons.phone,
-                            keyboardType: TextInputType.phone,
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropDownCustom<Devise>(
-                                  items: devises,
-                                  selectedItem: selectedDevise,
-                                  onChanged: (currency) {
-                                    setState(() {
-                                      selectedDevise = currency;
-                                    });
-                                  },
-                                  itemToString: (currency) => currency.code,
-                                  hintText: AppLocalizations.of(context).translate('choose_currency'),
-                                  prefixIcon: Icons.currency_exchange,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              IconButton(
-                                onPressed: _showAddDeviseDialog,
-                                icon: const Icon(Icons.add),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
                           TextFormField(
                             controller: noteController,
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context).translate('note_optional'),
+                              labelText: AppLocalizations.of(context)
+                                  .translate('note_optional'),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -402,15 +579,19 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             currentStep--;
                           });
                         },
-                        label: Text(AppLocalizations.of(context).translate('back')),
+                        label: Text(
+                            AppLocalizations.of(context).translate('back')),
                         icon: const Icon(Icons.arrow_back),
                       ),
                     if (currentStep > 0) const SizedBox(width: 10),
                     Expanded(
                       child: confirmationButton(
                         isLoading: isLoading,
-                        label: currentStep == 2 ? AppLocalizations.of(context).translate('save') : AppLocalizations.of(context).translate('next'),
-                        subLabel: AppLocalizations.of(context).translate('saving'),
+                        label: currentStep == 2
+                            ? AppLocalizations.of(context).translate('save')
+                            : AppLocalizations.of(context).translate('next'),
+                        subLabel:
+                            AppLocalizations.of(context).translate('saving'),
                         icon: currentStep == 2
                             ? Icons.check
                             : Icons.arrow_forward,
@@ -443,6 +624,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     _nameController.dispose();
     _codeController.dispose();
     _rateController.dispose();
+    tauxUtiliseController.dispose();
     noteController.dispose();
     super.dispose();
   }
@@ -476,7 +658,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                       children: [
                         Expanded(
                           child: Text(
-                            AppLocalizations.of(context).translate('add_new_currency'),
+                            AppLocalizations.of(context)
+                                .translate('add_new_currency'),
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -502,7 +685,9 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                           final user = await authService.getUserInfo();
                           if (user == null) {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('invalid_user_session'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('invalid_user_session'));
                             return;
                           }
 
@@ -519,31 +704,48 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
 
                           if (result == "SUCCESS") {
                             Navigator.pop(context);
+                            // Recharger la liste des devises pour l'afficher dans le dropdown
+                            await _loadDevisesData();
                             showSuccessTopSnackBar(
-                                context, AppLocalizations.of(context).translate('currency_created_success'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('currency_created_success'));
                           } else if (result == "NAME_EXIST") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('currency_name_exists'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('currency_name_exists'));
                           } else if (result == "CODE_EXIST") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('currency_code_exists'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('currency_code_exists'));
                           } else if (result == "RATE_NOT_FOUND") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('conversion_rate_not_found'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('conversion_rate_not_found'));
                           } else if (result == "RATE_SERVICE_ERROR") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('rate_service_error'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('rate_service_error'));
                           } else if (result == "CONNECTION_ERROR") {
                             showErrorTopSnackBar(
-                                context, AppLocalizations.of(context).translate('connection_error'));
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('connection_error'));
                           } else {
                             // Affiche le message d'erreur tel quel s'il provient du backend
                             showErrorTopSnackBar(
-                                context, result ?? AppLocalizations.of(context).translate('unknown_error'));
+                                context,
+                                result ??
+                                    AppLocalizations.of(context)
+                                        .translate('unknown_error'));
                           }
                         } catch (e) {
-                          showErrorTopSnackBar(
-                              context, '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
+                          showErrorTopSnackBar(context,
+                              '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
                         } finally {
                           setState(() => _isLoading = false);
                         }

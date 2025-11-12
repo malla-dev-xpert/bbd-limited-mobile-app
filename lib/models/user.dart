@@ -8,6 +8,7 @@ class User {
   final String? roleName;
   final Role? role; // 👈 Ajouté ici
   final String? password; // 👈 Ajouté pour la création d'utilisateur
+  final String? branchName; // 👈 Ajouté pour la branche/pays
 
   User({
     required this.id,
@@ -19,6 +20,7 @@ class User {
     this.roleName,
     this.role,
     this.password, // 👈 Ajouté ici
+    this.branchName, // 👈 Ajouté pour la branche/pays
   });
 
   User copyWith({
@@ -31,6 +33,7 @@ class User {
     String? roleName,
     Role? role,
     String? password, // 👈 Ajouté ici
+    String? branchName, // 👈 Ajouté pour la branche/pays
   }) {
     return User(
       id: id ?? this.id,
@@ -42,6 +45,8 @@ class User {
       roleName: roleName ?? this.roleName,
       role: role ?? this.role,
       password: password ?? this.password, // 👈 Ajouté ici
+      branchName:
+          branchName ?? this.branchName, // 👈 Ajouté pour la branche/pays
     );
   }
 
@@ -56,6 +61,8 @@ class User {
       roleName: json['roleName'] as String?,
       role: json['role'] != null ? Role.fromJson(json['role']) : null,
       password: json['password'] as String?, // 👈 Ajouté ici
+      branchName:
+          json['branchName'] as String?, // 👈 Ajouté pour la branche/pays
     );
   }
 
@@ -69,6 +76,7 @@ class User {
       'phoneNumber': phoneNumber,
       'roleName': roleName,
       'role': role?.toJson(),
+      'branchCode': branchName, // Le backend attend branchCode, pas branchName
     };
 
     // Ajouter le mot de passe seulement s'il est fourni (pour la création)

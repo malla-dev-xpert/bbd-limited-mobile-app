@@ -22,6 +22,10 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
   final _mainFeesFormKey = GlobalKey<FormState>();
   final _extraFeesFormKey = GlobalKey<ExtraFeesFormState>();
 
+  // Store form values
+  bool isAvailable = false;
+  Partner? selectedSupplier;
+
   final TextEditingController refController = TextEditingController();
   final TextEditingController sizeController = TextEditingController();
 
@@ -42,18 +46,14 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
 
   void _goToNextStep() {
     if (currentStep == 0) {
-      print('[DEBUG] Avant validation étape 1');
       final valid = _formKey.currentState?.validate() ?? false;
-      print('[DEBUG] Validation étape 1: $valid');
       if (valid) {
-        print('[DEBUG] Passage à l\'étape 2');
         setState(() => currentStep = 1);
       } else {
         print('[DEBUG] Échec validation étape 1');
       }
     } else if (currentStep == 1) {
       final valid = _mainFeesFormKey.currentState?.validate() ?? false;
-      print('[DEBUG] Validation étape 2: $valid');
       if (valid) {
         setState(() => currentStep = 2);
       }
@@ -77,8 +77,6 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       }
       final reference = refController.text.trim();
       final size = sizeController.text.trim();
-      final isAvailable = _containerInfoKey.currentState?.isAvailable ?? false;
-      final selectedSupplier = _containerInfoKey.currentState?.selectedSupplier;
       // Conversion des champs de frais en double
       double parseFee(String text) {
         final value = text.trim();
@@ -138,7 +136,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           AppLocalizations.of(context)!
                               .translate('container_create'),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -155,6 +153,16 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                       refController: refController,
                       size: sizeController,
                       initialAvailability: false,
+                      onAvailabilityChanged: (value) {
+                        setState(() {
+                          isAvailable = value;
+                        });
+                      },
+                      onSupplierChanged: (value) {
+                        setState(() {
+                          selectedSupplier = value;
+                        });
+                      },
                     ),
                     const SizedBox(height: 24),
                     Align(
@@ -194,7 +202,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           AppLocalizations.of(context)!
                               .translate('container_form_location_fee'),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -251,7 +259,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                           AppLocalizations.of(context)!
                               .translate('container_form_other_fees'),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           iconSize: 24,
@@ -547,7 +555,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             ),
             Text(
               "${totalFees.toStringAsFixed(2)}",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
           ],
         ),

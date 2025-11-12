@@ -11,6 +11,8 @@ class ContainerInfoForm extends StatefulWidget {
   final TextEditingController size;
   final bool initialAvailability;
   final Partner? selectedSupplier;
+  final Function(bool)? onAvailabilityChanged;
+  final Function(Partner?)? onSupplierChanged;
 
   const ContainerInfoForm({
     Key? key,
@@ -18,6 +20,8 @@ class ContainerInfoForm extends StatefulWidget {
     required this.size,
     this.initialAvailability = false,
     this.selectedSupplier,
+    this.onAvailabilityChanged,
+    this.onSupplierChanged,
   }) : super(key: key);
 
   @override
@@ -98,7 +102,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey[800],
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -141,7 +145,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   child: Text(
                       AppLocalizations.of(context)!
                           .translate('container_form_size'),
-                      style: const TextStyle(fontSize: 16)),
+                      style: const TextStyle(fontSize: 18)),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -171,6 +175,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                     setState(() {
                       selectedSupplier = s;
                     });
+                    widget.onSupplierChanged?.call(s);
                   },
                   itemToString: (client) =>
                       '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
@@ -202,7 +207,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   child: Text(
                       AppLocalizations.of(context)!
                           .translate('container_form_availability'),
-                      style: const TextStyle(fontSize: 16)),
+                      style: const TextStyle(fontSize: 18)),
                 ),
                 Switch(
                   value: _isAvailable,
@@ -212,6 +217,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   inactiveTrackColor: Colors.grey[200],
                   onChanged: (value) {
                     setState(() => _isAvailable = value);
+                    widget.onAvailabilityChanged?.call(value);
                   },
                 ),
               ],

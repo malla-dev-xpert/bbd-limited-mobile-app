@@ -105,9 +105,10 @@ class PartnerServices {
         return "PARTNER_NOT_FOUND";
       } else if (response.statusCode == 409 &&
           response.body ==
-              "Impossible de supprimer, des colis existent pour ce partenaire.") {
-        return "PACKAGE_FOUND";
+              "Impossible de supprimer, des données existent pour ce partenaire.") {
+        return "CANT_DELETED";
       }
+      return null;
     } catch (e) {
       throw Exception("partner_delete_error");
     }
@@ -128,6 +129,51 @@ class PartnerServices {
     } else {
       print('Erreur: ${response.statusCode}, ${response.body}');
       throw Exception('partner_update_error');
+    }
+  }
+
+  Future<Partner?> mergePartners(
+      int mainPartnerId, int duplicatePartnerId, int userId) async {
+    try {
+      final response = await http.put(
+        Uri.parse(
+            '$baseUrl/partners/merge?mainPartnerId=$mainPartnerId&duplicatePartnerId=$duplicatePartnerId&userId=$userId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        try {
+          final Map<String, dynamic> jsonBody = json.decode(
+            utf8.decode(response.bodyBytes),
+          );
+          return Partner.fromJson(jsonBody);
+        } catch (jsonError) {
+          // Si la fusion a réussi mais qu'il y a un problème de parsing JSON,
+          // on retourne null au lieu de lancer une erreur réseau
+          return null;
+        }
+      } else if (response.statusCode == 400) {
+        throw Exception('SAME_PARTNER_ERROR');
+      } else if (response.statusCode == 404) {
+        throw Exception('PARTNER_NOT_FOUND');
+      } else {
+        throw Exception('MERGE_ERROR');
+      }
+    } catch (e) {
+      if (e.toString().contains('SAME_PARTNER_ERROR') ||
+          e.toString().contains('PARTNER_NOT_FOUND') ||
+          e.toString().contains('MERGE_ERROR')) {
+        rethrow;
+      }
+      // Seulement lancer une erreur réseau pour les vraies erreurs de connexion
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('TimeoutException') ||
+          e.toString().contains('HandshakeException')) {
+        throw Exception('network_error');
+      }
+      // Pour les autres erreurs, on considère que la fusion a peut-être réussi
+      print('Unexpected error during merge: $e');
+      return null;
     }
   }
 }

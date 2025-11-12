@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/widgets/rounded_button.dart';
 
 class AddItemsToPackageModal extends StatefulWidget {
   final int clientId;
@@ -24,7 +25,6 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
   List<Items> _items = [];
   Set<int> _selectedItemIds = {};
   bool _isLoading = false;
-  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -44,18 +44,9 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      showErrorTopSnackBar(
-          context, "Erreur lors du chargement des articles reçus");
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('add_items_loading_error'));
     }
-  }
-
-  void _handleValidate() {
-    setState(() => _isSubmitting = true);
-    final selectedItems =
-        _items.where((item) => _selectedItemIds.contains(item.id)).toList();
-    widget.onValidate(selectedItems);
-    setState(() => _isSubmitting = false);
-    Navigator.pop(context);
   }
 
   @override
@@ -73,9 +64,11 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Articles reçus",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('add_items_modal_title'),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -87,8 +80,9 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _items.isEmpty
-                    ? const Center(
-                        child: Text("Aucun article reçu disponible."))
+                    ? Center(
+                        child: Text(AppLocalizations.of(context)
+                            .translate('add_items_no_items_available')))
                     : Expanded(
                         child: ListView(
                           shrinkWrap: true,
@@ -104,30 +98,51 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
                                   }
                                 });
                               },
-                              title:
-                                  Text(item.description ?? "Sans description"),
-                              subtitle: Text("Quantité: " +
+                              title: Text(item.description ??
+                                  AppLocalizations.of(context)
+                                      .translate('add_items_no_description')),
+                              subtitle: Text(AppLocalizations.of(context)
+                                      .translate('add_items_quantity_label') +
+                                  ": " +
                                   (item.quantity?.toString() ?? "-")),
                             );
                           }).toList(),
                         ),
                       ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 200,
-                child: confirmationButton(
-                  isLoading: _isSubmitting,
-                  onPressed: (_selectedItemIds.isEmpty || _isSubmitting)
-                      ? () {}
-                      : _handleValidate,
-                  label: "Ajouter au colis",
-                  subLabel: "Ajout...",
-                  icon: Icons.add,
-                ),
+            if (_items.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        AppLocalizations.of(context).translate('cancel'),
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: RoundedButton(
+                      text: AppLocalizations.of(context)
+                          .translate('add_selected_items'),
+                      onPressed: _selectedItemIds.isEmpty
+                          ? () {}
+                          : () {
+                              final selectedItems = _items
+                                  .where((item) =>
+                                      _selectedItemIds.contains(item.id))
+                                  .toList();
+                              widget.onValidate(selectedItems);
+                              Navigator.pop(context);
+                            },
+                      loading: false,
+                    ),
+                  ),
+                ],
               ),
-            ),
+            ],
           ],
         ),
       ),

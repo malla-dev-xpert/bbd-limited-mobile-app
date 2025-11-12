@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'historique_achats_screen.dart';
 import 'widgets/customers_with_purchases_bottom_sheet.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'widgets/purchase_wizard_dialog.dart';
+import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:intl/intl.dart';
 import 'reports_screen.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class SalesHomeScreen extends StatefulWidget {
   const SalesHomeScreen({super.key});
@@ -61,9 +62,9 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
-          'Gestion des achats',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context).translate('sales_management_title'),
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -98,24 +99,34 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            _buildStatItem(
-                              context,
-                              'Achats du mois',
-                              isLoading ? '...' : achatsDuMoisCount.toString(),
-                              Icons.calendar_month,
-                              Colors.white,
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('sales_monthly_purchases'),
+                                isLoading
+                                    ? '...'
+                                    : achatsDuMoisCount.toString(),
+                                Icons.calendar_month,
+                                Colors.white,
+                              ),
                             ),
-                            _buildStatItem(
-                              context,
-                              'Chiffre d\'affaires',
-                              isLoading
-                                  ? '...'
-                                  : NumberFormat.currency(
-                                          locale: 'fr_FR', symbol: '¥')
-                                      .format(chiffreAffaires),
-                              Icons.currency_yen,
-                              Colors.white,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                AppLocalizations.of(context)
+                                    .translate('sales_revenue'),
+                                isLoading
+                                    ? '...'
+                                    : NumberFormat.currency(
+                                            locale: 'fr_FR', symbol: '¥')
+                                        .format(chiffreAffaires),
+                                Icons.currency_yen,
+                                Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -126,12 +137,13 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                 const SizedBox(height: 32),
 
                 // Section des actions rapides
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Actions rapides',
-                      style: TextStyle(
+                      AppLocalizations.of(context)
+                          .translate('sales_quick_actions'),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -150,19 +162,20 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                   children: [
                     _buildActionCard(
                       context,
-                      'Nouveau achat',
+                      AppLocalizations.of(context)
+                          .translate('sales_new_purchase'),
                       Icons.add_shopping_cart,
                       () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const PurchaseWizardDialog(),
+                        Navigator.pushNamed(
+                          context,
+                          Routes.purchase,
                         );
                       },
                       Colors.blue,
                     ),
                     _buildActionCard(
                       context,
-                      'Historique',
+                      AppLocalizations.of(context).translate('sales_history'),
                       Icons.history,
                       () => Navigator.push(
                         context,
@@ -174,14 +187,14 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                     ),
                     _buildActionCard(
                       context,
-                      'Clients',
+                      AppLocalizations.of(context).translate('sales_customers'),
                       Icons.people,
                       () => _showCustomersWithPurchases(context),
                       Colors.green,
                     ),
                     _buildActionCard(
                       context,
-                      'Rapports',
+                      AppLocalizations.of(context).translate('sales_reports'),
                       Icons.bar_chart,
                       () => Navigator.push(
                         context,
@@ -226,19 +239,26 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
         Text(
           title,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             color: color.withOpacity(0.9),
             fontWeight: FontWeight.w500,
+            letterSpacing: 0.3,
           ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
             color: color,
           ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -278,6 +298,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
@@ -292,14 +313,18 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: color.withOpacity(0.8),
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: color.withOpacity(0.8),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -319,10 +344,7 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
         maxChildSize: 0.95,
         builder: (context, scrollController) =>
             CustomersWithPurchasesBottomSheet(
-          onCustomerSelected: (Partner customer) {
-            print(
-                'Client sélectionné: [200m${customer.firstName} ${customer.lastName}[0m');
-          },
+          onCustomerSelected: (Partner customer) {},
         ),
       ),
     );

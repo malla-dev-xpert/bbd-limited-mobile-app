@@ -20,7 +20,7 @@ class RoundedButton extends StatelessWidget {
         backgroundColor: const Color(0xFF7F78AF),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(8),
         ),
         elevation: 4,
         minimumSize: const Size.fromHeight(48),
@@ -29,7 +29,7 @@ class RoundedButton extends StatelessWidget {
           ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
           : Text(
               text,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
     );
   }

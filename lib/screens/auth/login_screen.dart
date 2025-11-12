@@ -92,7 +92,7 @@ class _LoginViewState extends State<_LoginView> {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0.5,
                           ),
@@ -144,9 +144,9 @@ class _LoginViewState extends State<_LoginView> {
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(32)),
+                                  borderRadius: BorderRadius.circular(8)),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(8),
                                 borderSide:
                                     BorderSide(color: Colors.grey.shade300),
                               ),
@@ -211,7 +211,7 @@ class _LoginViewState extends State<_LoginView> {
                                                 .contains('désactivé')
                                             ? Colors.orange[700]
                                             : Colors.red[700],
-                                        fontSize: 12,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -243,7 +243,7 @@ class _LoginViewState extends State<_LoginView> {
                             style: TextStyle(
                                 color: Colors.grey,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12),
+                                fontSize: 16),
                           ),
                         ],
                       ),

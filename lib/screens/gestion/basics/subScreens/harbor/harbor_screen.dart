@@ -2,11 +2,14 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/detail_harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter/material.dart';
 
 class HarborScreen extends StatefulWidget {
@@ -17,6 +20,7 @@ class HarborScreen extends StatefulWidget {
 class _HarborScreen extends State<HarborScreen> {
   final TextEditingController searchController = TextEditingController();
   final HarborServices _harborServices = HarborServices();
+  final AuthService _authService = AuthService();
 
   List<Harbor> _allHarbor = [];
   List<Harbor> _filteredHarbor = [];
@@ -121,9 +125,29 @@ class _HarborScreen extends State<HarborScreen> {
 
     if (confirmed == true) {
       try {
-        // await _harborServices.delete(harbor.id!);
-        showSuccessTopSnackBar(context, "Port supprimé avec succès");
-        await fetchHarbor(reset: true);
+        // Récupérer l'ID de l'utilisateur connecté
+        final user = await _authService.getUserInfo();
+        if (user == null) {
+          showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+          return;
+        }
+
+        final result = await _harborServices.delete(harbor.id, user.id);
+
+        switch (result) {
+          case "SUCCESS":
+            showSuccessTopSnackBar(
+                context, "Le port a été supprimé avec succès !");
+            await fetchHarbor(reset: true);
+            break;
+          case "CANT_DELETED":
+            showErrorTopSnackBar(context,
+                "Impossible de supprimer, des conteneurs existent dans ce port.");
+            break;
+          default:
+            showErrorTopSnackBar(
+                context, "Erreur lors de la suppression du port");
+        }
       } catch (e) {
         showErrorTopSnackBar(context, "Erreur lors de la suppression du port");
         log("Erreur de suppression du port : $e");
@@ -183,37 +207,12 @@ class _HarborScreen extends State<HarborScreen> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextField(
-                onChanged: searchHarbor,
+                  color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              child: buildTextField(
                 controller: searchController,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  labelText: 'Rechercher un port...',
-                  hintText: 'Entrez le nom du port',
-                  prefixIcon:
-                      const Icon(Icons.search, color: Color(0xFF1A1E49)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(32),
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
-                      width: 2,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                ),
+                label: 'Rechercher un port...',
+                icon: Icons.search,
+                onChanged: searchHarbor,
               ),
             ),
             const SizedBox(height: 16),
@@ -259,146 +258,155 @@ class _HarborScreen extends State<HarborScreen> {
                                         ),
                                       ],
                                     ),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => HarborDetailPage(
-                                                harbor: port,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                width: 80,
-                                                height: 80,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  image: const DecorationImage(
-                                                    image: AssetImage(
-                                                        "assets/images/ports.jpg"),
-                                                    fit: BoxFit.cover,
-                                                  ),
+                                    child: Slidable(
+                                      key: Key(port.id.toString()),
+                                      endActionPane: ActionPane(
+                                        motion: const ScrollMotion(),
+                                        children: [
+                                          SlidableAction(
+                                            onPressed: (_) =>
+                                                _openAddHarborModal(
+                                                    harbor: port),
+                                            backgroundColor: Colors.blue,
+                                            foregroundColor: Colors.white,
+                                            icon: Icons.edit,
+                                            label: 'Modifier',
+                                          ),
+                                          SlidableAction(
+                                            onPressed: (_) =>
+                                                _deleteHarbor(port),
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                            icon: Icons.delete,
+                                            label: 'Supprimer',
+                                            borderRadius:
+                                                const BorderRadius.horizontal(
+                                                    right: Radius.circular(12)),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    HarborDetailPage(
+                                                  harbor: port,
                                                 ),
-                                                child: Container(
+                                              ),
+                                            );
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 80,
+                                                  height: 80,
                                                   decoration: BoxDecoration(
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             8),
-                                                    color: Colors.black
-                                                        .withOpacity(0.4),
+                                                    image:
+                                                        const DecorationImage(
+                                                      image: AssetImage(
+                                                          "assets/images/ports.jpg"),
+                                                      fit: BoxFit.cover,
+                                                    ),
                                                   ),
-                                                  child: const Icon(
-                                                    Icons.local_shipping,
-                                                    size: 30,
-                                                    color: Colors.white,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8),
+                                                      color: Colors.black
+                                                          .withOpacity(0.4),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.local_shipping,
+                                                      size: 30,
+                                                      color: Colors.white,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      port.name!,
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 16,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(
-                                                          Icons.location_on,
-                                                          size: 14,
-                                                          color: Colors.grey,
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        port.name!,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 18,
                                                         ),
-                                                        const SizedBox(
-                                                            width: 4),
-                                                        Expanded(
-                                                          child: Text(
-                                                            port.location ??
-                                                                'Non spécifiée',
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons.location_on,
+                                                            size: 14,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Expanded(
+                                                            child: Text(
+                                                              port.location ??
+                                                                  'Non spécifiée',
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 16,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                              maxLines: 1,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .inventory_2_outlined,
+                                                            size: 14,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                          Text(
+                                                            "${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length} conteneurs",
                                                             style:
                                                                 const TextStyle(
-                                                              fontSize: 12,
+                                                              fontSize: 16,
                                                               color:
                                                                   Colors.grey,
                                                             ),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(
-                                                          Icons
-                                                              .inventory_2_outlined,
-                                                          size: 14,
-                                                          color: Colors.grey,
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 4),
-                                                        Text(
-                                                          "${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length} conteneurs",
-                                                          style:
-                                                              const TextStyle(
-                                                            fontSize: 12,
-                                                            color: Colors.grey,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.edit,
-                                                      color: Color(0xFF1A1E49),
-                                                      size: 20,
-                                                    ),
-                                                    onPressed: () =>
-                                                        _openAddHarborModal(
-                                                            harbor: port),
-                                                  ),
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.delete,
-                                                      color: Colors.red,
-                                                      size: 20,
-                                                    ),
-                                                    onPressed: () =>
-                                                        _deleteHarbor(port),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -429,7 +437,7 @@ class _HarborScreen extends State<HarborScreen> {
                               Text(
                                 "Aucun port trouvé",
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),

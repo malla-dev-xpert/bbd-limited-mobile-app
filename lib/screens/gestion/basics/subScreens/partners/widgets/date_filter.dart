@@ -51,7 +51,7 @@ class DateFilterWidget extends StatelessWidget {
                           AppLocalizations.of(context)
                               .translate('filter_by_date_title'),
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1A1E49),
                           ),

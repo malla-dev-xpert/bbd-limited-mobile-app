@@ -50,7 +50,7 @@ class ReportCardList extends StatelessWidget {
               Text(
                 'Aucune donnée disponible',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
                 ),

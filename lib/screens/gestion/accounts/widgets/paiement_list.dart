@@ -8,6 +8,7 @@ class PaiementListItem extends StatelessWidget {
   final Function() onEdit;
   final Function() onDelete;
   final Function() onTap;
+  final Function()? onTransfer;
 
   const PaiementListItem({
     super.key,
@@ -15,6 +16,7 @@ class PaiementListItem extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onTap,
+    this.onTransfer,
   });
 
   @override
@@ -38,6 +40,14 @@ class PaiementListItem extends StatelessWidget {
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
         children: [
+          if (onTransfer != null)
+            SlidableAction(
+              onPressed: (context) => onTransfer!(),
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              icon: Icons.swap_horiz,
+              label: 'Transférer',
+            ),
           SlidableAction(
             onPressed: (context) => onEdit(),
             backgroundColor: Colors.blue,
@@ -59,7 +69,7 @@ class PaiementListItem extends StatelessWidget {
         leading: Icon(partnerIcon, color: Color(0xFF7F78AF)),
         title: Text(
           versement.reference!,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -67,11 +77,11 @@ class PaiementListItem extends StatelessWidget {
           children: [
             Text(
               DateFormat('dd/MM/yyyy').format(versement.createdAt!),
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 16),
             ),
             Text(
               versement.partnerName ?? '',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
           ],
         ),

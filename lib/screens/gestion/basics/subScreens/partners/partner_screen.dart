@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/core/services/partner_notification_service.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_edit_form.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/partner_list_items.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/merge_partner_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 
 class PartnerScreen extends StatefulWidget {
@@ -19,25 +23,40 @@ class _PartnerScreenState extends State<PartnerScreen> {
   final TextEditingController searchController = TextEditingController();
   final PartnerServices _partnerServices = PartnerServices();
   final AuthService authService = AuthService();
+  final PartnerNotificationService _partnerNotificationService =
+      PartnerNotificationService();
 
   List<Partner> _allPartners = [];
   List<Partner> _filteredPartners = [];
-  String? _currentFilter;
 
   bool _isLoading = false;
   bool _hasMoreData = true;
   int currentPage = 0;
 
+  StreamSubscription<Partner>? _partnerUpdateSubscription;
+
   @override
   void initState() {
     super.initState();
     loadPartners();
+    _setupPartnerUpdateListener();
   }
 
   @override
   void dispose() {
     searchController.dispose();
+    _partnerUpdateSubscription?.cancel();
     super.dispose();
+  }
+
+  void _setupPartnerUpdateListener() {
+    _partnerUpdateSubscription =
+        _partnerNotificationService.partnerUpdateStream.listen(
+      (updatedPartner) {
+        // Mettre à jour le partenaire dans la liste locale
+        _updatePartnerInList(updatedPartner);
+      },
+    );
   }
 
   Future<void> loadPartners({bool reset = false, String? searchQuery}) async {
@@ -116,8 +135,6 @@ class _PartnerScreenState extends State<PartnerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: true,
@@ -158,18 +175,12 @@ class _PartnerScreenState extends State<PartnerScreen> {
               spacing: 10,
               children: [
                 Expanded(
-                  child: TextField(
-                    onChanged: searchPartner,
+                  child: buildTextField(
                     controller: searchController,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)
-                          .translate('search_partner'),
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                    ),
+                    label: AppLocalizations.of(context)
+                        .translate('search_partner'),
+                    icon: Icons.search,
+                    onChanged: searchPartner,
                   ),
                 ),
               ],
@@ -227,6 +238,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
               partner: partner,
               onEdit: _editPartner,
               onDelete: _deletePartner,
+              onMerge: _mergePartner,
+              onPartnerUpdated: _updatePartnerInList,
             );
           },
         ),
@@ -301,7 +314,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
               AppLocalizations.of(context).translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 16),
+              style: const TextStyle(color: Colors.red, fontSize: 18),
             ),
           ),
         ],
@@ -330,6 +343,9 @@ class _PartnerScreenState extends State<PartnerScreen> {
               context,
               AppLocalizations.of(context)
                   .translate('partner_deleted_success'));
+        } else if (result == "CANT_DELETED") {
+          showErrorTopSnackBar(context,
+              AppLocalizations.of(context).translate('partner_cant_deleted'));
         } else {
           _handleDeleteError(result);
         }
@@ -358,5 +374,37 @@ class _PartnerScreenState extends State<PartnerScreen> {
         showErrorTopSnackBar(context,
             AppLocalizations.of(context).translate('partner_unknown_error'));
     }
+  }
+
+  void _mergePartner(Partner partner) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => MergePartnerBottomSheet(
+        mainPartner: partner,
+        onMergeSuccess: () {
+          loadPartners(reset: true);
+        },
+      ),
+    );
+  }
+
+  void _updatePartnerInList(Partner updatedPartner) {
+    setState(() {
+      // Mettre à jour le partenaire dans _allPartners
+      final allIndex =
+          _allPartners.indexWhere((p) => p.id == updatedPartner.id);
+      if (allIndex != -1) {
+        _allPartners[allIndex] = updatedPartner;
+      }
+
+      // Mettre à jour le partenaire dans _filteredPartners
+      final filteredIndex =
+          _filteredPartners.indexWhere((p) => p.id == updatedPartner.id);
+      if (filteredIndex != -1) {
+        _filteredPartners[filteredIndex] = updatedPartner;
+      }
+    });
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -60,7 +61,8 @@ class _CustomersWithPurchasesBottomSheetState
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        showErrorTopSnackBar(context, "Erreur lors du chargement des clients");
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('error_loading_clients'));
       }
     }
   }
@@ -213,7 +215,7 @@ class _CustomersWithPurchasesBottomSheetState
                                   ? 'Aucun client avec achats'
                                   : 'Aucun client trouvé',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -224,7 +226,7 @@ class _CustomersWithPurchasesBottomSheetState
                                   ? 'Les clients apparaîtront ici après leurs premiers achats'
                                   : 'Essayez avec d\'autres termes de recherche',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.grey[500],
                               ),
                               textAlign: TextAlign.center,
@@ -286,7 +288,7 @@ class _CustomersWithPurchasesBottomSheetState
                                                 .toUpperCase(),
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 18,
+                                              fontSize: 20,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -304,7 +306,7 @@ class _CustomersWithPurchasesBottomSheetState
                                             Text(
                                               '${customer.firstName} ${customer.lastName}',
                                               style: const TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 18,
                                                 fontWeight: FontWeight.w600,
                                                 color: Color(0xFF1A1E49),
                                               ),
@@ -314,7 +316,7 @@ class _CustomersWithPurchasesBottomSheetState
                                               Text(
                                                 customer.phoneNumber,
                                                 style: TextStyle(
-                                                  fontSize: 14,
+                                                  fontSize: 16,
                                                   color: Colors.grey[600],
                                                 ),
                                               ),
@@ -379,7 +381,7 @@ class _CustomersWithPurchasesBottomSheetState
           Text(
             text,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
               color: color,
             ),

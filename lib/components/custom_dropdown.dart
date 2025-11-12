@@ -23,42 +23,30 @@ class DropDownCustom<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: const BorderRadius.all(Radius.circular(32)),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 768;
+
+    return CustomDropdown<String>.search(
+      hintText: selectedItem != null ? itemToString(selectedItem!) : hintText,
+      decoration: CustomDropdownDecoration(
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+        closedBorder: Border.all(color: Colors.grey[300]!),
+        expandedBorder: Border.all(color: Colors.grey[300]!),
+        closedFillColor: Colors.white,
+        expandedFillColor: Colors.white,
+        closedSuffixIcon: const Icon(Icons.keyboard_arrow_down),
+        expandedSuffixIcon: const Icon(Icons.keyboard_arrow_up),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (labelText != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4.0),
-              child: Text(
-                labelText!,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-            ),
-          CustomDropdown<String>.search(
-            hintText:
-                selectedItem != null ? itemToString(selectedItem!) : hintText,
-            decoration: CustomDropdownDecoration(
-              prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-            ),
-            noResultFoundText: 'Aucun résultat trouvé.',
-            searchHintText: 'Rechercher...',
-            items: items.map(itemToString).toList(),
-            onChanged: (value) {
-              final selected = items.firstWhere(
-                (item) => itemToString(item) == value,
-                orElse: () => null as T,
-              );
-              onChanged(selected);
-            },
-          ),
-        ],
-      ),
+      noResultFoundText: 'Aucun résultat trouvé.',
+      searchHintText: 'Rechercher...',
+      items: items.map(itemToString).toList(),
+      onChanged: (value) {
+        final selected = items.firstWhere(
+          (item) => itemToString(item) == value,
+          orElse: () => null as T,
+        );
+        onChanged(selected);
+      },
     );
   }
 }

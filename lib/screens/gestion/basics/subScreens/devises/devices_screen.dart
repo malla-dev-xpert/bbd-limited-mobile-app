@@ -6,6 +6,7 @@ import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -365,17 +366,10 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                   ),
                 ],
               ),
-              child: TextField(
+              child: buildTextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  labelText:
-                      AppLocalizations.of(context).translate('search_devise'),
-                  prefixIcon:
-                      const Icon(Icons.search, color: Color(0xFF1A1E49)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(1322),
-                  ),
-                ),
+                label: AppLocalizations.of(context).translate('search_devise'),
+                icon: Icons.search,
               ),
             ),
             const SizedBox(height: 24),

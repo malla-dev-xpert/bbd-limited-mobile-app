@@ -109,7 +109,7 @@ class PackageListItem extends StatelessWidget {
             style: TextStyle(
               color: statusInfo.textColor,
               fontWeight: FontWeight.w600,
-              fontSize: 12,
+              fontSize: 16,
             ),
           ),
         ),

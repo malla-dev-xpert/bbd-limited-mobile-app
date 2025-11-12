@@ -6,8 +6,9 @@ class NetworkService {
   final StreamController<bool> _controller = StreamController<bool>.broadcast();
 
   NetworkService() {
-    _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
-      _controller.add(result != ConnectivityResult.none);
+    _connectivity.onConnectivityChanged
+        .listen((List<ConnectivityResult> result) {
+      _controller.add(!result.contains(ConnectivityResult.none));
     });
   }
 
@@ -15,6 +16,6 @@ class NetworkService {
 
   Future<bool> isConnected() async {
     var result = await _connectivity.checkConnectivity();
-    return result != ConnectivityResult.none;
+    return !result.contains(ConnectivityResult.none);
   }
 }

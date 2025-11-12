@@ -9,6 +9,7 @@ import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_container_to_harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
@@ -406,20 +407,24 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Liste des conteneurs",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    const Expanded(
+                      child: Text(
+                        "Liste des conteneurs",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     TextButton.icon(
                       onPressed: _isLoading ? null : _handleAddContainers,
                       style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFF7F78AF),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                          horizontal: 12,
                           vertical: 8,
                         ),
                         shape: RoundedRectangleBorder(
@@ -427,42 +432,24 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                         ),
                       ),
                       label: const Text("Embarquer"),
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(Icons.add, size: 18),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey[50]!,
-                        spreadRadius: 1,
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12)),
+                  child: buildTextField(
                     controller: _searchController,
+                    label: 'Rechercher un conteneur...',
+                    icon: Icons.search,
                     onChanged: (value) {
                       setState(() {
                         _searchQuery = value;
                       });
                     },
-                    decoration: InputDecoration(
-                      hintText: 'Rechercher un conteneur...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -484,7 +471,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       Text(
                         "Aucun conteneur trouvé",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -493,7 +480,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       Text(
                         "Aucun conteneur ne correspond à votre recherche",
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: Colors.grey[500],
                         ),
                         textAlign: TextAlign.center,
@@ -603,7 +590,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                         item.reference ?? 'Sans référence',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 18,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -771,7 +758,7 @@ class _ContainerDetailsModal extends StatelessWidget {
           Text(
             'Colis (${packages?.length ?? 0})',
             textAlign: TextAlign.left,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 8),
           if (packages?.isEmpty ?? true)

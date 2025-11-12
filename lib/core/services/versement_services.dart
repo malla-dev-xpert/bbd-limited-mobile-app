@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:http/http.dart' as http;
@@ -111,9 +110,10 @@ class VersementServices {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "DELETED";
       } else if (response.body ==
-          "Impossible de supprimer: des achats sont déjà associés à ce versement") {
-        return "ACHATS_NOT_DELETED";
+          "Impossible de supprimer : des opérations sont déjà associées à ce versement.") {
+        return "IMPOSSIBLE";
       }
+      return null;
     } catch (e) {
       throw Exception("Erreur lors de la suppression du colis : $e");
     }
@@ -143,11 +143,6 @@ class VersementServices {
         body: jsonEncode(body),
       );
 
-      log(".......................................");
-      log('Response status: ${response.statusCode}');
-      log('Response body: ${response.body}');
-      log(".......................................");
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         return "SUCCESS";
       } else if (response.statusCode == 404 &&
@@ -170,6 +165,57 @@ class VersementServices {
       throw Exception("Timeout - Serveur non disponible");
     } catch (e) {
       throw Exception(e.toString());
+    }
+  }
+
+  Future<String> transferVersement({
+    required int versementId,
+    required int oldPartnerId,
+    required int newPartnerId,
+  }) async {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/versements/transfert/$versementId?oldPartnerId=$oldPartnerId&newPartnerId=$newPartnerId',
+      );
+
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "SUCCESS";
+      } else if (response.statusCode == 403) {
+        // Forbidden - Le versement n'appartient pas à ce client
+        return "WRONG_PARTNER";
+      } else if (response.statusCode == 409) {
+        // Conflit - analyser le message d'erreur pour être plus explicite
+        final errorMessage = response.body;
+        if (errorMessage.contains("SAME_PARTNER") ||
+            errorMessage.contains("même client")) {
+          return "SAME_PARTNER";
+        } else if (errorMessage.contains("IMPOSSIBLE_TRANSFERT") ||
+            errorMessage.contains("opérations ont déjà été effectuées")) {
+          return "IMPOSSIBLE_TRANSFERT";
+        } else {
+          // Message d'erreur générique du backend
+          return errorMessage;
+        }
+      } else if (response.statusCode == 400) {
+        // Bad Request - Solde insuffisant
+        return "BALANCE_INSUFFISANT";
+      } else if (response.statusCode == 500) {
+        // Internal Server Error - Erreur inconnue
+        return "UNKNOWN_ERROR";
+      } else {
+        return "ERROR";
+      }
+    } on SocketException {
+      throw Exception("Pas de connexion internet");
+    } on TimeoutException {
+      throw Exception("Timeout - Serveur non disponible");
+    } catch (e) {
+      throw Exception("Erreur lors du transfert: ${e.toString()}");
     }
   }
 }
