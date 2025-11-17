@@ -159,6 +159,9 @@ class Items {
     String? invoiceNumber,
     Status? status,
     bool? paid,
+    DateTime? paiementDate,
+    int? paidByUserId,
+    double? amountPaid,
     String? paidByUserName,
   }) {
     return Items(
@@ -201,7 +204,7 @@ class Items {
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
       'paid': paid,
-      'paiementDate': paiementDate,
+      'paiementDate': paiementDate?.toIso8601String(),
       'paidByUserId': paidByUserId,
       'amountPaid': amountPaid,
       'paidByUserName': paidByUserName,

@@ -1,7 +1,20 @@
 import 'dart:convert';
+import 'package:bbd_limited/core/api/api_result.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+/// Exception personnalisée pour les erreurs de mise à jour d'item
+class ItemUpdateException implements Exception {
+  final String message;
+  final String? errorCode;
+  final int? statusCode;
+
+  ItemUpdateException(this.message, {this.errorCode, this.statusCode});
+
+  @override
+  String toString() => message;
+}
 
 class ItemServices {
   final String baseUrl =
@@ -88,27 +101,59 @@ class ItemServices {
     return null;
   }
 
-  Future<String> updateItem({
+  Future<ApiResponse<String>> updateItem({
     required int itemId,
     required int userId,
-    required int clientId,
     required Items item,
+    int? clientId,
   }) async {
     final url = Uri.parse('$baseUrl/items/update/$itemId?userId=$userId');
     final headers = {'Content-Type': 'application/json'};
     final body = item.toJson();
-    body['clientId'] = clientId;
 
-    final response = await http.put(
-      url,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    // Ajouter le clientId au body si fourni
+    if (clientId != null) {
+      body['clientId'] = clientId;
+    }
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return response.body;
-    } else {
-      throw Exception('Erreur lors de la modification : ${response.body}');
+    try {
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      // Décoder la réponse
+      final responseBody = response.body.isNotEmpty
+          ? json.decode(utf8.decode(response.bodyBytes))
+          : <String, dynamic>{};
+
+      final apiResponse = ApiResponse<String>.fromJson(
+        responseBody as Map<String, dynamic>,
+        dataParser: (data) => data.toString(),
+      );
+
+      // Gérer les différents codes de statut HTTP selon le backend
+      if (response.statusCode == 200 && apiResponse.success == true) {
+        return apiResponse;
+      } else {
+        throw ItemUpdateException(
+          apiResponse.message ?? 'Erreur lors de la mise à jour',
+          errorCode: apiResponse.errorCode,
+          statusCode: response.statusCode,
+        );
+      }
+    } on ItemUpdateException {
+      rethrow;
+    } catch (e) {
+      // Gérer les erreurs de parsing ou autres exceptions
+      if (e is ItemUpdateException) {
+        rethrow;
+      }
+      throw ItemUpdateException(
+        'Erreur lors de la modification de l\'item: ${e.toString()}',
+        errorCode: 'INTERNAL_ERROR',
+      );
     }
   }
 

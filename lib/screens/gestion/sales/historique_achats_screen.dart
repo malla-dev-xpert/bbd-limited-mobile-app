@@ -1269,77 +1269,96 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                         .trim(),
                                           );
                                           final itemServices = ItemServices();
-                                          final result =
-                                              await itemServices.updateItem(
-                                            itemId: item.id!,
-                                            userId: user.id,
-                                            clientId: achat.clientId ?? 0,
-                                            item: updatedItem,
-                                          );
-                                          if (result == 'SUCCESS') {
-                                            setState(() {
-                                              // Mettre à jour l'item dans tous les achats
-                                              for (var a in _achats) {
-                                                final idx = a.items?.indexWhere(
-                                                        (i) =>
-                                                            i.id == item.id) ??
-                                                    -1;
-                                                if (idx != -1) {
-                                                  a.items![idx] = updatedItem;
+                                          try {
+                                            final result =
+                                                await itemServices.updateItem(
+                                              itemId: item.id!,
+                                              userId: user.id,
+                                              item: updatedItem,
+                                            );
+                                            if (result.success == true) {
+                                              setState(() {
+                                                // Mettre à jour l'item dans tous les achats
+                                                for (var a in _achats) {
+                                                  final idx = a.items
+                                                          ?.indexWhere((i) =>
+                                                              i.id ==
+                                                              item.id) ??
+                                                      -1;
+                                                  if (idx != -1) {
+                                                    a.items![idx] = updatedItem;
+                                                  }
                                                 }
-                                              }
-                                              for (var a in _filteredAchats) {
-                                                final idx = a.items?.indexWhere(
-                                                        (i) =>
-                                                            i.id == item.id) ??
-                                                    -1;
-                                                if (idx != -1) {
-                                                  a.items![idx] = updatedItem;
+                                                for (var a in _filteredAchats) {
+                                                  final idx = a.items
+                                                          ?.indexWhere((i) =>
+                                                              i.id ==
+                                                              item.id) ??
+                                                      -1;
+                                                  if (idx != -1) {
+                                                    a.items![idx] = updatedItem;
+                                                  }
                                                 }
-                                              }
-                                            });
-                                            showSuccessTopSnackBar(
-                                                context,
-                                                AppLocalizations.of(context)
-                                                    .translate(
-                                                        'purchase_history_item_modified_success'));
-                                            Navigator.pop(context);
-                                          } else if (result ==
-                                              'ITEM_NOT_FOUND') {
-                                            showErrorTopSnackBar(
-                                                context,
-                                                AppLocalizations.of(context)
-                                                    .translate(
-                                                        'purchase_history_item_not_found'));
-                                          } else if (result ==
-                                              'USER_NOT_FOUND') {
-                                            showErrorTopSnackBar(
-                                                context,
-                                                AppLocalizations.of(context)
-                                                    .translate(
-                                                        'purchase_history_user_not_found'));
-                                          } else if (result ==
-                                              'CLIENT_MISMATCH') {
-                                            showErrorTopSnackBar(
-                                                context,
-                                                AppLocalizations.of(context)
-                                                    .translate(
-                                                        'purchase_history_client_mismatch'));
-                                          } else if (result ==
-                                              'SUPPLIER_NOT_FOUND') {
-                                            showErrorTopSnackBar(
-                                                context,
-                                                AppLocalizations.of(context)
-                                                    .translate(
-                                                        'purchase_history_supplier_not_found'));
-                                          } else {
+                                              });
+                                              showSuccessTopSnackBar(
+                                                  context,
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'purchase_history_item_modified_success'));
+                                              Navigator.pop(context);
+                                            }
+                                          } on ItemUpdateException catch (e) {
+                                            // Gérer les erreurs selon le code d'erreur
+                                            if (e.errorCode ==
+                                                'ITEM_NOT_FOUND') {
+                                              showErrorTopSnackBar(
+                                                  context,
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'purchase_history_item_not_found'));
+                                            } else if (e.errorCode ==
+                                                'USER_NOT_FOUND') {
+                                              showErrorTopSnackBar(
+                                                  context,
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'purchase_history_user_not_found'));
+                                            } else if (e.errorCode ==
+                                                'CLIENT_MISMATCH') {
+                                              showErrorTopSnackBar(
+                                                  context,
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'purchase_history_client_mismatch'));
+                                            } else if (e.errorCode ==
+                                                'SUPPLIER_NOT_FOUND') {
+                                              showErrorTopSnackBar(
+                                                  context,
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'purchase_history_supplier_not_found'));
+                                            } else {
+                                              showErrorTopSnackBar(
+                                                  context,
+                                                  e.message.isNotEmpty
+                                                      ? e.message
+                                                      : AppLocalizations.of(
+                                                              context)
+                                                          .translate(
+                                                              'purchase_history_error_occurred')
+                                                          .replaceAll(
+                                                              '{error}',
+                                                              e.errorCode ??
+                                                                  'UNKNOWN'));
+                                            }
+                                          } catch (e) {
                                             showErrorTopSnackBar(
                                                 context,
                                                 AppLocalizations.of(context)
                                                     .translate(
                                                         'purchase_history_error_occurred')
-                                                    .replaceAll(
-                                                        '{error}', result));
+                                                    .replaceAll('{error}',
+                                                        e.toString()));
                                           }
                                         } catch (e) {
                                           showErrorTopSnackBar(

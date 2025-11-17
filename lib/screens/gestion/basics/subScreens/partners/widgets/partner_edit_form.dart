@@ -45,7 +45,7 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
     _emailController = TextEditingController(text: widget.partner.email);
     _adresseController = TextEditingController(text: widget.partner.adresse);
     _accountType = widget.partner.accountType;
-    _selectedCountry = widget.partner.country != null
+    _selectedCountry = widget.partner.country.isNotEmpty
         ? Country.tryParse(widget.partner.country)
         : null;
   }

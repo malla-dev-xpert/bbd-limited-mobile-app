@@ -7,6 +7,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_payment_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/edit_supplier_payment_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 
@@ -65,9 +66,8 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
     try {
       final user = await authService.getUserInfo();
       if (!mounted || user == null) return;
-      final roleName = user.roleName ?? user.role?.name;
-      final isAdmin =
-          roleName != null && roleName.toLowerCase().contains('admin');
+      final permissions = user.role?.permissions ?? [];
+      final isAdmin = permissions.contains('IS_ADMIN');
       if (isAdmin != _isCurrentUserAdmin) {
         setState(() {
           _isCurrentUserAdmin = isAdmin;
@@ -202,24 +202,45 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
     return Column(
       children: items.map((item) {
         final bool isPaid = item.paid == true;
+        // Déterminer les actions à afficher
+        final List<Widget> actions = [];
+
+        // Si l'item n'est pas payé, afficher le bouton "Pay"
+        if (!isPaid) {
+          actions.add(
+            SlidableAction(
+              onPressed: (_) => _openPaymentScreen(item),
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              icon: Icons.payment,
+              label: AppLocalizations.of(context).translate('pay'),
+            ),
+          );
+        }
+
+        // Si l'utilisateur est admin, toujours afficher le bouton "Edit"
+        if (_isCurrentUserAdmin) {
+          actions.add(
+            SlidableAction(
+              onPressed: (_) => _openEditPaymentScreen(item),
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              icon: Icons.edit,
+              label: AppLocalizations.of(context).translate('edit'),
+            ),
+          );
+        }
+
         return Slidable(
           key: ValueKey('item_${item.id}'),
-          enabled: !isPaid,
-          endActionPane: isPaid
-              ? null
-              : ActionPane(
+          enabled: actions.isNotEmpty,
+          endActionPane: actions.isNotEmpty
+              ? ActionPane(
                   motion: const DrawerMotion(),
-                  extentRatio: 0.25,
-                  children: [
-                    SlidableAction(
-                      onPressed: (_) => _openPaymentScreen(item),
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      icon: Icons.payment,
-                      label: AppLocalizations.of(context).translate('pay'),
-                    ),
-                  ],
-                ),
+                  extentRatio: actions.length > 1 ? 0.5 : 0.25,
+                  children: actions,
+                )
+              : null,
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
@@ -415,6 +436,23 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
 
     if (result == true) {
       // Rafraîchir la liste des items après le paiement
+      _loadSupplierItems();
+    }
+  }
+
+  void _openEditPaymentScreen(Items item) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditSupplierPaymentScreen(
+          item: item,
+          supplier: widget.supplier,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      // Rafraîchir la liste des items après la modification du paiement
       _loadSupplierItems();
     }
   }

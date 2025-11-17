@@ -38,20 +38,32 @@ class ApiResponse<T> {
   final T? data;
   final String? message;
   final List<String>? errors;
+  final bool? success;
+  final String? errorCode;
 
   ApiResponse({
     this.data,
     this.message,
     this.errors,
+    this.success,
+    this.errorCode,
   });
 
-  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+  factory ApiResponse.fromJson(
+    Map<String, dynamic> json, {
+    T Function(dynamic)? dataParser,
+  }) {
+    final rawData = json['data'];
     return ApiResponse(
-      data: json['data'] as T?,
+      data: rawData != null
+          ? (dataParser != null ? dataParser(rawData) : rawData as T?)
+          : null,
       message: json['message'] as String?,
       errors: json['errors'] != null
           ? List<String>.from(json['errors'] as List)
           : null,
+      success: json['success'] as bool?,
+      errorCode: json['errorCode']?.toString(),
     );
   }
 }
