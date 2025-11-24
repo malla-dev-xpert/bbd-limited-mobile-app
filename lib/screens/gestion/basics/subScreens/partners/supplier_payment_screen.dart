@@ -113,6 +113,78 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
     return remaining > 0 ? remaining : 0.0;
   }
 
+  Future<bool> _shouldProceedWithPayment(double amount) async {
+    final localizations = AppLocalizations.of(context);
+    try {
+      final payments = await paymentServices.getPaymentsByItem(
+        itemId: widget.item.id!.toInt(),
+      );
+      final hasDuplicate = payments.any(
+        (payment) {
+          final paidAmount = payment.amount ?? payment.amountPaid ?? 0;
+          return (paidAmount - amount).abs() < 0.01;
+        },
+      );
+
+      if (!hasDuplicate) {
+        return true;
+      }
+
+      final continuePayment = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            localizations.translate('duplicate_payment_title'),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          content: Text(
+            localizations.translate('duplicate_payment_message'),
+            style: TextStyle(
+              color: Colors.grey[800],
+            ),
+          ),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                localizations.translate('cancel'),
+                style: const TextStyle(color: Colors.black87),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[700],
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(localizations.translate('continue_payment')),
+            ),
+          ],
+        ),
+      );
+
+      return continuePayment ?? false;
+    } catch (e) {
+      showErrorTopSnackBar(
+        context,
+        '${AppLocalizations.of(context).translate('payment_error')}: ${e.toString()}',
+      );
+      return false;
+    }
+  }
+
   Widget _buildSummaryItem({
     required IconData icon,
     required String label,
@@ -204,6 +276,14 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
       }
 
       final DateTime paymentDate = (paymentResult['date'] as DateTime);
+
+      final bool proceed = await _shouldProceedWithPayment(amount);
+      if (!proceed) {
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
 
       final paymentResponse = await paymentServices.processSupplierPayment(
         itemId: widget.item.id!.toInt(),

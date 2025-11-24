@@ -1,6 +1,7 @@
 class PaymentResponse {
   final int? paymentId;
   final int? itemId;
+  final double? amount;
   final double? amountPaid;
   final double? totalPaid;
   final double? remainingAmount;
@@ -14,6 +15,7 @@ class PaymentResponse {
   PaymentResponse({
     this.paymentId,
     this.itemId,
+    this.amount,
     this.amountPaid,
     this.totalPaid,
     this.remainingAmount,
@@ -42,6 +44,7 @@ class PaymentResponse {
       itemId: json['itemId'] is int
           ? json['itemId'] as int
           : int.tryParse(json['itemId']?.toString() ?? ''),
+      amount: parseDouble(json['amount']),
       amountPaid: parseDouble(json['amountPaid']),
       totalPaid: parseDouble(json['totalPaid']),
       remainingAmount: parseDouble(json['remainingAmount']),
