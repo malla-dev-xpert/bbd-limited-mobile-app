@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
-import 'package:bbd_limited/core/services/item_services.dart';
+import 'package:bbd_limited/core/services/payment_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -25,7 +25,7 @@ class SupplierPaymentScreen extends StatefulWidget {
 }
 
 class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
-  final ItemServices itemServices = ItemServices();
+  final PaymentServices paymentServices = PaymentServices();
   final AchatServices achatServices = AchatServices();
   final AuthService authService = AuthService();
   final TextEditingController _amountController = TextEditingController();
@@ -205,28 +205,19 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
 
       final DateTime paymentDate = (paymentResult['date'] as DateTime);
 
-      final paymentResponse = await itemServices.processSupplierPayment(
+      final paymentResponse = await paymentServices.processSupplierPayment(
         itemId: widget.item.id!.toInt(),
         amount: amount,
         paymentDate: paymentDate,
         paidBy: user.id,
       );
 
-      if (paymentResponse['success'] == true) {
-        showSuccessTopSnackBar(
-          context,
-          paymentResponse['message']?.toString() ??
-              AppLocalizations.of(context).translate('payment_success'),
-        );
-        Navigator.pop(context, true);
-      } else {
-        showErrorTopSnackBar(
-          context,
-          paymentResponse['error']?.toString() ??
-              paymentResponse['message']?.toString() ??
-              AppLocalizations.of(context).translate('payment_error'),
-        );
-      }
+      showSuccessTopSnackBar(
+        context,
+        paymentResponse.message ??
+            AppLocalizations.of(context).translate('payment_success'),
+      );
+      Navigator.pop(context, true);
     } catch (e) {
       showErrorTopSnackBar(
         context,

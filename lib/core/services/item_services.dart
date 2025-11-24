@@ -156,41 +156,4 @@ class ItemServices {
       );
     }
   }
-
-  Future<Map<String, dynamic>> processSupplierPayment({
-    required int itemId,
-    required double amount,
-    required DateTime paymentDate,
-    required int paidBy,
-  }) async {
-    final uri = Uri.parse('$baseUrl/items/payment/$itemId').replace(
-      queryParameters: {
-        'amount': amount.toString(),
-        'paymentDate': paymentDate.toIso8601String(),
-        'payBy': paidBy.toString(),
-      },
-    );
-
-    try {
-      final response = await http.post(uri);
-      final decodedBody = response.body.isNotEmpty
-          ? json.decode(utf8.decode(response.bodyBytes))
-          : <String, dynamic>{};
-
-      final responseMap = Map<String, dynamic>.from(decodedBody);
-
-      if (response.statusCode == 200 ||
-          response.statusCode == 201 ||
-          response.statusCode == 400) {
-        return responseMap;
-      } else {
-        throw Exception(
-          responseMap['error'] ??
-              'Erreur lors du traitement du paiement fournisseur (code: ${response.statusCode})',
-        );
-      }
-    } catch (e) {
-      throw Exception('Erreur lors du paiement de l\'article : $e');
-    }
-  }
 }
