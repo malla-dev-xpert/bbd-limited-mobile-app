@@ -229,7 +229,21 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         return;
       }
 
+      final clientId = widget.isVersementScreen
+          ? selectedCLients!.id
+          : int.parse(widget.clientId!);
+
       setState(() => isLoading = true);
+
+      final proceed = await _shouldProceedWithVersement(
+        amount: montant,
+        clientId: clientId,
+      );
+
+      if (!proceed) {
+        setState(() => isLoading = false);
+        return;
+      }
 
       final user = await authService.getUserInfo();
       if (user == null) {
@@ -242,9 +256,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       final versementDto = Versement.fromJson({
         "montantVerser": montant,
         "createdAt": myDate!.toIso8601String(),
-        "partnerId": widget.isVersementScreen
-            ? selectedCLients!.id
-            : int.tryParse(widget.clientId ?? ''),
+        "partnerId": clientId,
         "commissionnaireName": commissionnaireNameController.text,
         "commissionnairePhone": commissionnairePhoneController.text,
         "type": selectedType.toString().split('.').last,
@@ -260,9 +272,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         success = await versementServices.updatePaiement(
           widget.versementToEdit!.id!,
           user.id,
-          widget.isVersementScreen
-              ? selectedCLients!.id
-              : int.parse(widget.clientId!),
+          clientId,
           versementDto,
         );
         successMessage =
@@ -271,9 +281,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         // Mode création
         final result = await versementServices.create(
           user.id,
-          widget.isVersementScreen
-              ? selectedCLients!.id
-              : int.parse(widget.clientId!),
+          clientId,
           selectedDevise!.id!,
           versementDto,
         );
@@ -350,6 +358,83 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
       return false;
     }
     return true;
+  }
+
+  Future<bool> _shouldProceedWithVersement({
+    required double amount,
+    required int clientId,
+  }) async {
+    final localizations = AppLocalizations.of(context);
+    try {
+      final versements = await versementServices.getByClient(clientId);
+      final hasDuplicate = versements.any((versement) {
+        if (widget.versementToEdit != null &&
+            versement.id == widget.versementToEdit!.id) {
+          return false;
+        }
+        final existingAmount = versement.montantVerser ?? 0;
+        return (existingAmount - amount).abs() < 0.01;
+      });
+
+      if (!hasDuplicate) {
+        return true;
+      }
+
+      final userChoice = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            localizations.translate('duplicate_deposit_title'),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          content: Text(
+            localizations.translate('duplicate_deposit_message'),
+            style: TextStyle(
+              color: Colors.grey[800],
+            ),
+          ),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                localizations.translate('cancel'),
+                style: const TextStyle(color: Colors.black87),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[700],
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                localizations.translate('continue_deposit'),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      return userChoice ?? false;
+    } catch (e) {
+      showErrorTopSnackBar(
+        context,
+        '${localizations.translate('unknown_error')}: ${e.toString()}',
+      );
+      return false;
+    }
   }
 
   @override
@@ -454,7 +539,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             label: AppLocalizations.of(context)
                                 .translate('amount_to_pay'),
                             icon: Icons.attach_money,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                           ),
                           const SizedBox(height: 10),
                           DropDownCustom<VersementType>(
@@ -509,7 +595,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             label: AppLocalizations.of(context)
                                 .translate('exchange_rate'),
                             icon: Icons.trending_up,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                           ),
                         ],
                       ),
