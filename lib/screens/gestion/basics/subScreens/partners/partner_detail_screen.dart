@@ -24,7 +24,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_de
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
-import 'package:bbd_limited/components/invoice_options_config.dart';
+import 'package:bbd_limited/components/print/print_config_page.dart';
 
 import 'widgets/balance_card_widget.dart';
 import 'widgets/operation_type_selector.dart';
@@ -440,411 +440,38 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Future<void> _showPrintOptionsDialog() async {
-    DateTimeRange? selectedDateRange;
-    bool printAll = false;
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.white,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.95,
-                  maxHeight: MediaQuery.of(context).size.height * 0.9,
-                ),
-                child: Container(
-                  width: double.infinity,
-                  child: Column(
-                    children: [
-                      // Header fixe
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(
-                            bottom: BorderSide(color: Colors.grey[300]!),
-                          ),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            topRight: Radius.circular(12),
-                          ),
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final isTablet =
-                                MediaQuery.of(context).size.shortestSide >= 600;
-
-                            if (isTablet) {
-                              // Design pour tablettes - layout horizontal
-                              return Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Expanded(
-                                    child: Text(
-                                      'Configuration et aperçu du rapport client',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    icon: const Icon(Icons.close),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              // Design pour téléphones - layout horizontal optimisé
-                              return Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Expanded(
-                                    child: Text(
-                                      'Configuration et aperçu du rapport client',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    icon: const Icon(Icons.close),
-                                  ),
-                                ],
-                              );
-                            }
-                          },
-                        ),
-                      ),
-
-                      // Contenu scrollable
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              // Section options d'impression
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey[300]!),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Options d\'impression',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1A1E49),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-
-                                    // Période d'impression - Responsive
-                                    LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        final isTablet = MediaQuery.of(context)
-                                                .size
-                                                .shortestSide >=
-                                            600;
-
-                                        if (isTablet) {
-                                          // Design pour tablettes - layout horizontal
-                                          return Row(
-                                            children: [
-                                              const Text(
-                                                  "Période d'impression:"),
-                                              const SizedBox(width: 20),
-                                              Row(
-                                                children: [
-                                                  Radio<bool>(
-                                                    value: true,
-                                                    groupValue: printAll,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        printAll = value!;
-                                                        if (value)
-                                                          selectedDateRange =
-                                                              null;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const Text(
-                                                      'Toutes les données'),
-                                                ],
-                                              ),
-                                              const SizedBox(width: 20),
-                                              Row(
-                                                children: [
-                                                  Radio<bool>(
-                                                    value: false,
-                                                    groupValue: printAll,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        printAll = value!;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const Text(
-                                                      'Filtrer par date'),
-                                                ],
-                                              ),
-                                            ],
-                                          );
-                                        } else {
-                                          // Design pour téléphones - layout vertical
-                                          return Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                "Période d'impression:",
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                              ),
-                                              const SizedBox(height: 12),
-                                              Row(
-                                                children: [
-                                                  Radio<bool>(
-                                                    value: true,
-                                                    groupValue: printAll,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        printAll = value!;
-                                                        if (value)
-                                                          selectedDateRange =
-                                                              null;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const Expanded(
-                                                    child: Text(
-                                                        'Toutes les données'),
-                                                  ),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Radio<bool>(
-                                                    value: false,
-                                                    groupValue: printAll,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        printAll = value!;
-                                                      });
-                                                    },
-                                                  ),
-                                                  Expanded(
-                                                    child: Text(
-                                                        'Filtrer par date'),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          );
-                                        }
-                                      },
-                                    ),
-
-                                    // Sélecteur de date (seulement si pas "toutes les données")
-                                    if (!printAll) ...[
-                                      const SizedBox(height: 16),
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(8),
-                                        onTap: () async {
-                                          final DateTimeRange? range =
-                                              await showDateRangePicker(
-                                            context: context,
-                                            firstDate: DateTime(2000),
-                                            lastDate: DateTime(2100),
-                                            currentDate: DateTime.now(),
-                                            initialDateRange: selectedDateRange,
-                                            builder: (context, child) {
-                                              return Theme(
-                                                data:
-                                                    Theme.of(context).copyWith(
-                                                  dialogTheme: DialogTheme(
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                    elevation: 4,
-                                                  ),
-                                                  colorScheme:
-                                                      ColorScheme.fromSwatch(
-                                                    primarySwatch: Colors.blue,
-                                                  ).copyWith(
-                                                    surface: Colors.white,
-                                                  ),
-                                                ),
-                                                child: child!,
-                                              );
-                                            },
-                                          );
-                                          if (range != null && mounted) {
-                                            setState(() =>
-                                                selectedDateRange = range);
-                                          }
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 14,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: Colors.grey[300]!),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  selectedDateRange == null
-                                                      ? 'Sélectionner une période'
-                                                      : "${DateFormat('dd/MM/yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(selectedDateRange!.end)}",
-                                                  style: TextStyle(
-                                                    color: selectedDateRange ==
-                                                            null
-                                                        ? Colors.grey[600]
-                                                        : Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              const Icon(Icons.calendar_today,
-                                                  size: 20, color: Colors.grey),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Configuration des options de facturation
-                              InvoiceOptionsConfig(
-                                options: _invoiceOptions,
-                                onOptionsChanged: _updateInvoiceOptions,
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrintConfigPage(
+          title: AppLocalizations.of(context)
+              .translate('purchase_history_print_options'),
+          previewButtonLabel:
+              AppLocalizations.of(context).translate('purchase_history_preview_pdf'),
+          initialOptions: _invoiceOptions,
                                 currencySymbol: _getPartnerCurrency(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Footer fixe avec boutons
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(
-                            top: BorderSide(color: Colors.grey[300]!),
-                          ),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
-                          ),
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final isTablet =
-                                MediaQuery.of(context).size.shortestSide >= 600;
-
-                            if (isTablet) {
-                              // Design pour tablettes - layout horizontal
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: const Text('Annuler'),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _showPdfPreviewDialog(
-                                        printAll ? null : selectedDateRange,
-                                      );
-                                    },
-                                    icon: const Icon(Icons.visibility),
-                                    label: const Text('Voir l\'aperçu PDF'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF1A1E49),
-                                      foregroundColor: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              // Design pour téléphones - layout vertical
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _showPdfPreviewDialog(
-                                        printAll ? null : selectedDateRange,
-                                      );
-                                    },
-                                    icon: const Icon(Icons.visibility),
-                                    label: const Text('Voir l\'aperçu PDF'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF1A1E49),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 16),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: const Text('Annuler'),
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 16),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+          onOptionsChanged: _updateInvoiceOptions,
+          onPreview: (result) => _showPdfPreviewDialog(result.dateRange),
+          printOptionsTitle:
+              AppLocalizations.of(context).translate('purchase_history_invoice_options'),
+          billingOptionsTitle:
+              AppLocalizations.of(context).translate('billing_options'),
+          appliedOptionsLabel:
+              AppLocalizations.of(context).translate('currently_applied_options'),
+          showDateRange: true,
+          dateSectionTitle:
+              AppLocalizations.of(context).translate('purchase_history_date'),
+          allDataLabel:
+              AppLocalizations.of(context).translate('all_data'),
+          filterByDateLabel:
+              AppLocalizations.of(context).translate('filter_by_date'),
+          selectPeriodPlaceholder:
+              AppLocalizations.of(context).translate('select_period'),
+        ),
+      ),
     );
   }
+
 
   Widget _buildFloatingActionButton() {
     return Container(
@@ -1403,3 +1030,4 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     }
   }
 }
+

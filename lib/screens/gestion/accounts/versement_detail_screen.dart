@@ -20,6 +20,7 @@ import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/invoice_options_config.dart';
+import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -1031,122 +1032,26 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   }
 
   void _showPrintDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isMobile = MediaQuery.of(context).size.width < 600;
-              return Container(
-                width: isMobile
-                    ? MediaQuery.of(context).size.width * 0.95
-                    : MediaQuery.of(context).size.width * 0.9,
-                height: isMobile
-                    ? MediaQuery.of(context).size.height * 0.9
-                    : MediaQuery.of(context).size.height * 0.8,
-                padding: EdgeInsets.all(isMobile ? 12 : 16),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Configuration et aperçu de la facture',
-                            style: TextStyle(
-                              fontSize: isMobile ? 16 : 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: InvoiceOptionsConfig(
-                          options: _invoiceOptions,
-                          onOptionsChanged: _updateInvoiceOptions,
-                          currencySymbol: widget.versement.deviseCode ?? '¥',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Si la largeur est inférieure à 600px, on considère que c'est un mobile
-                        final isMobile = constraints.maxWidth < 600;
-
-                        if (isMobile) {
-                          // Layout vertical pour mobile
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  _showPdfPreviewDialog(context);
-                                },
-                                icon: const Icon(Icons.visibility),
-                                label: const Text('Voir l\'aperçu PDF'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1A1E49),
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Fermer'),
-                                style: TextButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          // Layout horizontal pour tablettes et desktop
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Fermer'),
-                              ),
-                              const SizedBox(width: 16),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  _showPdfPreviewDialog(context);
-                                },
-                                icon: const Icon(Icons.visibility),
-                                label: const Text('Voir l\'aperçu PDF'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1A1E49),
-                                  foregroundColor: Colors.white,
-                                ),
-                              ),
-                            ],
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrintConfigPage(
+          title: AppLocalizations.of(context)
+              .translate('billing_options_configuration'),
+          previewButtonLabel: AppLocalizations.of(context)
+              .translate('purchase_history_preview_pdf'),
+          initialOptions: _invoiceOptions,
+          currencySymbol: widget.versement.deviseCode ?? '¥',
+          onOptionsChanged: _updateInvoiceOptions,
+          onPreview: (_) => _showPdfPreviewDialog(context),
+          printOptionsTitle: AppLocalizations.of(context)
+              .translate('purchase_history_invoice_options'),
+          billingOptionsTitle:
+              AppLocalizations.of(context).translate('billing_options'),
+          appliedOptionsLabel: AppLocalizations.of(context)
+              .translate('currently_applied_options'),
+        ),
+      ),
     );
   }
 
@@ -1165,8 +1070,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Configuration des options de facturation',
+                    Text(
+                      AppLocalizations.of(context)
+                          .translate('billing_options_configuration'),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -1194,7 +1100,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Fermer'),
+                      child:
+                          Text(AppLocalizations.of(context).translate('close')),
                     ),
                     const SizedBox(width: 16),
                     ElevatedButton(
@@ -1455,8 +1362,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               Icons.print,
               color: Colors.white,
             ),
-            label:
-                const Text('Imprimer', style: TextStyle(color: Colors.white)),
+            label: Text(
+              AppLocalizations.of(context).translate('print'),
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

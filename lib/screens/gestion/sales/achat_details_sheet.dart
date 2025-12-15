@@ -14,7 +14,7 @@ import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
-import 'package:bbd_limited/components/invoice_options_config.dart';
+import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
@@ -61,13 +61,6 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     setState(() {
       _invoiceOptions = newOptions;
     });
-  }
-
-  bool get _hasActiveInvoiceOptions {
-    return _invoiceOptions.enableLineMargin ||
-        _invoiceOptions.enableGlobalMargin ||
-        _invoiceOptions.enableDiscount ||
-        _invoiceOptions.enableStorageFees;
   }
 
   String _formatAmount(double? amount) {
@@ -671,403 +664,37 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   }
 
   void _handlePrintAchat(Achat achat) {
-    bool includeSupplierInfo = false;
-    bool isProforma = false;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.white,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      // En-tête
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(context)
-                                  .translate('purchase_history_print_options'),
-                              style: TextStyle(
-                                fontSize:
-                                    MediaQuery.of(context).size.width < 400
-                                        ? 16
-                                        : 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Section options d'impression
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context).translate(
-                                  'purchase_history_invoice_options'),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-
-                            // Option inclure infos fournisseur
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: includeSupplierInfo,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      includeSupplierInfo = value ?? false;
-                                    });
-                                  },
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(context).translate(
-                                        'purchase_history_include_supplier'),
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            // Option proforma
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: isProforma,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      isProforma = value ?? false;
-                                    });
-                                  },
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    AppLocalizations.of(context).translate(
-                                        'purchase_history_generate_proforma'),
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Configuration des options de facturation
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.settings,
-                                    size: 20, color: Color(0xFF1A1E49)),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)
-                                      .translate('billing_options'),
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-
-                            // Résumé des options actives
-                            if (_hasActiveInvoiceOptions) ...[
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.blue[200]!),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.info_outline,
-                                            color: Colors.blue[700], size: 16),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            AppLocalizations.of(context)
-                                                .translate(
-                                                    'currently_applied_options'),
-                                            style: TextStyle(
-                                              color: Colors.blue[700],
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: MediaQuery.of(context)
-                                                          .size
-                                                          .width <
-                                                      400
-                                                  ? 11
-                                                  : 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    _buildInvoiceOptionsSummary(),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-
-                            // Bouton pour configurer
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _showInvoiceOptionsDialog(context),
-                                icon: const Icon(Icons.settings, size: 18),
-                                label: Text(_hasActiveInvoiceOptions
-                                    ? AppLocalizations.of(context)
-                                        .translate('modify_options')
-                                    : AppLocalizations.of(context)
-                                        .translate('configure_options')),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1A1E49),
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const Spacer(),
-
-                      // Boutons d'action - Responsive
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isMobile = constraints.maxWidth < 400;
-                          if (isMobile) {
-                            // Layout vertical pour mobile
-                            return Column(
-                              children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _showAchatPdfPreviewDialog(context, achat,
-                                          includeSupplierInfo, isProforma);
-                                    },
-                                    icon: const Icon(Icons.visibility),
-                                    label: Text(AppLocalizations.of(context)
-                                        .translate(
-                                            'purchase_history_preview_pdf')),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF1A1E49),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: Text(AppLocalizations.of(context)
-                                        .translate('cancel')),
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          } else {
-                            // Layout horizontal pour tablette/desktop
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Text(AppLocalizations.of(context)
-                                      .translate('cancel')),
-                                ),
-                                const SizedBox(width: 16),
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    _showAchatPdfPreviewDialog(context, achat,
-                                        includeSupplierInfo, isProforma);
-                                  },
-                                  icon: const Icon(Icons.visibility),
-                                  label: Text(AppLocalizations.of(context)
-                                      .translate(
-                                          'purchase_history_preview_pdf')),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1A1E49),
-                                    foregroundColor: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showInvoiceOptionsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.8,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)
-                          .translate('billing_options_configuration'),
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width < 400 ? 16 : 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: InvoiceOptionsConfig(
-                    options: _invoiceOptions,
-                    onOptionsChanged: _updateInvoiceOptions,
-                    currencySymbol: '¥',
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child:
-                        Text(AppLocalizations.of(context).translate('close')),
-                  ),
-                ],
-              ),
-            ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrintConfigPage(
+          title: AppLocalizations.of(context)
+              .translate('purchase_history_print_options'),
+          previewButtonLabel: AppLocalizations.of(context)
+              .translate('purchase_history_preview_pdf'),
+          initialOptions: _invoiceOptions,
+          currencySymbol: '¥',
+          onOptionsChanged: _updateInvoiceOptions,
+          onPreview: (result) => _showAchatPdfPreviewDialog(
+            context,
+            achat,
+            result.includeSupplierInfo ?? false,
+            result.isProforma ?? false,
           ),
+          printOptionsTitle: AppLocalizations.of(context)
+              .translate('purchase_history_invoice_options'),
+          billingOptionsTitle:
+              AppLocalizations.of(context).translate('billing_options'),
+          appliedOptionsLabel: AppLocalizations.of(context)
+              .translate('currently_applied_options'),
+          showSupplierToggle: true,
+          includeSupplierLabel: AppLocalizations.of(context)
+              .translate('purchase_history_include_supplier'),
+          showProformaToggle: true,
+          proformaLabel: AppLocalizations.of(context)
+              .translate('purchase_history_generate_proforma'),
         ),
       ),
-    );
-  }
-
-  Widget _buildInvoiceOptionsSummary() {
-    final List<Widget> summaryItems = [];
-
-    if (_invoiceOptions.enableLineMargin &&
-        _invoiceOptions.lineMarginValue != null) {
-      summaryItems.add(_buildSummaryItem(
-          AppLocalizations.of(context).translate('margin_per_line'),
-          '${_invoiceOptions.lineMarginValue}${_invoiceOptions.lineMarginType == MarginType.percentage ? '%' : '¥'}'));
-    }
-
-    if (_invoiceOptions.enableGlobalMargin &&
-        _invoiceOptions.globalMarginValue != null) {
-      summaryItems.add(_buildSummaryItem(
-          AppLocalizations.of(context).translate('global_margin'),
-          '${_invoiceOptions.globalMarginValue}${_invoiceOptions.globalMarginType == MarginType.percentage ? '%' : '¥'}'));
-    }
-
-    if (_invoiceOptions.enableDiscount &&
-        _invoiceOptions.discountValue != null) {
-      final discountText =
-          _invoiceOptions.discountType == DiscountType.percentage
-              ? '${_invoiceOptions.discountValue}%'
-              : '¥${_invoiceOptions.discountValue}';
-      summaryItems.add(_buildSummaryItem(
-          AppLocalizations.of(context).translate('discount'), discountText));
-    }
-
-    if (_invoiceOptions.enableStorageFees &&
-        _invoiceOptions.storageFeeAmount != null) {
-      final storageText =
-          _invoiceOptions.storageFeeType == StorageFeeType.percentage
-              ? '${_invoiceOptions.storageFeeAmount}%'
-              : '¥${_invoiceOptions.storageFeeAmount}';
-      summaryItems.add(_buildSummaryItem(
-          AppLocalizations.of(context).translate('storage_fees'), storageText));
-    }
-
-    return Column(
-      children: summaryItems
-          .map((item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: item,
-              ))
-          .toList(),
     );
   }
 
@@ -1092,26 +719,6 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSummaryItem(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1E49),
-          ),
-        ),
-      ],
     );
   }
 
