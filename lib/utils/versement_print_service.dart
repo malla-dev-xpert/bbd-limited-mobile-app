@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/cashWithdrawal.dart';
-import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 
 class VersementPrintService {
@@ -15,7 +15,7 @@ class VersementPrintService {
     Versement versement,
     List<Achat> achats,
     List<CashWithdrawal> retraits,
-    AppLocalizations localizations, {
+    PrintLocalizations printLocalizations, {
     InvoiceOptions? invoiceOptions,
   }) async {
     final pdf = pw.Document();
@@ -61,22 +61,22 @@ class VersementPrintService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       _buildHeader(logoBytes, versement, dateFormat,
-                          localizations, currencyFormat),
+                          printLocalizations, currencyFormat),
                       pw.SizedBox(height: 24),
-                      _buildClientInfo(versement, localizations),
+                      _buildClientInfo(versement, printLocalizations),
                       pw.SizedBox(height: 24),
                       _buildArticlesSection(
-                          achats, localizations, currencyFormat, options),
+                          achats, printLocalizations, currencyFormat, options),
                       pw.SizedBox(height: 12),
                       _buildPricingSummary(sousTotal, montantTotal, options,
-                          currencyFormat, localizations),
+                          currencyFormat, printLocalizations),
                       if (retraits.isNotEmpty) ...[
                         pw.SizedBox(height: 24),
-                        _buildWithdrawalsSection(retraits, localizations,
+                        _buildWithdrawalsSection(retraits, printLocalizations,
                             currencyFormat, dateFormat),
                         pw.SizedBox(height: 8),
                         _buildWithdrawalsTotal(
-                            totalRetraits, currencyFormat, localizations),
+                            totalRetraits, currencyFormat, printLocalizations),
                       ],
                     ],
                   ),
@@ -94,7 +94,7 @@ class VersementPrintService {
     Achat achat, {
     required bool includeSupplierInfo,
     required NumberFormat currencyFormat,
-    required AppLocalizations localizations,
+    required PrintLocalizations printLocalizations,
     bool isProforma = false,
     InvoiceOptions? invoiceOptions,
   }) async {
@@ -142,13 +142,22 @@ class VersementPrintService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       _buildAchatHeader(logoBytes, achat, dateFormat,
-                          localizations, isProforma),
+                          printLocalizations, isProforma),
                       pw.SizedBox(height: 24),
-                      _buildAchatArticlesSection(filteredItems, localizations,
-                          includeSupplierInfo, isProforma, currencyFormat),
+                      _buildAchatArticlesSection(
+                          filteredItems,
+                          printLocalizations,
+                          includeSupplierInfo,
+                          isProforma,
+                          currencyFormat),
                       pw.SizedBox(height: 12),
-                      _buildAchatPricingSummary(sousTotal, montantTotal,
-                          options, currencyFormat, localizations, isProforma),
+                      _buildAchatPricingSummary(
+                          sousTotal,
+                          montantTotal,
+                          options,
+                          currencyFormat,
+                          printLocalizations,
+                          isProforma),
                     ],
                   ),
                 ),
@@ -167,7 +176,7 @@ class VersementPrintService {
       Uint8List logoBytes,
       Versement versement,
       DateFormat dateFormat,
-      AppLocalizations localizations,
+      PrintLocalizations printLocalizations,
       NumberFormat currencyFormat) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -177,13 +186,13 @@ class VersementPrintService {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            pw.Text(localizations.translate('pdf_invoice'),
+            pw.Text(printLocalizations.translate('pdf_invoice'),
                 style: pw.TextStyle(
                     fontSize: 32,
                     color: PdfColor.fromHex('#1A1E49'),
                     fontWeight: pw.FontWeight.bold,
                     letterSpacing: 4,
-                    font: localizations.locale.languageCode == 'zh'
+                    font: printLocalizations.language.code == 'zh'
                         ? pw.Font.courier()
                         : pw.Font.helvetica(),
                     fontFallback: [pw.Font.times(), pw.Font.courier()])),
@@ -192,7 +201,8 @@ class VersementPrintService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text(localizations.translate('pdf_versement_reference'),
+                  pw.Text(
+                      printLocalizations.translate('pdf_versement_reference'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: PdfColors.grey600,
@@ -213,7 +223,7 @@ class VersementPrintService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text(localizations.translate('pdf_versement_date'),
+                  pw.Text(printLocalizations.translate('pdf_versement_date'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: PdfColors.grey600,
@@ -236,7 +246,7 @@ class VersementPrintService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text(localizations.translate('pdf_amount_paid_label'),
+                  pw.Text(printLocalizations.translate('pdf_amount_paid_label'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: PdfColors.grey600,
@@ -257,7 +267,9 @@ class VersementPrintService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text(localizations.translate('pdf_remaining_amount_label'),
+                  pw.Text(
+                      printLocalizations
+                          .translate('pdf_remaining_amount_label'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: PdfColors.grey600,
@@ -282,7 +294,7 @@ class VersementPrintService {
   }
 
   static pw.Widget _buildClientInfo(
-      Versement versement, AppLocalizations localizations) {
+      Versement versement, PrintLocalizations printLocalizations) {
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -314,21 +326,21 @@ class VersementPrintService {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
-              pw.Text(localizations.translate('pdf_commissionnaire'),
+              pw.Text(printLocalizations.translate('pdf_commissionnaire'),
                   style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColor.fromHex('#1A1E49'),
                       fontWeight: pw.FontWeight.bold,
                       letterSpacing: 2,
-                      font: localizations.locale.languageCode == 'zh'
+                      font: printLocalizations.language.code == 'zh'
                           ? pw.Font.courier()
                           : pw.Font.helvetica(),
                       fontFallback: [pw.Font.times(), pw.Font.courier()])),
               pw.Text(
-                  '${localizations.translate('pdf_commissionnaire_name')} : ${versement.commissionnaireName}',
+                  '${printLocalizations.translate('pdf_commissionnaire_name')} : ${versement.commissionnaireName}',
                   style: pw.TextStyle(fontSize: 16)),
               pw.Text(
-                  '${localizations.translate('pdf_commissionnaire_phone')} : ${versement.commissionnairePhone}',
+                  '${printLocalizations.translate('pdf_commissionnaire_phone')} : ${versement.commissionnairePhone}',
                   style: pw.TextStyle(fontSize: 16)),
             ],
           ),
@@ -339,18 +351,18 @@ class VersementPrintService {
 
   static pw.Widget _buildArticlesSection(
       List<Achat> achats,
-      AppLocalizations localizations,
+      PrintLocalizations printLocalizations,
       NumberFormat currencyFormat,
       InvoiceOptions options) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(localizations.translate("pdf_articles_list"),
+        pw.Text(printLocalizations.translate("pdf_articles_list"),
             style: pw.TextStyle(
               fontSize: 20,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
-              font: localizations.locale.languageCode == 'zh'
+              font: printLocalizations.language.code == 'zh'
                   ? pw.Font.courier()
                   : pw.Font.helvetica(),
               fontFallback: [pw.Font.times(), pw.Font.courier()],
@@ -363,14 +375,15 @@ class VersementPrintService {
             children: [
               pw.Container(
                   width: 120,
-                  child: pw.Text(localizations.translate('pdf_designation'),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_designation'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8))),
               pw.Container(
                   width: 40,
-                  child: pw.Text(localizations.translate('pdf_carton'),
+                  child: pw.Text(printLocalizations.translate('pdf_carton'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold,
@@ -378,14 +391,15 @@ class VersementPrintService {
               pw.Container(
                   width: 50,
                   child: pw.Text(
-                      localizations.translate('pdf_quantity_per_carton'),
+                      printLocalizations.translate('pdf_quantity_per_carton'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8))),
               pw.Container(
                   width: 60,
-                  child: pw.Text(localizations.translate('pdf_purchase_rate'),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_purchase_rate'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold,
@@ -393,14 +407,14 @@ class VersementPrintService {
               pw.Container(
                   width: 80,
                   child: pw.Text(
-                      localizations.translate('pdf_unit_price_short'),
+                      printLocalizations.translate('pdf_unit_price_short'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8))),
               pw.Container(
                   width: 80,
-                  child: pw.Text(localizations.translate('pdf_total'),
+                  child: pw.Text(printLocalizations.translate('pdf_total'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold,
@@ -453,7 +467,7 @@ class VersementPrintService {
       double montantTotal,
       InvoiceOptions options,
       NumberFormat currencyFormat,
-      AppLocalizations localizations) {
+      PrintLocalizations printLocalizations) {
     return pw.Container(
       width: double.infinity,
       child: pw.Column(
@@ -466,7 +480,7 @@ class VersementPrintService {
               mainAxisAlignment: pw.MainAxisAlignment.end,
               children: [
                 pw.Text(
-                  'Sous-total :',
+                  printLocalizations.translate('pdf_subtotal_label'),
                   style: pw.TextStyle(
                     fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
@@ -495,8 +509,13 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.lineMarginType == MarginType.percentage
-                        ? 'Marge par ligne (${options.lineMarginValue}%) :'
-                        : 'Marge par ligne (${options.lineMarginValue}) :',
+                        ? printLocalizations
+                            .translate('pdf_line_margin_percentage')
+                            .replaceAll('{value}', '${options.lineMarginValue}')
+                        : printLocalizations
+                            .translate('pdf_line_margin_fixed')
+                            .replaceAll(
+                                '{value}', '${options.lineMarginValue}'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -530,8 +549,10 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.discountType == DiscountType.percentage
-                        ? 'Remise (${options.discountValue}%) :'
-                        : 'Remise :',
+                        ? printLocalizations
+                            .translate('pdf_discount_percentage')
+                            .replaceAll('{value}', '${options.discountValue}')
+                        : printLocalizations.translate('pdf_discount_fixed'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -563,8 +584,12 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.storageFeeType == StorageFeeType.percentage
-                        ? 'Frais d\'entreposage (${options.storageFeeAmount}%) :'
-                        : 'Frais d\'entreposage :',
+                        ? printLocalizations
+                            .translate('pdf_storage_fees_percentage')
+                            .replaceAll(
+                                '{value}', '${options.storageFeeAmount}')
+                        : printLocalizations
+                            .translate('pdf_storage_fees_fixed'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -599,8 +624,14 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.globalMarginType == MarginType.percentage
-                        ? 'Marge globale (${options.globalMarginValue}%) :'
-                        : 'Marge globale (${options.globalMarginValue}) :',
+                        ? printLocalizations
+                            .translate('pdf_global_margin_percentage')
+                            .replaceAll(
+                                '{value}', '${options.globalMarginValue}')
+                        : printLocalizations
+                            .translate('pdf_global_margin_fixed')
+                            .replaceAll(
+                                '{value}', '${options.globalMarginValue}'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -642,13 +673,13 @@ class VersementPrintService {
 
   static pw.Widget _buildWithdrawalsSection(
       List<CashWithdrawal> retraits,
-      AppLocalizations localizations,
+      PrintLocalizations printLocalizations,
       NumberFormat currencyFormat,
       DateFormat dateFormat) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(localizations.translate("pdf_cash_withdrawals_list"),
+        pw.Text(printLocalizations.translate("pdf_cash_withdrawals_list"),
             style: pw.TextStyle(
               fontSize: 20,
               fontWeight: pw.FontWeight.bold,
@@ -662,20 +693,21 @@ class VersementPrintService {
             children: [
               pw.Container(
                   width: 100,
-                  child: pw.Text(localizations.translate('pdf_withdrawal_date'),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_withdrawal_date'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 100,
                   child: pw.Text(
-                      localizations.translate('pdf_withdrawal_amount'),
+                      printLocalizations.translate('pdf_withdrawal_amount'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold))),
               pw.Expanded(
                   child: pw.Text(
-                      localizations.translate('pdf_withdrawal_reason'),
+                      printLocalizations.translate('pdf_withdrawal_reason'),
                       style: pw.TextStyle(
                           color: PdfColors.white,
                           fontWeight: pw.FontWeight.bold))),
@@ -693,7 +725,7 @@ class VersementPrintService {
                     child: pw.Text(
                       r.dateRetrait != null
                           ? dateFormat.format(r.dateRetrait!)
-                          : localizations.translate('pdf_unknown_date'),
+                          : printLocalizations.translate('pdf_unknown_date'),
                     ),
                   ),
                   pw.Container(
@@ -708,19 +740,23 @@ class VersementPrintService {
   }
 
   static pw.Widget _buildWithdrawalsTotal(double totalRetraits,
-      NumberFormat currencyFormat, AppLocalizations localizations) {
+      NumberFormat currencyFormat, PrintLocalizations printLocalizations) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.end,
       children: [
         pw.Text(
-            '${localizations.translate('pdf_total_withdrawals')} : ${currencyFormat.format(totalRetraits)}',
+            '${printLocalizations.translate('pdf_total_withdrawals')} : ${currencyFormat.format(totalRetraits)}',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
       ],
     );
   }
 
-  static pw.Widget _buildAchatHeader(Uint8List logoBytes, Achat achat,
-      DateFormat dateFormat, AppLocalizations localizations, bool isProforma) {
+  static pw.Widget _buildAchatHeader(
+      Uint8List logoBytes,
+      Achat achat,
+      DateFormat dateFormat,
+      PrintLocalizations printLocalizations,
+      bool isProforma) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -731,14 +767,14 @@ class VersementPrintService {
           children: [
             pw.Text(
                 isProforma
-                    ? localizations.translate('pdf_proforma')
-                    : localizations.translate('pdf_purchase_invoice'),
+                    ? printLocalizations.translate('pdf_proforma')
+                    : printLocalizations.translate('pdf_purchase_invoice'),
                 style: pw.TextStyle(
                     fontSize: 32,
                     color: PdfColor.fromHex('#1A1E49'),
                     fontWeight: pw.FontWeight.bold,
                     letterSpacing: 4,
-                    font: localizations.locale.languageCode == 'zh'
+                    font: printLocalizations.language.code == 'zh'
                         ? pw.Font.courier()
                         : pw.Font.helvetica(),
                     fontFallback: [pw.Font.times(), pw.Font.courier()])),
@@ -747,7 +783,7 @@ class VersementPrintService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text(localizations.translate('pdf_reference_label'),
+                  pw.Text(printLocalizations.translate('pdf_reference_label'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: PdfColors.grey600,
@@ -768,7 +804,7 @@ class VersementPrintService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text(localizations.translate('pdf_date_label'),
+                  pw.Text(printLocalizations.translate('pdf_date_label'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: PdfColors.grey600,
@@ -794,19 +830,19 @@ class VersementPrintService {
 
   static pw.Widget _buildAchatArticlesSection(
       List<dynamic>? filteredItems,
-      AppLocalizations localizations,
+      PrintLocalizations printLocalizations,
       bool includeSupplierInfo,
       bool isProforma,
       NumberFormat currencyFormat) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(localizations.translate("pdf_articles_list_label"),
+        pw.Text(printLocalizations.translate("pdf_articles_list_label"),
             style: pw.TextStyle(
               fontSize: 20,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
-              font: localizations.locale.languageCode == 'zh'
+              font: printLocalizations.language.code == 'zh'
                   ? pw.Font.courier()
                   : pw.Font.helvetica(),
               fontFallback: [pw.Font.times(), pw.Font.courier()],
@@ -819,7 +855,7 @@ class VersementPrintService {
             children: [
               pw.Expanded(
                   child: pw.Text(
-                      localizations.translate('pdf_designation_label'),
+                      printLocalizations.translate('pdf_designation_label'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
@@ -828,7 +864,8 @@ class VersementPrintService {
               if (isProforma) // Colonne statut seulement pour pro-forma
                 pw.Container(
                     width: 60,
-                    child: pw.Text(localizations.translate('pdf_status_label'),
+                    child: pw.Text(
+                        printLocalizations.translate('pdf_status_label'),
                         style: pw.TextStyle(
                             color: isProforma
                                 ? PdfColors.grey500
@@ -840,7 +877,7 @@ class VersementPrintService {
                   filteredItems?.first.supplierName != null)
                 pw.Container(
                     width: 80,
-                    child: pw.Text(localizations.translate('pdf_supplier'),
+                    child: pw.Text(printLocalizations.translate('pdf_supplier'),
                         style: pw.TextStyle(
                             color: isProforma
                                 ? PdfColors.grey500
@@ -849,7 +886,7 @@ class VersementPrintService {
                             fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 40,
-                  child: pw.Text(localizations.translate('pdf_carton'),
+                  child: pw.Text(printLocalizations.translate('pdf_carton'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
@@ -858,7 +895,7 @@ class VersementPrintService {
               pw.Container(
                   width: 50,
                   child: pw.Text(
-                      localizations.translate('pdf_quantity_per_carton'),
+                      printLocalizations.translate('pdf_quantity_per_carton'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
@@ -866,7 +903,7 @@ class VersementPrintService {
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 60,
-                  child: pw.Text(localizations.translate('pdf_rate'),
+                  child: pw.Text(printLocalizations.translate('pdf_rate'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
@@ -875,7 +912,7 @@ class VersementPrintService {
               pw.Container(
                   width: 80,
                   child: pw.Text(
-                      localizations.translate('pdf_unit_price_label'),
+                      printLocalizations.translate('pdf_unit_price_label'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
@@ -883,7 +920,7 @@ class VersementPrintService {
                           fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 80,
-                  child: pw.Text(localizations.translate('pdf_total'),
+                  child: pw.Text(printLocalizations.translate('pdf_total'),
                       style: pw.TextStyle(
                           color:
                               isProforma ? PdfColors.grey500 : PdfColors.white,
@@ -906,8 +943,8 @@ class VersementPrintService {
                     width: 60,
                     child: pw.Text(
                       item.status == Status.RECEIVED
-                          ? localizations.translate('pdf_received')
-                          : localizations.translate('pdf_pending'),
+                          ? printLocalizations.translate('pdf_received')
+                          : printLocalizations.translate('pdf_pending'),
                       style: pw.TextStyle(
                         fontSize: 16,
                         color: item.status == Status.RECEIVED
@@ -957,7 +994,7 @@ class VersementPrintService {
       double montantTotal,
       InvoiceOptions options,
       NumberFormat currencyFormat,
-      AppLocalizations localizations,
+      PrintLocalizations printLocalizations,
       bool isProforma) {
     return pw.Container(
       width: double.infinity,
@@ -971,7 +1008,7 @@ class VersementPrintService {
               mainAxisAlignment: pw.MainAxisAlignment.end,
               children: [
                 pw.Text(
-                  'Sous-total :',
+                  printLocalizations.translate('pdf_subtotal_label'),
                   style: pw.TextStyle(
                     fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
@@ -1000,8 +1037,13 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.lineMarginType == MarginType.percentage
-                        ? 'Marge par ligne (${options.lineMarginValue}%) :'
-                        : 'Marge par ligne (${options.lineMarginValue}) :',
+                        ? printLocalizations
+                            .translate('pdf_line_margin_percentage')
+                            .replaceAll('{value}', '${options.lineMarginValue}')
+                        : printLocalizations
+                            .translate('pdf_line_margin_fixed')
+                            .replaceAll(
+                                '{value}', '${options.lineMarginValue}'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -1035,8 +1077,10 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.discountType == DiscountType.percentage
-                        ? 'Remise (${options.discountValue}%) :'
-                        : 'Remise :',
+                        ? printLocalizations
+                            .translate('pdf_discount_percentage')
+                            .replaceAll('{value}', '${options.discountValue}')
+                        : printLocalizations.translate('pdf_discount_fixed'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -1068,8 +1112,12 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.storageFeeType == StorageFeeType.percentage
-                        ? 'Frais d\'entreposage (${options.storageFeeAmount}%) :'
-                        : 'Frais d\'entreposage :',
+                        ? printLocalizations
+                            .translate('pdf_storage_fees_percentage')
+                            .replaceAll(
+                                '{value}', '${options.storageFeeAmount}')
+                        : printLocalizations
+                            .translate('pdf_storage_fees_fixed'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -1104,8 +1152,14 @@ class VersementPrintService {
                 children: [
                   pw.Text(
                     options.globalMarginType == MarginType.percentage
-                        ? 'Marge globale (${options.globalMarginValue}%) :'
-                        : 'Marge globale (${options.globalMarginValue}) :',
+                        ? printLocalizations
+                            .translate('pdf_global_margin_percentage')
+                            .replaceAll(
+                                '{value}', '${options.globalMarginValue}')
+                        : printLocalizations
+                            .translate('pdf_global_margin_fixed')
+                            .replaceAll(
+                                '{value}', '${options.globalMarginValue}'),
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -1133,7 +1187,7 @@ class VersementPrintService {
 
           // Total final
           pw.Text(
-            'TOTAL FINAL : ${currencyFormat.format(montantTotal)}',
+            '${printLocalizations.translate('pdf_total_final')} : ${currencyFormat.format(montantTotal)}',
             style: pw.TextStyle(
               fontSize: 18,
               fontWeight: pw.FontWeight.bold,
@@ -1144,7 +1198,7 @@ class VersementPrintService {
           if (isProforma) ...[
             pw.SizedBox(height: 8),
             pw.Text(
-              localizations.translate('pdf_estimated_amount'),
+              printLocalizations.translate('pdf_estimated_amount'),
               style: pw.TextStyle(
                 fontSize: 10,
                 color: PdfColors.grey600,

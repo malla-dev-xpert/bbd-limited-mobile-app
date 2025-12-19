@@ -23,6 +23,8 @@ import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/core/print/print_localizations.dart';
+import 'package:bbd_limited/core/print/print_language.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/components/print/print_config_page.dart';
 
@@ -407,12 +409,15 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     );
   }
 
-  void _showPdfPreviewDialog(DateTimeRange? dateRange) async {
+  Future<void> _showPdfPreviewDialog(
+      DateTimeRange? dateRange, PrintLanguage printLanguage) async {
     try {
+      final printLocalizations = await PrintLocalizations.create(printLanguage);
+      if (!context.mounted) return;
       final pdfBytes = await PartnerPrintService.buildClientReportPdfBytes(
         _partner,
         dateRange: dateRange,
-        localizations: AppLocalizations.of(context),
+        printLocalizations: printLocalizations,
         invoiceOptions: _invoiceOptions,
       );
 
@@ -446,23 +451,23 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         builder: (context) => PrintConfigPage(
           title: AppLocalizations.of(context)
               .translate('purchase_history_print_options'),
-          previewButtonLabel:
-              AppLocalizations.of(context).translate('purchase_history_preview_pdf'),
+          previewButtonLabel: AppLocalizations.of(context)
+              .translate('purchase_history_preview_pdf'),
           initialOptions: _invoiceOptions,
-                                currencySymbol: _getPartnerCurrency(),
+          currencySymbol: _getPartnerCurrency(),
           onOptionsChanged: _updateInvoiceOptions,
-          onPreview: (result) => _showPdfPreviewDialog(result.dateRange),
-          printOptionsTitle:
-              AppLocalizations.of(context).translate('purchase_history_invoice_options'),
+          onPreview: (result) =>
+              _showPdfPreviewDialog(result.dateRange, result.printLanguage),
+          printOptionsTitle: AppLocalizations.of(context)
+              .translate('purchase_history_invoice_options'),
           billingOptionsTitle:
               AppLocalizations.of(context).translate('billing_options'),
-          appliedOptionsLabel:
-              AppLocalizations.of(context).translate('currently_applied_options'),
+          appliedOptionsLabel: AppLocalizations.of(context)
+              .translate('currently_applied_options'),
           showDateRange: true,
           dateSectionTitle:
               AppLocalizations.of(context).translate('purchase_history_date'),
-          allDataLabel:
-              AppLocalizations.of(context).translate('all_data'),
+          allDataLabel: AppLocalizations.of(context).translate('all_data'),
           filterByDateLabel:
               AppLocalizations.of(context).translate('filter_by_date'),
           selectPeriodPlaceholder:
@@ -471,7 +476,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       ),
     );
   }
-
 
   Widget _buildFloatingActionButton() {
     return Container(
@@ -1030,4 +1034,3 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     }
   }
 }
-

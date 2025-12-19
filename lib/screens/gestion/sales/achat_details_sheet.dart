@@ -13,6 +13,8 @@ import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/core/print/print_localizations.dart';
+import 'package:bbd_limited/core/print/print_language.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:intl/intl.dart';
@@ -680,6 +682,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             achat,
             result.includeSupplierInfo ?? false,
             result.isProforma ?? false,
+            result.printLanguage,
           ),
           printOptionsTitle: AppLocalizations.of(context)
               .translate('purchase_history_invoice_options'),
@@ -698,8 +701,14 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     );
   }
 
-  void _showAchatPdfPreviewDialog(BuildContext context, Achat achat,
-      bool includeSupplierInfo, bool isProforma) {
+  Future<void> _showAchatPdfPreviewDialog(
+      BuildContext context,
+      Achat achat,
+      bool includeSupplierInfo,
+      bool isProforma,
+      PrintLanguage printLanguage) async {
+    final printLocalizations = await PrintLocalizations.create(printLanguage);
+    if (!context.mounted) return;
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -711,7 +720,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               achat,
               includeSupplierInfo: includeSupplierInfo,
               currencyFormat: currencyFormat,
-              localizations: AppLocalizations.of(context),
+              printLocalizations: printLocalizations,
               isProforma: isProforma,
               invoiceOptions: _invoiceOptions,
             ),

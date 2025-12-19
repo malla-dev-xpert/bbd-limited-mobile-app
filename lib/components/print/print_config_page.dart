@@ -3,18 +3,22 @@ import 'package:intl/intl.dart';
 
 import 'package:bbd_limited/components/invoice_options_config.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/core/print/print_language.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class PrintConfigResult {
   final DateTimeRange? dateRange;
   final bool? includeSupplierInfo;
   final bool? isProforma;
   final InvoiceOptions options;
+  final PrintLanguage printLanguage;
 
   const PrintConfigResult({
     required this.options,
     this.dateRange,
     this.includeSupplierInfo,
     this.isProforma,
+    this.printLanguage = PrintLanguage.french,
   });
 }
 
@@ -82,6 +86,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
   bool _printAll = true;
   bool _includeSupplierInfo = false;
   bool _isProforma = false;
+  PrintLanguage _printLanguage = PrintLanguage.french;
 
   bool get _hasActiveOptions {
     return _options.enableLineMargin ||
@@ -116,6 +121,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
         includeSupplierInfo:
             widget.showSupplierToggle ? _includeSupplierInfo : null,
         isProforma: widget.showProformaToggle ? _isProforma : null,
+        printLanguage: _printLanguage,
       ),
     );
   }
@@ -187,9 +193,15 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
             ),
           ),
           const SizedBox(height: 12),
-          if (widget.showDateRange) _buildDateRangeSection(isMobile),
-          if (widget.showSupplierToggle || widget.showProformaToggle)
+          _buildPrintLanguageSection(),
+          if (widget.showDateRange) ...[
+            const SizedBox(height: 16),
+            _buildDateRangeSection(isMobile),
+          ],
+          if (widget.showSupplierToggle || widget.showProformaToggle) ...[
+            const SizedBox(height: 16),
             _buildToggleSection(),
+          ],
         ],
       ),
     );
@@ -347,6 +359,119 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPrintLanguageSection() {
+    final localizations = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          localizations.translate('print_language'),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: DropdownButtonFormField<PrintLanguage>(
+            value: _printLanguage,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              prefixIcon: const Icon(Icons.language, color: Color(0xFF1A1E49)),
+            ),
+            selectedItemBuilder: (BuildContext context) {
+              return PrintLanguage.values.map((language) {
+                String displayName;
+                switch (language) {
+                  case PrintLanguage.french:
+                    displayName =
+                        localizations.translate('print_language_french');
+                    break;
+                  case PrintLanguage.english:
+                    displayName =
+                        localizations.translate('print_language_english');
+                    break;
+                  case PrintLanguage.chinese:
+                    displayName =
+                        localizations.translate('print_language_chinese');
+                    break;
+                }
+                return Row(
+                  children: [
+                    Text(
+                      language.flag,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      displayName,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                );
+              }).toList();
+            },
+            items: PrintLanguage.values.map((language) {
+              String displayName;
+              switch (language) {
+                case PrintLanguage.french:
+                  displayName =
+                      localizations.translate('print_language_french');
+                  break;
+                case PrintLanguage.english:
+                  displayName =
+                      localizations.translate('print_language_english');
+                  break;
+                case PrintLanguage.chinese:
+                  displayName =
+                      localizations.translate('print_language_chinese');
+                  break;
+              }
+              return DropdownMenuItem<PrintLanguage>(
+                value: language,
+                child: Row(
+                  children: [
+                    Text(
+                      language.flag,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      displayName,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _printLanguage = value;
+                });
+              }
+            },
+            icon:
+                const Icon(Icons.keyboard_arrow_down, color: Color(0xFF1A1E49)),
+            dropdownColor: Colors.white,
+            style: const TextStyle(color: Colors.black87),
+          ),
+        ),
+      ],
     );
   }
 

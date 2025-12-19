@@ -19,6 +19,8 @@ import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/utils/versement_print_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/core/print/print_localizations.dart';
+import 'package:bbd_limited/core/print/print_language.dart';
 import 'package:bbd_limited/components/invoice_options_config.dart';
 import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
@@ -1043,7 +1045,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
           initialOptions: _invoiceOptions,
           currencySymbol: widget.versement.deviseCode ?? '¥',
           onOptionsChanged: _updateInvoiceOptions,
-          onPreview: (_) => _showPdfPreviewDialog(context),
+          onPreview: (result) =>
+              _showPdfPreviewDialog(context, result.printLanguage),
           printOptionsTitle: AppLocalizations.of(context)
               .translate('purchase_history_invoice_options'),
           billingOptionsTitle:
@@ -1105,9 +1108,14 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     ),
                     const SizedBox(width: 16),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.of(context).pop();
-                        _showPdfPreviewDialog(context);
+                        final printLocalizations =
+                            await PrintLocalizations.createDefault();
+                        if (context.mounted) {
+                          _showPdfPreviewDialog(
+                              context, printLocalizations.language);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1A1E49),
@@ -1125,7 +1133,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
     );
   }
 
-  void _showPdfPreviewDialog(BuildContext context) {
+  Future<void> _showPdfPreviewDialog(
+      BuildContext context, PrintLanguage printLanguage) async {
+    final printLocalizations = await PrintLocalizations.create(printLanguage);
+    if (!context.mounted) return;
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1137,7 +1148,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                 widget.versement,
                 _achats,
                 widget.versement.cashWithdrawalDtoList ?? [],
-                AppLocalizations.of(context),
+                printLocalizations,
                 invoiceOptions: _invoiceOptions),
             pdfFileName: 'recu_${widget.versement.reference ?? ""}.pdf',
           ),
