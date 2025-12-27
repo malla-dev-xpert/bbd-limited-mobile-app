@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/activity_log.dart';
 import 'package:bbd_limited/models/log_detail.dart';
 import 'package:http/http.dart' as http;
@@ -14,9 +13,6 @@ class LogService {
       final response = await http.get(
         Uri.parse('$baseUrl/logs/$logId'),
       );
-
-      log('Log Details API Response: ${response.statusCode}');
-      log('Log Details API Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonBody = json.decode(utf8.decode(response.bodyBytes));
@@ -62,7 +58,6 @@ class LogService {
             '${dateStart.minute.toString().padLeft(2, '0')}:'
             '${dateStart.second.toString().padLeft(2, '0')}';
         queryParams['dateStart'] = formatted;
-        log('dateStart formatted: $formatted');
       }
 
       if (dateEnd != null) {
@@ -76,20 +71,12 @@ class LogService {
             '${dateEnd.minute.toString().padLeft(2, '0')}:'
             '${dateEnd.second.toString().padLeft(2, '0')}';
         queryParams['dateEnd'] = formatted;
-        log('dateEnd formatted: $formatted');
       }
 
       final finalUri =
           Uri.parse('$baseUrl/logs').replace(queryParameters: queryParams);
 
-      log('Logs API Request: $finalUri');
-
       final response = await http.get(finalUri);
-
-      log('Logs API Response: ${response.statusCode}');
-      if (response.statusCode != 200) {
-        log('Logs API Error Body: ${response.body}');
-      }
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonBody = json.decode(

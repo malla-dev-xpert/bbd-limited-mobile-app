@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/log_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -391,16 +390,12 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
     try {
       final page = refresh ? 0 : _currentPage;
 
-      log('Loading logs - page: $page, userId: ${_selectedUser?.id}, dateStart: $dateStart, dateEnd: $dateEnd');
-
       final newLogs = await _logService.getLogs(
         page: page,
         userId: _selectedUser?.id,
         dateStart: dateStart,
         dateEnd: dateEnd,
       );
-
-      log('Loaded ${newLogs.length} logs, refresh: $refresh');
 
       if (mounted) {
         setState(() {
@@ -414,11 +409,8 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
           _isLoading = false;
           _isInitialLoading = false;
         });
-
-        log('After setState: logs count: ${_logs.length}, hasMore: $_hasMore');
       }
     } catch (e) {
-      log('Error loading logs: $e');
       if (mounted) {
         setState(() {
           _errorMessage = e.toString().replaceAll('Exception: ', '');
