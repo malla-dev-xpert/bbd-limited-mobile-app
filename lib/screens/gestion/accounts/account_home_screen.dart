@@ -80,6 +80,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
 
   Future<void> _calculateTotalVersementsUSD() async {
     if (_allVersements.isEmpty) {
+      if (!mounted) return;
       setState(() {
         _totalVersementsUSD = 0.0;
       });
@@ -94,11 +95,13 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
         } else {
           final rate =
               await _exchangeRateService.getExchangeRate(versement.deviseCode!);
+          if (!mounted) return;
           totalUSD += versement.montantVerser! / rate;
         }
       }
     }
 
+    if (!mounted) return;
     setState(() {
       _totalVersementsUSD = totalUSD;
     });
@@ -107,6 +110,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   Future<void> fetchPaiements({bool reset = false}) async {
     if (_isLoading || (!reset && !_hasMoreData)) return;
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       if (reset) {
@@ -119,6 +123,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     try {
       final paiement = await _versementServices.getAll(page: currentPage);
 
+      if (!mounted) return;
       setState(() {
         _allVersements.addAll(paiement);
         _filteredVersements = List.from(_allVersements);
@@ -131,9 +136,11 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       });
       await _calculateTotalVersementsUSD();
     } catch (e) {
+      if (!mounted) return;
       showErrorTopSnackBar(context,
           AppLocalizations.of(context).translate('error_loading_payments'));
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _refreshLoading = false;
@@ -144,6 +151,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   void filterPackages(String query) {
     _searchTimer?.cancel();
     _searchTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       setState(() {
         _filteredVersements = _allVersements.where((pmt) {
           // Text filter

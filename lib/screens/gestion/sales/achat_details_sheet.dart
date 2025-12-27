@@ -696,6 +696,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           showProformaToggle: true,
           proformaLabel: AppLocalizations.of(context)
               .translate('purchase_history_generate_proforma'),
+          items: achat.items ?? [],
+          subtotal: (achat.items?.fold<double>(
+                  0.0, (sum, item) => sum + (item.totalPrice ?? 0.0))) ??
+              0.0,
         ),
       ),
     );

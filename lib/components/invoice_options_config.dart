@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/components/item_selection_bottom_sheet.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/models/selective_margin.dart';
 
 class InvoiceOptionsConfig extends StatefulWidget {
   final InvoiceOptions options;
   final ValueChanged<InvoiceOptions> onOptionsChanged;
   final String currencySymbol;
+  final List<Items>? items;
 
   const InvoiceOptionsConfig({
     Key? key,
     required this.options,
     required this.onOptionsChanged,
     this.currencySymbol = '¥',
+    this.items,
   }) : super(key: key);
 
   @override
@@ -178,11 +183,64 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               title: 'Marge par ligne',
               subtitle: 'Ajouter une marge sur chaque ligne',
               value: _options.enableLineMargin,
-              onChanged: (value) {
-                _updateOptions(_options.copyWith(
-                  enableLineMargin: value ?? false,
-                  lineMarginValue: value == true ? 10.0 : null,
-                ));
+              onChanged: (value) async {
+                if (value == true &&
+                    widget.items != null &&
+                    widget.items!.isNotEmpty) {
+                  // Afficher le bottom sheet pour sélectionner les articles
+                  final selectedItemIds = await ItemSelectionBottomSheet.show(
+                    context,
+                    items: widget.items!,
+                    title: 'Sélectionner les articles pour la marge par ligne',
+                    subtitle:
+                        'Choisissez les articles sur lesquels appliquer la marge',
+                    currencySymbol: widget.currencySymbol,
+                  );
+
+                  if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                    // Créer des marges sélectives pour les articles sélectionnés
+                    final newMargins = <int, SelectiveItemMargin>{};
+                    for (final itemId in selectedItemIds) {
+                      final item = widget.items!.firstWhere(
+                        (item) => item.id == itemId,
+                        orElse: () => widget.items!.first,
+                      );
+                      if (item.id != null) {
+                        newMargins[itemId] = SelectiveItemMargin(
+                          itemId: itemId,
+                          type: _options.lineMarginType,
+                          value: _options.lineMarginValue ?? 10.0,
+                          originalUnitPrice: item.unitPrice ?? 0.0,
+                          originalTotalPrice: item.totalPrice ?? 0.0,
+                        );
+                      }
+                    }
+                    _updateOptions(_options.copyWith(
+                      enableLineMargin: true,
+                      lineMarginValue: _options.lineMarginValue ?? 10.0,
+                      enableSelectiveItemMargins: true,
+                      selectiveItemMargins: {
+                        ..._options.selectiveItemMargins,
+                        ...newMargins,
+                      },
+                    ));
+                  } else {
+                    // L'utilisateur a annulé ou n'a rien sélectionné - ne pas activer
+                    return;
+                  }
+                } else if (value == true &&
+                    (widget.items == null || widget.items!.isEmpty)) {
+                  // Pas d'items disponibles, activer simplement la marge par ligne globale
+                  _updateOptions(_options.copyWith(
+                    enableLineMargin: true,
+                    lineMarginValue: _options.lineMarginValue ?? 10.0,
+                  ));
+                } else {
+                  _updateOptions(_options.copyWith(
+                    enableLineMargin: value ?? false,
+                    lineMarginValue: value == true ? 10.0 : null,
+                  ));
+                }
               },
               children: [
                 if (_options.enableLineMargin) ...[
@@ -216,7 +274,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           icon: _options.lineMarginType == MarginType.percentage
                               ? Icons.percent
                               : Icons.attach_money,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           onChanged: (value) {
                             final amount = double.tryParse(value);
                             if (amount != null &&
@@ -326,11 +385,36 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               title: 'Remise',
               subtitle: 'Appliquer une remise sur le total',
               value: _options.enableDiscount,
-              onChanged: (value) {
-                _updateOptions(_options.copyWith(
-                  enableDiscount: value ?? false,
-                  discountValue: value == true ? 5.0 : null,
-                ));
+              onChanged: (value) async {
+                if (value == true &&
+                    widget.items != null &&
+                    widget.items!.isNotEmpty) {
+                  // Afficher le bottom sheet pour sélectionner les articles
+                  final selectedItemIds = await ItemSelectionBottomSheet.show(
+                    context,
+                    items: widget.items!,
+                    title: 'Sélectionner les articles pour la remise',
+                    subtitle:
+                        'Choisissez les articles sur lesquels appliquer la remise',
+                    currencySymbol: widget.currencySymbol,
+                  );
+
+                  if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                    // Note: Pour les remises, on pourrait créer des marges sélectives négatives
+                    // ou simplement activer la remise globale. Pour l'instant, on active juste la remise.
+                    _updateOptions(_options.copyWith(
+                      enableDiscount: true,
+                      discountValue: _options.discountValue ?? 5.0,
+                    ));
+                  } else {
+                    return;
+                  }
+                } else {
+                  _updateOptions(_options.copyWith(
+                    enableDiscount: value ?? false,
+                    discountValue: value == true ? 5.0 : null,
+                  ));
+                }
               },
               children: [
                 if (_options.enableDiscount) ...[
@@ -389,11 +473,37 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               title: 'Frais d\'entreposage',
               subtitle: 'Ajouter des frais d\'entreposage',
               value: _options.enableStorageFees,
-              onChanged: (value) {
-                _updateOptions(_options.copyWith(
-                  enableStorageFees: value ?? false,
-                  storageFeeAmount: value == true ? 25.0 : null,
-                ));
+              onChanged: (value) async {
+                if (value == true &&
+                    widget.items != null &&
+                    widget.items!.isNotEmpty) {
+                  // Afficher le bottom sheet pour sélectionner les articles
+                  final selectedItemIds = await ItemSelectionBottomSheet.show(
+                    context,
+                    items: widget.items!,
+                    title:
+                        'Sélectionner les articles pour les frais d\'entreposage',
+                    subtitle:
+                        'Choisissez les articles sur lesquels appliquer les frais',
+                    currencySymbol: widget.currencySymbol,
+                  );
+
+                  if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                    // Pour les frais d'entreposage, on pourrait créer des marges sélectives
+                    // ou simplement activer les frais. Pour l'instant, on active juste les frais.
+                    _updateOptions(_options.copyWith(
+                      enableStorageFees: true,
+                      storageFeeAmount: _options.storageFeeAmount ?? 25.0,
+                    ));
+                  } else {
+                    return;
+                  }
+                } else {
+                  _updateOptions(_options.copyWith(
+                    enableStorageFees: value ?? false,
+                    storageFeeAmount: value == true ? 25.0 : null,
+                  ));
+                }
               },
               children: [
                 if (_options.enableStorageFees) ...[
@@ -470,11 +580,61 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           icon: Icons.trending_up,
           color: Colors.blue,
           isEnabled: _options.enableLineMargin,
-          onToggle: (value) {
-            _updateOptions(_options.copyWith(
-              enableLineMargin: value,
-              lineMarginValue: value ? 10.0 : null,
-            ));
+          onToggle: (value) async {
+            if (value && widget.items != null && widget.items!.isNotEmpty) {
+              // Afficher le bottom sheet pour sélectionner les articles
+              final selectedItemIds = await ItemSelectionBottomSheet.show(
+                context,
+                items: widget.items!,
+                title: 'Sélectionner les articles pour la marge par ligne',
+                subtitle:
+                    'Choisissez les articles sur lesquels appliquer la marge',
+                currencySymbol: widget.currencySymbol,
+              );
+
+              if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                // Créer des marges sélectives pour les articles sélectionnés
+                final newMargins = <int, SelectiveItemMargin>{};
+                for (final itemId in selectedItemIds) {
+                  final item = widget.items!.firstWhere(
+                    (item) => item.id == itemId,
+                    orElse: () => widget.items!.first,
+                  );
+                  if (item.id != null) {
+                    newMargins[itemId] = SelectiveItemMargin(
+                      itemId: itemId,
+                      type: _options.lineMarginType,
+                      value: _options.lineMarginValue ?? 10.0,
+                      originalUnitPrice: item.unitPrice ?? 0.0,
+                      originalTotalPrice: item.totalPrice ?? 0.0,
+                    );
+                  }
+                }
+                _updateOptions(_options.copyWith(
+                  enableLineMargin: true,
+                  lineMarginValue: _options.lineMarginValue ?? 10.0,
+                  enableSelectiveItemMargins: true,
+                  selectiveItemMargins: {
+                    ..._options.selectiveItemMargins,
+                    ...newMargins,
+                  },
+                ));
+              } else {
+                return;
+              }
+            } else if (value &&
+                (widget.items == null || widget.items!.isEmpty)) {
+              // Pas d'items disponibles, activer simplement la marge par ligne globale
+              _updateOptions(_options.copyWith(
+                enableLineMargin: true,
+                lineMarginValue: _options.lineMarginValue ?? 10.0,
+              ));
+            } else {
+              _updateOptions(_options.copyWith(
+                enableLineMargin: value,
+                lineMarginValue: value ? 10.0 : null,
+              ));
+            }
           },
           child:
               _options.enableLineMargin ? _buildLineMarginMobileConfig() : null,
@@ -507,11 +667,32 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           icon: Icons.discount,
           color: Colors.orange,
           isEnabled: _options.enableDiscount,
-          onToggle: (value) {
-            _updateOptions(_options.copyWith(
-              enableDiscount: value,
-              discountValue: value ? 5.0 : null,
-            ));
+          onToggle: (value) async {
+            if (value && widget.items != null && widget.items!.isNotEmpty) {
+              // Afficher le bottom sheet pour sélectionner les articles
+              final selectedItemIds = await ItemSelectionBottomSheet.show(
+                context,
+                items: widget.items!,
+                title: 'Sélectionner les articles pour la remise',
+                subtitle:
+                    'Choisissez les articles sur lesquels appliquer la remise',
+                currencySymbol: widget.currencySymbol,
+              );
+
+              if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                _updateOptions(_options.copyWith(
+                  enableDiscount: true,
+                  discountValue: _options.discountValue ?? 5.0,
+                ));
+              } else {
+                return;
+              }
+            } else {
+              _updateOptions(_options.copyWith(
+                enableDiscount: value,
+                discountValue: value ? 5.0 : null,
+              ));
+            }
           },
           child: _options.enableDiscount ? _buildDiscountMobileConfig() : null,
         ),
@@ -524,11 +705,33 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           icon: Icons.warehouse,
           color: Colors.purple,
           isEnabled: _options.enableStorageFees,
-          onToggle: (value) {
-            _updateOptions(_options.copyWith(
-              enableStorageFees: value,
-              storageFeeAmount: value ? 25.0 : null,
-            ));
+          onToggle: (value) async {
+            if (value && widget.items != null && widget.items!.isNotEmpty) {
+              // Afficher le bottom sheet pour sélectionner les articles
+              final selectedItemIds = await ItemSelectionBottomSheet.show(
+                context,
+                items: widget.items!,
+                title:
+                    'Sélectionner les articles pour les frais d\'entreposage',
+                subtitle:
+                    'Choisissez les articles sur lesquels appliquer les frais',
+                currencySymbol: widget.currencySymbol,
+              );
+
+              if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                _updateOptions(_options.copyWith(
+                  enableStorageFees: true,
+                  storageFeeAmount: _options.storageFeeAmount ?? 25.0,
+                ));
+              } else {
+                return;
+              }
+            } else {
+              _updateOptions(_options.copyWith(
+                enableStorageFees: value,
+                storageFeeAmount: value ? 25.0 : null,
+              ));
+            }
           },
           child: _options.enableStorageFees
               ? _buildStorageFeeMobileConfig()
@@ -1103,13 +1306,17 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(

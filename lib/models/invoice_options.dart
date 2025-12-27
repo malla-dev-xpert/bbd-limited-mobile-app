@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/models/selective_margin.dart';
 
 /// Options configurables pour les factures
 class InvoiceOptions {
@@ -24,6 +25,14 @@ class InvoiceOptions {
   final double? storageFeeAmount;
   final StorageFeeType storageFeeType;
 
+  // Marges sélectives par article
+  final bool enableSelectiveItemMargins;
+  final Map<int, SelectiveItemMargin> selectiveItemMargins;
+
+  // Marges sélectives par frais
+  final bool enableSelectiveFeeMargins;
+  final Map<String, SelectiveFeeMargin> selectiveFeeMargins;
+
   // Validation
   static const double maxPercentage = 100.0;
   static const double minPercentage = 0.0;
@@ -45,6 +54,10 @@ class InvoiceOptions {
     this.enableStorageFees = false,
     this.storageFeeAmount,
     this.storageFeeType = StorageFeeType.fixed,
+    this.enableSelectiveItemMargins = false,
+    this.selectiveItemMargins = const {},
+    this.enableSelectiveFeeMargins = false,
+    this.selectiveFeeMargins = const {},
   });
 
   /// Copie avec modifications
@@ -63,6 +76,10 @@ class InvoiceOptions {
     bool? enableStorageFees,
     double? storageFeeAmount,
     StorageFeeType? storageFeeType,
+    bool? enableSelectiveItemMargins,
+    Map<int, SelectiveItemMargin>? selectiveItemMargins,
+    bool? enableSelectiveFeeMargins,
+    Map<String, SelectiveFeeMargin>? selectiveFeeMargins,
   }) {
     return InvoiceOptions(
       enableLineMargin: enableLineMargin ?? this.enableLineMargin,
@@ -79,6 +96,12 @@ class InvoiceOptions {
       enableStorageFees: enableStorageFees ?? this.enableStorageFees,
       storageFeeAmount: storageFeeAmount ?? this.storageFeeAmount,
       storageFeeType: storageFeeType ?? this.storageFeeType,
+      enableSelectiveItemMargins:
+          enableSelectiveItemMargins ?? this.enableSelectiveItemMargins,
+      selectiveItemMargins: selectiveItemMargins ?? this.selectiveItemMargins,
+      enableSelectiveFeeMargins:
+          enableSelectiveFeeMargins ?? this.enableSelectiveFeeMargins,
+      selectiveFeeMargins: selectiveFeeMargins ?? this.selectiveFeeMargins,
     );
   }
 
@@ -235,11 +258,43 @@ class InvoiceOptions {
       'enableStorageFees': enableStorageFees,
       'storageFeeAmount': storageFeeAmount,
       'storageFeeType': storageFeeType.name,
+      'enableSelectiveItemMargins': enableSelectiveItemMargins,
+      'selectiveItemMargins': selectiveItemMargins.map(
+        (key, value) => MapEntry(key.toString(), value.toJson()),
+      ),
+      'enableSelectiveFeeMargins': enableSelectiveFeeMargins,
+      'selectiveFeeMargins': selectiveFeeMargins.map(
+        (key, value) => MapEntry(key, value.toJson()),
+      ),
     };
   }
 
   /// Création depuis JSON
   factory InvoiceOptions.fromJson(Map<String, dynamic> json) {
+    // Parser les marges sélectives par article
+    Map<int, SelectiveItemMargin> itemMargins = {};
+    if (json['selectiveItemMargins'] != null) {
+      final marginsMap = json['selectiveItemMargins'] as Map<String, dynamic>;
+      itemMargins = marginsMap.map(
+        (key, value) => MapEntry(
+          int.parse(key),
+          SelectiveItemMargin.fromJson(value as Map<String, dynamic>),
+        ),
+      );
+    }
+
+    // Parser les marges sélectives par frais
+    Map<String, SelectiveFeeMargin> feeMargins = {};
+    if (json['selectiveFeeMargins'] != null) {
+      final marginsMap = json['selectiveFeeMargins'] as Map<String, dynamic>;
+      feeMargins = marginsMap.map(
+        (key, value) => MapEntry(
+          key,
+          SelectiveFeeMargin.fromJson(value as Map<String, dynamic>),
+        ),
+      );
+    }
+
     return InvoiceOptions(
       enableLineMargin: json['enableLineMargin'] ?? false,
       lineMarginValue: json['lineMarginValue']?.toDouble(),
@@ -270,6 +325,10 @@ class InvoiceOptions {
         (e) => e.name == json['storageFeeType'],
         orElse: () => StorageFeeType.fixed,
       ),
+      enableSelectiveItemMargins: json['enableSelectiveItemMargins'] ?? false,
+      selectiveItemMargins: itemMargins,
+      enableSelectiveFeeMargins: json['enableSelectiveFeeMargins'] ?? false,
+      selectiveFeeMargins: feeMargins,
     );
   }
 

@@ -52,6 +52,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   Future<void> _loadCurrentUser() async {
     try {
       final user = await _authService.getUserInfo();
+      if (!mounted) return;
       if (user == null) {
         showErrorTopSnackBar(
           context,
@@ -59,10 +60,12 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         );
         return;
       }
+      if (!mounted) return;
       setState(() {
         _currentUser = user;
       });
     } catch (e) {
+      if (!mounted) return;
       showErrorTopSnackBar(
         context,
         AppLocalizations.of(context)
@@ -75,6 +78,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   Future<void> fetchUsers({bool reset = false}) async {
     if (_isLoading || (!reset && !_hasMoreData)) return;
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       if (reset) {
@@ -88,6 +92,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     try {
       final users = await _authService.getAllUsers(page: currentPage);
 
+      if (!mounted) return;
       setState(() {
         _allUsers.addAll(users
             .where((user) => user.email != "admin@bbdproject.com")
@@ -102,6 +107,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       showErrorTopSnackBar(
         context,
         AppLocalizations.of(context)
@@ -109,12 +115,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             .replaceAll('{error}', e.toString()),
       );
     } finally {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
 
   void _applyFilters() {
     final query = searchController.text.toLowerCase();
+    if (!mounted) return;
     setState(() {
       _filteredUsers = _allUsers.where((user) {
         final searchUser = user.username.toLowerCase().contains(query) ||
@@ -139,6 +147,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   }
 
   void handleStatusFilter(String value) {
+    if (!mounted) return;
     setState(() {
       _currentFilter = value;
     });
@@ -261,10 +270,12 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     if (confirmed != true) return;
 
     try {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
       });
       final success = await _authService.deleteUser(user.id, _currentUser!);
+      if (!mounted) return;
       if (success) {
         showSuccessTopSnackBar(context,
             AppLocalizations.of(context).translate('user_deleted_success'));
@@ -275,6 +286,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       showErrorTopSnackBar(
         context,
         AppLocalizations.of(context)
@@ -282,6 +294,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             .replaceAll('{error}', e.toString()),
       );
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });

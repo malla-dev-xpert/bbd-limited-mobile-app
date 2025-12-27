@@ -8,6 +8,7 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/cashWithdrawal.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
+import 'package:bbd_limited/core/services/margin_calculation_service.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 
 class VersementPrintService {
@@ -26,20 +27,50 @@ class VersementPrintService {
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
 
-    // Calcul du sous-total
+    // Calcul du sous-total (avec marges sélectives si activées)
+    final options = invoiceOptions ?? const InvoiceOptions();
     double sousTotal = 0;
     for (final achat in achats) {
       for (final item in (achat.items ?? [])) {
-        sousTotal += item.totalPrice ?? 0;
+        // Si marges sélectives activées, ne considérer que les articles sélectionnés
+        if (options.enableSelectiveItemMargins &&
+            options.selectiveItemMargins.isNotEmpty) {
+          if (item.id == null ||
+              !options.selectiveItemMargins.containsKey(item.id)) {
+            continue; // Ignorer les articles non sélectionnés
+          }
+        }
+
+        if (options.enableSelectiveItemMargins &&
+            item.id != null &&
+            options.selectiveItemMargins.containsKey(item.id)) {
+          // Utiliser le prix ajusté avec marge sélective
+          final margin = options.selectiveItemMargins[item.id]!;
+          sousTotal += margin.adjustedTotalPrice;
+        } else {
+          // Prix original
+          sousTotal += item.totalPrice ?? 0;
+        }
       }
     }
 
-    // Application des options de facturation
-    final options = invoiceOptions ?? const InvoiceOptions();
-    double montantTotal = options.calculateTotal(sousTotal);
+    // Calculer le total avec toutes les options (y compris marges sélectives)
+    final allItems = <Items>[];
+    for (final achat in achats) {
+      allItems.addAll(achat.items ?? []);
+    }
+    final calculationResult =
+        MarginCalculationService.calculateWithSelectiveMargins(
+      subtotal: sousTotal,
+      items: allItems,
+      options: options,
+      selectiveItemMargins: options.selectiveItemMargins,
+      selectiveFeeMargins: options.selectiveFeeMargins,
+    );
+    double montantTotal = calculationResult.finalTotal;
 
     // Calcul du total des retraits
-    double totalRetraits = retraits.fold(0, (sum, r) => sum + (r.montant ?? 0));
+    double totalRetraits = retraits.fold(0.0, (sum, r) => sum + r.montant);
 
     pdf.addPage(
       pw.MultiPage(
@@ -69,7 +100,7 @@ class VersementPrintService {
                           achats, printLocalizations, currencyFormat, options),
                       pw.SizedBox(height: 12),
                       _buildPricingSummary(sousTotal, montantTotal, options,
-                          currencyFormat, printLocalizations),
+                          currencyFormat, printLocalizations, achats),
                       if (retraits.isNotEmpty) ...[
                         pw.SizedBox(height: 24),
                         _buildWithdrawalsSection(retraits, printLocalizations,
@@ -111,14 +142,41 @@ class VersementPrintService {
             ?.where((item) => item.status == Status.RECEIVED)
             .toList(); // Pour facture réelle, seulement les reçus
 
-    // Calcul du sous-total sur les items filtrés
-    double sousTotal =
-        filteredItems?.fold(0, (sum, item) => sum! + (item.totalPrice ?? 0)) ??
-            0;
-
-    // Application des options de facturation
+    // Calcul du sous-total sur les items filtrés (avec marges sélectives si activées)
     final options = invoiceOptions ?? const InvoiceOptions();
-    double montantTotal = options.calculateTotal(sousTotal);
+    double sousTotal = 0;
+    for (final item in (filteredItems ?? [])) {
+      // Si marges sélectives activées, ne considérer que les articles sélectionnés
+      if (options.enableSelectiveItemMargins &&
+          options.selectiveItemMargins.isNotEmpty) {
+        if (item.id == null ||
+            !options.selectiveItemMargins.containsKey(item.id)) {
+          continue; // Ignorer les articles non sélectionnés
+        }
+      }
+
+      if (options.enableSelectiveItemMargins &&
+          item.id != null &&
+          options.selectiveItemMargins.containsKey(item.id)) {
+        // Utiliser le prix ajusté avec marge sélective
+        final margin = options.selectiveItemMargins[item.id]!;
+        sousTotal += margin.adjustedTotalPrice;
+      } else {
+        // Prix original
+        sousTotal += item.totalPrice ?? 0;
+      }
+    }
+
+    // Calculer le total avec toutes les options (y compris marges sélectives)
+    final calculationResult =
+        MarginCalculationService.calculateWithSelectiveMargins(
+      subtotal: sousTotal,
+      items: filteredItems?.cast<Items>() ?? [],
+      options: options,
+      selectiveItemMargins: options.selectiveItemMargins,
+      selectiveFeeMargins: options.selectiveFeeMargins,
+    );
+    double montantTotal = calculationResult.finalTotal;
 
     pdf.addPage(
       pw.MultiPage(
@@ -149,7 +207,8 @@ class VersementPrintService {
                           printLocalizations,
                           includeSupplierInfo,
                           isProforma,
-                          currencyFormat),
+                          currencyFormat,
+                          options),
                       pw.SizedBox(height: 12),
                       _buildAchatPricingSummary(
                           sousTotal,
@@ -157,7 +216,9 @@ class VersementPrintService {
                           options,
                           currencyFormat,
                           printLocalizations,
-                          isProforma),
+                          isProforma,
+                          filteredItems,
+                          [achat]),
                     ],
                   ),
                 ),
@@ -424,40 +485,63 @@ class VersementPrintService {
         ),
         for (final achat in achats)
           for (final item in (achat.items ?? []))
-            pw.Container(
-              color: PdfColors.grey200,
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-              child: pw.Row(
-                children: [
-                  pw.Container(
-                      width: 120,
-                      child: pw.Text(item.description ?? '',
-                          style: const pw.TextStyle(fontSize: 16))),
-                  pw.Container(
-                      width: 40,
-                      child: pw.Text('${item.carton ?? ''}',
-                          style: const pw.TextStyle(fontSize: 16))),
-                  pw.Container(
-                      width: 50,
-                      child: pw.Text('${item.quantityPerCarton ?? ''}',
-                          style: const pw.TextStyle(fontSize: 16))),
-                  pw.Container(
-                      width: 60,
-                      child: pw.Text('${item.salesRate ?? ''}',
-                          style: const pw.TextStyle(fontSize: 16))),
-                  pw.Container(
-                      width: 80,
-                      child: pw.Text(currencyFormat.format(item.unitPrice ?? 0),
-                          style: const pw.TextStyle(fontSize: 16))),
-                  pw.Container(
-                      width: 80,
-                      child: pw.Text(
-                          currencyFormat.format(item.totalPrice ?? 0),
-                          style: const pw.TextStyle(fontSize: 16))),
-                ],
-              ),
-            ),
+            () {
+              // Si marges sélectives activées, ne montrer que les articles sélectionnés
+              if (options.enableSelectiveItemMargins &&
+                  options.selectiveItemMargins.isNotEmpty) {
+                if (item.id == null ||
+                    !options.selectiveItemMargins.containsKey(item.id)) {
+                  return pw.SizedBox.shrink();
+                }
+              }
+
+              // Calculer le prix ajusté si marge sélective activée
+              double adjustedUnitPrice = item.unitPrice ?? 0;
+              double adjustedTotalPrice = item.totalPrice ?? 0;
+
+              if (options.enableSelectiveItemMargins &&
+                  item.id != null &&
+                  options.selectiveItemMargins.containsKey(item.id)) {
+                final margin = options.selectiveItemMargins[item.id]!;
+                adjustedUnitPrice = margin.adjustedUnitPrice;
+                adjustedTotalPrice = margin.adjustedTotalPrice;
+              }
+
+              return pw.Container(
+                color: PdfColors.grey200,
+                padding:
+                    const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                child: pw.Row(
+                  children: [
+                    pw.Container(
+                        width: 120,
+                        child: pw.Text(item.description ?? '',
+                            style: const pw.TextStyle(fontSize: 16))),
+                    pw.Container(
+                        width: 40,
+                        child: pw.Text('${item.carton ?? ''}',
+                            style: const pw.TextStyle(fontSize: 16))),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text('${item.quantityPerCarton ?? ''}',
+                            style: const pw.TextStyle(fontSize: 16))),
+                    pw.Container(
+                        width: 60,
+                        child: pw.Text('${item.salesRate ?? ''}',
+                            style: const pw.TextStyle(fontSize: 16))),
+                    pw.Container(
+                        width: 80,
+                        child: pw.Text(currencyFormat.format(adjustedUnitPrice),
+                            style: const pw.TextStyle(fontSize: 16))),
+                    pw.Container(
+                        width: 80,
+                        child: pw.Text(
+                            currencyFormat.format(adjustedTotalPrice),
+                            style: const pw.TextStyle(fontSize: 16))),
+                  ],
+                ),
+              );
+            }(),
       ],
     );
   }
@@ -467,7 +551,8 @@ class VersementPrintService {
       double montantTotal,
       InvoiceOptions options,
       NumberFormat currencyFormat,
-      PrintLocalizations printLocalizations) {
+      PrintLocalizations printLocalizations,
+      List<Achat> achats) {
     return pw.Container(
       width: double.infinity,
       child: pw.Column(
@@ -499,7 +584,10 @@ class VersementPrintService {
           ),
 
           // Détail des options appliquées
-          if (options.enableLineMargin && options.lineMarginValue != null) ...[
+          // Marge par ligne globale (seulement si aucune marge sélective n'est activée)
+          if (options.enableLineMargin &&
+              options.lineMarginValue != null &&
+              !options.enableSelectiveItemMargins) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
               padding:
@@ -829,11 +917,12 @@ class VersementPrintService {
   }
 
   static pw.Widget _buildAchatArticlesSection(
-      List<dynamic>? filteredItems,
+      List<Items>? filteredItems,
       PrintLocalizations printLocalizations,
       bool includeSupplierInfo,
       bool isProforma,
-      NumberFormat currencyFormat) {
+      NumberFormat currencyFormat,
+      InvoiceOptions options) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -930,61 +1019,85 @@ class VersementPrintService {
           ),
         ),
         for (final item in (filteredItems ?? []))
-          pw.Container(
-            color: PdfColors.grey200,
-            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-            child: pw.Row(
-              children: [
-                pw.Expanded(
-                    child: pw.Text(item.description ?? '',
-                        style: const pw.TextStyle(fontSize: 16))),
-                if (isProforma) // Colonne statut seulement pour pro-forma
-                  pw.Container(
-                    width: 60,
-                    child: pw.Text(
-                      item.status == Status.RECEIVED
-                          ? printLocalizations.translate('pdf_received')
-                          : printLocalizations.translate('pdf_pending'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: item.status == Status.RECEIVED
-                            ? PdfColors.green
-                            : PdfColors.orange,
-                        fontWeight: pw.FontWeight.bold,
+          () {
+            // Si marges sélectives activées, ne montrer que les articles sélectionnés
+            if (options.enableSelectiveItemMargins &&
+                options.selectiveItemMargins.isNotEmpty) {
+              if (item.id == null ||
+                  !options.selectiveItemMargins.containsKey(item.id)) {
+                return pw.SizedBox.shrink();
+              }
+            }
+
+            // Calculer le prix ajusté si marge sélective activée
+            double adjustedUnitPrice = item.unitPrice ?? 0;
+            double adjustedTotalPrice = item.totalPrice ?? 0;
+
+            if (options.enableSelectiveItemMargins &&
+                item.id != null &&
+                options.selectiveItemMargins.containsKey(item.id)) {
+              final margin = options.selectiveItemMargins[item.id]!;
+              adjustedUnitPrice = margin.adjustedUnitPrice;
+              adjustedTotalPrice = margin.adjustedTotalPrice;
+            }
+
+            return pw.Container(
+              color: PdfColors.grey200,
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(
+                      child: pw.Text(item.description ?? '',
+                          style: const pw.TextStyle(fontSize: 16))),
+                  if (isProforma) // Colonne statut seulement pour pro-forma
+                    pw.Container(
+                      width: 60,
+                      child: pw.Text(
+                        item.status == Status.RECEIVED
+                            ? printLocalizations.translate('pdf_received')
+                            : printLocalizations.translate('pdf_pending'),
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          color: item.status == Status.RECEIVED
+                              ? PdfColors.green
+                              : PdfColors.orange,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                if (includeSupplierInfo &&
-                    filteredItems?.isNotEmpty == true &&
-                    item.supplierName != null)
+                  if (includeSupplierInfo &&
+                      filteredItems?.isNotEmpty == true &&
+                      item.supplierName != null)
+                    pw.Container(
+                      width: 80,
+                      child: pw.Text(item.supplierName ?? '',
+                          style: const pw.TextStyle(fontSize: 16)),
+                    ),
                   pw.Container(
-                    width: 80,
-                    child: pw.Text(item.supplierName ?? '',
-                        style: const pw.TextStyle(fontSize: 16)),
-                  ),
-                pw.Container(
-                    width: 40,
-                    child: pw.Text('${item.carton ?? ''}',
-                        style: const pw.TextStyle(fontSize: 16))),
-                pw.Container(
-                    width: 50,
-                    child: pw.Text('${item.quantityPerCarton ?? ''}',
-                        style: const pw.TextStyle(fontSize: 16))),
-                pw.Container(
-                    width: 60,
-                    child: pw.Text('${item.salesRate ?? ''}',
-                        style: const pw.TextStyle(fontSize: 16))),
-                pw.Container(
-                    width: 80,
-                    child: pw.Text(currencyFormat.format(item.unitPrice ?? 0),
-                        style: const pw.TextStyle(fontSize: 16))),
-                pw.Container(
-                    width: 80,
-                    child: pw.Text(currencyFormat.format(item.totalPrice ?? 0),
-                        style: const pw.TextStyle(fontSize: 16))),
-              ],
-            ),
-          ),
+                      width: 40,
+                      child: pw.Text('${item.carton ?? ''}',
+                          style: const pw.TextStyle(fontSize: 16))),
+                  pw.Container(
+                      width: 50,
+                      child: pw.Text('${item.quantityPerCarton ?? ''}',
+                          style: const pw.TextStyle(fontSize: 16))),
+                  pw.Container(
+                      width: 60,
+                      child: pw.Text('${item.salesRate ?? ''}',
+                          style: const pw.TextStyle(fontSize: 16))),
+                  pw.Container(
+                      width: 80,
+                      child: pw.Text(currencyFormat.format(adjustedUnitPrice),
+                          style: const pw.TextStyle(fontSize: 16))),
+                  pw.Container(
+                      width: 80,
+                      child: pw.Text(currencyFormat.format(adjustedTotalPrice),
+                          style: const pw.TextStyle(fontSize: 16))),
+                ],
+              ),
+            );
+          }(),
       ],
     );
   }
@@ -995,7 +1108,9 @@ class VersementPrintService {
       InvoiceOptions options,
       NumberFormat currencyFormat,
       PrintLocalizations printLocalizations,
-      bool isProforma) {
+      bool isProforma,
+      List<Items>? filteredItems,
+      List<Achat> achats) {
     return pw.Container(
       width: double.infinity,
       child: pw.Column(
@@ -1027,7 +1142,10 @@ class VersementPrintService {
           ),
 
           // Détail des options appliquées
-          if (options.enableLineMargin && options.lineMarginValue != null) ...[
+          // Marge par ligne globale (seulement si aucune marge sélective n'est activée)
+          if (options.enableLineMargin &&
+              options.lineMarginValue != null &&
+              !options.enableSelectiveItemMargins) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
               padding:
@@ -1179,6 +1297,107 @@ class VersementPrintService {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+
+          // Afficher les marges sélectives sur articles si activées
+          if (options.enableSelectiveItemMargins &&
+              options.selectiveItemMargins.isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: options.selectiveItemMargins.values.map((margin) {
+                  // Chercher l'item dans filteredItems d'abord, sinon dans achats
+                  Items? foundItem;
+                  if (filteredItems != null && filteredItems.isNotEmpty) {
+                    try {
+                      foundItem = filteredItems.firstWhere(
+                        (item) => item.id == margin.itemId,
+                      );
+                    } catch (e) {
+                      // Item not found in filteredItems, try achats
+                    }
+                  }
+                  if (foundItem == null) {
+                    for (final achat in achats) {
+                      final items = achat.items;
+                      if (items != null && items.isNotEmpty) {
+                        try {
+                          foundItem = items.firstWhere(
+                            (item) => item.id == margin.itemId,
+                          );
+                          break;
+                        } catch (e) {
+                          // Item not found, continue
+                        }
+                      }
+                    }
+                  }
+                  final item = foundItem;
+                  return pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        '${item?.description ?? ''} - ${margin.type == MarginType.percentage ? '${margin.value}%' : currencyFormat.format(margin.value)} :',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+                      pw.SizedBox(width: 10),
+                      pw.Text(
+                        currencyFormat.format(margin.marginAmount),
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+
+          // Afficher les marges sélectives sur frais si activées
+          if (options.enableSelectiveFeeMargins &&
+              options.selectiveFeeMargins.isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: options.selectiveFeeMargins.values.map((margin) {
+                  return pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        '${margin.feeName} - ${margin.type == MarginType.percentage ? '${margin.value}%' : currencyFormat.format(margin.value)} :',
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+                      pw.SizedBox(width: 10),
+                      pw.Text(
+                        currencyFormat.format(margin.marginAmount),
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
           ],

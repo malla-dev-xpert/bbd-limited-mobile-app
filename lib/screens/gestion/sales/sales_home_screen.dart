@@ -27,9 +27,11 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
   }
 
   Future<void> _loadStats() async {
+    if (!mounted) return;
     setState(() => isLoading = true);
     try {
       final achats = await AchatServices().findAll();
+      if (!mounted) return;
       final now = DateTime.now();
       // Filtrer les achats du mois courant
       final achatsDuMois = achats
@@ -43,12 +45,14 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
       final double total = achatsDuMois.fold(
           0.0, (sum, achat) => sum + (achat.montantTotal ?? 0.0));
 
+      if (!mounted) return;
       setState(() {
         achatsDuMoisCount = count;
         chiffreAffaires = total;
         isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         achatsDuMoisCount = 0;
         chiffreAffaires = 0;

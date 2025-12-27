@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bbd_limited/components/invoice_options_config.dart';
+import 'package:bbd_limited/components/selective_margin_config.dart';
+import 'package:bbd_limited/components/selective_fee_margin_config.dart';
+import 'package:bbd_limited/components/margin_summary_dialog.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/print/print_language.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
@@ -51,6 +55,10 @@ class PrintConfigPage extends StatefulWidget {
   final String billingOptionsTitle;
   final String appliedOptionsLabel;
 
+  // Items for selective margins (optional)
+  final List<Items>? items;
+  final double? subtotal;
+
   const PrintConfigPage({
     Key? key,
     required this.title,
@@ -74,6 +82,8 @@ class PrintConfigPage extends StatefulWidget {
     this.showProformaToggle = false,
     this.initialIsProforma = false,
     this.proformaLabel = '',
+    this.items,
+    this.subtotal,
   }) : super(key: key);
 
   @override
@@ -92,7 +102,9 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
     return _options.enableLineMargin ||
         _options.enableGlobalMargin ||
         _options.enableDiscount ||
-        _options.enableStorageFees;
+        _options.enableStorageFees ||
+        _options.enableSelectiveItemMargins ||
+        _options.enableSelectiveFeeMargins;
   }
 
   @override
@@ -113,6 +125,17 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
   }
 
   void _handlePreview() {
+    // Si des marges sélectives sont activées, afficher le récapitulatif
+    if ((_options.enableSelectiveItemMargins &&
+            _options.selectiveItemMargins.isNotEmpty) ||
+        (_options.enableSelectiveFeeMargins &&
+            _options.selectiveFeeMargins.isNotEmpty)) {
+      if (widget.items != null && widget.subtotal != null) {
+        _showMarginSummary();
+        return;
+      }
+    }
+
     widget.onPreview(
       PrintConfigResult(
         options: _options,
@@ -122,6 +145,36 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
             widget.showSupplierToggle ? _includeSupplierInfo : null,
         isProforma: widget.showProformaToggle ? _isProforma : null,
         printLanguage: _printLanguage,
+      ),
+    );
+  }
+
+  void _showMarginSummary() {
+    if (widget.items == null || widget.subtotal == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => MarginSummaryDialog(
+        subtotal: widget.subtotal!,
+        items: widget.items!,
+        options: _options,
+        currencySymbol: widget.currencySymbol,
+        onValidate: () {
+          Navigator.of(context).pop();
+          widget.onPreview(
+            PrintConfigResult(
+              options: _options,
+              dateRange: widget.showDateRange && !_printAll
+                  ? _selectedDateRange
+                  : null,
+              includeSupplierInfo:
+                  widget.showSupplierToggle ? _includeSupplierInfo : null,
+              isProforma: widget.showProformaToggle ? _isProforma : null,
+              printLanguage: _printLanguage,
+            ),
+          );
+        },
+        onCancel: () => Navigator.of(context).pop(),
       ),
     );
   }
@@ -150,6 +203,21 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                     _buildPrintOptionsCard(isMobile),
                     const SizedBox(height: 16),
                     _buildBillingOptionsCard(isMobile),
+                    if (widget.items != null && widget.items!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      SelectiveMarginConfig(
+                        items: widget.items!,
+                        options: _options,
+                        onOptionsChanged: _handleOptionsChanged,
+                        currencySymbol: widget.currencySymbol,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    SelectiveFeeMarginConfig(
+                      options: _options,
+                      onOptionsChanged: _handleOptionsChanged,
+                      currencySymbol: widget.currencySymbol,
+                    ),
                   ],
                 ),
               ),
@@ -578,6 +646,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
             options: _options,
             onOptionsChanged: _handleOptionsChanged,
             currencySymbol: widget.currencySymbol,
+            items: widget.items,
           ),
         ],
       ),
