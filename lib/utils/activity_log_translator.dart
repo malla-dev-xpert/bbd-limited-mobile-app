@@ -90,6 +90,11 @@ class ActivityLogTranslator {
   }
 
   /// Traduit le type d'entité en français
+  static String translateEntityType(String entityType) {
+    return _translateEntityType(entityType);
+  }
+
+  /// Traduit le type d'entité en français (méthode interne)
   static String _translateEntityType(String entityType) {
     final type = entityType.toUpperCase();
 
