@@ -328,69 +328,70 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
   }
 
   Future<void> _loadLogs({bool refresh = false}) async {
-    if (_isLoading) return;
+    if (_isLoading && !refresh) return;
 
-    // Vider la liste et réinitialiser le scroll si refresh
+    // Si refresh, réinitialiser tout immédiatement
     if (refresh) {
-      if (mounted) {
-        setState(() {
-          _logs = [];
-          _currentPage = 0;
-          _hasMore = true;
-          _isInitialLoading = true;
-          _isLoading = true;
-          _errorMessage = null;
-        });
-        // Réinitialiser la position du scroll
-        if (_scrollController.hasClients) {
-          _scrollController.jumpTo(0);
+      _currentPage = 0;
+      _hasMore = true;
+      _logs = [];
+      // Réinitialiser la position du scroll
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    }
+
+    // Calculer les dates de filtre AVANT le setState
+    DateTime? dateStart;
+    DateTime? dateEnd;
+
+    if (_selectedDateOption != DateFilterOption.all) {
+      if (_selectedDateOption == DateFilterOption.customDate &&
+          _customDate != null) {
+        // Pour une date personnalisée, filtrer sur toute la journée
+        dateStart = DateTime(
+            _customDate!.year, _customDate!.month, _customDate!.day, 0, 0, 0);
+        dateEnd = DateTime(_customDate!.year, _customDate!.month,
+            _customDate!.day, 23, 59, 59);
+      } else {
+        final dateRange = _selectedDateOption.getDateRange();
+        if (dateRange != null) {
+          // S'assurer que les dates ont les heures correctes
+          dateStart = DateTime(
+            dateRange.start.year,
+            dateRange.start.month,
+            dateRange.start.day,
+            0,
+            0,
+            0,
+          );
+          dateEnd = DateTime(
+            dateRange.end.year,
+            dateRange.end.month,
+            dateRange.end.day,
+            23,
+            59,
+            59,
+          );
         }
       }
-    } else {
+    }
+
+    // Mettre à jour l'état de chargement
+    if (mounted) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
+        if (refresh) {
+          _isInitialLoading = true;
+        }
       });
     }
 
     try {
       final page = refresh ? 0 : _currentPage;
 
-      // Calculer les dates de filtre
-      DateTime? dateStart;
-      DateTime? dateEnd;
-
-      if (_selectedDateOption != DateFilterOption.all) {
-        if (_selectedDateOption == DateFilterOption.customDate &&
-            _customDate != null) {
-          // Pour une date personnalisée, filtrer sur toute la journée
-          dateStart = DateTime(
-              _customDate!.year, _customDate!.month, _customDate!.day, 0, 0, 0);
-          dateEnd = DateTime(_customDate!.year, _customDate!.month,
-              _customDate!.day, 23, 59, 59);
-        } else {
-          final dateRange = _selectedDateOption.getDateRange();
-          if (dateRange != null) {
-            // S'assurer que les dates ont les heures correctes
-            dateStart = DateTime(
-              dateRange.start.year,
-              dateRange.start.month,
-              dateRange.start.day,
-              0,
-              0,
-              0,
-            );
-            dateEnd = DateTime(
-              dateRange.end.year,
-              dateRange.end.month,
-              dateRange.end.day,
-              23,
-              59,
-              59,
-            );
-          }
-        }
-      }
+      log('Loading logs - page: $page, userId: ${_selectedUser?.id}, dateStart: $dateStart, dateEnd: $dateEnd');
 
       final newLogs = await _logService.getLogs(
         page: page,
@@ -399,12 +400,12 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
         dateEnd: dateEnd,
       );
 
-      log('Loaded ${newLogs.length} logs, refresh: $refresh, current logs count: ${_logs.length}');
+      log('Loaded ${newLogs.length} logs, refresh: $refresh');
 
       if (mounted) {
         setState(() {
           if (refresh) {
-            _logs = List.from(newLogs);
+            _logs = newLogs;
           } else {
             _logs.addAll(newLogs);
           }
@@ -414,7 +415,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
           _isInitialLoading = false;
         });
 
-        log('After setState: logs count: ${_logs.length}');
+        log('After setState: logs count: ${_logs.length}, hasMore: $_hasMore');
       }
     } catch (e) {
       log('Error loading logs: $e');
@@ -507,45 +508,53 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                         : RefreshIndicator(
                             onRefresh: _onRefresh,
                             color: const Color(0xFF1A1E49),
-                            child: CustomScrollView(
-                              key: ValueKey(
-                                '${_selectedUser?.id}_${_selectedDateOption}_${_customDate?.toString()}',
-                              ),
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              slivers: [
-                                SliverPadding(
-                                  padding:
-                                      EdgeInsets.all(isTablet ? 24.0 : 16.0),
-                                  sliver: SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                      (context, index) {
-                                        if (index < _logs.length) {
-                                          return ActivityLogItem(
-                                            key: ValueKey(
-                                                'log_${_logs[index].id}'),
-                                            log: _logs[index],
-                                          );
-                                        } else if (_hasMore) {
-                                          return const Padding(
-                                            padding: EdgeInsets.all(16.0),
-                                            child: Center(
-                                              child: CircularProgressIndicator(
-                                                color: Color(0xFF1A1E49),
-                                              ),
-                                            ),
-                                          );
-                                        } else {
-                                          return const SizedBox.shrink();
-                                        }
-                                      },
-                                      childCount:
-                                          _logs.length + (_hasMore ? 1 : 0),
+                            child: _logs.isEmpty && _isLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFF1A1E49),
                                     ),
+                                  )
+                                : CustomScrollView(
+                                    key: ValueKey(
+                                      'logs_${_selectedUser?.id}_${_selectedDateOption}_${_customDate?.toString()}_${_logs.length}',
+                                    ),
+                                    controller: _scrollController,
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    slivers: [
+                                      SliverPadding(
+                                        padding: EdgeInsets.all(
+                                            isTablet ? 24.0 : 16.0),
+                                        sliver: SliverList(
+                                          delegate: SliverChildBuilderDelegate(
+                                            (context, index) {
+                                              if (index < _logs.length) {
+                                                return ActivityLogItem(
+                                                  key: ValueKey(
+                                                      'log_${_logs[index].id}_$index'),
+                                                  log: _logs[index],
+                                                );
+                                              } else if (_hasMore) {
+                                                return const Padding(
+                                                  padding: EdgeInsets.all(16.0),
+                                                  child: Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      color: Color(0xFF1A1E49),
+                                                    ),
+                                                  ),
+                                                );
+                                              } else {
+                                                return const SizedBox.shrink();
+                                              }
+                                            },
+                                            childCount: _logs.length +
+                                                (_hasMore ? 1 : 0),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
                           ),
           ),
         ],
@@ -870,25 +879,25 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
       selected: isSelected,
       onSelected: (selected) {
         if (selected) {
+          final shouldCloseSheet = option != DateFilterOption.customDate;
+
           setState(() {
             _selectedDateOption = option;
             if (option != DateFilterOption.customDate) {
               _customDate = null;
             }
           });
+
           // Appliquer automatiquement le filtre si ce n'est pas une date personnalisée
-          if (option != DateFilterOption.customDate) {
-            Future.delayed(const Duration(milliseconds: 150), () {
+          if (shouldCloseSheet) {
+            // Fermer le bottom sheet d'abord
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            // Puis charger les logs après un court délai pour laisser le sheet se fermer
+            Future.delayed(const Duration(milliseconds: 200), () {
               if (mounted) {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-                // Attendre un peu que le bottom sheet se ferme complètement
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  if (mounted) {
-                    _loadLogs(refresh: true);
-                  }
-                });
+                _loadLogs(refresh: true);
               }
             });
           }
@@ -918,19 +927,18 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
     if (picked != null) {
       setState(() {
         _customDate = picked;
+        _selectedDateOption = DateFilterOption.customDate;
       });
+
+      // Fermer le bottom sheet
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
       // Appliquer automatiquement le filtre après sélection de la date
-      Future.delayed(const Duration(milliseconds: 150), () {
+      Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted) {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-          // Attendre un peu que le bottom sheet se ferme complètement
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              _loadLogs(refresh: true);
-            }
-          });
+          _loadLogs(refresh: true);
         }
       });
     }
@@ -971,18 +979,16 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             );
           }
         });
+
+        // Fermer le bottom sheet
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+
         // Appliquer automatiquement le filtre utilisateur
-        Future.delayed(const Duration(milliseconds: 150), () {
+        Future.delayed(const Duration(milliseconds: 200), () {
           if (mounted) {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            }
-            // Attendre un peu que le bottom sheet se ferme complètement
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted) {
-                _loadLogs(refresh: true);
-              }
-            });
+            _loadLogs(refresh: true);
           }
         });
       },

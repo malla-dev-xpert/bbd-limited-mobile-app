@@ -52,25 +52,31 @@ class LogService {
       }
 
       if (dateStart != null) {
-        // Format: yyyy-MM-ddTHH:mm:ss
+        // Format ISO DATE_TIME: yyyy-MM-ddTHH:mm:ss
+        // Le backend attend DateTimeFormat.ISO.DATE_TIME (LocalDateTime sans timezone)
+        // Format manuel pour correspondre exactement au format attendu
         final formatted = '${dateStart.year.toString().padLeft(4, '0')}-'
             '${dateStart.month.toString().padLeft(2, '0')}-'
             '${dateStart.day.toString().padLeft(2, '0')}T'
             '${dateStart.hour.toString().padLeft(2, '0')}:'
             '${dateStart.minute.toString().padLeft(2, '0')}:'
             '${dateStart.second.toString().padLeft(2, '0')}';
-        queryParams['startDate'] = formatted;
+        queryParams['dateStart'] = formatted;
+        log('dateStart formatted: $formatted');
       }
 
       if (dateEnd != null) {
-        // Format: yyyy-MM-ddTHH:mm:ss
+        // Format ISO DATE_TIME: yyyy-MM-ddTHH:mm:ss
+        // Le backend attend DateTimeFormat.ISO.DATE_TIME (LocalDateTime sans timezone)
+        // Format manuel pour correspondre exactement au format attendu
         final formatted = '${dateEnd.year.toString().padLeft(4, '0')}-'
             '${dateEnd.month.toString().padLeft(2, '0')}-'
             '${dateEnd.day.toString().padLeft(2, '0')}T'
             '${dateEnd.hour.toString().padLeft(2, '0')}:'
             '${dateEnd.minute.toString().padLeft(2, '0')}:'
             '${dateEnd.second.toString().padLeft(2, '0')}';
-        queryParams['endDate'] = formatted;
+        queryParams['dateEnd'] = formatted;
+        log('dateEnd formatted: $formatted');
       }
 
       final finalUri =
