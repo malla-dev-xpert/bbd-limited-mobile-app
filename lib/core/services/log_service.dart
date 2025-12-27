@@ -35,12 +35,55 @@ class LogService {
     }
   }
 
-  /// Récupère les logs d'activité paginés
-  Future<List<ActivityLog>> getLogs({int page = 0}) async {
+  /// Récupère les logs d'activité paginés avec filtres optionnels
+  Future<List<ActivityLog>> getLogs({
+    int page = 0,
+    int? userId,
+    DateTime? dateStart,
+    DateTime? dateEnd,
+  }) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/logs?page=$page'),
-      );
+      final queryParams = <String, String>{
+        'page': page.toString(),
+      };
+
+      if (userId != null) {
+        queryParams['userId'] = userId.toString();
+      }
+
+      if (dateStart != null) {
+        // Format: yyyy-MM-ddTHH:mm:ss
+        final formatted = '${dateStart.year.toString().padLeft(4, '0')}-'
+            '${dateStart.month.toString().padLeft(2, '0')}-'
+            '${dateStart.day.toString().padLeft(2, '0')}T'
+            '${dateStart.hour.toString().padLeft(2, '0')}:'
+            '${dateStart.minute.toString().padLeft(2, '0')}:'
+            '${dateStart.second.toString().padLeft(2, '0')}';
+        queryParams['startDate'] = formatted;
+      }
+
+      if (dateEnd != null) {
+        // Format: yyyy-MM-ddTHH:mm:ss
+        final formatted = '${dateEnd.year.toString().padLeft(4, '0')}-'
+            '${dateEnd.month.toString().padLeft(2, '0')}-'
+            '${dateEnd.day.toString().padLeft(2, '0')}T'
+            '${dateEnd.hour.toString().padLeft(2, '0')}:'
+            '${dateEnd.minute.toString().padLeft(2, '0')}:'
+            '${dateEnd.second.toString().padLeft(2, '0')}';
+        queryParams['endDate'] = formatted;
+      }
+
+      final finalUri =
+          Uri.parse('$baseUrl/logs').replace(queryParameters: queryParams);
+
+      log('Logs API Request: $finalUri');
+
+      final response = await http.get(finalUri);
+
+      log('Logs API Response: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        log('Logs API Error Body: ${response.body}');
+      }
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonBody = json.decode(
