@@ -200,7 +200,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: isTablet ? 3 : 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
-                  children: getCardDataList(context, localizations).map((data) {
+                  children: getCardDataList(
+                    context,
+                    localizations,
+                    isAdmin:
+                        _user?.role?.permissions.contains('IS_ADMIN') ?? false,
+                  ).map((data) {
                     return CustomCard(
                       icon: data.icon,
                       title: data.title,

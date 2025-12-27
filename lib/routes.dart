@@ -1,4 +1,5 @@
 import 'package:bbd_limited/screens/gestion/basics/basic_home_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/activity_history_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/container_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/devises/devices_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/harbor_screen.dart';
@@ -26,6 +27,7 @@ class Routes {
   static const String suppliers = '/suppliers';
   static const String containers = '/container';
   static const String purchase = '/purchase';
+  static const String activityHistory = '/activity-history';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -51,6 +53,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const SupplierScreen());
       case containers:
         return MaterialPageRoute(builder: (_) => const ContainerScreen());
+      case activityHistory:
+        return MaterialPageRoute(builder: (_) => const ActivityHistoryScreen());
       case purchase:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(

@@ -24,7 +24,8 @@ class CardData {
 }
 
 List<CardData> getCardDataList(
-    BuildContext context, AppLocalizations localizations) {
+    BuildContext context, AppLocalizations localizations,
+    {bool isAdmin = false}) {
   return [
     CardData(
       icon: Icons.inventory_2,
@@ -103,5 +104,17 @@ List<CardData> getCardDataList(
       },
       description: localizations.translate('home_manage_containers_desc'),
     ),
+    if (isAdmin)
+      CardData(
+        icon: Icons.history,
+        title: localizations.translate('home_activity_history_title'),
+        backgroundColor: Colors.grey[50]!,
+        iconColor: const Color(0xFF13084F),
+        titleColor: const Color(0xFF13084F),
+        onPressed: (context) {
+          Navigator.of(context).pushNamed('/activity-history');
+        },
+        description: localizations.translate('home_activity_history_desc'),
+      ),
   ];
 }
