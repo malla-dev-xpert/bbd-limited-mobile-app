@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/activity_log.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
 import 'package:bbd_limited/components/log_detail_page.dart';
+import 'package:bbd_limited/core/enums/log_action.dart';
+import 'package:bbd_limited/logs/widgets/log_action_badge.dart';
 
+/// Widget pour afficher un item de log dans la timeline
+/// Design moderne avec badge d'action et timeline verticale
 class ActivityLogItem extends StatelessWidget {
   final ActivityLog log;
 
@@ -13,11 +17,12 @@ class ActivityLogItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actionColor = ActivityLogTranslator.getActionColor(log.actionCode);
-    final actionIcon = ActivityLogTranslator.getActionIcon(log.actionCode);
+    final action = LogAction.fromString(log.actionCode);
     final actionText = ActivityLogTranslator.translateAction(log);
     final dateTimeText = ActivityLogTranslator.formatDateTime(log.createdAt);
     final userName = log.user.displayName;
+    final isBulk = log.isBulkAction;
+    final entityCount = log.entityCount;
 
     return InkWell(
       onTap: () {
@@ -25,7 +30,8 @@ class ActivityLogItem extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -41,82 +47,165 @@ class ActivityLogItem extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icône avec couleur
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: actionColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  actionIcon,
-                  color: actionColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Contenu du log
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Timeline verticale avec point
+            Builder(
+              builder: (context) {
+                final actionColor =
+                    ActivityLogTranslator.getActionColor(log.actionCode);
+                return Column(
                   children: [
-                    // Phrase d'action
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.black87,
-                          height: 1.4,
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: actionColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
                         ),
-                        children: [
-                          TextSpan(
-                            text: userName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1A1E49),
-                            ),
-                          ),
-                          const TextSpan(text: ' '),
-                          TextSpan(
-                            text: actionText,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w400,
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: actionColor.withOpacity(0.3),
+                            blurRadius: 4,
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Date et heure
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          dateTimeText,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                    Container(
+                      width: 2,
+                      height: 60,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(1),
+                      ),
                     ),
                   ],
-                ),
+                );
+              },
+            ),
+            const SizedBox(width: 16),
+            // Contenu principal
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Badge action (point focal)
+                  LogActionBadge(
+                    action: action,
+                    fontSize: 12,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Phrase métier (lisible)
+                  Text(
+                    actionText,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Divider
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 8),
+                  // Informations secondaires (utilisateur + date)
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.person_outline,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            userName,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            dateTimeText,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      // Badge pour les actions groupées
+                      if (isBulk)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.layers_outlined,
+                                size: 12,
+                                color: Colors.deepPurple[700],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$entityCount',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.deepPurple[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

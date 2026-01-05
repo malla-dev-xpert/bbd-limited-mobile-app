@@ -10,20 +10,96 @@ class LogService {
   /// Récupère les détails d'un log spécifique
   Future<LogDetail> getLogDetails(int logId) async {
     try {
+      final url = '$baseUrl/logs/$logId';
+      print('🔍 [LogService] Récupération des détails du log #$logId');
+      print('📍 URL: $url');
+
       final response = await http.get(
-        Uri.parse('$baseUrl/logs/$logId'),
+        Uri.parse(url),
       );
 
+      print('📡 [LogService] Réponse reçue - Status: ${response.statusCode}');
+      print('📦 [LogService] Headers: ${response.headers}');
+
       if (response.statusCode == 200) {
-        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
-        return LogDetail.fromJson(jsonBody as Map<String, dynamic>);
+        final responseBody = utf8.decode(response.bodyBytes);
+        print('📄 [LogService] Body brut (${responseBody.length} caractères):');
+        print(responseBody);
+
+        final jsonBody = json.decode(responseBody);
+        print('✅ [LogService] JSON parsé:');
+        print(jsonBody);
+
+        // Log détaillé des champs importants
+        if (jsonBody is Map<String, dynamic>) {
+          print('🔍 [LogService] Détails du log:');
+          print('  - id: ${jsonBody['id']}');
+          print('  - action: ${jsonBody['action']}');
+          print('  - entityType: ${jsonBody['entityType']}');
+          print('  - entityId: ${jsonBody['entityId']}');
+          print('  - entityIds: ${jsonBody['entityIds']}');
+          print('  - createdAt: ${jsonBody['createdAt']}');
+          print('  - userId: ${jsonBody['userId']}');
+          print('  - userName: ${jsonBody['userName']}');
+          print('  - entityDetails: ${jsonBody['entityDetails']}');
+          print('  - initialState: ${jsonBody['initialState']}');
+          print('  - finalState: ${jsonBody['finalState']}');
+
+          if (jsonBody['initialState'] != null) {
+            print('📊 [LogService] initialState détaillé:');
+            print(jsonBody['initialState']);
+          }
+
+          if (jsonBody['finalState'] != null) {
+            print('📊 [LogService] finalState détaillé:');
+            print(jsonBody['finalState']);
+          }
+
+          if (jsonBody['entityDetails'] != null) {
+            print('📊 [LogService] entityDetails détaillé:');
+            print(jsonBody['entityDetails']);
+          }
+        }
+
+        // Vérifier si c'est une erreur de sérialisation backend
+        if (jsonBody is Map<String, dynamic> && jsonBody.containsKey('error')) {
+          final errorMessage = jsonBody['message']?.toString() ??
+              jsonBody['error']?.toString() ??
+              'Erreur de sérialisation backend';
+          print('❌ [LogService] Erreur backend détectée: $errorMessage');
+          throw Exception('Erreur backend: $errorMessage');
+        }
+
+        final logDetail = LogDetail.fromJson(jsonBody as Map<String, dynamic>);
+        print('✅ [LogService] LogDetail créé avec succès');
+        return logDetail;
       } else if (response.statusCode == 404) {
+        print('❌ [LogService] Log introuvable (404)');
         throw Exception('Log introuvable');
       } else {
+        print('❌ [LogService] Erreur HTTP ${response.statusCode}');
+        final responseBody = utf8.decode(response.bodyBytes);
+        print('📄 [LogService] Body d\'erreur: $responseBody');
+
+        // Essayer de parser le message d'erreur du backend
+        try {
+          final errorBody = json.decode(responseBody);
+          print('📊 [LogService] Erreur parsée: $errorBody');
+          if (errorBody is Map<String, dynamic> &&
+              errorBody.containsKey('message')) {
+            throw Exception(errorBody['message']?.toString() ??
+                'Erreur lors du chargement des détails');
+          }
+        } catch (e) {
+          print('⚠️ [LogService] Impossible de parser l\'erreur: $e');
+          // Ignorer si on ne peut pas parser l'erreur
+        }
         throw Exception(
             'Erreur lors du chargement des détails (${response.statusCode})');
       }
     } catch (e) {
+      print(
+          '💥 [LogService] Exception lors de la récupération des détails: $e');
       if (e is Exception) {
         rethrow;
       }
@@ -76,28 +152,70 @@ class LogService {
       final finalUri =
           Uri.parse('$baseUrl/logs').replace(queryParameters: queryParams);
 
+      print('🔍 [LogService] Récupération de la liste des logs');
+      print('📍 URL: $finalUri');
+      print('📋 Paramètres: $queryParams');
+
       final response = await http.get(finalUri);
 
+      print('📡 [LogService] Réponse reçue - Status: ${response.statusCode}');
+      print('📦 [LogService] Headers: ${response.headers}');
+
       if (response.statusCode == 200) {
-        final List<dynamic> jsonBody = json.decode(
-          utf8.decode(response.bodyBytes),
-        );
+        final responseBody = utf8.decode(response.bodyBytes);
+        print('📄 [LogService] Body brut (${responseBody.length} caractères)');
+
+        final List<dynamic> jsonBody = json.decode(responseBody);
+        print('✅ [LogService] JSON parsé - ${jsonBody.length} logs trouvés');
+
+        // Log détaillé pour chaque log
+        for (int i = 0; i < jsonBody.length && i < 3; i++) {
+          final log = jsonBody[i];
+          if (log is Map<String, dynamic>) {
+            print('📊 [LogService] Log #$i:');
+            print('  - id: ${log['id']}');
+            print(
+                '  - action: ${log['action']} / actionCode: ${log['actionCode']}');
+            print('  - entityType: ${log['entityType']}');
+            print('  - entityId: ${log['entityId']}');
+            print('  - entityIds: ${log['entityIds']}');
+            print('  - createdAt: ${log['createdAt']}');
+            print('  - user: ${log['user']}');
+            print('  - userId: ${log['userId']}');
+            print('  - userName: ${log['userName']}');
+          }
+        }
+
+        if (jsonBody.length > 3) {
+          print('... et ${jsonBody.length - 3} autres logs');
+        }
+
         try {
-          return jsonBody.map((e) {
+          final logs = jsonBody.map((e) {
             try {
               return ActivityLog.fromJson(e as Map<String, dynamic>);
             } catch (e) {
+              print('❌ [LogService] Erreur lors du parsing d\'un log: $e');
+              print('📄 [LogService] Données du log: $e');
               throw Exception('Erreur lors du parsing d\'un log: $e');
             }
           }).toList();
+
+          print('✅ [LogService] ${logs.length} ActivityLog créés avec succès');
+          return logs;
         } catch (e) {
+          print('❌ [LogService] Erreur lors du parsing des logs: $e');
           throw Exception('Erreur lors du parsing des logs: $e');
         }
       } else {
+        print('❌ [LogService] Erreur HTTP ${response.statusCode}');
+        final responseBody = utf8.decode(response.bodyBytes);
+        print('📄 [LogService] Body d\'erreur: $responseBody');
         throw Exception(
             'Erreur lors du chargement des logs (${response.statusCode})');
       }
     } catch (e) {
+      print('💥 [LogService] Exception lors de la récupération des logs: $e');
       if (e is Exception) {
         rethrow;
       }

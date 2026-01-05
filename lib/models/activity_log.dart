@@ -75,11 +75,55 @@ class ActivityLog {
       entityType: json['entityType']?.toString() ?? '',
       entityId: parseNullableId(json['entityId']),
       entityIds: entityIdsList,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'].toString())
-          : DateTime.now(),
+      createdAt: _parseDateTime(json['createdAt']),
       user: user,
     );
+  }
+
+  /// Parse une date depuis JSON de manière robuste
+  /// Gère différents formats et les erreurs de sérialisation backend
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+
+    // Si c'est déjà un DateTime (peu probable mais possible)
+    if (value is DateTime) return value;
+
+    // Si c'est une String, essayer de la parser
+    if (value is String) {
+      // Essayer le format ISO 8601 standard
+      try {
+        return DateTime.parse(value);
+      } catch (e) {
+        // Essayer le format sans timezone (LocalDateTime)
+        // Format: "2024-01-15T10:30:00" ou "2024-01-15 10:30:00"
+        try {
+          final cleaned = value.replaceAll(' ', 'T');
+          if (!cleaned.contains('Z') &&
+              !cleaned.contains('+') &&
+              !cleaned.contains('-', 10)) {
+            // Format LocalDateTime sans timezone
+            return DateTime.parse('${cleaned}Z');
+          }
+          return DateTime.parse(cleaned);
+        } catch (e2) {
+          // Si tout échoue, retourner la date actuelle
+          return DateTime.now();
+        }
+      }
+    }
+
+    // Si c'est un nombre (timestamp en millisecondes ou secondes)
+    if (value is num) {
+      final timestamp = value.toInt();
+      // Si c'est en secondes (timestamp < 1e12), convertir en millisecondes
+      if (timestamp < 1000000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      }
+      return DateTime.fromMillisecondsSinceEpoch(timestamp);
+    }
+
+    // Fallback
+    return DateTime.now();
   }
 
   Map<String, dynamic> toJson() {
