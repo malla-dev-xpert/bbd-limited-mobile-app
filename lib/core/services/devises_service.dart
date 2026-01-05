@@ -74,8 +74,8 @@ class DeviseServices {
     }
   }
 
-  Future<void> deleteDevise(int id) async {
-    final url = Uri.parse("$baseUrl/devises/delete/$id");
+  Future<void> deleteDevise(int id, int userId) async {
+    final url = Uri.parse("$baseUrl/devises/delete/$id?userId=$userId");
 
     final response = await http.delete(url);
 
@@ -84,9 +84,9 @@ class DeviseServices {
     }
   }
 
-  Future<bool> updateDevise(int id, Devise dto) async {
+  Future<bool> updateDevise(int id, Devise dto, int userId) async {
     try {
-      final url = Uri.parse('$baseUrl/devises/update/$id');
+      final url = Uri.parse('$baseUrl/devises/update/$id?userId=$userId');
       final headers = {'Content-Type': 'application/json'};
 
       final response = await http.put(

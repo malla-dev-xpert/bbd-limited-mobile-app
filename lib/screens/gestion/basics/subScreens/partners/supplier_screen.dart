@@ -263,9 +263,22 @@ class _SupplierScreenState extends State<SupplierScreen> {
         onSubmit: (updatedSupplier) async {
           try {
             setState(() => _isLoading = true);
+            
+            // Récupérer l'utilisateur connecté
+            final user = await authService.getUserInfo();
+            if (user == null) {
+              showErrorTopSnackBar(
+                context,
+                AppLocalizations.of(context).translate('user_not_connected'),
+              );
+              setState(() => _isLoading = false);
+              return;
+            }
+
             final success = await _partnerServices.updatePartner(
               updatedSupplier.id,
               updatedSupplier,
+              user.id,
             );
 
             if (success) {

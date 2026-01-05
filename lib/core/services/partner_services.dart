@@ -114,8 +114,8 @@ class PartnerServices {
     }
   }
 
-  Future<bool> updatePartner(int id, Partner dto) async {
-    final url = Uri.parse('$baseUrl/partners/update/$id');
+  Future<bool> updatePartner(int id, Partner dto, int userId) async {
+    final url = Uri.parse('$baseUrl/partners/update/$id?userId=$userId');
     final headers = {'Content-Type': 'application/json'};
 
     final response = await http.put(

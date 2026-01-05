@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
@@ -79,9 +78,9 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
     }
   }
 
-  Future<bool> updateDevise(int id, Devise devise) async {
+  Future<bool> updateDevise(int id, Devise devise, int userId) async {
     try {
-      final result = await _deviseServices.updateDevise(id, devise);
+      final result = await _deviseServices.updateDevise(id, devise, userId);
       if (result) {
         await loadDevises(reset: true);
         return true;
@@ -92,9 +91,9 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
     }
   }
 
-  Future<bool> deleteDevise(int id) async {
+  Future<bool> deleteDevise(int id, int userId) async {
     try {
-      await _deviseServices.deleteDevise(id);
+      await _deviseServices.deleteDevise(id, userId);
       await loadDevises(reset: true);
       return true;
     } catch (e) {

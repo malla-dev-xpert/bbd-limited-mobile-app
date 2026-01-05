@@ -265,9 +265,22 @@ class _PartnerScreenState extends State<PartnerScreen> {
         onSubmit: (updatedPartner) async {
           try {
             setState(() => _isLoading = true);
+            
+            // Récupérer l'utilisateur connecté
+            final user = await authService.getUserInfo();
+            if (user == null) {
+              showErrorTopSnackBar(
+                context,
+                AppLocalizations.of(context).translate('user_not_connected'),
+              );
+              setState(() => _isLoading = false);
+              return;
+            }
+
             final success = await _partnerServices.updatePartner(
               updatedPartner.id,
               updatedPartner,
+              user.id,
             );
 
             if (success) {

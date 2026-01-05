@@ -238,6 +238,17 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
               onSubmit: (name, code, rate) async {
                 setState(() => _isLoading = true);
                 try {
+                  // Récupérer l'utilisateur connecté
+                  final user = await authService.getUserInfo();
+                  if (user == null) {
+                    showErrorTopSnackBar(
+                      context,
+                      AppLocalizations.of(context).translate('user_not_connected'),
+                    );
+                    setState(() => _isLoading = false);
+                    return;
+                  }
+
                   final updatedDevise = devise.copyWith(
                     name: name,
                     code: code,
@@ -248,6 +259,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                       await ref.read(deviseListProvider.notifier).updateDevise(
                             devise.id!,
                             updatedDevise,
+                            user.id,
                           );
 
                   if (success) {
@@ -308,9 +320,19 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
 
     if (confirmed == true) {
       try {
+        // Récupérer l'utilisateur connecté
+        final user = await authService.getUserInfo();
+        if (user == null) {
+          showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context).translate('user_not_connected'),
+          );
+          return;
+        }
+
         final success = await ref
             .read(deviseListProvider.notifier)
-            .deleteDevise(devise.id!);
+            .deleteDevise(devise.id!, user.id);
         if (success) {
           showSuccessTopSnackBar(context,
               AppLocalizations.of(context).translate('devise_deleted_success'));
