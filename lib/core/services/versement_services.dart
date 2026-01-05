@@ -170,12 +170,13 @@ class VersementServices {
 
   Future<String> transferVersement({
     required int versementId,
+    required int userId,
     required int oldPartnerId,
     required int newPartnerId,
   }) async {
     try {
       final url = Uri.parse(
-        '$baseUrl/versements/transfert/$versementId?oldPartnerId=$oldPartnerId&newPartnerId=$newPartnerId',
+        '$baseUrl/versements/transfert/$versementId?userId=$userId&oldPartnerId=$oldPartnerId&newPartnerId=$newPartnerId',
       );
 
       final response = await http.patch(

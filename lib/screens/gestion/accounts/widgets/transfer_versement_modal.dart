@@ -3,6 +3,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_notification_service.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
@@ -28,6 +29,7 @@ class TransferVersementModal extends StatefulWidget {
 class _TransferVersementModalState extends State<TransferVersementModal> {
   final VersementServices _versementServices = VersementServices();
   final PartnerServices _partnerServices = PartnerServices();
+  final AuthService _authService = AuthService();
   final PartnerNotificationService _partnerNotificationService =
       PartnerNotificationService();
 
@@ -74,6 +76,16 @@ class _TransferVersementModalState extends State<TransferVersementModal> {
       return;
     }
 
+    // Récupérer l'utilisateur connecté
+    final user = await _authService.getUserInfo();
+    if (user == null) {
+      showErrorTopSnackBar(
+        context,
+        AppLocalizations.of(context).translate('user_not_connected'),
+      );
+      return;
+    }
+
     setState(() {
       _isTransferring = true;
     });
@@ -81,6 +93,7 @@ class _TransferVersementModalState extends State<TransferVersementModal> {
     try {
       final result = await _versementServices.transferVersement(
         versementId: widget.versement.id!,
+        userId: user.id,
         oldPartnerId: widget.currentPartnerId,
         newPartnerId: _selectedPartner!.id,
       );
