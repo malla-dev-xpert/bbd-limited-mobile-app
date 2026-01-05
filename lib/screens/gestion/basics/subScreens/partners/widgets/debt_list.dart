@@ -483,6 +483,7 @@ class _DebtListWidgetState extends State<DebtListWidget> {
       final dto = UpdateAchatDto(createdAt: newDate);
       final result = await achatServices.updateAchat(
         achatId: achat.id!,
+        userId: user.id,
         dto: dto,
       );
 

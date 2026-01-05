@@ -261,6 +261,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
       final dto = UpdateAchatDto(createdAt: newDate);
       final result = await _achatServices.updateAchat(
         achatId: achat.id!,
+        userId: user.id,
         dto: dto,
       );
 

@@ -191,9 +191,10 @@ class AchatServices {
 
   Future<ApiResult<Achat>> updateAchat({
     required int achatId,
+    required int userId,
     required UpdateAchatDto dto,
   }) async {
-    final url = Uri.parse('$baseUrl/achats/$achatId/update');
+    final url = Uri.parse('$baseUrl/achats/$achatId/update?userId=$userId');
 
     try {
       final response = await http.patch(

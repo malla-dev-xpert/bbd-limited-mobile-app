@@ -747,6 +747,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       final dto = UpdateAchatDto(createdAt: newDate);
       final result = await _achatsService.updateAchat(
         achatId: achat.id!,
+        userId: user.id,
         dto: dto,
       );
 
