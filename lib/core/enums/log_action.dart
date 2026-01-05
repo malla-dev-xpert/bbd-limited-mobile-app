@@ -71,8 +71,9 @@ enum LogAction {
   }
 
   /// Retourne true si l'action nécessite un affichage before/after
+  /// Pour UPDATE, DELETE et VALIDATE uniquement
   bool get requiresBeforeAfter {
-    return this == UPDATE || this == DELETE;
+    return this == UPDATE || this == DELETE || this == VALIDATE;
   }
 
   /// Retourne true si l'action est une suppression

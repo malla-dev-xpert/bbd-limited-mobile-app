@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class ActivityLog {
   final int id;
   final String actionCode;
@@ -6,6 +8,12 @@ class ActivityLog {
   final List<int>? entityIds;
   final DateTime createdAt;
   final ActivityLogUser user;
+  final String? actorName;
+  final String? actorRole;
+  final String? entityLabel;
+  final String? description;
+  final String? beforeState; // JSON string
+  final String? afterState; // JSON string
 
   ActivityLog({
     required this.id,
@@ -15,6 +23,12 @@ class ActivityLog {
     this.entityIds,
     required this.createdAt,
     required this.user,
+    this.actorName,
+    this.actorRole,
+    this.entityLabel,
+    this.description,
+    this.beforeState,
+    this.afterState,
   });
 
   factory ActivityLog.fromJson(Map<String, dynamic> json) {
@@ -69,6 +83,28 @@ class ActivityLog {
       return int.tryParse(value.toString());
     }
 
+    // Gérer beforeState (JSON string depuis le backend)
+    String? beforeStateStr;
+    if (json['beforeState'] != null) {
+      if (json['beforeState'] is String) {
+        beforeStateStr = json['beforeState'] as String;
+      } else if (json['beforeState'] is Map) {
+        // Fallback: si le backend envoie encore un Map, le convertir en JSON string
+        beforeStateStr = jsonEncode(json['beforeState']);
+      }
+    }
+
+    // Gérer afterState (JSON string depuis le backend)
+    String? afterStateStr;
+    if (json['afterState'] != null) {
+      if (json['afterState'] is String) {
+        afterStateStr = json['afterState'] as String;
+      } else if (json['afterState'] is Map) {
+        // Fallback: si le backend envoie encore un Map, le convertir en JSON string
+        afterStateStr = jsonEncode(json['afterState']);
+      }
+    }
+
     return ActivityLog(
       id: parseId(json['id']),
       actionCode: actionCode,
@@ -77,6 +113,12 @@ class ActivityLog {
       entityIds: entityIdsList,
       createdAt: _parseDateTime(json['createdAt']),
       user: user,
+      actorName: json['actorName']?.toString(),
+      actorRole: json['actorRole']?.toString(),
+      entityLabel: json['entityLabel']?.toString(),
+      description: json['description']?.toString(),
+      beforeState: beforeStateStr,
+      afterState: afterStateStr,
     );
   }
 
@@ -130,11 +172,20 @@ class ActivityLog {
     return {
       'id': id,
       'actionCode': actionCode,
+      'action': actionCode, // Alias pour compatibilité
       'entityType': entityType,
       'entityId': entityId,
       'entityIds': entityIds,
       'createdAt': createdAt.toIso8601String(),
       'user': user.toJson(),
+      'userId': user.id, // Rétro-compatibilité
+      'userName': user.displayName, // Rétro-compatibilité
+      'actorName': actorName,
+      'actorRole': actorRole,
+      'entityLabel': entityLabel,
+      'description': description,
+      'beforeState': beforeState,
+      'afterState': afterState,
     };
   }
 

@@ -43,6 +43,15 @@ class SmartLogDetailsWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    // Pour CREATE : afficher uniquement les données créées (pas de comparaison)
+    if (resolution.action == LogAction.CREATE) {
+      // Même si before/after existe, on n'affiche pas la comparaison pour CREATE
+      return GenericEntityDetailsWidget(
+        businessData: resolution.businessData,
+        localizations: localizations,
+      );
+    }
+
     // Pour DELETE : afficher le widget de suppression
     if (resolution.isDelete) {
       return GenericDeleteWidget(
@@ -51,7 +60,7 @@ class SmartLogDetailsWidget extends StatelessWidget {
       );
     }
 
-    // Pour UPDATE avec before/after : afficher le widget de comparaison
+    // Pour UPDATE et VALIDATE avec before/after : afficher le widget de comparaison
     if (resolution.shouldShowBeforeAfter) {
       return GenericUpdateDiffWidget(
         businessData: resolution.businessData,

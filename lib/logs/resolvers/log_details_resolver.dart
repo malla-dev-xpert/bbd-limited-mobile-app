@@ -108,11 +108,13 @@ class LogDetailsResolver {
         );
       }
 
-      // Pour CREATE : besoin de after uniquement
+      // Pour CREATE : besoin de after uniquement, JAMAIS de before
+      // Même si initialState existe, on l'ignore pour CREATE
       if (action == LogAction.CREATE) {
         return BusinessEntityData(
           data: after ?? {},
           afterData: after,
+          // Explicitement pas de beforeData pour CREATE
         );
       }
 
@@ -173,11 +175,21 @@ class LogDetailsResolver {
       );
     }
 
-    // Pour CREATE et autres actions : extraire les données principales
+    // Pour CREATE : extraire uniquement les données principales (pas de before/after)
+    if (action == LogAction.CREATE) {
+      final mainData = EntityDetailsMapper.extractMainData(entityDetails);
+      return BusinessEntityData(
+        data: mainData,
+        afterData: mainData, // Pour CREATE, after = données créées
+        // Pas de beforeData pour CREATE
+      );
+    }
+
+    // Pour autres actions : extraire les données principales
     final mainData = EntityDetailsMapper.extractMainData(entityDetails);
     return BusinessEntityData(
       data: mainData,
-      afterData: mainData, // Pour CREATE, after = données créées
+      afterData: mainData,
     );
   }
 

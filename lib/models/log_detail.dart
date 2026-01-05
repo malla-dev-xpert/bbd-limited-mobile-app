@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class LogDetail {
   final int id;
   final String action;
@@ -7,9 +9,13 @@ class LogDetail {
   final DateTime createdAt;
   final int? userId;
   final String? userName;
+  final String? actorName;
+  final String? actorRole;
+  final String? entityLabel;
+  final String? description;
   final Map<String, dynamic>? entityDetails;
-  final Map<String, dynamic>? initialState;
-  final Map<String, dynamic>? finalState;
+  final String? beforeState; // JSON string
+  final String? afterState; // JSON string
 
   LogDetail({
     required this.id,
@@ -20,9 +26,13 @@ class LogDetail {
     required this.createdAt,
     this.userId,
     this.userName,
+    this.actorName,
+    this.actorRole,
+    this.entityLabel,
+    this.description,
     this.entityDetails,
-    this.initialState,
-    this.finalState,
+    this.beforeState,
+    this.afterState,
   });
 
   factory LogDetail.fromJson(Map<String, dynamic> json) {
@@ -46,16 +56,42 @@ class LogDetail {
           Map<String, dynamic>.from(json['entityDetails'] as Map);
     }
 
-    // Gérer initialState (nouveau champ backend)
-    Map<String, dynamic>? initialStateMap;
-    if (json['initialState'] != null && json['initialState'] is Map) {
-      initialStateMap = Map<String, dynamic>.from(json['initialState'] as Map);
+    // Gérer beforeState (JSON string depuis le backend)
+    String? beforeStateStr;
+    if (json['beforeState'] != null) {
+      if (json['beforeState'] is String) {
+        beforeStateStr = json['beforeState'] as String;
+      } else if (json['beforeState'] is Map) {
+        // Fallback: si le backend envoie encore un Map, le convertir en JSON string
+        beforeStateStr = jsonEncode(json['beforeState']);
+      }
+    }
+    // Support rétro-compatibilité : initialState (ancien format)
+    if (beforeStateStr == null && json['initialState'] != null) {
+      if (json['initialState'] is String) {
+        beforeStateStr = json['initialState'] as String;
+      } else if (json['initialState'] is Map) {
+        beforeStateStr = jsonEncode(json['initialState']);
+      }
     }
 
-    // Gérer finalState (nouveau champ backend)
-    Map<String, dynamic>? finalStateMap;
-    if (json['finalState'] != null && json['finalState'] is Map) {
-      finalStateMap = Map<String, dynamic>.from(json['finalState'] as Map);
+    // Gérer afterState (JSON string depuis le backend)
+    String? afterStateStr;
+    if (json['afterState'] != null) {
+      if (json['afterState'] is String) {
+        afterStateStr = json['afterState'] as String;
+      } else if (json['afterState'] is Map) {
+        // Fallback: si le backend envoie encore un Map, le convertir en JSON string
+        afterStateStr = jsonEncode(json['afterState']);
+      }
+    }
+    // Support rétro-compatibilité : finalState (ancien format)
+    if (afterStateStr == null && json['finalState'] != null) {
+      if (json['finalState'] is String) {
+        afterStateStr = json['finalState'] as String;
+      } else if (json['finalState'] is Map) {
+        afterStateStr = jsonEncode(json['finalState']);
+      }
     }
 
     int parseId(dynamic value) {
@@ -80,9 +116,13 @@ class LogDetail {
       createdAt: _parseDateTime(json['createdAt']),
       userId: parseNullableId(json['userId']),
       userName: json['userName']?.toString(),
+      actorName: json['actorName']?.toString(),
+      actorRole: json['actorRole']?.toString(),
+      entityLabel: json['entityLabel']?.toString(),
+      description: json['description']?.toString(),
       entityDetails: entityDetailsMap,
-      initialState: initialStateMap,
-      finalState: finalStateMap,
+      beforeState: beforeStateStr,
+      afterState: afterStateStr,
     );
   }
 
@@ -132,6 +172,28 @@ class LogDetail {
     return DateTime.now();
   }
 
+  /// Getter de compatibilité : parse beforeState (JSON string) en Map
+  /// Utilisé pour la compatibilité avec le code existant qui attend initialState comme Map
+  Map<String, dynamic>? get initialState {
+    if (beforeState == null || beforeState!.isEmpty) return null;
+    try {
+      return jsonDecode(beforeState!) as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Getter de compatibilité : parse afterState (JSON string) en Map
+  /// Utilisé pour la compatibilité avec le code existant qui attend finalState comme Map
+  Map<String, dynamic>? get finalState {
+    if (afterState == null || afterState!.isEmpty) return null;
+    try {
+      return jsonDecode(afterState!) as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -142,9 +204,13 @@ class LogDetail {
       'createdAt': createdAt.toIso8601String(),
       'userId': userId,
       'userName': userName,
+      'actorName': actorName,
+      'actorRole': actorRole,
+      'entityLabel': entityLabel,
+      'description': description,
       'entityDetails': entityDetails,
-      'initialState': initialState,
-      'finalState': finalState,
+      'beforeState': beforeState,
+      'afterState': afterState,
     };
   }
 }

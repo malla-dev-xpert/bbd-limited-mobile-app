@@ -41,18 +41,22 @@ class LogService {
           print('  - createdAt: ${jsonBody['createdAt']}');
           print('  - userId: ${jsonBody['userId']}');
           print('  - userName: ${jsonBody['userName']}');
+          print('  - actorName: ${jsonBody['actorName']}');
+          print('  - actorRole: ${jsonBody['actorRole']}');
+          print('  - entityLabel: ${jsonBody['entityLabel']}');
+          print('  - description: ${jsonBody['description']}');
           print('  - entityDetails: ${jsonBody['entityDetails']}');
-          print('  - initialState: ${jsonBody['initialState']}');
-          print('  - finalState: ${jsonBody['finalState']}');
+          print('  - beforeState: ${jsonBody['beforeState']}');
+          print('  - afterState: ${jsonBody['afterState']}');
 
-          if (jsonBody['initialState'] != null) {
-            print('📊 [LogService] initialState détaillé:');
-            print(jsonBody['initialState']);
+          if (jsonBody['beforeState'] != null) {
+            print('📊 [LogService] beforeState détaillé:');
+            print(jsonBody['beforeState']);
           }
 
-          if (jsonBody['finalState'] != null) {
-            print('📊 [LogService] finalState détaillé:');
-            print(jsonBody['finalState']);
+          if (jsonBody['afterState'] != null) {
+            print('📊 [LogService] afterState détaillé:');
+            print(jsonBody['afterState']);
           }
 
           if (jsonBody['entityDetails'] != null) {
@@ -111,6 +115,8 @@ class LogService {
   Future<List<ActivityLog>> getLogs({
     int page = 0,
     int? userId,
+    String? entityType,
+    String? action,
     DateTime? dateStart,
     DateTime? dateEnd,
   }) async {
@@ -121,6 +127,14 @@ class LogService {
 
       if (userId != null) {
         queryParams['userId'] = userId.toString();
+      }
+
+      if (entityType != null && entityType.isNotEmpty) {
+        queryParams['entityType'] = entityType;
+      }
+
+      if (action != null && action.isNotEmpty) {
+        queryParams['action'] = action;
       }
 
       if (dateStart != null) {
@@ -174,15 +188,22 @@ class LogService {
           if (log is Map<String, dynamic>) {
             print('📊 [LogService] Log #$i:');
             print('  - id: ${log['id']}');
-            print(
-                '  - action: ${log['action']} / actionCode: ${log['actionCode']}');
+            print('  - action: ${log['action']}');
             print('  - entityType: ${log['entityType']}');
             print('  - entityId: ${log['entityId']}');
             print('  - entityIds: ${log['entityIds']}');
             print('  - createdAt: ${log['createdAt']}');
-            print('  - user: ${log['user']}');
             print('  - userId: ${log['userId']}');
             print('  - userName: ${log['userName']}');
+            print('  - actorName: ${log['actorName']}');
+            print('  - actorRole: ${log['actorRole']}');
+            print('  - entityLabel: ${log['entityLabel']}');
+            print('  - description: ${log['description']}');
+            print(
+                '  - beforeState: ${log['beforeState'] != null ? "${log['beforeState'].toString().length} caractères" : "null"}');
+            print(
+                '  - afterState: ${log['afterState'] != null ? "${log['afterState'].toString().length} caractères" : "null"}');
+            print('  - user: ${log['user']}');
           }
         }
 
