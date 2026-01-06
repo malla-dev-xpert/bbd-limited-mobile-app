@@ -148,8 +148,9 @@ class _LogDetailPageState extends State<LogDetailPage> {
           // 🟦 A. Header du log (toujours visible)
           _buildHeaderCard(action, entityType, detail, businessPhrase),
           const SizedBox(height: 24),
-          // 🟨 B. Résumé métier (si disponible)
-          if (!resolution.businessData.isEmpty &&
+          // 🟨 B. Résumé métier (si disponible, mais pas pour les créations)
+          if (action != LogAction.CREATE &&
+              !resolution.businessData.isEmpty &&
               resolution.businessData.mainData.isNotEmpty) ...[
             LogSummaryCard(
               businessData: resolution.businessData,

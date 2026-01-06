@@ -705,6 +705,7 @@
   "activity_history_entities_list": "Liste des entités",
   "no_changes_detected": "Aucun changement détecté",
   "creation_successful": "Création réussie",
+  "new_entity_created": "Nouvelle entité créée :",
   "element_deleted": "Suppression",
   "data_before_deletion": "Données avant suppression",
   "initial_state": "État initial",

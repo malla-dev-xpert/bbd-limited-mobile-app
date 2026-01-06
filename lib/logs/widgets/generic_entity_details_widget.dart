@@ -65,7 +65,7 @@ class GenericEntityDetailsWidget extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Nouvelle entité créée :',
+            localizations.translate('new_entity_created'),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[700],
