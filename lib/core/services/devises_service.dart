@@ -105,4 +105,27 @@ class DeviseServices {
       rethrow;
     }
   }
+
+  /// Récupère une devise par son nom
+  Future<Devise?> getByName(String name) async {
+    try {
+      final encodedName = Uri.encodeComponent(name);
+      final response = await http.get(
+        Uri.parse('$baseUrl/devises/by-name?name=$encodedName'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
+        return Devise.fromJson(jsonBody);
+      } else if (response.statusCode == 404) {
+        // Devise non trouvée
+        return null;
+      } else {
+        throw Exception(
+            "Erreur lors de la récupération de la devise (${response.statusCode})");
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération de la devise: $e");
+    }
+  }
 }
