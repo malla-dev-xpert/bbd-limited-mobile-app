@@ -4,6 +4,7 @@ import 'package:bbd_limited/logs/widgets/generic_update_diff_widget.dart';
 import 'package:bbd_limited/logs/widgets/generic_delete_widget.dart';
 import 'package:bbd_limited/logs/widgets/generic_entity_details_widget.dart';
 import 'package:bbd_limited/logs/widgets/deposit_log_details_widget.dart';
+import 'package:bbd_limited/logs/widgets/purchase_log_details_widget.dart';
 import 'package:bbd_limited/logs/widgets/bulk_action_widget.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/enums/log_entity_type.dart';
@@ -54,6 +55,14 @@ class SmartLogDetailsWidget extends StatelessWidget {
           businessData: resolution.businessData,
           localizations: localizations,
           reference: entityLabel,
+        );
+      }
+      // Pour les achats en CREATE, utiliser le widget spécialisé avec entityLabel
+      if (resolution.entityType == LogEntityType.PURCHASE) {
+        return PurchaseLogDetailsWidget(
+          businessData: resolution.businessData,
+          localizations: localizations,
+          entityLabel: entityLabel,
         );
       }
       // Même si before/after existe, on n'affiche pas la comparaison pour CREATE

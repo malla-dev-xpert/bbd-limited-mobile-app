@@ -189,6 +189,36 @@ class AchatServices {
     }
   }
 
+  /// Récupère un achat par son ID
+  Future<Achat?> getById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/achats/$id'),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes))
+            as Map<String, dynamic>;
+        final apiResponse =
+            ApiResponse<Map<String, dynamic>>.fromJson(responseBody);
+
+        // Extraire les données de l'achat depuis le wrapper
+        if (apiResponse.data != null) {
+          return Achat.fromJson(apiResponse.data!);
+        }
+        return null;
+      } else if (response.statusCode == 404) {
+        // Achat non trouvé
+        return null;
+      } else {
+        throw Exception(
+            "Erreur lors de la récupération de l'achat (${response.statusCode})");
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération de l'achat: $e");
+    }
+  }
+
   Future<ApiResult<Achat>> updateAchat({
     required int achatId,
     required int userId,
@@ -220,7 +250,7 @@ class AchatServices {
               }
               return ApiResult.success(Achat.fromJson(minimalJson));
             }
-          } on FormatException catch (e) {
+          } on FormatException {
             final minimalJson = <String, dynamic>{'id': achatId};
             if (dto.createdAt != null) {
               minimalJson['createdAt'] = dto.createdAt!.toIso8601String();
@@ -257,7 +287,7 @@ class AchatServices {
             errorCode: response.statusCode,
           );
       }
-    } on FormatException catch (e) {
+    } on FormatException {
       return ApiResult.failure(
         errorMessage: 'Erreur de format de réponse du serveur',
         errorCode: 0,
