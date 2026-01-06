@@ -2,26 +2,95 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
+import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/models/versement.dart';
 import 'package:intl/intl.dart';
 
 /// Widget spécialisé pour afficher les détails d'un versement
 /// Affiche : date, commissionnaire (nom et téléphone), client, devise, taux utilisé, note
-class DepositLogDetailsWidget extends StatelessWidget {
+class DepositLogDetailsWidget extends StatefulWidget {
   final BusinessEntityData businessData;
   final AppLocalizations localizations;
+  final String? reference; // Référence du versement depuis entityLabel du log
 
   const DepositLogDetailsWidget({
     super.key,
     required this.businessData,
     required this.localizations,
+    this.reference,
   });
+
+  @override
+  State<DepositLogDetailsWidget> createState() =>
+      _DepositLogDetailsWidgetState();
+}
+
+class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
+  Versement? _versement;
+  bool _isLoadingVersement = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersementIfNeeded();
+  }
+
+  /// Extrait uniquement la référence au format BBDPAY-XX depuis entityLabel
+  /// Ignore tout ce qui suit après la référence
+  String? _extractReference(String? entityLabel) {
+    if (entityLabel == null || entityLabel.isEmpty) return null;
+
+    // Pattern pour extraire BBDPAY-XX (où XX est un nombre)
+    final regex = RegExp(r'BBDPAY-\d+');
+    final match = regex.firstMatch(entityLabel);
+
+    if (match != null) {
+      return match.group(0);
+    }
+
+    return null;
+  }
+
+  /// Charge le versement complet si on a une référence et que c'est une création
+  Future<void> _loadVersementIfNeeded() async {
+    // Pour CREATE, on essaie de récupérer le versement complet
+    final beforeData = widget.businessData.beforeData;
+    final afterData = widget.businessData.afterData;
+
+    // Si c'est une création (pas de beforeData) et qu'on a une référence
+    final isCreate = beforeData == null && afterData != null;
+    final reference = _extractReference(widget.reference);
+
+    if (isCreate && reference != null && reference.isNotEmpty) {
+      setState(() {
+        _isLoadingVersement = true;
+      });
+
+      try {
+        final versementService = VersementServices();
+        final versement = await versementService.getByReference(reference);
+        if (mounted) {
+          setState(() {
+            _versement = versement;
+            _isLoadingVersement = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoadingVersement = false;
+          });
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // Extraire les données pertinentes
-    final data = businessData.mainData;
-    final beforeData = businessData.beforeData;
-    final afterData = businessData.afterData;
+    final data = widget.businessData.mainData;
+    final beforeData = widget.businessData.beforeData;
+    final afterData = widget.businessData.afterData;
 
     // Détecter si c'est un transfert (présence de oldPartnerId et newPartnerId)
     final isTransfer =
@@ -33,8 +102,8 @@ class DepositLogDetailsWidget extends StatelessWidget {
     }
 
     // Pour CREATE : afficher les données principales
-    if (beforeData == null && afterData == null) {
-      return _buildSimpleView(data);
+    if (beforeData == null && afterData != null) {
+      return _buildSimpleView(afterData);
     }
 
     // Pour UPDATE : afficher before/after
@@ -53,12 +122,15 @@ class DepositLogDetailsWidget extends StatelessWidget {
 
   /// Affiche les données pour CREATE
   Widget _buildSimpleView(Map<String, dynamic> data) {
+    // Utiliser les données du versement récupéré si disponible, sinon utiliser les données du log
     final date = _extractDate(data);
-    final montantVerser = _extractAmount(data);
-    final commissionnaireName = _extractCommissionnaireName(data);
-    final commissionnairePhone = _extractCommissionnairePhone(data);
+    final montantVerser = _versement?.montantVerser ?? _extractAmount(data);
+    final commissionnaireName =
+        _versement?.commissionnaireName ?? _extractCommissionnaireName(data);
+    final commissionnairePhone =
+        _versement?.commissionnairePhone ?? _extractCommissionnairePhone(data);
     final clientName = _extractClientName(data);
-    final deviseCode = _extractDeviseCode(data);
+    final deviseCode = _versement?.deviseCode ?? _extractDeviseCode(data);
     final tauxUtilise = _extractTauxUtilise(data);
     final note = _extractNote(data);
 
@@ -85,7 +157,7 @@ class DepositLogDetailsWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            localizations.translate('details'),
+            widget.localizations.translate('details'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -93,44 +165,69 @@ class DepositLogDetailsWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          if (_isLoadingVersement)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.blue[700],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Chargement des détails...',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (date != null)
             _buildInfoRow(
-              localizations.translate('date'),
+              widget.localizations.translate('date'),
               _formatDate(date),
             ),
           if (montantVerser != null)
             _buildInfoRow(
-              localizations.translate('amount_deposited'),
-              _formatAmount(montantVerser, deviseCode),
+              widget.localizations.translate('amount_deposited'),
+              montantVerser.toString(),
             ),
-          if (commissionnaireName != null)
+          if (deviseCode != null)
             _buildInfoRow(
-              localizations.translate('commissionnaire_name'),
+              widget.localizations.translate('currency'),
+              deviseCode,
+            ),
+          if (commissionnaireName != null && commissionnaireName.isNotEmpty)
+            _buildInfoRow(
+              widget.localizations.translate('commissionnaire_name'),
               commissionnaireName,
             ),
-          if (commissionnairePhone != null)
+          if (commissionnairePhone != null && commissionnairePhone.isNotEmpty)
             _buildInfoRow(
-              localizations.translate('commissionnaire_phone'),
+              widget.localizations.translate('commissionnaire_phone'),
               commissionnairePhone,
             ),
           if (clientName != null)
             _buildInfoRow(
-              localizations.translate('client_name'),
+              widget.localizations.translate('client_name'),
               clientName,
-            ),
-          if (deviseCode != null)
-            _buildInfoRow(
-              localizations.translate('currency'),
-              deviseCode,
             ),
           if (tauxUtilise != null)
             _buildInfoRow(
-              localizations.translate('exchange_rate'),
+              widget.localizations.translate('exchange_rate'),
               _formatRate(tauxUtilise),
             ),
           if (note != null && note.isNotEmpty)
             _buildInfoRow(
-              localizations.translate('note'),
+              widget.localizations.translate('note'),
               note,
             ),
         ],
@@ -168,48 +265,48 @@ class DepositLogDetailsWidget extends StatelessWidget {
       children: [
         // Section "Avant la modification"
         _buildSection(
-          title: localizations.translate('before_modification'),
+          title: widget.localizations.translate('before_modification'),
           color: Colors.red[50]!,
           borderColor: Colors.red[200]!,
           children: [
             if (dateBefore != null)
               _buildInfoRow(
-                localizations.translate('date'),
+                widget.localizations.translate('date'),
                 _formatDate(dateBefore),
               ),
             if (montantVerserBefore != null)
               _buildInfoRow(
-                localizations.translate('amount_deposited'),
+                widget.localizations.translate('amount_deposited'),
                 _formatAmount(montantVerserBefore, deviseCodeBefore),
               ),
             if (commissionnaireNameBefore != null)
               _buildInfoRow(
-                localizations.translate('commissionnaire_name'),
+                widget.localizations.translate('commissionnaire_name'),
                 commissionnaireNameBefore,
               ),
             if (commissionnairePhoneBefore != null)
               _buildInfoRow(
-                localizations.translate('commissionnaire_phone'),
+                widget.localizations.translate('commissionnaire_phone'),
                 commissionnairePhoneBefore,
               ),
             if (clientNameBefore != null)
               _buildInfoRow(
-                localizations.translate('client_name'),
+                widget.localizations.translate('client_name'),
                 clientNameBefore,
               ),
             if (deviseCodeBefore != null)
               _buildInfoRow(
-                localizations.translate('currency'),
+                widget.localizations.translate('currency'),
                 deviseCodeBefore,
               ),
             if (tauxUtiliseBefore != null)
               _buildInfoRow(
-                localizations.translate('exchange_rate'),
+                widget.localizations.translate('exchange_rate'),
                 _formatRate(tauxUtiliseBefore),
               ),
             if (noteBefore != null && noteBefore.isNotEmpty)
               _buildInfoRow(
-                localizations.translate('note'),
+                widget.localizations.translate('note'),
                 noteBefore,
               ),
           ],
@@ -217,48 +314,48 @@ class DepositLogDetailsWidget extends StatelessWidget {
         const SizedBox(height: 24),
         // Section "Après la modification"
         _buildSection(
-          title: localizations.translate('after_modification'),
+          title: widget.localizations.translate('after_modification'),
           color: Colors.green[50]!,
           borderColor: Colors.green[200]!,
           children: [
             if (dateAfter != null)
               _buildInfoRow(
-                localizations.translate('date'),
+                widget.localizations.translate('date'),
                 _formatDate(dateAfter),
               ),
             if (montantVerserAfter != null)
               _buildInfoRow(
-                localizations.translate('amount_deposited'),
+                widget.localizations.translate('amount_deposited'),
                 _formatAmount(montantVerserAfter, deviseCodeAfter),
               ),
             if (commissionnaireNameAfter != null)
               _buildInfoRow(
-                localizations.translate('commissionnaire_name'),
+                widget.localizations.translate('commissionnaire_name'),
                 commissionnaireNameAfter,
               ),
             if (commissionnairePhoneAfter != null)
               _buildInfoRow(
-                localizations.translate('commissionnaire_phone'),
+                widget.localizations.translate('commissionnaire_phone'),
                 commissionnairePhoneAfter,
               ),
             if (clientNameAfter != null)
               _buildInfoRow(
-                localizations.translate('client_name'),
+                widget.localizations.translate('client_name'),
                 clientNameAfter,
               ),
             if (deviseCodeAfter != null)
               _buildInfoRow(
-                localizations.translate('currency'),
+                widget.localizations.translate('currency'),
                 deviseCodeAfter,
               ),
             if (tauxUtiliseAfter != null)
               _buildInfoRow(
-                localizations.translate('exchange_rate'),
+                widget.localizations.translate('exchange_rate'),
                 _formatRate(tauxUtiliseAfter),
               ),
             if (noteAfter != null && noteAfter.isNotEmpty)
               _buildInfoRow(
-                localizations.translate('note'),
+                widget.localizations.translate('note'),
                 noteAfter,
               ),
           ],
@@ -316,7 +413,7 @@ class DepositLogDetailsWidget extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  localizations.translate('element_deleted'),
+                  widget.localizations.translate('element_deleted'),
                   style: TextStyle(
                     color: Colors.red[900],
                     fontSize: 15,
@@ -330,48 +427,48 @@ class DepositLogDetailsWidget extends StatelessWidget {
         const SizedBox(height: 24),
         // Données avant suppression
         _buildSection(
-          title: localizations.translate('data_before_deletion'),
+          title: widget.localizations.translate('data_before_deletion'),
           color: Colors.grey[50]!,
           borderColor: Colors.grey[300]!,
           children: [
             if (date != null)
               _buildInfoRow(
-                localizations.translate('date'),
+                widget.localizations.translate('date'),
                 _formatDate(date),
               ),
             if (montantVerser != null)
               _buildInfoRow(
-                localizations.translate('amount_deposited'),
+                widget.localizations.translate('amount_deposited'),
                 _formatAmount(montantVerser, deviseCode),
               ),
             if (commissionnaireName != null)
               _buildInfoRow(
-                localizations.translate('commissionnaire_name'),
+                widget.localizations.translate('commissionnaire_name'),
                 commissionnaireName,
               ),
             if (commissionnairePhone != null)
               _buildInfoRow(
-                localizations.translate('commissionnaire_phone'),
+                widget.localizations.translate('commissionnaire_phone'),
                 commissionnairePhone,
               ),
             if (clientName != null)
               _buildInfoRow(
-                localizations.translate('client_name'),
+                widget.localizations.translate('client_name'),
                 clientName,
               ),
             if (deviseCode != null)
               _buildInfoRow(
-                localizations.translate('currency'),
+                widget.localizations.translate('currency'),
                 deviseCode,
               ),
             if (tauxUtilise != null)
               _buildInfoRow(
-                localizations.translate('exchange_rate'),
+                widget.localizations.translate('exchange_rate'),
                 _formatRate(tauxUtilise),
               ),
             if (note != null && note.isNotEmpty)
               _buildInfoRow(
-                localizations.translate('note'),
+                widget.localizations.translate('note'),
                 note,
               ),
           ],
@@ -459,7 +556,7 @@ class DepositLogDetailsWidget extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                localizations.translate('no_changes_detected'),
+                widget.localizations.translate('no_changes_detected'),
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontSize: 14,
@@ -486,7 +583,7 @@ class DepositLogDetailsWidget extends StatelessWidget {
               Icon(Icons.compare_arrows, color: Colors.orange[700], size: 20),
               const SizedBox(width: 8),
               Text(
-                localizations.translate('changes'),
+                widget.localizations.translate('changes'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -498,59 +595,60 @@ class DepositLogDetailsWidget extends StatelessWidget {
           const SizedBox(height: 16),
           if (_areDatesEqual(dateBefore, dateAfter) != true)
             _buildChangeRow(
-              localizations.translate('date'),
+              widget.localizations.translate('date'),
               dateBefore != null
                   ? _formatDate(dateBefore)
-                  : localizations.translate('na'),
+                  : widget.localizations.translate('na'),
               dateAfter != null
                   ? _formatDate(dateAfter)
-                  : localizations.translate('na'),
+                  : widget.localizations.translate('na'),
             ),
           if (montantVerserBefore != montantVerserAfter)
             _buildChangeRow(
-              localizations.translate('amount_deposited'),
+              widget.localizations.translate('amount_deposited'),
               _formatAmount(montantVerserBefore, deviseBefore),
               _formatAmount(montantVerserAfter, deviseAfter),
             ),
           if (commissionnaireNameBefore != commissionnaireNameAfter)
             _buildChangeRow(
-              localizations.translate('commissionnaire_name'),
-              commissionnaireNameBefore ?? localizations.translate('na'),
-              commissionnaireNameAfter ?? localizations.translate('na'),
+              widget.localizations.translate('commissionnaire_name'),
+              commissionnaireNameBefore ?? widget.localizations.translate('na'),
+              commissionnaireNameAfter ?? widget.localizations.translate('na'),
             ),
           if (commissionnairePhoneBefore != commissionnairePhoneAfter)
             _buildChangeRow(
-              localizations.translate('commissionnaire_phone'),
-              commissionnairePhoneBefore ?? localizations.translate('na'),
-              commissionnairePhoneAfter ?? localizations.translate('na'),
+              widget.localizations.translate('commissionnaire_phone'),
+              commissionnairePhoneBefore ??
+                  widget.localizations.translate('na'),
+              commissionnairePhoneAfter ?? widget.localizations.translate('na'),
             ),
           if (clientNameBefore != clientNameAfter)
             _buildChangeRow(
-              localizations.translate('client_name'),
-              clientNameBefore ?? localizations.translate('na'),
-              clientNameAfter ?? localizations.translate('na'),
+              widget.localizations.translate('client_name'),
+              clientNameBefore ?? widget.localizations.translate('na'),
+              clientNameAfter ?? widget.localizations.translate('na'),
             ),
           if (deviseBefore != deviseAfter)
             _buildChangeRow(
-              localizations.translate('currency'),
-              deviseBefore ?? localizations.translate('na'),
-              deviseAfter ?? localizations.translate('na'),
+              widget.localizations.translate('currency'),
+              deviseBefore ?? widget.localizations.translate('na'),
+              deviseAfter ?? widget.localizations.translate('na'),
             ),
           if (tauxBefore != tauxAfter)
             _buildChangeRow(
-              localizations.translate('exchange_rate'),
+              widget.localizations.translate('exchange_rate'),
               tauxBefore != null
                   ? _formatRate(tauxBefore)
-                  : localizations.translate('na'),
+                  : widget.localizations.translate('na'),
               tauxAfter != null
                   ? _formatRate(tauxAfter)
-                  : localizations.translate('na'),
+                  : widget.localizations.translate('na'),
             ),
           if (noteBefore != noteAfter)
             _buildChangeRow(
-              localizations.translate('note'),
-              noteBefore ?? localizations.translate('na'),
-              noteAfter ?? localizations.translate('na'),
+              widget.localizations.translate('note'),
+              noteBefore ?? widget.localizations.translate('na'),
+              noteAfter ?? widget.localizations.translate('na'),
             ),
         ],
       ),
@@ -814,7 +912,7 @@ class DepositLogDetailsWidget extends StatelessWidget {
               Icon(Icons.swap_horiz, color: Colors.purple[700], size: 24),
               const SizedBox(width: 12),
               Text(
-                localizations.translate('transfer'),
+                widget.localizations.translate('transfer'),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -827,32 +925,32 @@ class DepositLogDetailsWidget extends StatelessWidget {
           // Informations de transfert
           if (date != null)
             _buildInfoRow(
-              localizations.translate('date'),
+              widget.localizations.translate('date'),
               _formatDate(date),
             ),
           if (userName != null)
             _buildInfoRow(
-              localizations.translate('user'),
+              widget.localizations.translate('user'),
               userName,
             ),
           if (oldPartnerName != null)
             _buildInfoRow(
-              localizations.translate('from_client'),
+              widget.localizations.translate('from_client'),
               oldPartnerName,
             ),
           if (newPartnerName != null)
             _buildInfoRow(
-              localizations.translate('to_client'),
+              widget.localizations.translate('to_client'),
               newPartnerName,
             ),
           if (montantVerser != null)
             _buildInfoRow(
-              localizations.translate('amount_deposited'),
+              widget.localizations.translate('amount_deposited'),
               _formatAmount(montantVerser, deviseCode),
             ),
           if (deviseCode != null)
             _buildInfoRow(
-              localizations.translate('currency'),
+              widget.localizations.translate('currency'),
               deviseCode,
             ),
         ],

@@ -14,11 +14,14 @@ import 'package:bbd_limited/core/enums/log_action.dart';
 class SmartLogDetailsWidget extends StatelessWidget {
   final LogDetailsResolution resolution;
   final AppLocalizations localizations;
+  final String?
+      entityLabel; // Référence du versement pour les logs de versements
 
   const SmartLogDetailsWidget({
     super.key,
     required this.resolution,
     required this.localizations,
+    this.entityLabel,
   });
 
   @override
@@ -45,6 +48,14 @@ class SmartLogDetailsWidget extends StatelessWidget {
 
     // Pour CREATE : afficher uniquement les données créées (pas de comparaison)
     if (resolution.action == LogAction.CREATE) {
+      // Pour les versements en CREATE, utiliser le widget spécialisé avec la référence
+      if (resolution.entityType == LogEntityType.DEPOSIT) {
+        return DepositLogDetailsWidget(
+          businessData: resolution.businessData,
+          localizations: localizations,
+          reference: entityLabel,
+        );
+      }
       // Même si before/after existe, on n'affiche pas la comparaison pour CREATE
       return GenericEntityDetailsWidget(
         businessData: resolution.businessData,
@@ -73,6 +84,7 @@ class SmartLogDetailsWidget extends StatelessWidget {
       return DepositLogDetailsWidget(
         businessData: resolution.businessData,
         localizations: localizations,
+        reference: entityLabel,
       );
     }
 

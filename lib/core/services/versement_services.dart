@@ -168,6 +168,28 @@ class VersementServices {
     }
   }
 
+  /// Récupère un versement par sa référence
+  Future<Versement?> getByReference(String reference) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/versements/reference/$reference'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
+        return Versement.fromJson(jsonBody);
+      } else if (response.statusCode == 404) {
+        // Versement non trouvé
+        return null;
+      } else {
+        throw Exception(
+            "Erreur lors de la récupération du versement (${response.statusCode})");
+      }
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération du versement: $e");
+    }
+  }
+
   Future<String> transferVersement({
     required int versementId,
     required int userId,

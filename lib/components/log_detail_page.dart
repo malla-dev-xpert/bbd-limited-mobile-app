@@ -163,6 +163,7 @@ class _LogDetailPageState extends State<LogDetailPage> {
             SmartLogDetailsWidget(
               resolution: resolution,
               localizations: localizations,
+              entityLabel: detail.entityLabel,
             ),
           ],
           const SizedBox(height: 24),
