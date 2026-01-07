@@ -29,6 +29,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
   late InvoiceOptions _options;
   final _formKey = GlobalKey<FormState>();
   final _lineMarginController = TextEditingController();
+  final _lineDiscountController = TextEditingController();
   final _globalMarginController = TextEditingController();
   final _discountController = TextEditingController();
   final _storageFeeController = TextEditingController();
@@ -52,6 +53,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
 
   void _initializeControllers() {
     _lineMarginController.text = _options.lineMarginValue?.toString() ?? '10';
+    _lineDiscountController.text =
+        _options.lineDiscountValue?.toString() ?? '5';
     _globalMarginController.text =
         _options.globalMarginValue?.toString() ?? '15';
     _discountController.text = _options.discountValue?.toString() ?? '5';
@@ -60,6 +63,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
 
   void _updateControllersFromOptions() {
     _lineMarginController.text = _options.lineMarginValue?.toString() ?? '10';
+    _lineDiscountController.text =
+        _options.lineDiscountValue?.toString() ?? '5';
     _globalMarginController.text =
         _options.globalMarginValue?.toString() ?? '15';
     _discountController.text = _options.discountValue?.toString() ?? '5';
@@ -73,6 +78,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
   @override
   void dispose() {
     _lineMarginController.dispose();
+    _lineDiscountController.dispose();
     _globalMarginController.dispose();
     _discountController.dispose();
     _storageFeeController.dispose();
@@ -152,13 +158,11 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               // Design mobile (nouveau)
               _buildMobileDesign(),
             ],
-
           ],
         ),
       ),
     );
   }
-
 
   /// Design pour tablettes - garde le design actuel
   Widget _buildTabletDesign() {
@@ -265,28 +269,44 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           icon: _options.lineMarginType == MarginType.percentage
                               ? Icons.percent
                               : Icons.attach_money,
-                          keyboardType: _options.lineMarginType == MarginType.percentage
-                              ? const TextInputType.numberWithOptions(decimal: true)
-                              : const TextInputType.numberWithOptions(decimal: true),
-                          inputFormatters: _options.lineMarginType == MarginType.percentage
-                              ? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
-                              : [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+                          keyboardType:
+                              _options.lineMarginType == MarginType.percentage
+                                  ? const TextInputType.numberWithOptions(
+                                      decimal: true)
+                                  : const TextInputType.numberWithOptions(
+                                      decimal: true),
+                          inputFormatters:
+                              _options.lineMarginType == MarginType.percentage
+                                  ? [
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'^\d+\.?\d{0,2}'))
+                                    ]
+                                  : [
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'^\d+\.?\d{0,2}'))
+                                    ],
                           onChanged: (value) {
                             if (value.isEmpty) {
-                              _updateOptions(_options.copyWith(lineMarginValue: null));
+                              _updateOptions(
+                                  _options.copyWith(lineMarginValue: null));
                               return;
                             }
-                            final amount = double.tryParse(value.replaceAll(',', '.'));
+                            final amount =
+                                double.tryParse(value.replaceAll(',', '.'));
                             if (amount != null) {
-                              _updateOptions(_options.copyWith(lineMarginValue: amount));
+                              _updateOptions(
+                                  _options.copyWith(lineMarginValue: amount));
                             }
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Requis';
-                            final amount = double.tryParse(value.replaceAll(',', '.'));
+                            final amount =
+                                double.tryParse(value.replaceAll(',', '.'));
                             if (amount == null || amount < 0)
                               return 'Doit être positif';
-                            if (_options.lineMarginType == MarginType.percentage && amount > 100) {
+                            if (_options.lineMarginType ==
+                                    MarginType.percentage &&
+                                amount > 100) {
                               return 'Doit être ≤ 100%';
                             }
                             return null;
@@ -340,24 +360,34 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       icon: _options.globalMarginType == MarginType.percentage
                           ? Icons.percent
                           : Icons.attach_money,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d+\.?\d{0,2}'))
+                      ],
                       onChanged: (value) {
                         if (value.isEmpty) {
-                          _updateOptions(_options.copyWith(globalMarginValue: null));
+                          _updateOptions(
+                              _options.copyWith(globalMarginValue: null));
                           return;
                         }
-                        final amount = double.tryParse(value.replaceAll(',', '.'));
+                        final amount =
+                            double.tryParse(value.replaceAll(',', '.'));
                         if (amount != null) {
-                          _updateOptions(_options.copyWith(globalMarginValue: amount));
+                          _updateOptions(
+                              _options.copyWith(globalMarginValue: amount));
                         }
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
-                        final amount = double.tryParse(value.replaceAll(',', '.'));
+                        final amount =
+                            double.tryParse(value.replaceAll(',', '.'));
                         if (amount == null || amount < 0)
                           return 'Doit être positif';
-                        if (_options.globalMarginType == MarginType.percentage && amount > 100) {
+                        if (_options.globalMarginType ==
+                                MarginType.percentage &&
+                            amount > 100) {
                           return 'Doit être ≤ 100%';
                         }
                         return null;
@@ -377,6 +407,134 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           title: 'Remises',
           icon: Icons.discount,
           children: [
+            // Remise par ligne
+            _buildOptionTile(
+              title: 'Remise par ligne',
+              subtitle: 'Appliquer une remise sur chaque ligne',
+              value: _options.enableLineDiscount,
+              onChanged: (value) async {
+                if (value == true &&
+                    widget.items != null &&
+                    widget.items!.isNotEmpty) {
+                  // Afficher le bottom sheet pour sélectionner les articles
+                  final selectedItemIds = await ItemSelectionBottomSheet.show(
+                    context,
+                    items: widget.items!,
+                    title: 'Sélectionner les articles pour la remise par ligne',
+                    subtitle:
+                        'Choisissez les articles sur lesquels appliquer la remise',
+                    currencySymbol: widget.currencySymbol,
+                  );
+
+                  if (selectedItemIds != null && selectedItemIds.isNotEmpty) {
+                    // L'utilisateur a sélectionné des articles - activer la remise par ligne
+                    _updateOptions(_options.copyWith(
+                      enableLineDiscount: true,
+                      lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                    ));
+                  } else {
+                    // L'utilisateur a annulé ou n'a rien sélectionné - ne pas activer
+                    return;
+                  }
+                } else if (value == true &&
+                    (widget.items == null || widget.items!.isEmpty)) {
+                  // Pas d'items disponibles, activer simplement la remise par ligne globale
+                  _updateOptions(_options.copyWith(
+                    enableLineDiscount: true,
+                    lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                  ));
+                } else {
+                  _updateOptions(_options.copyWith(
+                    enableLineDiscount: value ?? false,
+                    lineDiscountValue: value == true ? 5.0 : null,
+                  ));
+                }
+              },
+              children: [
+                if (_options.enableLineDiscount) ...[
+                  const SizedBox(height: 16),
+                  _buildResponsiveRow([
+                    DropDownCustom<DiscountType>(
+                      selectedItem: _options.lineDiscountType,
+                      items: DiscountType.values.toList(),
+                      itemToString: (type) => type == DiscountType.percentage
+                          ? 'Pourcentage'
+                          : 'Montant fixe',
+                      onChanged: (type) {
+                        if (type != null) {
+                          _updateOptions(_options.copyWith(
+                            lineDiscountType: type,
+                            lineDiscountValue:
+                                type == DiscountType.percentage ? 5.0 : 10.0,
+                          ));
+                        }
+                      },
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildTextField(
+                          controller: _lineDiscountController,
+                          label: _options.lineDiscountType ==
+                                  DiscountType.percentage
+                              ? 'Pourcentage (%)'
+                              : 'Montant (${widget.currencySymbol})',
+                          icon: _options.lineDiscountType ==
+                                  DiscountType.percentage
+                              ? Icons.percent
+                              : Icons.attach_money,
+                          keyboardType: _options.lineDiscountType ==
+                                  DiscountType.percentage
+                              ? const TextInputType.numberWithOptions(
+                                  decimal: true)
+                              : const TextInputType.numberWithOptions(
+                                  decimal: true),
+                          inputFormatters: _options.lineDiscountType ==
+                                  DiscountType.percentage
+                              ? [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d+\.?\d{0,2}'))
+                                ]
+                              : [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d+\.?\d{0,2}'))
+                                ],
+                          onChanged: (value) {
+                            if (value.isEmpty) {
+                              _updateOptions(
+                                  _options.copyWith(lineDiscountValue: null));
+                              return;
+                            }
+                            final amount =
+                                double.tryParse(value.replaceAll(',', '.'));
+                            if (amount != null) {
+                              _updateOptions(
+                                  _options.copyWith(lineDiscountValue: amount));
+                            }
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'Requis';
+                            final amount =
+                                double.tryParse(value.replaceAll(',', '.'));
+                            if (amount == null || amount < 0)
+                              return 'Doit être positif';
+                            if (_options.lineDiscountType ==
+                                    DiscountType.percentage &&
+                                amount > 100) {
+                              return 'Doit être ≤ 100%';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ]),
+                ],
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
             _buildOptionTile(
               title: 'Remise',
               subtitle: 'Appliquer une remise sur le total',
@@ -438,24 +596,33 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           ? 'Pourcentage de remise (%)'
                           : 'Montant de remise (${widget.currencySymbol})',
                       icon: Icons.discount,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d+\.?\d{0,2}'))
+                      ],
                       onChanged: (value) {
                         if (value.isEmpty) {
-                          _updateOptions(_options.copyWith(discountValue: null));
+                          _updateOptions(
+                              _options.copyWith(discountValue: null));
                           return;
                         }
-                        final amount = double.tryParse(value.replaceAll(',', '.'));
+                        final amount =
+                            double.tryParse(value.replaceAll(',', '.'));
                         if (amount != null) {
-                          _updateOptions(_options.copyWith(discountValue: amount));
+                          _updateOptions(
+                              _options.copyWith(discountValue: amount));
                         }
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
-                        final discount = double.tryParse(value.replaceAll(',', '.'));
+                        final discount =
+                            double.tryParse(value.replaceAll(',', '.'));
                         if (discount == null || discount < 0)
                           return 'Doit être positif';
-                        if (_options.discountType == DiscountType.percentage && discount > 100) {
+                        if (_options.discountType == DiscountType.percentage &&
+                            discount > 100) {
                           return 'Doit être ≤ 100%';
                         }
                         return null;
@@ -543,24 +710,34 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                               ? 'Pourcentage (%)'
                               : 'Montant (${widget.currencySymbol})',
                       icon: Icons.warehouse,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d+\.?\d{0,2}'))
+                      ],
                       onChanged: (value) {
                         if (value.isEmpty) {
-                          _updateOptions(_options.copyWith(storageFeeAmount: null));
+                          _updateOptions(
+                              _options.copyWith(storageFeeAmount: null));
                           return;
                         }
-                        final amount = double.tryParse(value.replaceAll(',', '.'));
+                        final amount =
+                            double.tryParse(value.replaceAll(',', '.'));
                         if (amount != null) {
-                          _updateOptions(_options.copyWith(storageFeeAmount: amount));
+                          _updateOptions(
+                              _options.copyWith(storageFeeAmount: amount));
                         }
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
-                        final amount = double.tryParse(value.replaceAll(',', '.'));
+                        final amount =
+                            double.tryParse(value.replaceAll(',', '.'));
                         if (amount == null || amount < 0)
                           return 'Doit être positif';
-                        if (_options.storageFeeType == StorageFeeType.percentage && amount > 100) {
+                        if (_options.storageFeeType ==
+                                StorageFeeType.percentage &&
+                            amount > 100) {
                           return 'Doit être ≤ 100%';
                         }
                         return null;
@@ -870,7 +1047,9 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               ? Icons.percent
               : Icons.attach_money,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+          ],
           onChanged: (value) {
             if (value.isEmpty) {
               _updateOptions(_options.copyWith(lineMarginValue: null));
@@ -885,7 +1064,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (value == null || value.isEmpty) return 'Requis';
             final amount = double.tryParse(value.replaceAll(',', '.'));
             if (amount == null || amount < 0) return 'Doit être positif';
-            if (_options.lineMarginType == MarginType.percentage && amount > 100) {
+            if (_options.lineMarginType == MarginType.percentage &&
+                amount > 100) {
               return 'Doit être ≤ 100%';
             }
             return null;
@@ -924,7 +1104,9 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               ? Icons.percent
               : Icons.attach_money,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+          ],
           onChanged: (value) {
             if (value.isEmpty) {
               _updateOptions(_options.copyWith(globalMarginValue: null));
@@ -939,7 +1121,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (value == null || value.isEmpty) return 'Requis';
             final amount = double.tryParse(value.replaceAll(',', '.'));
             if (amount == null || amount < 0) return 'Doit être positif';
-            if (_options.globalMarginType == MarginType.percentage && amount > 100) {
+            if (_options.globalMarginType == MarginType.percentage &&
+                amount > 100) {
               return 'Doit être ≤ 100%';
             }
             return null;
@@ -976,7 +1159,9 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               : 'Montant de remise (${widget.currencySymbol})',
           icon: Icons.discount,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+          ],
           onChanged: (value) {
             if (value.isEmpty) {
               _updateOptions(_options.copyWith(discountValue: null));
@@ -991,7 +1176,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (value == null || value.isEmpty) return 'Requis';
             final discount = double.tryParse(value.replaceAll(',', '.'));
             if (discount == null || discount < 0) return 'Doit être positif';
-            if (_options.discountType == DiscountType.percentage && discount > 100) {
+            if (_options.discountType == DiscountType.percentage &&
+                discount > 100) {
               return 'Doit être ≤ 100%';
             }
             return null;
@@ -1035,7 +1221,9 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               : 'Montant (${widget.currencySymbol})',
           icon: Icons.warehouse,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+          ],
           onChanged: (value) {
             if (value.isEmpty) {
               _updateOptions(_options.copyWith(storageFeeAmount: null));
@@ -1050,7 +1238,8 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (value == null || value.isEmpty) return 'Requis';
             final amount = double.tryParse(value.replaceAll(',', '.'));
             if (amount == null || amount < 0) return 'Doit être positif';
-            if (_options.storageFeeType == StorageFeeType.percentage && amount > 100) {
+            if (_options.storageFeeType == StorageFeeType.percentage &&
+                amount > 100) {
               return 'Doit être ≤ 100%';
             }
             return null;
@@ -1239,7 +1428,6 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
       ),
     );
   }
-
 
   /// Builds a responsive row that stacks vertically on mobile and horizontally on tablet
   Widget _buildResponsiveRow(List<Widget> children) {

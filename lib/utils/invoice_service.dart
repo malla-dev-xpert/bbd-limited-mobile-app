@@ -805,6 +805,57 @@ class InvoiceService {
             ),
           ],
 
+          // Remise par ligne
+          if (options.enableLineDiscount && options.lineDiscountValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.lineDiscountType == DiscountType.percentage
+                        ? 'Remise par ligne ({value}%)'
+                            .replaceAll('{value}', '${options.lineDiscountValue}')
+                        : 'Remise par ligne (${options.lineDiscountValue} ${currencyFormat.currencySymbol})',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    '-${currencyFormat.format(
+                        options.lineDiscountType == DiscountType.percentage
+                            ? (() {
+                                // Calculer le total après la marge par ligne
+                                double totalAfterLineMargin = sousTotal;
+                                if (options.enableLineMargin &&
+                                    options.lineMarginValue != null &&
+                                    !options.enableSelectiveItemMargins) {
+                                  if (options.lineMarginType == MarginType.percentage) {
+                                    totalAfterLineMargin +=
+                                        (sousTotal * options.lineMarginValue! / 100);
+                                  } else {
+                                    totalAfterLineMargin += options.lineMarginValue!;
+                                  }
+                                }
+                                return totalAfterLineMargin * options.lineDiscountValue! / 100;
+                              })()
+                            : options.lineDiscountValue!)}',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           if (options.enableDiscount && options.discountValue != null) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
@@ -1575,6 +1626,57 @@ class InvoiceService {
                         options.lineMarginType == MarginType.percentage
                             ? (sousTotal * options.lineMarginValue! / 100)
                             : options.lineMarginValue!),
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // Remise par ligne
+          if (options.enableLineDiscount && options.lineDiscountValue != null) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    options.lineDiscountType == DiscountType.percentage
+                        ? 'Remise par ligne ({value}%)'
+                            .replaceAll('{value}', '${options.lineDiscountValue}')
+                        : 'Remise par ligne (${options.lineDiscountValue} ${currencyFormat.currencySymbol})',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  pw.Text(
+                    '-${currencyFormat.format(
+                        options.lineDiscountType == DiscountType.percentage
+                            ? (() {
+                                // Calculer le total après la marge par ligne
+                                double totalAfterLineMargin = sousTotal;
+                                if (options.enableLineMargin &&
+                                    options.lineMarginValue != null &&
+                                    !options.enableSelectiveItemMargins) {
+                                  if (options.lineMarginType == MarginType.percentage) {
+                                    totalAfterLineMargin +=
+                                        (sousTotal * options.lineMarginValue! / 100);
+                                  } else {
+                                    totalAfterLineMargin += options.lineMarginValue!;
+                                  }
+                                }
+                                return totalAfterLineMargin * options.lineDiscountValue! / 100;
+                              })()
+                            : options.lineDiscountValue!)}',
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,

@@ -33,19 +33,8 @@ class MarginCalculationService {
     // IMPORTANT: Si des marges sélectives sont activées, ne pas appliquer la marge par ligne globale
     // La marge par ligne globale est remplacée par les marges sélectives
 
-    // Calculer le total après remise (si activée)
-    double totalAfterDiscount = subtotalAfterItemMargins;
-    if (options.enableDiscount && options.discountValue != null) {
-      if (options.discountType == DiscountType.percentage) {
-        totalAfterDiscount -=
-            (subtotalAfterItemMargins * options.discountValue! / 100);
-      } else {
-        totalAfterDiscount -= options.discountValue!;
-      }
-    }
-
     // Marge par ligne globale (seulement si aucune marge sélective n'est activée)
-    double totalAfterLineMargin = totalAfterDiscount;
+    double totalAfterLineMargin = subtotalAfterItemMargins;
     if (options.enableLineMargin &&
         options.lineMarginValue != null &&
         !options.enableSelectiveItemMargins) {
@@ -55,13 +44,33 @@ class MarginCalculationService {
       } else {
         totalAfterLineMargin += options.lineMarginValue!;
       }
-    } else {
-      totalAfterLineMargin = totalAfterDiscount;
+    }
+
+    // Remise par ligne (appliquée après la marge par ligne)
+    double totalAfterLineDiscount = totalAfterLineMargin;
+    if (options.enableLineDiscount && options.lineDiscountValue != null) {
+      if (options.lineDiscountType == DiscountType.percentage) {
+        totalAfterLineDiscount -=
+            (totalAfterLineMargin * options.lineDiscountValue! / 100);
+      } else {
+        totalAfterLineDiscount -= options.lineDiscountValue!;
+      }
+    }
+
+    // Remise globale (si activée)
+    double totalAfterDiscount = totalAfterLineDiscount;
+    if (options.enableDiscount && options.discountValue != null) {
+      if (options.discountType == DiscountType.percentage) {
+        totalAfterDiscount -=
+            (totalAfterLineDiscount * options.discountValue! / 100);
+      } else {
+        totalAfterDiscount -= options.discountValue!;
+      }
     }
 
     // Calculer les marges sur frais sélectionnés
     double totalFeeMargins = 0.0;
-    double totalAfterFeeMargins = totalAfterLineMargin;
+    double totalAfterFeeMargins = totalAfterDiscount;
 
     // Frais d'entreposage (si activé et non sélectionné pour marge sélective)
     if (options.enableStorageFees &&

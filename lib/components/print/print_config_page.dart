@@ -102,6 +102,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
 
   bool get _hasActiveOptions {
     return _options.enableLineMargin ||
+        _options.enableLineDiscount ||
         _options.enableGlobalMargin ||
         _options.enableDiscount ||
         _options.enableStorageFees ||

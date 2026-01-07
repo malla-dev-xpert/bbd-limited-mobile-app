@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/selective_margin.dart';
 
 /// Options configurables pour les factures
@@ -12,6 +11,9 @@ class InvoiceOptions {
   final MarginType globalMarginType;
 
   // Remises
+  final bool enableLineDiscount;
+  final double? lineDiscountValue;
+  final DiscountType lineDiscountType;
   final bool enableDiscount;
   final DiscountType discountType;
   final double? discountValue;
@@ -46,6 +48,9 @@ class InvoiceOptions {
     this.enableGlobalMargin = false,
     this.globalMarginValue,
     this.globalMarginType = MarginType.percentage,
+    this.enableLineDiscount = false,
+    this.lineDiscountValue,
+    this.lineDiscountType = DiscountType.percentage,
     this.enableDiscount = false,
     this.discountType = DiscountType.percentage,
     this.discountValue,
@@ -68,6 +73,9 @@ class InvoiceOptions {
     bool? enableGlobalMargin,
     double? globalMarginValue,
     MarginType? globalMarginType,
+    bool? enableLineDiscount,
+    double? lineDiscountValue,
+    DiscountType? lineDiscountType,
     bool? enableDiscount,
     DiscountType? discountType,
     double? discountValue,
@@ -88,6 +96,9 @@ class InvoiceOptions {
       enableGlobalMargin: enableGlobalMargin ?? this.enableGlobalMargin,
       globalMarginValue: globalMarginValue ?? this.globalMarginValue,
       globalMarginType: globalMarginType ?? this.globalMarginType,
+      enableLineDiscount: enableLineDiscount ?? this.enableLineDiscount,
+      lineDiscountValue: lineDiscountValue ?? this.lineDiscountValue,
+      lineDiscountType: lineDiscountType ?? this.lineDiscountType,
       enableDiscount: enableDiscount ?? this.enableDiscount,
       discountType: discountType ?? this.discountType,
       discountValue: discountValue ?? this.discountValue,
@@ -141,6 +152,23 @@ class InvoiceOptions {
             globalMarginValue! > maxPercentage)) {
       errors.add(
           'La marge globale en pourcentage doit être entre $minPercentage% et $maxPercentage%');
+    }
+
+    if (enableLineDiscount &&
+        (lineDiscountValue == null ||
+            lineDiscountValue! < minAmount ||
+            lineDiscountValue! > maxAmount)) {
+      errors.add(
+          'La remise par ligne doit être entre ${currencyFormat(minAmount)} et ${currencyFormat(maxAmount)}');
+    }
+
+    if (enableLineDiscount &&
+        lineDiscountType == DiscountType.percentage &&
+        (lineDiscountValue == null ||
+            lineDiscountValue! < minPercentage ||
+            lineDiscountValue! > maxPercentage)) {
+      errors.add(
+          'La remise par ligne en pourcentage doit être entre $minPercentage% et $maxPercentage%');
     }
 
     if (enableDiscount &&
@@ -198,7 +226,16 @@ class InvoiceOptions {
       }
     }
 
-    // Remise
+    // Remise par ligne
+    if (enableLineDiscount && lineDiscountValue != null) {
+      if (lineDiscountType == DiscountType.percentage) {
+        total -= (total * lineDiscountValue! / 100);
+      } else {
+        total -= lineDiscountValue!;
+      }
+    }
+
+    // Remise globale
     if (enableDiscount && discountValue != null) {
       if (discountType == DiscountType.percentage) {
         total -= (total * discountValue! / 100);
@@ -250,6 +287,9 @@ class InvoiceOptions {
       'enableGlobalMargin': enableGlobalMargin,
       'globalMarginValue': globalMarginValue,
       'globalMarginType': globalMarginType.name,
+      'enableLineDiscount': enableLineDiscount,
+      'lineDiscountValue': lineDiscountValue,
+      'lineDiscountType': lineDiscountType.name,
       'enableDiscount': enableDiscount,
       'discountType': discountType.name,
       'discountValue': discountValue,
@@ -307,6 +347,12 @@ class InvoiceOptions {
       globalMarginType: MarginType.values.firstWhere(
         (e) => e.name == json['globalMarginType'],
         orElse: () => MarginType.percentage,
+      ),
+      enableLineDiscount: json['enableLineDiscount'] ?? false,
+      lineDiscountValue: json['lineDiscountValue']?.toDouble(),
+      lineDiscountType: DiscountType.values.firstWhere(
+        (e) => e.name == json['lineDiscountType'],
+        orElse: () => DiscountType.percentage,
       ),
       enableDiscount: json['enableDiscount'] ?? false,
       discountType: DiscountType.values.firstWhere(
