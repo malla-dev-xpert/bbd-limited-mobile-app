@@ -11,7 +11,7 @@ import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:bbd_limited/core/services/margin_calculation_service.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 
-class VersementPrintService {
+class InvoiceService {
   static Future<Uint8List> buildVersementPdfBytes(
     Versement versement,
     List<Achat> achats,
@@ -369,7 +369,6 @@ class VersementPrintService {
                         pw.MemoryImage(logoBytes),
                         width: 70,
                         height: 70,
-                        fit: pw.BoxFit.contain,
                       ),
                     ),
                   ),
@@ -1076,16 +1075,16 @@ class VersementPrintService {
               pw.Expanded(
                 child: pw.Container(
                   padding: const pw.EdgeInsets.all(16),
-                  decoration: pw.BoxDecoration(
+                  decoration: const pw.BoxDecoration(
                     gradient: pw.LinearGradient(
                       begin: pw.Alignment.centerLeft,
                       end: pw.Alignment.centerRight,
                       colors: [
-                        PdfColor.fromHex('#B3E5FC'), // Bleu clair
-                        PdfColor.fromHex('#E1F5FE'), // Bleu très clair
+                        PdfColors.blue100, // Bleu clair
+                        PdfColors.white, // Bleu très clair
                       ],
                     ),
-                    borderRadius: const pw.BorderRadius.only(
+                    borderRadius: pw.BorderRadius.only(
                       topLeft: pw.Radius.circular(2.5),
                       bottomLeft: pw.Radius.circular(2.5),
                     ),
@@ -1223,7 +1222,6 @@ class VersementPrintService {
                         pw.MemoryImage(logoBytes),
                         width: 70,
                         height: 70,
-                        fit: pw.BoxFit.contain,
                       ),
                     ),
                   ),
@@ -1311,6 +1309,28 @@ class VersementPrintService {
                           fontSize: 8),
                       maxLines: 2)),
               pw.SizedBox(width: 3),
+              if (includeSupplierInfo) ...[
+                pw.Container(
+                    width: 60,
+                    child: pw.Text('Supplier Name',
+                        style: pw.TextStyle(
+                            color: PdfColor.fromHex('#1A1E49'),
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 8),
+                        textAlign: pw.TextAlign.center,
+                        maxLines: 2)),
+                pw.SizedBox(width: 3),
+                pw.Container(
+                    width: 50,
+                    child: pw.Text('Supplier Phone',
+                        style: pw.TextStyle(
+                            color: PdfColor.fromHex('#1A1E49'),
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 8),
+                        textAlign: pw.TextAlign.center,
+                        maxLines: 2)),
+                pw.SizedBox(width: 3),
+              ],
               pw.Container(
                   width: 40,
                   child: pw.Text('Total CBM',
@@ -1418,6 +1438,22 @@ class VersementPrintService {
                       child: pw.Text(item.description ?? '',
                           style: const pw.TextStyle(fontSize: 8), maxLines: 2)),
                   pw.SizedBox(width: 3),
+                  if (includeSupplierInfo) ...[
+                    pw.Container(
+                        width: 60,
+                        child: pw.Text(item.supplierName ?? '-',
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center,
+                            maxLines: 2)),
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(item.supplierPhone ?? '-',
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center,
+                            maxLines: 2)),
+                    pw.SizedBox(width: 3),
+                  ],
                   pw.Container(
                       width: 40,
                       child: pw.Text(totalCBM.toStringAsFixed(2),

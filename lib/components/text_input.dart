@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 Widget buildTextField({
   required TextEditingController controller,
@@ -10,11 +11,13 @@ Widget buildTextField({
   ValueChanged<String>? onChanged,
   VoidCallback? onEditingComplete,
   ValueChanged<String>? onFieldSubmitted,
+  List<TextInputFormatter>? inputFormatters,
 }) {
   return TextFormField(
     controller: controller,
     keyboardType: keyboardType,
     autocorrect: false,
+    inputFormatters: inputFormatters,
     onChanged: onChanged,
     onEditingComplete: onEditingComplete,
     onFieldSubmitted: onFieldSubmitted,

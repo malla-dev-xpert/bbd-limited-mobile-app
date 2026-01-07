@@ -10,7 +10,7 @@ import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
-import 'package:bbd_limited/utils/versement_print_service.dart';
+import 'package:bbd_limited/utils/invoice_service.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
@@ -720,7 +720,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           width: MediaQuery.of(context).size.width * 0.9,
           height: MediaQuery.of(context).size.height * 0.6,
           child: PdfPreview(
-            build: (format) => VersementPrintService.buildAchatPdfBytes(
+            build: (format) => InvoiceService.buildAchatPdfBytes(
               achat,
               includeSupplierInfo: includeSupplierInfo,
               currencyFormat: currencyFormat,
