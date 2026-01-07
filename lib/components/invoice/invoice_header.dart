@@ -15,6 +15,8 @@ class InvoiceHeader extends StatelessWidget {
   final String currency;
   final double exchangeRate;
   final int? totalPurchaseOrder;
+  final double? montantVerser;
+  final double? montantRestant;
   final Uint8List? logoBytes;
   final bool isVersement; // true pour versement, false pour achat
 
@@ -30,6 +32,8 @@ class InvoiceHeader extends StatelessWidget {
     required this.currency,
     this.exchangeRate = 1.0,
     this.totalPurchaseOrder,
+    this.montantVerser,
+    this.montantRestant,
     this.logoBytes,
     this.isVersement = false, // Par défaut, c'est un achat
   }) : super(key: key);
@@ -283,6 +287,18 @@ class InvoiceHeader extends StatelessWidget {
               _buildInfoRow('Invoice Date', dateFormat.format(invoiceDate)),
               _buildInfoRow('Currency', currency),
               _buildInfoRow('Exchange Rate', exchangeRate.toStringAsFixed(2)),
+              if (isVersement) ...[
+                if (montantVerser != null)
+                  _buildInfoRow(
+                      'Amount Paid',
+                      NumberFormat.currency(locale: 'fr_FR', symbol: currency)
+                          .format(montantVerser)),
+                if (montantRestant != null)
+                  _buildInfoRow(
+                      'Remaining Amount',
+                      NumberFormat.currency(locale: 'fr_FR', symbol: currency)
+                          .format(montantRestant)),
+              ],
               if (totalPurchaseOrder != null && !isVersement)
                 _buildInfoRow(
                     'Total Purchase Order', totalPurchaseOrder.toString()),

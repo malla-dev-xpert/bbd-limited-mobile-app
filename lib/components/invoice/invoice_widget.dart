@@ -19,6 +19,8 @@ class InvoiceWidget extends StatelessWidget {
   final String currency;
   final double exchangeRate;
   final int? totalPurchaseOrder;
+  final double? montantVerser;
+  final double? montantRestant;
   final Uint8List? logoBytes;
   final List<InvoiceItem> items;
   final double subtotal;
@@ -43,6 +45,8 @@ class InvoiceWidget extends StatelessWidget {
     required this.currency,
     this.exchangeRate = 1.0,
     this.totalPurchaseOrder,
+    this.montantVerser,
+    this.montantRestant,
     this.logoBytes,
     required this.items,
     required this.subtotal,
@@ -81,6 +85,8 @@ class InvoiceWidget extends StatelessWidget {
               currency: currency,
               exchangeRate: exchangeRate,
               totalPurchaseOrder: totalPurchaseOrder,
+              montantVerser: montantVerser,
+              montantRestant: montantRestant,
               logoBytes: logoBytes,
               isVersement: isVersement,
             ),

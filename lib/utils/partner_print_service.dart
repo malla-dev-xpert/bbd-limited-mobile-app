@@ -46,44 +46,30 @@ class PartnerPrintService {
       pw.MultiPage(
         margin: pw.EdgeInsets.zero,
         build: (context) => [
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Container(
-                width: 20,
-                height: 800,
-                color: PdfColor.fromHex('#1A1E49'),
-              ),
-              pw.SizedBox(width: 10),
-              pw.Expanded(
-                child: pw.Padding(
-                  padding: const pw.EdgeInsets.all(24),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(logoBytes, dateRange, printLocalizations),
-                      _buildClientInfoSection(partner, printLocalizations),
-                      _buildSummarySection(
-                        filteredVersements,
-                        filteredPackages,
-                        printLocalizations,
-                      ),
-                      if (filteredVersements.isNotEmpty)
-                        _buildVersementsSection(
-                            filteredVersements, printLocalizations),
-                      if (filteredPackages.isNotEmpty)
-                        _buildPackagesSection(
-                            filteredPackages, printLocalizations),
-                      if (_hasActiveOptions(options)) ...[
-                        pw.SizedBox(height: 24),
-                        _buildPricingSummary(sousTotal, montantTotal, options,
-                            printLocalizations),
-                      ],
-                    ],
-                  ),
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildHeader(logoBytes, dateRange, printLocalizations),
+                _buildClientInfoSection(partner, printLocalizations),
+                _buildSummarySection(
+                  filteredVersements,
+                  filteredPackages,
+                  printLocalizations,
                 ),
-              ),
-            ],
+                if (filteredVersements.isNotEmpty)
+                  _buildVersementsSection(
+                      filteredVersements, printLocalizations),
+                if (filteredPackages.isNotEmpty)
+                  _buildPackagesSection(filteredPackages, printLocalizations),
+                if (_hasActiveOptions(options)) ...[
+                  pw.SizedBox(height: 24),
+                  _buildPricingSummary(
+                      sousTotal, montantTotal, options, printLocalizations),
+                ],
+              ],
+            ),
           ),
         ],
       ),

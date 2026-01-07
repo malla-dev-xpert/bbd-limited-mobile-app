@@ -76,44 +76,29 @@ class VersementPrintService {
       pw.MultiPage(
         margin: pw.EdgeInsets.zero,
         build: (ctx) => [
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Container(
-                width: 20,
-                height: 800,
-                color: PdfColor.fromHex('#1A1E49'),
-              ),
-              pw.SizedBox(width: 10),
-              pw.Expanded(
-                child: pw.Padding(
-                  padding: const pw.EdgeInsets.all(24),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(logoBytes, versement, dateFormat,
-                          printLocalizations, currencyFormat),
-                      pw.SizedBox(height: 24),
-                      _buildClientInfo(versement, printLocalizations),
-                      pw.SizedBox(height: 24),
-                      _buildArticlesSection(
-                          achats, printLocalizations, currencyFormat, options),
-                      pw.SizedBox(height: 12),
-                      _buildPricingSummary(sousTotal, montantTotal, options,
-                          currencyFormat, printLocalizations, achats),
-                      if (retraits.isNotEmpty) ...[
-                        pw.SizedBox(height: 24),
-                        _buildWithdrawalsSection(retraits, printLocalizations,
-                            currencyFormat, dateFormat),
-                        pw.SizedBox(height: 8),
-                        _buildWithdrawalsTotal(
-                            totalRetraits, currencyFormat, printLocalizations),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildHeader(logoBytes, versement, dateFormat,
+                    printLocalizations, currencyFormat),
+                pw.SizedBox(height: 24),
+                _buildArticlesSection(
+                    achats, printLocalizations, currencyFormat, options),
+                pw.SizedBox(height: 12),
+                _buildPricingSummary(sousTotal, montantTotal, options,
+                    currencyFormat, printLocalizations, achats),
+                if (retraits.isNotEmpty) ...[
+                  pw.SizedBox(height: 24),
+                  _buildWithdrawalsSection(
+                      retraits, printLocalizations, currencyFormat, dateFormat),
+                  pw.SizedBox(height: 8),
+                  _buildWithdrawalsTotal(
+                      totalRetraits, currencyFormat, printLocalizations),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -182,48 +167,28 @@ class VersementPrintService {
       pw.MultiPage(
         margin: pw.EdgeInsets.zero,
         build: (ctx) => [
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Container(
-                width: 20,
-                height: 800,
-                color: isProforma
-                    ? PdfColors.grey400
-                    : PdfColor.fromHex('#1A1E49'),
-              ),
-              pw.SizedBox(width: 10),
-              pw.Expanded(
-                child: pw.Padding(
-                  padding: const pw.EdgeInsets.all(24),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      _buildAchatHeader(logoBytes, achat, dateFormat,
-                          printLocalizations, isProforma),
-                      pw.SizedBox(height: 24),
-                      _buildAchatArticlesSection(
-                          filteredItems,
-                          printLocalizations,
-                          includeSupplierInfo,
-                          isProforma,
-                          currencyFormat,
-                          options),
-                      pw.SizedBox(height: 12),
-                      _buildAchatPricingSummary(
-                          sousTotal,
-                          montantTotal,
-                          options,
-                          currencyFormat,
-                          printLocalizations,
-                          isProforma,
-                          filteredItems,
-                          [achat]),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildAchatHeader(logoBytes, achat, dateFormat,
+                    printLocalizations, isProforma),
+                pw.SizedBox(height: 24),
+                _buildAchatArticlesSection(filteredItems, printLocalizations,
+                    includeSupplierInfo, isProforma, currencyFormat, options),
+                pw.SizedBox(height: 12),
+                _buildAchatPricingSummary(
+                    sousTotal,
+                    montantTotal,
+                    options,
+                    currencyFormat,
+                    printLocalizations,
+                    isProforma,
+                    filteredItems,
+                    [achat]),
+              ],
+            ),
           ),
         ],
       ),
@@ -442,6 +407,12 @@ class VersementPrintService {
                   dateFormat.format(versement.createdAt ?? DateTime.now())),
               _buildInfoRowPDF('Currency', versement.deviseCode ?? 'CNY'),
               _buildInfoRowPDF('Exchange Rate', '1.00'),
+              if (versement.montantVerser != null)
+                _buildInfoRowPDF('Amount Paid',
+                    currencyFormat.format(versement.montantVerser!)),
+              if (versement.montantRestant != null)
+                _buildInfoRowPDF('Remaining Amount',
+                    currencyFormat.format(versement.montantRestant!)),
             ],
           ),
         ),
@@ -559,62 +530,6 @@ class VersementPrintService {
     );
   }
 
-  static pw.Widget _buildClientInfo(
-      Versement versement, PrintLocalizations printLocalizations) {
-    return pw.Row(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Row(children: [
-                pw.Text(versement.partnerName ?? '',
-                    style: pw.TextStyle(
-                        fontSize: 20,
-                        color: PdfColor.fromHex('#1A1E49'),
-                        fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(width: 10),
-                if (versement.partnerPhone != null)
-                  pw.Text('(${versement.partnerPhone!})',
-                      style: pw.TextStyle(
-                          fontSize: 20,
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold)),
-              ]),
-              if (versement.note != null && versement.note!.isNotEmpty)
-                pw.Text(versement.note!,
-                    style: const pw.TextStyle(fontSize: 16)),
-            ],
-          ),
-        ),
-        pw.Expanded(
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.end,
-            children: [
-              pw.Text(printLocalizations.translate('pdf_commissionnaire'),
-                  style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColor.fromHex('#1A1E49'),
-                      fontWeight: pw.FontWeight.bold,
-                      letterSpacing: 2,
-                      font: printLocalizations.language.code == 'zh'
-                          ? pw.Font.courier()
-                          : pw.Font.helvetica(),
-                      fontFallback: [pw.Font.times(), pw.Font.courier()])),
-              pw.Text(
-                  '${printLocalizations.translate('pdf_commissionnaire_name')} : ${versement.commissionnaireName}',
-                  style: pw.TextStyle(fontSize: 16)),
-              pw.Text(
-                  '${printLocalizations.translate('pdf_commissionnaire_phone')} : ${versement.commissionnairePhone}',
-                  style: pw.TextStyle(fontSize: 16)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   static pw.Widget _buildArticlesSection(
       List<Achat> achats,
       PrintLocalizations printLocalizations,
@@ -626,72 +541,80 @@ class VersementPrintService {
         // En-tête du tableau avec toutes les colonnes du design
         pw.Container(
           color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
-          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: pw.Row(
             children: [
-              pw.Container(
-                  width: 50,
-                  child: pw.Text('Product Picture',
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
-              pw.Container(
-                  width: 120,
+              pw.Expanded(
+                  flex: 3,
                   child: pw.Text('Product Name',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      maxLines: 2)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 60,
+                  width: 40,
                   child: pw.Text('Total CBM',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 60,
+                  width: 40,
                   child: pw.Text('Total Weight',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 50,
+                  width: 30,
                   child: pw.Text('Carton',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 70,
+                  width: 50,
                   child: pw.Text('Unit / Carton',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 70,
+                  width: 50,
                   child: pw.Text('Total Quantity',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 60,
+                  width: 40,
                   child: pw.Text('Price',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 70,
+                  width: 50,
                   child: pw.Text('Amount',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
             ],
           ),
         ),
@@ -732,45 +655,57 @@ class VersementPrintService {
               return pw.Container(
                 color: PdfColors.white,
                 padding:
-                    const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                 child: pw.Row(
                   children: [
-                    pw.Container(
-                        width: 50,
-                        child: pw.SizedBox()), // Product Picture vide
-                    pw.Container(
-                        width: 120,
+                    pw.Expanded(
+                        flex: 3,
                         child: pw.Text(item.description ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            maxLines: 2)),
+                    pw.SizedBox(width: 3),
                     pw.Container(
-                        width: 60,
+                        width: 40,
                         child: pw.Text(totalCBM.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
                     pw.Container(
-                        width: 60,
+                        width: 40,
                         child: pw.Text(totalWeight.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 30,
+                        child: pw.Text(carton.toString(),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
                     pw.Container(
                         width: 50,
-                        child: pw.Text(carton.toString(),
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Container(
-                        width: 70,
                         child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
                     pw.Container(
-                        width: 70,
+                        width: 50,
                         child: pw.Text(totalQuantity.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
                     pw.Container(
-                        width: 60,
+                        width: 40,
                         child: pw.Text(currencyFormat.format(adjustedUnitPrice),
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
                     pw.Container(
-                        width: 70,
+                        width: 50,
                         child: pw.Text(
                             currencyFormat.format(adjustedTotalPrice),
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
                   ],
                 ),
               );
@@ -1318,72 +1253,80 @@ class VersementPrintService {
         // En-tête du tableau avec toutes les colonnes du design
         pw.Container(
           color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
-          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: pw.Row(
             children: [
-              pw.Container(
-                  width: 50,
-                  child: pw.Text('Product Picture',
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
-              pw.Container(
-                  width: 120,
+              pw.Expanded(
+                  flex: 3,
                   child: pw.Text('Product Name',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      maxLines: 2)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 60,
+                  width: 40,
                   child: pw.Text('Total CBM',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 60,
+                  width: 40,
                   child: pw.Text('Total Weight',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 50,
+                  width: 30,
                   child: pw.Text('Carton',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 70,
+                  width: 50,
                   child: pw.Text('Unit / Carton',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 70,
+                  width: 50,
                   child: pw.Text('Total Quantity',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 60,
+                  width: 40,
                   child: pw.Text('Price',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
-                  width: 70,
+                  width: 50,
                   child: pw.Text('Amount',
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 9))),
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
             ],
           ),
         ),
@@ -1421,43 +1364,55 @@ class VersementPrintService {
             return pw.Container(
               color: PdfColors.white,
               padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
               child: pw.Row(
                 children: [
-                  pw.Container(
-                      width: 50, child: pw.SizedBox()), // Product Picture vide
-                  pw.Container(
-                      width: 120,
+                  pw.Expanded(
+                      flex: 3,
                       child: pw.Text(item.description ?? '',
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8), maxLines: 2)),
+                  pw.SizedBox(width: 3),
                   pw.Container(
-                      width: 60,
+                      width: 40,
                       child: pw.Text(totalCBM.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
+                  pw.SizedBox(width: 3),
                   pw.Container(
-                      width: 60,
+                      width: 40,
                       child: pw.Text(totalWeight.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
+                  pw.SizedBox(width: 3),
+                  pw.Container(
+                      width: 30,
+                      child: pw.Text(carton.toString(),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
+                  pw.SizedBox(width: 3),
                   pw.Container(
                       width: 50,
-                      child: pw.Text(carton.toString(),
-                          style: const pw.TextStyle(fontSize: 9))),
-                  pw.Container(
-                      width: 70,
                       child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
+                  pw.SizedBox(width: 3),
                   pw.Container(
-                      width: 70,
+                      width: 50,
                       child: pw.Text(totalQuantity.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
+                  pw.SizedBox(width: 3),
                   pw.Container(
-                      width: 60,
+                      width: 40,
                       child: pw.Text(currencyFormat.format(adjustedUnitPrice),
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
+                  pw.SizedBox(width: 3),
                   pw.Container(
-                      width: 70,
+                      width: 50,
                       child: pw.Text(currencyFormat.format(adjustedTotalPrice),
-                          style: const pw.TextStyle(fontSize: 9))),
+                          style: const pw.TextStyle(fontSize: 8),
+                          textAlign: pw.TextAlign.center)),
                 ],
               ),
             );

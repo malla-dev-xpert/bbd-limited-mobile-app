@@ -27,7 +27,7 @@ class InvoiceItem {
 }
 
 /// Widget réutilisable pour le tableau des articles de facture
-/// Aligné sur le design fourni avec colonnes : Product Picture, Product Name, Total CBM, Total Weight, Carton, Unit / Carton, Total Quantity, Price, Amount
+/// Aligné sur le design fourni avec colonnes : Product Name, Total CBM, Total Weight, Carton, Unit / Carton, Total Quantity, Price, Amount
 class InvoiceItemsTable extends StatelessWidget {
   final List<InvoiceItem> items;
   final NumberFormat currencyFormat;
@@ -62,15 +62,14 @@ class InvoiceItemsTable extends StatelessWidget {
           ),
           child: Table(
             columnWidths: const {
-              0: FlexColumnWidth(0.8), // Product Picture
-              1: FlexColumnWidth(2.5), // Product Name
-              2: FlexColumnWidth(1.0), // Total CBM
-              3: FlexColumnWidth(1.0), // Total Weight
-              4: FlexColumnWidth(0.8), // Carton
-              5: FlexColumnWidth(1.2), // Unit / Carton
-              6: FlexColumnWidth(1.2), // Total Quantity
-              7: FlexColumnWidth(1.0), // Price
-              8: FlexColumnWidth(1.2), // Amount
+              0: FlexColumnWidth(2.0), // Product Name
+              1: FlexColumnWidth(0.8), // Total CBM
+              2: FlexColumnWidth(0.8), // Total Weight
+              3: FlexColumnWidth(0.6), // Carton
+              4: FlexColumnWidth(1.0), // Unit / Carton
+              5: FlexColumnWidth(1.0), // Total Quantity
+              6: FlexColumnWidth(0.9), // Price
+              7: FlexColumnWidth(1.0), // Amount
             },
             children: [
               TableRow(
@@ -78,7 +77,6 @@ class InvoiceItemsTable extends StatelessWidget {
                   color: Color(0xFFE3F2FD),
                 ),
                 children: [
-                  _buildHeaderCell('Product Picture'),
                   _buildHeaderCell('Product Name'),
                   _buildHeaderCell('Total CBM'),
                   _buildHeaderCell('Total Weight'),
@@ -92,7 +90,7 @@ class InvoiceItemsTable extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Corps du tableau
         Container(
           decoration: BoxDecoration(
@@ -104,31 +102,25 @@ class InvoiceItemsTable extends StatelessWidget {
           ),
           child: Table(
             columnWidths: const {
-              0: FlexColumnWidth(0.8),
-              1: FlexColumnWidth(2.5),
-              2: FlexColumnWidth(1.0),
-              3: FlexColumnWidth(1.0),
-              4: FlexColumnWidth(0.8),
-              5: FlexColumnWidth(1.2),
-              6: FlexColumnWidth(1.2),
+              0: FlexColumnWidth(2.0),
+              1: FlexColumnWidth(0.8),
+              2: FlexColumnWidth(0.8),
+              3: FlexColumnWidth(0.6),
+              4: FlexColumnWidth(1.0),
+              5: FlexColumnWidth(1.0),
+              6: FlexColumnWidth(0.9),
               7: FlexColumnWidth(1.0),
-              8: FlexColumnWidth(1.2),
             },
             children: items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
               final isEven = index % 2 == 0;
-              
+
               return TableRow(
                 decoration: BoxDecoration(
                   color: isEven ? Colors.white : Colors.grey[50],
                 ),
                 children: [
-                  _buildDataCell(
-                    item.productPicture != null
-                        ? Image.network(item.productPicture!, width: 40, height: 40)
-                        : const SizedBox.shrink(),
-                  ),
                   _buildDataCell(item.productName),
                   _buildDataCell(item.totalCBM.toStringAsFixed(2)),
                   _buildDataCell(item.totalWeight.toStringAsFixed(2)),
@@ -142,7 +134,7 @@ class InvoiceItemsTable extends StatelessWidget {
             }).toList(),
           ),
         ),
-        
+
         // Pagination si activée
         if (showPagination && totalPages > 1) ...[
           const SizedBox(height: 16),
@@ -154,31 +146,35 @@ class InvoiceItemsTable extends StatelessWidget {
 
   Widget _buildHeaderCell(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           color: Color(0xFF1A1E49),
         ),
         textAlign: TextAlign.center,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 2,
       ),
     );
   }
 
   Widget _buildDataCell(dynamic content) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
       child: content is Widget
           ? Center(child: content)
           : Text(
               content.toString(),
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: Colors.black87,
               ),
               textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
     );
   }
@@ -186,7 +182,7 @@ class InvoiceItemsTable extends StatelessWidget {
   Widget _buildPagination(BuildContext context) {
     final now = DateTime.now();
     final timestamp = DateFormat('yyyy.MM.dd HH:mm:ss').format(now);
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -231,4 +227,3 @@ class InvoiceItemsTable extends StatelessWidget {
     );
   }
 }
-
