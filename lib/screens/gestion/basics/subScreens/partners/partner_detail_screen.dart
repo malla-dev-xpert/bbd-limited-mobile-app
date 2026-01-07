@@ -472,6 +472,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
               AppLocalizations.of(context).translate('filter_by_date'),
           selectPeriodPlaceholder:
               AppLocalizations.of(context).translate('select_period'),
+          showBillingOptions: false,
         ),
       ),
     );

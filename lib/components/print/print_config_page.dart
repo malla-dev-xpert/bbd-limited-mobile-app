@@ -59,6 +59,9 @@ class PrintConfigPage extends StatefulWidget {
   final List<Items>? items;
   final double? subtotal;
 
+  // Show billing options section
+  final bool showBillingOptions;
+
   const PrintConfigPage({
     Key? key,
     required this.title,
@@ -84,6 +87,7 @@ class PrintConfigPage extends StatefulWidget {
     this.proformaLabel = '',
     this.items,
     this.subtotal,
+    this.showBillingOptions = true,
   }) : super(key: key);
 
   @override
@@ -201,23 +205,25 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                 child: Column(
                   children: [
                     _buildPrintOptionsCard(isMobile),
-                    const SizedBox(height: 16),
-                    _buildBillingOptionsCard(isMobile),
-                    if (widget.items != null && widget.items!.isNotEmpty) ...[
+                    if (widget.showBillingOptions) ...[
                       const SizedBox(height: 16),
-                      SelectiveMarginConfig(
-                        items: widget.items!,
+                      _buildBillingOptionsCard(isMobile),
+                      if (widget.items != null && widget.items!.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        SelectiveMarginConfig(
+                          items: widget.items!,
+                          options: _options,
+                          onOptionsChanged: _handleOptionsChanged,
+                          currencySymbol: widget.currencySymbol,
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      SelectiveFeeMarginConfig(
                         options: _options,
                         onOptionsChanged: _handleOptionsChanged,
                         currencySymbol: widget.currencySymbol,
                       ),
                     ],
-                    const SizedBox(height: 16),
-                    SelectiveFeeMarginConfig(
-                      options: _options,
-                      onOptionsChanged: _handleOptionsChanged,
-                      currencySymbol: widget.currencySymbol,
-                    ),
                   ],
                 ),
               ),

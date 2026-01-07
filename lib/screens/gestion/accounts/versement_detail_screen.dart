@@ -1054,16 +1054,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               AppLocalizations.of(context).translate('billing_options'),
           appliedOptionsLabel: AppLocalizations.of(context)
               .translate('currently_applied_options'),
-          items: _achats
-              .expand((a) => a.items ?? <Items>[])
-              .cast<Items>()
-              .toList(),
-          subtotal: _achats.fold<double>(0.0, (sum, a) {
-            final itemsTotal = (a.items
-                    ?.fold(0.0, (s, item) => s + (item.totalPrice ?? 0.0))) ??
-                0.0;
-            return sum + itemsTotal;
-          }),
+          showBillingOptions: false,
         ),
       ),
     );
