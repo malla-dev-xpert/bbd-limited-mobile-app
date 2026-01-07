@@ -233,124 +233,329 @@ class VersementPrintService {
   }
 
   // Méthodes privées pour la construction des sections
+  // Nouveau design aligné sur l'image fournie
   static pw.Widget _buildHeader(
       Uint8List logoBytes,
       Versement versement,
       DateFormat dateFormat,
       PrintLocalizations printLocalizations,
       NumberFormat currencyFormat) {
-    return pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Image(pw.MemoryImage(logoBytes), width: 100),
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.end,
+        // En-tête avec design de carte de visite
+        pw.Container(
+          decoration: pw.BoxDecoration(
+            border:
+                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
+            borderRadius: pw.BorderRadius.circular(4),
+          ),
+          child: pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Section gauche avec fond dégradé bleu clair
+              pw.Expanded(
+                child: pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: const pw.BoxDecoration(
+                    gradient: pw.LinearGradient(
+                      begin: pw.Alignment.centerLeft,
+                      end: pw.Alignment.centerRight,
+                      colors: [
+                        PdfColors.blue100, // Bleu clair
+                        PdfColors.white, // Bleu très clair
+                      ],
+                    ),
+                    borderRadius: const pw.BorderRadius.only(
+                      topLeft: pw.Radius.circular(2.5),
+                      bottomLeft: pw.Radius.circular(2.5),
+                    ),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // Nom de l'entreprise
+                      pw.Text(
+                        'BBD LIMITED',
+                        style: pw.TextStyle(
+                          fontSize: 28,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColor.fromHex('#1A1E49'),
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Adresse en rouge
+                      pw.Text(
+                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+                      pw.Text(
+                        '中国 浙江省义乌市赵宅3区10栋1单元102',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+
+                      // Ligne séparatrice bleu foncé
+                      pw.SizedBox(height: 10),
+                      pw.Container(
+                        height: 1.5,
+                        color: PdfColor.fromHex('#1A1E49'),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Informations de contact
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          // Téléphones à gauche
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'Contact :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  '0086 18678859834',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                                pw.Text(
+                                  '0086 13503032311',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                                pw.Text(
+                                  '0086 (579)85568522',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Email à droite
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'EMail :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'bbd@bbdcompany.com',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Ligne verticale séparatrice
+              pw.Container(
+                width: 1.5,
+                color: PdfColor.fromHex('#1A1E49'),
+              ),
+
+              // Section droite avec logo sur fond blanc
+              pw.Container(
+                width: 100,
+                padding: const pw.EdgeInsets.all(12),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.white,
+                  borderRadius: pw.BorderRadius.only(
+                    topRight: pw.Radius.circular(2.5),
+                    bottomRight: pw.Radius.circular(2.5),
+                  ),
+                ),
+                child: pw.Center(
+                  child: pw.Container(
+                    width: 75,
+                    height: 75,
+                    decoration: pw.BoxDecoration(
+                      color: PdfColor.fromHex('#1A1E49'),
+                      shape: pw.BoxShape.circle,
+                    ),
+                    child: pw.Center(
+                      child: pw.Image(
+                        pw.MemoryImage(logoBytes),
+                        width: 70,
+                        height: 70,
+                        fit: pw.BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        pw.SizedBox(height: 20),
+
+        // Titre de la facture (Payment Invoice pour les versements)
+        pw.Text(
+          'Payment Invoice',
+          style: pw.TextStyle(
+            fontSize: 24,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+            letterSpacing: 1.2,
+          ),
+        ),
+        pw.SizedBox(height: 16),
+
+        // Informations de la facture dans un tableau
+        pw.Container(
+          padding: const pw.EdgeInsets.all(12),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: pw.BorderRadius.circular(4),
+            border: pw.Border.all(color: PdfColors.grey300),
+          ),
+          child: pw.Column(
+            children: [
+              _buildInfoRowPDF('Invoice No.', versement.reference ?? ''),
+              _buildInfoRowPDF('Invoice Date',
+                  dateFormat.format(versement.createdAt ?? DateTime.now())),
+              _buildInfoRowPDF('Currency', versement.deviseCode ?? 'CNY'),
+              _buildInfoRowPDF('Exchange Rate', '1.00'),
+            ],
+          ),
+        ),
+
+        // Section Client et Commissionnaire
+        pw.SizedBox(height: 20),
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text(printLocalizations.translate('pdf_invoice'),
-                style: pw.TextStyle(
-                    fontSize: 32,
-                    color: PdfColor.fromHex('#1A1E49'),
-                    fontWeight: pw.FontWeight.bold,
-                    letterSpacing: 4,
-                    font: printLocalizations.language.code == 'zh'
-                        ? pw.Font.courier()
-                        : pw.Font.helvetica(),
-                    fontFallback: [pw.Font.times(), pw.Font.courier()])),
-            pw.SizedBox(height: 8),
-            pw.Row(children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
+            // Section Client
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                      printLocalizations.translate('pdf_versement_reference'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: PdfColors.grey600,
-                        fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 1.2,
-                      )),
-                  pw.Text(
-                    versement.reference ?? '',
+                    'Client',
                     style: pw.TextStyle(
-                      fontSize: 15,
-                      color: PdfColor.fromHex('#1A1E49'),
+                      fontSize: 16,
                       fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromHex('#1A1E49'),
                     ),
                   ),
+                  pw.SizedBox(height: 10),
+                  if (versement.partnerName != null)
+                    _buildClientInfoRowPDF('Nom', versement.partnerName!),
+                  if (versement.partnerPhone != null)
+                    _buildClientInfoRowPDF('Tél', versement.partnerPhone!),
+                  if (versement.partnerId != null)
+                    _buildClientInfoRowPDF(
+                        'Register No.', versement.partnerId!.toString()),
                 ],
               ),
-              pw.SizedBox(width: 10),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(printLocalizations.translate('pdf_versement_date'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: PdfColors.grey600,
-                        fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 1.2,
-                      )),
-                  pw.Text(
-                    dateFormat.format(versement.createdAt ?? DateTime.now()),
-                    style: pw.TextStyle(
-                      fontSize: 15,
-                      color: PdfColor.fromHex('#1A1E49'),
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ]),
-            pw.SizedBox(height: 8),
-            pw.Row(children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(printLocalizations.translate('pdf_amount_paid_label'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: PdfColors.grey600,
-                        fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 1.2,
-                      )),
-                  pw.Text(
-                    currencyFormat.format(versement.montantVerser),
-                    style: pw.TextStyle(
-                      fontSize: 15,
-                      color: PdfColor.fromHex('#1A1E49'),
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              pw.SizedBox(width: 10),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
+            ),
+
+            // Section Commissionnaire
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                      printLocalizations
-                          .translate('pdf_remaining_amount_label'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: PdfColors.grey600,
-                        fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 1.2,
-                      )),
-                  pw.Text(
-                    currencyFormat.format(versement.montantRestant),
+                    'COMISSIONNAIRE',
                     style: pw.TextStyle(
-                      fontSize: 15,
-                      color: PdfColor.fromHex('#1A1E49'),
+                      fontSize: 16,
                       fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromHex('#1A1E49'),
                     ),
                   ),
+                  pw.SizedBox(height: 10),
+                  if (versement.commissionnaireName != null)
+                    _buildClientInfoRowPDF(
+                        'Nom', versement.commissionnaireName!),
+                  if (versement.commissionnairePhone != null)
+                    _buildClientInfoRowPDF(
+                        'Tél', versement.commissionnairePhone!),
                 ],
               ),
-            ]),
+            ),
           ],
         ),
       ],
+    );
+  }
+
+  static pw.Widget _buildInfoRowPDF(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.SizedBox(
+            width: 140,
+            child: pw.Text(
+              '$label:',
+              style: pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+          ),
+          pw.Expanded(
+            child: pw.Text(
+              value,
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _buildClientInfoRowPDF(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 6),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.SizedBox(
+            width: 80,
+            child: pw.Text(
+              '$label :',
+              style: pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.normal,
+              ),
+            ),
+          ),
+          pw.Expanded(
+            child: pw.Text(
+              value,
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -418,71 +623,79 @@ class VersementPrintService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(printLocalizations.translate("pdf_articles_list"),
-            style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColor.fromHex('#1A1E49'),
-              font: printLocalizations.language.code == 'zh'
-                  ? pw.Font.courier()
-                  : pw.Font.helvetica(),
-              fontFallback: [pw.Font.times(), pw.Font.courier()],
-            )),
-        pw.SizedBox(height: 8),
+        // En-tête du tableau avec toutes les colonnes du design
         pw.Container(
-          color: PdfColor.fromHex('#1A1E49'),
-          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
+          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: pw.Row(
             children: [
               pw.Container(
-                  width: 120,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_designation'),
-                      style: pw.TextStyle(
-                          color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8))),
-              pw.Container(
-                  width: 40,
-                  child: pw.Text(printLocalizations.translate('pdf_carton'),
-                      style: pw.TextStyle(
-                          color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8))),
-              pw.Container(
                   width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_quantity_per_carton'),
+                  child: pw.Text('Product Picture',
                       style: pw.TextStyle(
-                          color: PdfColors.white,
+                          color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 8))),
+                          fontSize: 9))),
+              pw.Container(
+                  width: 120,
+                  child: pw.Text('Product Name',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
               pw.Container(
                   width: 60,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_purchase_rate'),
+                  child: pw.Text('Total CBM',
                       style: pw.TextStyle(
-                          color: PdfColors.white,
+                          color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 8))),
+                          fontSize: 9))),
               pw.Container(
-                  width: 80,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_unit_price_short'),
+                  width: 60,
+                  child: pw.Text('Total Weight',
                       style: pw.TextStyle(
-                          color: PdfColors.white,
+                          color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 8))),
+                          fontSize: 9))),
               pw.Container(
-                  width: 80,
-                  child: pw.Text(printLocalizations.translate('pdf_total'),
+                  width: 50,
+                  child: pw.Text('Carton',
                       style: pw.TextStyle(
-                          color: PdfColors.white,
+                          color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 8))),
+                          fontSize: 9))),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text('Unit / Carton',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text('Total Quantity',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 60,
+                  child: pw.Text('Price',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text('Amount',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
             ],
           ),
         ),
+        // Corps du tableau
         for (final achat in achats)
           for (final item in (achat.items ?? []))
             () {
@@ -507,37 +720,57 @@ class VersementPrintService {
                 adjustedTotalPrice = margin.adjustedTotalPrice;
               }
 
+              // Calculer les valeurs pour les colonnes
+              final carton = item.carton ?? 0;
+              final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
+              final totalQuantity = (item.quantity ?? 0).toDouble();
+              final totalCBM =
+                  0.0; // Par défaut, peut être calculé si disponible
+              final totalWeight =
+                  0.0; // Par défaut, peut être calculé si disponible
+
               return pw.Container(
-                color: PdfColors.grey200,
+                color: PdfColors.white,
                 padding:
-                    const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                    const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                 child: pw.Row(
                   children: [
                     pw.Container(
+                        width: 50,
+                        child: pw.SizedBox()), // Product Picture vide
+                    pw.Container(
                         width: 120,
                         child: pw.Text(item.description ?? '',
-                            style: const pw.TextStyle(fontSize: 16))),
-                    pw.Container(
-                        width: 40,
-                        child: pw.Text('${item.carton ?? ''}',
-                            style: const pw.TextStyle(fontSize: 16))),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text('${item.quantityPerCarton ?? ''}',
-                            style: const pw.TextStyle(fontSize: 16))),
+                            style: const pw.TextStyle(fontSize: 9))),
                     pw.Container(
                         width: 60,
-                        child: pw.Text('${item.salesRate ?? ''}',
-                            style: const pw.TextStyle(fontSize: 16))),
+                        child: pw.Text(totalCBM.toStringAsFixed(2),
+                            style: const pw.TextStyle(fontSize: 9))),
                     pw.Container(
-                        width: 80,
+                        width: 60,
+                        child: pw.Text(totalWeight.toStringAsFixed(2),
+                            style: const pw.TextStyle(fontSize: 9))),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(carton.toString(),
+                            style: const pw.TextStyle(fontSize: 9))),
+                    pw.Container(
+                        width: 70,
+                        child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                            style: const pw.TextStyle(fontSize: 9))),
+                    pw.Container(
+                        width: 70,
+                        child: pw.Text(totalQuantity.toStringAsFixed(2),
+                            style: const pw.TextStyle(fontSize: 9))),
+                    pw.Container(
+                        width: 60,
                         child: pw.Text(currencyFormat.format(adjustedUnitPrice),
-                            style: const pw.TextStyle(fontSize: 16))),
+                            style: const pw.TextStyle(fontSize: 9))),
                     pw.Container(
-                        width: 80,
+                        width: 70,
                         child: pw.Text(
                             currencyFormat.format(adjustedTotalPrice),
-                            style: const pw.TextStyle(fontSize: 16))),
+                            style: const pw.TextStyle(fontSize: 9))),
                   ],
                 ),
               );
@@ -845,72 +1078,217 @@ class VersementPrintService {
       DateFormat dateFormat,
       PrintLocalizations printLocalizations,
       bool isProforma) {
-    return pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Image(pw.MemoryImage(logoBytes), width: 100),
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.end,
-          children: [
-            pw.Text(
-                isProforma
-                    ? printLocalizations.translate('pdf_proforma')
-                    : printLocalizations.translate('pdf_purchase_invoice'),
-                style: pw.TextStyle(
-                    fontSize: 32,
-                    color: PdfColor.fromHex('#1A1E49'),
-                    fontWeight: pw.FontWeight.bold,
-                    letterSpacing: 4,
-                    font: printLocalizations.language.code == 'zh'
-                        ? pw.Font.courier()
-                        : pw.Font.helvetica(),
-                    fontFallback: [pw.Font.times(), pw.Font.courier()])),
-            pw.SizedBox(height: 8),
-            pw.Row(children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(printLocalizations.translate('pdf_reference_label'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: PdfColors.grey600,
-                        fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 1.2,
-                      )),
-                  pw.Text(
-                    'ACH-${achat.id}',
-                    style: pw.TextStyle(
-                      fontSize: 15,
-                      color: PdfColor.fromHex('#1A1E49'),
-                      fontWeight: pw.FontWeight.bold,
+        // En-tête avec design de carte de visite
+        pw.Container(
+          decoration: pw.BoxDecoration(
+            border:
+                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
+            borderRadius: pw.BorderRadius.circular(4),
+          ),
+          child: pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Section gauche avec fond dégradé bleu clair
+              pw.Expanded(
+                child: pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: pw.BoxDecoration(
+                    gradient: pw.LinearGradient(
+                      begin: pw.Alignment.centerLeft,
+                      end: pw.Alignment.centerRight,
+                      colors: [
+                        PdfColor.fromHex('#B3E5FC'), // Bleu clair
+                        PdfColor.fromHex('#E1F5FE'), // Bleu très clair
+                      ],
+                    ),
+                    borderRadius: const pw.BorderRadius.only(
+                      topLeft: pw.Radius.circular(2.5),
+                      bottomLeft: pw.Radius.circular(2.5),
                     ),
                   ),
-                ],
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // Nom de l'entreprise
+                      pw.Text(
+                        'BBD LIMITED',
+                        style: pw.TextStyle(
+                          fontSize: 28,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColor.fromHex('#1A1E49'),
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Adresse en rouge
+                      pw.Text(
+                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+                      pw.Text(
+                        '中国 浙江省义乌市赵宅3区10栋1单元102',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+
+                      // Ligne séparatrice bleu foncé
+                      pw.SizedBox(height: 10),
+                      pw.Container(
+                        height: 1.5,
+                        color: PdfColor.fromHex('#1A1E49'),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Informations de contact
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          // Téléphones à gauche
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'Contact :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  '0086 18678859834',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                                pw.Text(
+                                  '0086 13503032311',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                                pw.Text(
+                                  '0086 (579)85568522',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Email à droite
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'EMail :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'bbd@bbdcompany.com',
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              pw.SizedBox(width: 10),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(printLocalizations.translate('pdf_date_label'),
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        color: PdfColors.grey600,
-                        fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 1.2,
-                      )),
-                  pw.Text(
-                    dateFormat.format(achat.createdAt ?? DateTime.now()),
-                    style: pw.TextStyle(
-                      fontSize: 15,
+
+              // Ligne verticale séparatrice
+              pw.Container(
+                width: 1.5,
+                color: PdfColor.fromHex('#1A1E49'),
+              ),
+
+              // Section droite avec logo sur fond blanc
+              pw.Container(
+                width: 100,
+                padding: const pw.EdgeInsets.all(12),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.white,
+                  borderRadius: pw.BorderRadius.only(
+                    topRight: pw.Radius.circular(2.5),
+                    bottomRight: pw.Radius.circular(2.5),
+                  ),
+                ),
+                child: pw.Center(
+                  child: pw.Container(
+                    width: 75,
+                    height: 75,
+                    decoration: pw.BoxDecoration(
                       color: PdfColor.fromHex('#1A1E49'),
-                      fontWeight: pw.FontWeight.bold,
+                      shape: pw.BoxShape.circle,
+                    ),
+                    child: pw.Center(
+                      child: pw.Image(
+                        pw.MemoryImage(logoBytes),
+                        width: 70,
+                        height: 70,
+                        fit: pw.BoxFit.contain,
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ]),
-          ],
+            ],
+          ),
+        ),
+
+        pw.SizedBox(height: 20),
+
+        // Titre de la facture (Market Finance Invoice pour les achats)
+        pw.Text(
+          isProforma
+              ? printLocalizations.translate('pdf_proforma')
+              : 'Market Finance Invoice',
+          style: pw.TextStyle(
+            fontSize: 24,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+            letterSpacing: 1.2,
+            font: printLocalizations.language.code == 'zh'
+                ? pw.Font.courier()
+                : pw.Font.helvetica(),
+            fontFallback: [pw.Font.times(), pw.Font.courier()],
+          ),
+        ),
+        pw.SizedBox(height: 16),
+
+        // Informations de la facture
+        pw.Container(
+          padding: const pw.EdgeInsets.all(12),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: pw.BorderRadius.circular(4),
+            border: pw.Border.all(color: PdfColors.grey300),
+          ),
+          child: pw.Column(
+            children: [
+              _buildInfoRowPDF(
+                  printLocalizations.translate('pdf_reference_label'),
+                  'ACH-${achat.id}'),
+              _buildInfoRowPDF(printLocalizations.translate('pdf_date_label'),
+                  dateFormat.format(achat.createdAt ?? DateTime.now())),
+            ],
+          ),
         ),
       ],
     );
@@ -937,84 +1315,75 @@ class VersementPrintService {
               fontFallback: [pw.Font.times(), pw.Font.courier()],
             )),
         pw.SizedBox(height: 8),
+        // En-tête du tableau avec toutes les colonnes du design
         pw.Container(
-          color: isProforma ? PdfColors.grey100 : PdfColor.fromHex('#1A1E49'),
-          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
+          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: pw.Row(
             children: [
-              pw.Expanded(
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_designation_label'),
-                      style: pw.TextStyle(
-                          color:
-                              isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold))),
-              if (isProforma) // Colonne statut seulement pour pro-forma
-                pw.Container(
-                    width: 60,
-                    child: pw.Text(
-                        printLocalizations.translate('pdf_status_label'),
-                        style: pw.TextStyle(
-                            color: isProforma
-                                ? PdfColors.grey500
-                                : PdfColors.white,
-                            fontSize: 16,
-                            fontWeight: pw.FontWeight.bold))),
-              if (includeSupplierInfo &&
-                  filteredItems?.isNotEmpty == true &&
-                  filteredItems?.first.supplierName != null)
-                pw.Container(
-                    width: 80,
-                    child: pw.Text(printLocalizations.translate('pdf_supplier'),
-                        style: pw.TextStyle(
-                            color: isProforma
-                                ? PdfColors.grey500
-                                : PdfColors.white,
-                            fontSize: 16,
-                            fontWeight: pw.FontWeight.bold))),
-              pw.Container(
-                  width: 40,
-                  child: pw.Text(printLocalizations.translate('pdf_carton'),
-                      style: pw.TextStyle(
-                          color:
-                              isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold))),
               pw.Container(
                   width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_quantity_per_carton'),
+                  child: pw.Text('Product Picture',
                       style: pw.TextStyle(
-                          color:
-                              isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 120,
+                  child: pw.Text('Product Name',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
               pw.Container(
                   width: 60,
-                  child: pw.Text(printLocalizations.translate('pdf_rate'),
+                  child: pw.Text('Total CBM',
                       style: pw.TextStyle(
-                          color:
-                              isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
               pw.Container(
-                  width: 80,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_unit_price_label'),
+                  width: 60,
+                  child: pw.Text('Total Weight',
                       style: pw.TextStyle(
-                          color:
-                              isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
               pw.Container(
-                  width: 80,
-                  child: pw.Text(printLocalizations.translate('pdf_total'),
+                  width: 50,
+                  child: pw.Text('Carton',
                       style: pw.TextStyle(
-                          color:
-                              isProforma ? PdfColors.grey500 : PdfColors.white,
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text('Unit / Carton',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text('Total Quantity',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 60,
+                  child: pw.Text('Price',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text('Amount',
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 9))),
             ],
           ),
         ),
@@ -1041,59 +1410,54 @@ class VersementPrintService {
               adjustedTotalPrice = margin.adjustedTotalPrice;
             }
 
+            // Calculer les valeurs pour les colonnes
+            final carton = item.carton ?? 0;
+            final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
+            final totalQuantity = (item.quantity ?? 0).toDouble();
+            final totalCBM = 0.0; // Par défaut, peut être calculé si disponible
+            final totalWeight =
+                0.0; // Par défaut, peut être calculé si disponible
+
             return pw.Container(
-              color: PdfColors.grey200,
+              color: PdfColors.white,
               padding:
-                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
               child: pw.Row(
                 children: [
-                  pw.Expanded(
-                      child: pw.Text(item.description ?? '',
-                          style: const pw.TextStyle(fontSize: 16))),
-                  if (isProforma) // Colonne statut seulement pour pro-forma
-                    pw.Container(
-                      width: 60,
-                      child: pw.Text(
-                        item.status == Status.RECEIVED
-                            ? printLocalizations.translate('pdf_received')
-                            : printLocalizations.translate('pdf_pending'),
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: item.status == Status.RECEIVED
-                              ? PdfColors.green
-                              : PdfColors.orange,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  if (includeSupplierInfo &&
-                      filteredItems?.isNotEmpty == true &&
-                      item.supplierName != null)
-                    pw.Container(
-                      width: 80,
-                      child: pw.Text(item.supplierName ?? '',
-                          style: const pw.TextStyle(fontSize: 16)),
-                    ),
                   pw.Container(
-                      width: 40,
-                      child: pw.Text('${item.carton ?? ''}',
-                          style: const pw.TextStyle(fontSize: 16))),
+                      width: 50, child: pw.SizedBox()), // Product Picture vide
+                  pw.Container(
+                      width: 120,
+                      child: pw.Text(item.description ?? '',
+                          style: const pw.TextStyle(fontSize: 9))),
+                  pw.Container(
+                      width: 60,
+                      child: pw.Text(totalCBM.toStringAsFixed(2),
+                          style: const pw.TextStyle(fontSize: 9))),
+                  pw.Container(
+                      width: 60,
+                      child: pw.Text(totalWeight.toStringAsFixed(2),
+                          style: const pw.TextStyle(fontSize: 9))),
                   pw.Container(
                       width: 50,
-                      child: pw.Text('${item.quantityPerCarton ?? ''}',
-                          style: const pw.TextStyle(fontSize: 16))),
+                      child: pw.Text(carton.toString(),
+                          style: const pw.TextStyle(fontSize: 9))),
+                  pw.Container(
+                      width: 70,
+                      child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                          style: const pw.TextStyle(fontSize: 9))),
+                  pw.Container(
+                      width: 70,
+                      child: pw.Text(totalQuantity.toStringAsFixed(2),
+                          style: const pw.TextStyle(fontSize: 9))),
                   pw.Container(
                       width: 60,
-                      child: pw.Text('${item.salesRate ?? ''}',
-                          style: const pw.TextStyle(fontSize: 16))),
-                  pw.Container(
-                      width: 80,
                       child: pw.Text(currencyFormat.format(adjustedUnitPrice),
-                          style: const pw.TextStyle(fontSize: 16))),
+                          style: const pw.TextStyle(fontSize: 9))),
                   pw.Container(
-                      width: 80,
+                      width: 70,
                       child: pw.Text(currencyFormat.format(adjustedTotalPrice),
-                          style: const pw.TextStyle(fontSize: 16))),
+                          style: const pw.TextStyle(fontSize: 9))),
                 ],
               ),
             );
