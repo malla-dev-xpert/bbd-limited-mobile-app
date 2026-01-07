@@ -310,30 +310,110 @@ class PartnerPrintService {
                 font: font,
                 fontFallback: fallbackFonts)),
         pw.SizedBox(height: 8),
-        pw.TableHelper.fromTextArray(
-          context: null,
-          border: pw.TableBorder.all(color: PdfColors.grey300),
-          headerStyle: pw.TextStyle(
-              color: PdfColors.white, fontWeight: pw.FontWeight.bold),
-          headerDecoration:
-              pw.BoxDecoration(color: PdfColor.fromHex('#1A1E49')),
-          headers: [
-            printLocalizations.translate('pdf_date'),
-            printLocalizations.translate('pdf_reference'),
-            printLocalizations.translate('pdf_amount_paid'),
-            printLocalizations.translate('pdf_type'),
-            printLocalizations.translate('pdf_remaining_amount')
-          ],
-          data: versements
-              .map((v) => [
-                    _dateFormat.format(v.createdAt ?? DateTime.now()),
-                    v.reference ?? '-',
-                    _currencyFormat.format(v.montantVerser ?? 0),
-                    v.type ?? '-',
-                    _currencyFormat.format(v.montantRestant ?? 0),
-                  ])
-              .toList(),
+        // En-tête du tableau avec le même style que les produits
+        pw.Container(
+          color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
+          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          child: pw.Row(
+            children: [
+              pw.Container(
+                  width: 80,
+                  child: pw.Text(printLocalizations.translate('pdf_date'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 80,
+                  child: pw.Text(printLocalizations.translate('pdf_reference'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 80,
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_amount_paid'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 60,
+                  child: pw.Text(printLocalizations.translate('pdf_type'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
+              pw.Expanded(
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_remaining_amount'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+            ],
+          ),
         ),
+        // Corps du tableau avec le même style que les produits
+        for (final v in versements)
+          pw.Container(
+            color: PdfColors.white,
+            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: pw.Row(
+              children: [
+                pw.Container(
+                    width: 80,
+                    child: pw.Text(
+                      _dateFormat.format(v.createdAt ?? DateTime.now()),
+                      style: const pw.TextStyle(fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                    )),
+                pw.SizedBox(width: 3),
+                pw.Container(
+                    width: 80,
+                    child: pw.Text(
+                      v.reference ?? '-',
+                      style: const pw.TextStyle(fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                      maxLines: 2,
+                    )),
+                pw.SizedBox(width: 3),
+                pw.Container(
+                    width: 80,
+                    child: pw.Text(
+                      _currencyFormat.format(v.montantVerser ?? 0),
+                      style: const pw.TextStyle(fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                    )),
+                pw.SizedBox(width: 3),
+                pw.Container(
+                    width: 60,
+                    child: pw.Text(
+                      v.type ?? '-',
+                      style: const pw.TextStyle(fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                      maxLines: 2,
+                    )),
+                pw.SizedBox(width: 3),
+                pw.Expanded(
+                    child: pw.Text(
+                  _currencyFormat.format(v.montantRestant ?? 0),
+                  style: const pw.TextStyle(fontSize: 8),
+                  textAlign: pw.TextAlign.center,
+                )),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -385,30 +465,119 @@ class PartnerPrintService {
                 pw.Text(
                     '${printLocalizations.translate('pdf_status')}: ${package.status?.name ?? '-'}'),
                 pw.SizedBox(height: 8),
-                if (package.items != null && package.items!.isNotEmpty)
-                  pw.TableHelper.fromTextArray(
-                    context: null,
-                    border: pw.TableBorder.all(color: PdfColors.grey300),
-                    headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    headerDecoration:
-                        const pw.BoxDecoration(color: PdfColors.grey200),
-                    headers: [
-                      printLocalizations.translate('pdf_article'),
-                      printLocalizations.translate('pdf_quantity'),
-                      printLocalizations.translate('pdf_unit_price'),
-                      printLocalizations.translate('pdf_exchange_rate'),
-                      printLocalizations.translate('pdf_total')
-                    ],
-                    data: package.items!
-                        .map((item) => [
-                              item.description ?? '-',
-                              '${item.quantity}',
-                              _currencyFormat.format(item.unitPrice ?? 0),
-                              _currencyFormat.format(item.salesRate ?? 0),
-                              _currencyFormat.format(item.totalPrice ?? 0),
-                            ])
-                        .toList(),
+                if (package.items != null && package.items!.isNotEmpty) ...[
+                  // En-tête du tableau avec le même style que les produits
+                  pw.Container(
+                    color: PdfColor.fromHex(
+                        '#E3F2FD'), // Bleu clair comme dans l'image
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
+                    child: pw.Row(
+                      children: [
+                        pw.Expanded(
+                            flex: 3,
+                            child: pw.Text(
+                                printLocalizations.translate('pdf_article'),
+                                style: pw.TextStyle(
+                                    color: PdfColor.fromHex('#1A1E49'),
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 8),
+                                maxLines: 2)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 60,
+                            child: pw.Text(
+                                printLocalizations.translate('pdf_quantity'),
+                                style: pw.TextStyle(
+                                    color: PdfColor.fromHex('#1A1E49'),
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 70,
+                            child: pw.Text(
+                                printLocalizations.translate('pdf_unit_price'),
+                                style: pw.TextStyle(
+                                    color: PdfColor.fromHex('#1A1E49'),
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 70,
+                            child: pw.Text(
+                                printLocalizations
+                                    .translate('pdf_exchange_rate'),
+                                style: pw.TextStyle(
+                                    color: PdfColor.fromHex('#1A1E49'),
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 70,
+                            child: pw.Text(
+                                printLocalizations.translate('pdf_total'),
+                                style: pw.TextStyle(
+                                    color: PdfColor.fromHex('#1A1E49'),
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
                   ),
+                  // Corps du tableau avec le même style que les produits
+                  for (final item in package.items!)
+                    pw.Container(
+                      color: PdfColors.white,
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
+                      child: pw.Row(
+                        children: [
+                          pw.Expanded(
+                              flex: 3,
+                              child: pw.Text(
+                                item.description ?? '-',
+                                style: const pw.TextStyle(fontSize: 8),
+                                maxLines: 2,
+                              )),
+                          pw.SizedBox(width: 3),
+                          pw.Container(
+                              width: 60,
+                              child: pw.Text(
+                                '${item.quantity}',
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                              )),
+                          pw.SizedBox(width: 3),
+                          pw.Container(
+                              width: 70,
+                              child: pw.Text(
+                                _currencyFormat.format(item.unitPrice ?? 0),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                              )),
+                          pw.SizedBox(width: 3),
+                          pw.Container(
+                              width: 70,
+                              child: pw.Text(
+                                _currencyFormat.format(item.salesRate ?? 0),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                              )),
+                          pw.SizedBox(width: 3),
+                          pw.Container(
+                              width: 70,
+                              child: pw.Text(
+                                _currencyFormat.format(item.totalPrice ?? 0),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                              )),
+                        ],
+                      ),
+                    ),
+                ],
               ],
             ),
           ),

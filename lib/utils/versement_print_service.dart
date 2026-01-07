@@ -538,6 +538,17 @@ class VersementPrintService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
+        pw.Text(printLocalizations.translate("pdf_articles_list_label"),
+            style: pw.TextStyle(
+              fontSize: 20,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColor.fromHex('#1A1E49'),
+              font: printLocalizations.language.code == 'zh'
+                  ? pw.Font.courier()
+                  : pw.Font.helvetica(),
+              fontFallback: [pw.Font.times(), pw.Font.courier()],
+            )),
+        pw.SizedBox(height: 8),
         // En-tête du tableau avec toutes les colonnes du design
         pw.Container(
           color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
@@ -940,11 +951,16 @@ class VersementPrintService {
               fontSize: 20,
               fontWeight: pw.FontWeight.bold,
               color: PdfColor.fromHex('#1A1E49'),
+              font: printLocalizations.language.code == 'zh'
+                  ? pw.Font.courier()
+                  : pw.Font.helvetica(),
+              fontFallback: [pw.Font.times(), pw.Font.courier()],
             )),
         pw.SizedBox(height: 8),
+        // En-tête du tableau avec le même style que les produits
         pw.Container(
-          color: PdfColor.fromHex('#1A1E49'),
-          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
+          padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: pw.Row(
             children: [
               pw.Container(
@@ -952,42 +968,64 @@ class VersementPrintService {
                   child: pw.Text(
                       printLocalizations.translate('pdf_withdrawal_date'),
                       style: pw.TextStyle(
-                          color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Container(
                   width: 100,
                   child: pw.Text(
                       printLocalizations.translate('pdf_withdrawal_amount'),
                       style: pw.TextStyle(
-                          color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
               pw.Expanded(
                   child: pw.Text(
                       printLocalizations.translate('pdf_withdrawal_reason'),
                       style: pw.TextStyle(
-                          color: PdfColors.white,
-                          fontWeight: pw.FontWeight.bold))),
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.left)),
             ],
           ),
         ),
+        // Corps du tableau avec le même style que les produits
         ...retraits.map((r) => pw.Container(
-              color: PdfColors.grey200,
+              color: PdfColors.white,
               padding:
-                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
               child: pw.Row(
                 children: [
                   pw.Container(
-                    width: 100,
-                    child: pw.Text(
-                      r.dateRetrait != null
-                          ? dateFormat.format(r.dateRetrait!)
-                          : printLocalizations.translate('pdf_unknown_date'),
-                    ),
-                  ),
+                      width: 100,
+                      child: pw.Text(
+                        r.dateRetrait != null
+                            ? dateFormat.format(r.dateRetrait!)
+                            : printLocalizations.translate('pdf_unknown_date'),
+                        style: const pw.TextStyle(fontSize: 8),
+                        textAlign: pw.TextAlign.center,
+                      )),
+                  pw.SizedBox(width: 3),
                   pw.Container(
                       width: 100,
-                      child: pw.Text(currencyFormat.format(r.montant))),
-                  pw.Expanded(child: pw.Text(r.note ?? '')),
+                      child: pw.Text(
+                        currencyFormat.format(r.montant),
+                        style: const pw.TextStyle(fontSize: 8),
+                        textAlign: pw.TextAlign.center,
+                      )),
+                  pw.SizedBox(width: 3),
+                  pw.Expanded(
+                      child: pw.Text(
+                    r.note ?? '',
+                    style: const pw.TextStyle(fontSize: 8),
+                    maxLines: 2,
+                    textAlign: pw.TextAlign.left,
+                  )),
                 ],
               ),
             )),
@@ -1002,7 +1040,15 @@ class VersementPrintService {
       children: [
         pw.Text(
             '${printLocalizations.translate('pdf_total_withdrawals')} : ${currencyFormat.format(totalRetraits)}',
-            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColor.fromHex('#1A1E49'),
+              font: printLocalizations.language.code == 'zh'
+                  ? pw.Font.courier()
+                  : pw.Font.helvetica(),
+              fontFallback: [pw.Font.times(), pw.Font.courier()],
+            )),
       ],
     );
   }
