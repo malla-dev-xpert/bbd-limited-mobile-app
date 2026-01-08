@@ -163,8 +163,8 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                   children: [
                     _buildPrintOptionsCard(isMobile),
                     if (widget.showBillingOptions) ...[
-                      const SizedBox(height: 16),
-                      _buildBillingOptionsCard(isMobile),
+                    const SizedBox(height: 16),
+                    _buildBillingOptionsCard(isMobile),
                       const SizedBox(height: 16),
                       SelectiveFeeMarginConfig(
                         options: _options,

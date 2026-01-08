@@ -440,8 +440,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     } catch (e) {
       if (context.mounted) {
-        showErrorTopSnackBar(context,
-            AppLocalizations.of(context).translate('report_generation_error'));
+      showErrorTopSnackBar(context,
+          AppLocalizations.of(context).translate('report_generation_error'));
         print('Error generating PDF: $e');
       }
     }

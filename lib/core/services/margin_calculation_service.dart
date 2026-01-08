@@ -63,7 +63,7 @@ class MarginCalculationService {
       if (options.discountType == DiscountType.percentage) {
         totalAfterDiscount -=
             (totalAfterLineDiscount * options.discountValue! / 100);
-      } else {
+    } else {
         totalAfterDiscount -= options.discountValue!;
       }
     }

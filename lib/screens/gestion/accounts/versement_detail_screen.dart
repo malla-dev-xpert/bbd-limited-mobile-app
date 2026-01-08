@@ -1222,20 +1222,20 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
                     children: [
                       // Vue Détails (actuelle)
                       SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildCollapsibleInfo(),
-                              const SizedBox(height: 16),
-                              _buildCollapsibleAchats(),
-                              const SizedBox(height: 16),
-                              _buildCollapsibleWithdrawals(),
-                              const SizedBox(height: 80), // Space for FAB
-                            ],
-                          ),
-                        ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCollapsibleInfo(),
+                    const SizedBox(height: 16),
+                    _buildCollapsibleAchats(),
+                    const SizedBox(height: 16),
+                    _buildCollapsibleWithdrawals(),
+                    const SizedBox(height: 80), // Space for FAB
+                  ],
+                ),
+              ),
                       ),
                       // Vue Prévisualisation
                       _buildPreviewTab(),
