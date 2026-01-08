@@ -7,6 +7,8 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/profil/widgets/change_password_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/profil/widgets/language_selection_modal.dart';
+import 'package:bbd_limited/screens/gestion/users/widgets/user_form_modal.dart';
+import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -21,6 +23,13 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
   bool isLoading = false;
+  late User _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = widget.user;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +59,67 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _showEditUserModal(BuildContext context, User user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return UserFormModal(
+          user: user,
+          onSubmit: (updatedUser) async {
+            try {
+              setState(() {
+                isLoading = true;
+              });
+
+              final success = await _authService.updateUser(
+                updatedUser.id,
+                updatedUser,
+              );
+
+              if (success) {
+                // Mettre à jour l'utilisateur local
+                setState(() {
+                  _currentUser = updatedUser;
+                });
+
+                // Afficher message de succès
+                showSuccessTopSnackBar(
+                  context,
+                  AppLocalizations.of(context)
+                      .translate('profile_updated_successfully'),
+                );
+
+                return true;
+              } else {
+                showErrorTopSnackBar(
+                  context,
+                  AppLocalizations.of(context).translate('error_updating_user'),
+                );
+                return false;
+              }
+            } catch (e) {
+              log('Erreur lors de la mise à jour du profil: $e');
+              showErrorTopSnackBar(
+                context,
+                AppLocalizations.of(context).translate('error_updating_user'),
+              );
+              return false;
+            } finally {
+              setState(() {
+                isLoading = false;
+              });
+            }
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildProfileHeader(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
@@ -71,25 +141,40 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 20),
         Text(
-          "${widget.user.firstName ?? ''} ${widget.user.lastName ?? ''}",
+          "${_currentUser.firstName ?? ''} ${_currentUser.lastName ?? ''}",
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(
-          widget.user.email ?? '',
+          _currentUser.email ?? '',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
         ),
         const SizedBox(height: 15),
         OutlinedButton.icon(
-          onPressed: () {
-            // Action pour modifier le profil
-          },
-          icon: const Icon(Icons.edit, size: 18),
-          label: Text(localizations.translate('edit_profile')),
+          onPressed: isLoading
+              ? null
+              : () {
+                  _showEditUserModal(context, _currentUser);
+                },
+          icon: isLoading
+              ? SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
+                    ),
+                  ),
+                )
+              : const Icon(Icons.edit, size: 18),
+          label: isLoading
+              ? Text(localizations.translate('updating'))
+              : Text(localizations.translate('edit_profile')),
           style: OutlinedButton.styleFrom(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -203,9 +288,11 @@ class _ProfilePageState extends State<ProfilePage> {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
-        onPressed: () {
-          _showLogoutConfirmation(context);
-        },
+        onPressed: isLoading
+            ? null
+            : () {
+                _showLogoutConfirmation(context);
+              },
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
           side: BorderSide(color: Colors.red[300]!),
@@ -213,10 +300,16 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Text(
-          localizations.translate('logout'),
-          style: TextStyle(color: Colors.red[400], fontWeight: FontWeight.bold),
-        ),
+        child: isLoading
+            ? const CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+              )
+            : Text(
+                localizations.translate('logout'),
+                style: TextStyle(
+                    color: Colors.red[400], fontWeight: FontWeight.bold),
+              ),
       ),
     );
   }
@@ -236,7 +329,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         height: MediaQuery.of(context).size.height * 0.45,
-        child: PersonalInfoCard(user: widget.user),
+        child: PersonalInfoCard(user: _currentUser),
       ),
     );
   }
@@ -248,10 +341,6 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.transparent,
       builder: (context) => const ChangePasswordBottomSheet(),
     );
-  }
-
-  void _navigateToDeliveryPreferences(BuildContext context) {
-    // Navigation vers les préférences de livraison
   }
 
   void _showPrivacyPolicyDialog(BuildContext context) {
@@ -310,9 +399,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
             child: Text(
-              isLoading == true
-                  ? localizations.translate('logout_in_progress')
-                  : localizations.translate('logout'),
+              localizations.translate('logout'),
               style: TextStyle(color: Colors.red),
             ),
           ),

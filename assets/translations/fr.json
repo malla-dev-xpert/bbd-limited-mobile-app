@@ -749,6 +749,7 @@
   "harbor_name": "Nom du port",
   "iso_code": "Code ISO",
   "invoice_number": "Numéro de facture",
+  "profile_updated_successfully": "Profil mis à jour avec succès",
   "notes": "Notes",
   "no_internet_message": "Veuillez vérifier votre connexion réseau",
   "forgot_password_title": "Mot de passe oublié",
