@@ -648,6 +648,8 @@
   "home_welcome": "Welcome",
   "home_statistics": "Statistics",
   "home_basic_info": "Basic Information",
+  "home_inventory_logistics": "Inventory & Logistics",
+  "home_administration": "Administration",
   "home_expeditions_in_progress": "Expeditions in Progress",
   "home_user": "User",
   "home_containers": "Containers",

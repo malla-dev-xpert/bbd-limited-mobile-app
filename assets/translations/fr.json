@@ -437,6 +437,8 @@
   "home_welcome": "Bienvenue",
   "home_statistics": "Statistique",
   "home_basic_info": "Informations de base",
+  "home_inventory_logistics": "Inventaire et Logistique",
+  "home_administration": "Administration",
   "home_expeditions_in_progress": "Expéditions en cours",
   "home_user": "Utilisateur",
   "home_containers": "Conteneurs",

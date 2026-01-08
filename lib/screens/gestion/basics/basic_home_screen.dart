@@ -1,4 +1,3 @@
-import 'package:bbd_limited/components/basic/card.dart';
 import 'package:bbd_limited/components/basic/card_list.dart';
 import 'package:bbd_limited/components/basic/report/report_card.dart';
 import 'package:bbd_limited/components/basic/report/report_card_list.dart';
@@ -70,9 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final bool isTablet = width > 800;
-
     final localizations = AppLocalizations.of(context);
 
     final List<ReportCardData> dynamicReportCardDataList = [
@@ -180,47 +176,99 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              SliverToBoxAdapter(
-                child: Text(
-                  localizations.translate('home_basic_info'),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10.0,
-                  horizontal: 0,
-                ),
-                sliver: SliverGrid.count(
-                  crossAxisCount: isTablet ? 3 : 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  children: getCardDataList(
-                    context,
-                    localizations,
-                    isAdmin:
-                        _user?.role?.permissions.contains('IS_ADMIN') ?? false,
-                  ).map((data) {
-                    return CustomCard(
-                      icon: data.icon,
-                      title: data.title,
-                      backgroundColor: data.backgroundColor,
-                      iconColor: data.iconColor,
-                      titleColor: data.titleColor,
-                      onPressed: data.onPressed,
-                      isTablet: isTablet,
-                      description: data.description,
-                    );
-                  }).toList(),
-                ),
-              ),
+              // Liste des catégories de menu
+              ...getMenuCategories(
+                context,
+                localizations,
+                isAdmin: _user?.role?.permissions.contains('IS_ADMIN') ?? false,
+              ).map((category) {
+                return SliverMainAxisGroup(
+                  slivers: [
+                    // Titre de la catégorie
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: 20.0,
+                          bottom: 10.0,
+                          left: 0,
+                          right: 0,
+                        ),
+                        child: Text(
+                          category.title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -1,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Items de la catégorie
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final item = category.items[index];
+                          return _buildMenuItem(
+                            context,
+                            item,
+                            index % 2 == 0,
+                          );
+                        },
+                        childCount: category.items.length,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(BuildContext context, CardData item, bool isEven) {
+    return InkWell(
+      onTap: () => item.onPressed(context),
+      child: Container(
+        color: isEven ? Colors.grey[50] : Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        child: Row(
+          children: [
+            // Icône
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                item.icon,
+                color: const Color(0xFF1A1E49),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Titre
+            Expanded(
+              child: Text(
+                item.title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1A1E49),
+                ),
+              ),
+            ),
+            // Flèche de navigation
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey[400],
+              size: 24,
+            ),
+          ],
         ),
       ),
     );
