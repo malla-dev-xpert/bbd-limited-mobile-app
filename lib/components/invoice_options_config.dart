@@ -93,6 +93,34 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     widget.onOptionsChanged(newOptions);
   }
 
+  /// Désactive la marge par ligne et remet sa valeur à null
+  InvoiceOptions _disableLineMargin(InvoiceOptions currentOptions) {
+    return InvoiceOptions(
+      enableLineMargin: false,
+      lineMarginValue: null, // Forcer à null
+      lineMarginType: currentOptions.lineMarginType,
+      enableGlobalMargin: currentOptions.enableGlobalMargin,
+      globalMarginValue: currentOptions.globalMarginValue,
+      globalMarginType: currentOptions.globalMarginType,
+      enableLineDiscount: currentOptions.enableLineDiscount,
+      lineDiscountValue: currentOptions.lineDiscountValue,
+      lineDiscountType: currentOptions.lineDiscountType,
+      enableDiscount: currentOptions.enableDiscount,
+      discountType: currentOptions.discountType,
+      discountValue: currentOptions.discountValue,
+      enableAdditionalFees: currentOptions.enableAdditionalFees,
+      additionalFees: currentOptions.additionalFees,
+      enableStorageFees: currentOptions.enableStorageFees,
+      storageFeeAmount: currentOptions.storageFeeAmount,
+      storageFeeType: currentOptions.storageFeeType,
+      enableSelectiveItemMargins:
+          false, // Désactiver aussi les marges sélectives
+      selectiveItemMargins: const {},
+      enableSelectiveFeeMargins: currentOptions.enableSelectiveFeeMargins,
+      selectiveFeeMargins: currentOptions.selectiveFeeMargins,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -231,10 +259,15 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                     lineMarginValue: _options.lineMarginValue ?? 10.0,
                   ));
                 } else {
-                  _updateOptions(_options.copyWith(
-                    enableLineMargin: value ?? false,
-                    lineMarginValue: value == true ? 10.0 : null,
-                  ));
+                  // Quand on désactive, utiliser la méthode helper pour forcer la remise à null
+                  if (value == false) {
+                    _updateOptions(_disableLineMargin(_options));
+                  } else {
+                    _updateOptions(_options.copyWith(
+                      enableLineMargin: true,
+                      lineMarginValue: _options.lineMarginValue ?? 10.0,
+                    ));
+                  }
                 }
               },
               children: [
@@ -814,10 +847,15 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                 lineMarginValue: _options.lineMarginValue ?? 10.0,
               ));
             } else {
-              _updateOptions(_options.copyWith(
-                enableLineMargin: value,
-                lineMarginValue: value ? 10.0 : null,
-              ));
+              // Quand on désactive, utiliser la méthode helper pour forcer la remise à null
+              if (value == false) {
+                _updateOptions(_disableLineMargin(_options));
+              } else {
+                _updateOptions(_options.copyWith(
+                  enableLineMargin: true,
+                  lineMarginValue: _options.lineMarginValue ?? 10.0,
+                ));
+              }
             }
           },
           child:
