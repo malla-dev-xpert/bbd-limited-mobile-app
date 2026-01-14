@@ -66,6 +66,7 @@ class InvoiceService {
       options: options,
       selectiveItemMargins: options.selectiveItemMargins,
       selectiveFeeMargins: options.selectiveFeeMargins,
+      selectiveLineDiscounts: options.selectiveLineDiscounts,
     );
     double montantTotal = calculationResult.finalTotal;
 
@@ -160,6 +161,7 @@ class InvoiceService {
       options: options,
       selectiveItemMargins: options.selectiveItemMargins,
       selectiveFeeMargins: options.selectiveFeeMargins,
+      selectiveLineDiscounts: options.selectiveLineDiscounts,
     );
     double montantTotal = calculationResult.finalTotal;
 
@@ -653,6 +655,20 @@ class InvoiceService {
                 adjustedTotalPrice = margin.adjustedTotalPrice;
               }
 
+              // Appliquer la remise sélective par ligne si présente
+              if (options.enableSelectiveLineDiscounts &&
+                  item.id != null &&
+                  options.selectiveLineDiscounts.containsKey(item.id)) {
+                final discount = options.selectiveLineDiscounts[item.id]!;
+                final discountedTotal =
+                    (adjustedTotalPrice - discount.discountAmount)
+                        .clamp(0.0, double.infinity);
+                final quantity = (item.quantity ?? 0).toDouble();
+                adjustedUnitPrice =
+                    quantity > 0 ? discountedTotal / quantity : discountedTotal;
+                adjustedTotalPrice = discountedTotal;
+              }
+
               // Calculer les valeurs pour les colonnes
               final carton = item.carton ?? 0;
               final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
@@ -807,7 +823,8 @@ class InvoiceService {
 
           // Remise par ligne
           if (options.enableLineDiscount &&
-              options.lineDiscountValue != null) ...[
+              options.lineDiscountValue != null &&
+              !options.enableSelectiveLineDiscounts) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
               padding:
@@ -851,6 +868,85 @@ class InvoiceService {
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
+                ],
+              ),
+            ),
+          ],
+
+          // Remises sélectives par ligne
+          if (options.enableSelectiveLineDiscounts &&
+              options.selectiveLineDiscounts.isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        'Remises par ligne (sélectives)',
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+                      pw.SizedBox(width: 10),
+                      pw.Text(
+                        '-${currencyFormat.format(options.selectiveLineDiscounts.values.fold<double>(0.0, (sum, d) => sum + d.discountAmount))}',
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 6),
+                  ...options.selectiveLineDiscounts.values.map((discount) {
+                    Items? foundItem;
+                    for (final achat in achats) {
+                      final items = achat.items;
+                      if (items == null) continue;
+                      try {
+                        foundItem = items.firstWhere(
+                          (item) => item.id == discount.itemId,
+                        );
+                        break;
+                      } catch (_) {
+                        // Continuer la recherche
+                      }
+                    }
+
+                    final itemLabel =
+                        foundItem?.description ?? 'Article ${discount.itemId}';
+
+                    return pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            color: PdfColors.grey700,
+                            fontWeight: pw.FontWeight.normal,
+                          ),
+                        ),
+                        pw.SizedBox(width: 10),
+                        pw.Text(
+                          currencyFormat.format(discount.discountAmount),
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            color: PdfColors.grey700,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
                 ],
               ),
             ),
@@ -1481,6 +1577,20 @@ class InvoiceService {
               adjustedTotalPrice = margin.adjustedTotalPrice;
             }
 
+            // Appliquer la remise sélective par ligne si présente
+            if (options.enableSelectiveLineDiscounts &&
+                item.id != null &&
+                options.selectiveLineDiscounts.containsKey(item.id)) {
+              final discount = options.selectiveLineDiscounts[item.id]!;
+              final discountedTotal =
+                  (adjustedTotalPrice - discount.discountAmount)
+                      .clamp(0.0, double.infinity);
+              final quantity = (item.quantity ?? 0).toDouble();
+              adjustedUnitPrice =
+                  quantity > 0 ? discountedTotal / quantity : discountedTotal;
+              adjustedTotalPrice = discountedTotal;
+            }
+
             // Calculer les valeurs pour les colonnes
             final carton = item.carton ?? 0;
             final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
@@ -1659,7 +1769,8 @@ class InvoiceService {
 
           // Remise par ligne
           if (options.enableLineDiscount &&
-              options.lineDiscountValue != null) ...[
+              options.lineDiscountValue != null &&
+              !options.enableSelectiveLineDiscounts) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
               padding:
@@ -1703,6 +1814,99 @@ class InvoiceService {
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
+                ],
+              ),
+            ),
+          ],
+
+          // Remises sélectives par ligne
+          if (options.enableSelectiveLineDiscounts &&
+              options.selectiveLineDiscounts.isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        'Remises par ligne (sélectives)',
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.normal,
+                        ),
+                      ),
+                      pw.SizedBox(width: 10),
+                      pw.Text(
+                        '-${currencyFormat.format(options.selectiveLineDiscounts.values.fold<double>(0.0, (sum, d) => sum + d.discountAmount))}',
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          color: PdfColors.grey700,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 6),
+                  ...options.selectiveLineDiscounts.values.map((discount) {
+                    Items? foundItem;
+
+                    // Rechercher d'abord dans filteredItems, sinon dans achats
+                    if (filteredItems != null && filteredItems.isNotEmpty) {
+                      try {
+                        foundItem = filteredItems.firstWhere(
+                          (item) => item.id == discount.itemId,
+                        );
+                      } catch (_) {
+                        // Pas trouvé, on continue
+                      }
+                    }
+
+                    if (foundItem == null) {
+                      for (final achat in achats) {
+                        final items = achat.items;
+                        if (items == null) continue;
+                        try {
+                          foundItem = items.firstWhere(
+                            (item) => item.id == discount.itemId,
+                          );
+                          break;
+                        } catch (_) {
+                          // Continuer la recherche
+                        }
+                      }
+                    }
+
+                    final itemLabel =
+                        foundItem?.description ?? 'Article ${discount.itemId}';
+
+                    return pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            color: PdfColors.grey700,
+                            fontWeight: pw.FontWeight.normal,
+                          ),
+                        ),
+                        pw.SizedBox(width: 10),
+                        pw.Text(
+                          currencyFormat.format(discount.discountAmount),
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            color: PdfColors.grey700,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
                 ],
               ),
             ),

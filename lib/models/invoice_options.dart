@@ -35,6 +35,10 @@ class InvoiceOptions {
   final bool enableSelectiveFeeMargins;
   final Map<String, SelectiveFeeMargin> selectiveFeeMargins;
 
+  // Remises sélectives par ligne
+  final bool enableSelectiveLineDiscounts;
+  final Map<int, SelectiveLineDiscount> selectiveLineDiscounts;
+
   // Validation
   static const double maxPercentage = 100.0;
   static const double minPercentage = 0.0;
@@ -63,6 +67,8 @@ class InvoiceOptions {
     this.selectiveItemMargins = const {},
     this.enableSelectiveFeeMargins = false,
     this.selectiveFeeMargins = const {},
+    this.enableSelectiveLineDiscounts = false,
+    this.selectiveLineDiscounts = const {},
   });
 
   /// Copie avec modifications
@@ -88,6 +94,8 @@ class InvoiceOptions {
     Map<int, SelectiveItemMargin>? selectiveItemMargins,
     bool? enableSelectiveFeeMargins,
     Map<String, SelectiveFeeMargin>? selectiveFeeMargins,
+    bool? enableSelectiveLineDiscounts,
+    Map<int, SelectiveLineDiscount>? selectiveLineDiscounts,
   }) {
     return InvoiceOptions(
       enableLineMargin: enableLineMargin ?? this.enableLineMargin,
@@ -113,6 +121,10 @@ class InvoiceOptions {
       enableSelectiveFeeMargins:
           enableSelectiveFeeMargins ?? this.enableSelectiveFeeMargins,
       selectiveFeeMargins: selectiveFeeMargins ?? this.selectiveFeeMargins,
+      enableSelectiveLineDiscounts:
+          enableSelectiveLineDiscounts ?? this.enableSelectiveLineDiscounts,
+      selectiveLineDiscounts:
+          selectiveLineDiscounts ?? this.selectiveLineDiscounts,
     );
   }
 
@@ -217,32 +229,45 @@ class InvoiceOptions {
   double calculateTotal(double subtotal) {
     double total = subtotal;
 
-    // Marge par ligne
-    if (enableLineMargin && lineMarginValue != null) {
+    // Marge par ligne (seulement si aucune marge sélective n'est activée)
+    double totalAfterLineMargin = subtotal;
+    if (enableLineMargin &&
+        lineMarginValue != null &&
+        !enableSelectiveItemMargins) {
       if (lineMarginType == MarginType.percentage) {
-        total += (subtotal * lineMarginValue! / 100);
+        totalAfterLineMargin += (subtotal * lineMarginValue! / 100);
       } else {
-        total += lineMarginValue!;
+        totalAfterLineMargin += lineMarginValue!;
       }
+    } else {
+      // Si marges sélectives activées, le totalAfterLineMargin reste égal au subtotal
+      // (les marges sélectives sont déjà incluses dans le subtotal passé)
+      totalAfterLineMargin = subtotal;
     }
+    total = totalAfterLineMargin;
 
-    // Remise par ligne
+    // Remise par ligne (appliquée après la marge par ligne, comme dans MarginCalculationService)
+    double totalAfterLineDiscount = totalAfterLineMargin;
     if (enableLineDiscount && lineDiscountValue != null) {
       if (lineDiscountType == DiscountType.percentage) {
-        total -= (total * lineDiscountValue! / 100);
+        totalAfterLineDiscount -=
+            (totalAfterLineMargin * lineDiscountValue! / 100);
       } else {
-        total -= lineDiscountValue!;
+        totalAfterLineDiscount -= lineDiscountValue!;
       }
     }
+    total = totalAfterLineDiscount;
 
-    // Remise globale
+    // Remise globale (appliquée après la remise par ligne, comme dans MarginCalculationService)
+    double totalAfterDiscount = totalAfterLineDiscount;
     if (enableDiscount && discountValue != null) {
       if (discountType == DiscountType.percentage) {
-        total -= (total * discountValue! / 100);
+        totalAfterDiscount -= (totalAfterLineDiscount * discountValue! / 100);
       } else {
-        total -= discountValue!;
+        totalAfterDiscount -= discountValue!;
       }
     }
+    total = totalAfterDiscount;
 
     // Frais additionnels
     if (enableAdditionalFees) {
@@ -266,7 +291,7 @@ class InvoiceOptions {
       }
     }
 
-    // Marge globale (appliquée en dernier)
+    // Marge globale (appliquée en dernier, toujours sur le total)
     if (enableGlobalMargin && globalMarginValue != null) {
       if (globalMarginType == MarginType.percentage) {
         total += (total * globalMarginValue! / 100);
@@ -306,6 +331,10 @@ class InvoiceOptions {
       'selectiveFeeMargins': selectiveFeeMargins.map(
         (key, value) => MapEntry(key, value.toJson()),
       ),
+      'enableSelectiveLineDiscounts': enableSelectiveLineDiscounts,
+      'selectiveLineDiscounts': selectiveLineDiscounts.map(
+        (key, value) => MapEntry(key.toString(), value.toJson()),
+      ),
     };
   }
 
@@ -331,6 +360,19 @@ class InvoiceOptions {
         (key, value) => MapEntry(
           key,
           SelectiveFeeMargin.fromJson(value as Map<String, dynamic>),
+        ),
+      );
+    }
+
+    // Parser les remises sélectives par ligne
+    Map<int, SelectiveLineDiscount> lineDiscounts = {};
+    if (json['selectiveLineDiscounts'] != null) {
+      final discountsMap =
+          json['selectiveLineDiscounts'] as Map<String, dynamic>;
+      lineDiscounts = discountsMap.map(
+        (key, value) => MapEntry(
+          int.parse(key),
+          SelectiveLineDiscount.fromJson(value as Map<String, dynamic>),
         ),
       );
     }
@@ -375,6 +417,9 @@ class InvoiceOptions {
       selectiveItemMargins: itemMargins,
       enableSelectiveFeeMargins: json['enableSelectiveFeeMargins'] ?? false,
       selectiveFeeMargins: feeMargins,
+      enableSelectiveLineDiscounts:
+          json['enableSelectiveLineDiscounts'] ?? false,
+      selectiveLineDiscounts: lineDiscounts,
     );
   }
 

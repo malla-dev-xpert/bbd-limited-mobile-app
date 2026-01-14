@@ -11,12 +11,14 @@ class MarginCalculationService {
   /// [options] : Options de facturation (incluant les marges sélectives)
   /// [selectiveItemMargins] : Map des marges par article (itemId -> SelectiveItemMargin)
   /// [selectiveFeeMargins] : Map des marges par frais (feeId -> SelectiveFeeMargin)
+  /// [selectiveLineDiscounts] : Map des remises par article (itemId -> SelectiveLineDiscount)
   static SelectiveMarginCalculationResult calculateWithSelectiveMargins({
     required double subtotal,
     required List<Items> items,
     required InvoiceOptions options,
     Map<int, SelectiveItemMargin> selectiveItemMargins = const {},
     Map<String, SelectiveFeeMargin> selectiveFeeMargins = const {},
+    Map<int, SelectiveLineDiscount> selectiveLineDiscounts = const {},
   }) {
     // Calculer le sous-total avec les marges sur articles sélectionnés
     double subtotalAfterItemMargins = subtotal;
@@ -46,15 +48,35 @@ class MarginCalculationService {
       }
     }
 
-    // Remise par ligne (appliquée après la marge par ligne)
-    double totalAfterLineDiscount = totalAfterLineMargin;
-    if (options.enableLineDiscount && options.lineDiscountValue != null) {
+    // Calculer le sous-total avec les remises sélectives sur articles sélectionnés
+    double subtotalAfterItemDiscounts = totalAfterLineMargin;
+    double totalItemDiscounts = 0.0;
+
+    for (final item in items) {
+      if (item.id != null && selectiveLineDiscounts.containsKey(item.id)) {
+        final discount = selectiveLineDiscounts[item.id]!;
+        totalItemDiscounts += discount.discountAmount;
+        subtotalAfterItemDiscounts -= discount.discountAmount;
+      }
+    }
+
+    // IMPORTANT: Si des remises sélectives sont activées, ne pas appliquer la remise par ligne globale
+    // La remise par ligne globale est remplacée par les remises sélectives
+
+    // Remise par ligne globale (seulement si aucune remise sélective n'est activée)
+    double totalAfterLineDiscount = subtotalAfterItemDiscounts;
+    if (options.enableLineDiscount &&
+        options.lineDiscountValue != null &&
+        !options.enableSelectiveLineDiscounts) {
       if (options.lineDiscountType == DiscountType.percentage) {
         totalAfterLineDiscount -=
             (totalAfterLineMargin * options.lineDiscountValue! / 100);
       } else {
         totalAfterLineDiscount -= options.lineDiscountValue!;
       }
+    } else {
+      // Si remises sélectives activées, utiliser le total après remises sélectives
+      totalAfterLineDiscount = subtotalAfterItemDiscounts;
     }
 
     // Remise globale (si activée)
@@ -63,7 +85,7 @@ class MarginCalculationService {
       if (options.discountType == DiscountType.percentage) {
         totalAfterDiscount -=
             (totalAfterLineDiscount * options.discountValue! / 100);
-    } else {
+      } else {
         totalAfterDiscount -= options.discountValue!;
       }
     }
