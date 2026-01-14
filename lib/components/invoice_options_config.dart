@@ -78,6 +78,62 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     // Suppression des listeners automatiques pour éviter les mises à jour pendant la frappe
   }
 
+  /// Parse un montant en tolérant espaces et virgules
+  double? _parseAmount(String? value) {
+    if (value == null) return null;
+    final normalized = value.replaceAll(RegExp(r'[\s\u00A0]'), '');
+    if (normalized.isEmpty) return null;
+    return double.tryParse(normalized.replaceAll(',', '.'));
+  }
+
+  /// Propager valeur/type vers les marges sélectives déjà créées
+  InvoiceOptions _syncSelectiveItemMargins(
+    InvoiceOptions options, {
+    double? value,
+    MarginType? type,
+  }) {
+    if (!options.enableSelectiveItemMargins ||
+        options.selectiveItemMargins.isEmpty) {
+      return options;
+    }
+
+    final updatedMargins = options.selectiveItemMargins.map(
+      (id, margin) => MapEntry(
+        id,
+        margin.copyWith(
+          value: value ?? margin.value,
+          type: type ?? margin.type,
+        ),
+      ),
+    );
+
+    return options.copyWith(selectiveItemMargins: updatedMargins);
+  }
+
+  /// Propager valeur/type vers les remises sélectives déjà créées
+  InvoiceOptions _syncSelectiveLineDiscounts(
+    InvoiceOptions options, {
+    double? value,
+    DiscountType? type,
+  }) {
+    if (!options.enableSelectiveLineDiscounts ||
+        options.selectiveLineDiscounts.isEmpty) {
+      return options;
+    }
+
+    final updatedDiscounts = options.selectiveLineDiscounts.map(
+      (id, discount) => MapEntry(
+        id,
+        discount.copyWith(
+          value: value ?? discount.value,
+          type: type ?? discount.type,
+        ),
+      ),
+    );
+
+    return options.copyWith(selectiveLineDiscounts: updatedDiscounts);
+  }
+
   @override
   void dispose() {
     _lineMarginController.dispose();
@@ -107,16 +163,26 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
   void _handleNumericInput({
     required String value,
     required InvoiceOptions Function(double? parsedValue) buildOptions,
+    InvoiceOptions Function(InvoiceOptions current, double? parsedValue)?
+        afterBuild,
   }) {
+    final parsedValue = _parseAmount(value);
+
     if (value.isEmpty) {
-      _updateOptions(buildOptions(null), fromTextInput: true);
+      final base = buildOptions(null);
+      _updateOptions(
+        afterBuild != null ? afterBuild(base, null) : base,
+        fromTextInput: true,
+      );
       return;
     }
 
-    final normalizedValue = value.replaceAll(',', '.');
-    final parsedValue = double.tryParse(normalizedValue);
     if (parsedValue != null) {
-      _updateOptions(buildOptions(parsedValue), fromTextInput: true);
+      final base = buildOptions(parsedValue);
+      _updateOptions(
+        afterBuild != null ? afterBuild(base, parsedValue) : base,
+        fromTextInput: true,
+      );
     }
   }
 
@@ -449,12 +515,14 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                               value: value,
                               buildOptions: (parsed) =>
                                   _options.copyWith(lineMarginValue: parsed),
+                              afterBuild: (current, parsed) =>
+                                  _syncSelectiveItemMargins(current,
+                                      value: parsed ?? 0.0),
                             );
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Requis';
-                            final amount =
-                                double.tryParse(value.replaceAll(',', '.'));
+                            final amount = _parseAmount(value);
                             if (amount == null || amount < 0)
                               return 'Doit être positif';
                             if (_options.lineMarginType ==
@@ -528,8 +596,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
-                        final amount =
-                            double.tryParse(value.replaceAll(',', '.'));
+                        final amount = _parseAmount(value);
                         if (amount == null || amount < 0)
                           return 'Doit être positif';
                         if (_options.globalMarginType ==
@@ -636,10 +703,15 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           : 'Montant fixe',
                       onChanged: (type) {
                         if (type != null) {
-                          _updateOptions(_options.copyWith(
-                            lineDiscountType: type,
-                            lineDiscountValue: _options.lineDiscountValue,
-                          ));
+                          _updateOptions(
+                            _syncSelectiveLineDiscounts(
+                              _options.copyWith(
+                                lineDiscountType: type,
+                                lineDiscountValue: _options.lineDiscountValue,
+                              ),
+                              type: type,
+                            ),
+                          );
                         }
                       },
                     ),
@@ -667,12 +739,14 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                               value: value,
                               buildOptions: (parsed) =>
                                   _options.copyWith(lineDiscountValue: parsed),
+                              afterBuild: (current, parsed) =>
+                                  _syncSelectiveLineDiscounts(current,
+                                      value: parsed ?? 0.0),
                             );
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Requis';
-                            final amount =
-                                double.tryParse(value.replaceAll(',', '.'));
+                            final amount = _parseAmount(value);
                             if (amount == null || amount < 0)
                               return 'Doit être positif';
                             if (_options.lineDiscountType ==
@@ -743,8 +817,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
-                        final discount =
-                            double.tryParse(value.replaceAll(',', '.'));
+                        final discount = _parseAmount(value);
                         if (discount == null || discount < 0)
                           return 'Doit être positif';
                         if (_options.discountType == DiscountType.percentage &&
@@ -821,8 +894,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
-                        final amount =
-                            double.tryParse(value.replaceAll(',', '.'));
+                        final amount = _parseAmount(value);
                         if (amount == null || amount < 0)
                           return 'Doit être positif';
                         if (_options.storageFeeType ==
@@ -1174,10 +1246,15 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               type == MarginType.percentage ? 'Pourcentage' : 'Montant fixe',
           onChanged: (type) {
             if (type != null) {
-              _updateOptions(_options.copyWith(
-                lineMarginType: type,
-                lineMarginValue: _options.lineMarginValue,
-              ));
+              _updateOptions(
+                _syncSelectiveItemMargins(
+                  _options.copyWith(
+                    lineMarginType: type,
+                    lineMarginValue: _options.lineMarginValue,
+                  ),
+                  type: type,
+                ),
+              );
             }
           },
         ),
@@ -1196,11 +1273,13 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               value: value,
               buildOptions: (parsed) =>
                   _options.copyWith(lineMarginValue: parsed),
+              afterBuild: (current, parsed) =>
+                  _syncSelectiveItemMargins(current, value: parsed ?? 0.0),
             );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
-            final amount = double.tryParse(value.replaceAll(',', '.'));
+            final amount = _parseAmount(value);
             if (amount == null || amount < 0) return 'Doit être positif';
             if (_options.lineMarginType == MarginType.percentage &&
                 amount > 100) {
@@ -1251,7 +1330,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
-            final amount = double.tryParse(value.replaceAll(',', '.'));
+            final amount = _parseAmount(value);
             if (amount == null || amount < 0) return 'Doit être positif';
             if (_options.globalMarginType == MarginType.percentage &&
                 amount > 100) {
@@ -1276,10 +1355,15 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               type == DiscountType.percentage ? 'Pourcentage' : 'Montant fixe',
           onChanged: (type) {
             if (type != null) {
-              _updateOptions(_options.copyWith(
-                lineDiscountType: type,
-                lineDiscountValue: _options.lineDiscountValue,
-              ));
+              _updateOptions(
+                _syncSelectiveLineDiscounts(
+                  _options.copyWith(
+                    lineDiscountType: type,
+                    lineDiscountValue: _options.lineDiscountValue,
+                  ),
+                  type: type,
+                ),
+              );
             }
           },
         ),
@@ -1298,11 +1382,13 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               value: value,
               buildOptions: (parsed) =>
                   _options.copyWith(lineDiscountValue: parsed),
+              afterBuild: (current, parsed) =>
+                  _syncSelectiveLineDiscounts(current, value: parsed ?? 0.0),
             );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
-            final amount = double.tryParse(value.replaceAll(',', '.'));
+            final amount = _parseAmount(value);
             if (amount == null || amount < 0) return 'Doit être positif';
             if (_options.lineDiscountType == DiscountType.percentage &&
                 amount > 100) {
@@ -1351,7 +1437,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
-            final discount = double.tryParse(value.replaceAll(',', '.'));
+            final discount = _parseAmount(value);
             if (discount == null || discount < 0) return 'Doit être positif';
             if (_options.discountType == DiscountType.percentage &&
                 discount > 100) {
@@ -1402,7 +1488,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
-            final amount = double.tryParse(value.replaceAll(',', '.'));
+            final amount = _parseAmount(value);
             if (amount == null || amount < 0) return 'Doit être positif';
             if (_options.storageFeeType == StorageFeeType.percentage &&
                 amount > 100) {

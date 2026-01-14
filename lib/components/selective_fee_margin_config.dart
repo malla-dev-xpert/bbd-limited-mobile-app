@@ -38,6 +38,13 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
     _initializeSelectedFees();
   }
 
+  double? _parseAmount(String? value) {
+    if (value == null) return null;
+    final normalized = value.replaceAll(RegExp(r'[\s\u00A0]'), '');
+    if (normalized.isEmpty) return null;
+    return double.tryParse(normalized.replaceAll(',', '.'));
+  }
+
   void _initializeSelectedFees() {
     // Frais d'entreposage
     if (_options.enableStorageFees && _options.storageFeeAmount != null) {
@@ -88,7 +95,7 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
         final type = _marginTypes[entry.key] ?? MarginType.percentage;
 
         if (controller != null) {
-          final value = double.tryParse(controller.text);
+          final value = _parseAmount(controller.text);
           if (value != null && value >= 0) {
             String feeName;
             double originalAmount;
@@ -350,7 +357,7 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                                         return localizations
                                             .translate('required_field');
                                       }
-                                      final amount = double.tryParse(value);
+                                      final amount = _parseAmount(value);
                                       if (amount == null || amount < 0) {
                                         return localizations
                                             .translate('invalid_amount');
@@ -374,7 +381,7 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                                       true) ...[
                                     Builder(
                                       builder: (context) {
-                                        final value = double.tryParse(
+                                        final value = _parseAmount(
                                             _marginControllers[feeId]!.text);
                                         if (value == null)
                                           return const SizedBox.shrink();
