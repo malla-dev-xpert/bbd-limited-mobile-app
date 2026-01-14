@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
@@ -33,6 +32,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
   final _globalMarginController = TextEditingController();
   final _discountController = TextEditingController();
   final _storageFeeController = TextEditingController();
+  bool _shouldSkipNextControllerSync = false;
 
   @override
   void initState() {
@@ -47,28 +47,31 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.options != widget.options) {
       _options = widget.options;
-      _updateControllersFromOptions();
+      if (_shouldSkipNextControllerSync) {
+        _shouldSkipNextControllerSync = false;
+      } else {
+        _updateControllersFromOptions();
+      }
     }
   }
 
   void _initializeControllers() {
-    _lineMarginController.text = _options.lineMarginValue?.toString() ?? '10';
-    _lineDiscountController.text =
-        _options.lineDiscountValue?.toString() ?? '5';
-    _globalMarginController.text =
-        _options.globalMarginValue?.toString() ?? '15';
-    _discountController.text = _options.discountValue?.toString() ?? '5';
-    _storageFeeController.text = _options.storageFeeAmount?.toString() ?? '25';
+    _updateControllersFromOptions();
   }
 
   void _updateControllersFromOptions() {
-    _lineMarginController.text = _options.lineMarginValue?.toString() ?? '10';
-    _lineDiscountController.text =
-        _options.lineDiscountValue?.toString() ?? '5';
-    _globalMarginController.text =
-        _options.globalMarginValue?.toString() ?? '15';
-    _discountController.text = _options.discountValue?.toString() ?? '5';
-    _storageFeeController.text = _options.storageFeeAmount?.toString() ?? '25';
+    _setControllerText(_lineMarginController, _options.lineMarginValue);
+    _setControllerText(_lineDiscountController, _options.lineDiscountValue);
+    _setControllerText(_globalMarginController, _options.globalMarginValue);
+    _setControllerText(_discountController, _options.discountValue);
+    _setControllerText(_storageFeeController, _options.storageFeeAmount);
+  }
+
+  void _setControllerText(TextEditingController controller, double? value) {
+    final newText = value?.toString() ?? '';
+    if (controller.text != newText) {
+      controller.text = newText;
+    }
   }
 
   void _addControllersListeners() {
@@ -85,12 +88,36 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     super.dispose();
   }
 
-  void _updateOptions(InvoiceOptions newOptions) {
+  void _updateOptions(
+    InvoiceOptions newOptions, {
+    bool fromTextInput = false,
+  }) {
+    if (fromTextInput) {
+      _shouldSkipNextControllerSync = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _shouldSkipNextControllerSync = false;
+      });
+    }
     setState(() {
       _options = newOptions;
     });
-    _updateControllersFromOptions();
     widget.onOptionsChanged(newOptions);
+  }
+
+  void _handleNumericInput({
+    required String value,
+    required InvoiceOptions Function(double? parsedValue) buildOptions,
+  }) {
+    if (value.isEmpty) {
+      _updateOptions(buildOptions(null), fromTextInput: true);
+      return;
+    }
+
+    final normalizedValue = value.replaceAll(',', '.');
+    final parsedValue = double.tryParse(normalizedValue);
+    if (parsedValue != null) {
+      _updateOptions(buildOptions(parsedValue), fromTextInput: true);
+    }
   }
 
   /// Désactive la marge par ligne et remet sa valeur à null
@@ -342,7 +369,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         newMargins[itemId] = SelectiveItemMargin(
                           itemId: itemId,
                           type: _options.lineMarginType,
-                          value: _options.lineMarginValue ?? 10.0,
+                          value: _options.lineMarginValue ?? 0.0,
                           originalUnitPrice: item.unitPrice ?? 0.0,
                           originalTotalPrice: item.totalPrice ?? 0.0,
                         );
@@ -350,7 +377,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                     }
                     _updateOptions(_options.copyWith(
                       enableLineMargin: true,
-                      lineMarginValue: _options.lineMarginValue ?? 10.0,
+                      lineMarginValue: _options.lineMarginValue,
                       enableSelectiveItemMargins: true,
                       selectiveItemMargins: {
                         ..._options.selectiveItemMargins,
@@ -366,7 +393,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                   // Pas d'items disponibles, activer simplement la marge par ligne globale
                   _updateOptions(_options.copyWith(
                     enableLineMargin: true,
-                    lineMarginValue: _options.lineMarginValue ?? 10.0,
+                    lineMarginValue: _options.lineMarginValue,
                   ));
                 } else {
                   // Quand on désactive, utiliser la méthode helper pour forcer la remise à null
@@ -375,7 +402,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                   } else {
                     _updateOptions(_options.copyWith(
                       enableLineMargin: true,
-                      lineMarginValue: _options.lineMarginValue ?? 10.0,
+                      lineMarginValue: _options.lineMarginValue,
                     ));
                   }
                 }
@@ -394,8 +421,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         if (type != null) {
                           _updateOptions(_options.copyWith(
                             lineMarginType: type,
-                            lineMarginValue:
-                                type == MarginType.percentage ? 10.0 : 5.0,
+                            lineMarginValue: _options.lineMarginValue,
                           ));
                         }
                       },
@@ -418,28 +444,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                       decimal: true)
                                   : const TextInputType.numberWithOptions(
                                       decimal: true),
-                          inputFormatters:
-                              _options.lineMarginType == MarginType.percentage
-                                  ? [
-                                      FilteringTextInputFormatter.allow(
-                                          RegExp(r'^\d+\.?\d{0,2}'))
-                                    ]
-                                  : [
-                                      FilteringTextInputFormatter.allow(
-                                          RegExp(r'^\d+\.?\d{0,2}'))
-                                    ],
                           onChanged: (value) {
-                            if (value.isEmpty) {
-                              _updateOptions(
-                                  _options.copyWith(lineMarginValue: null));
-                              return;
-                            }
-                            final amount =
-                                double.tryParse(value.replaceAll(',', '.'));
-                            if (amount != null) {
-                              _updateOptions(
-                                  _options.copyWith(lineMarginValue: amount));
-                            }
+                            _handleNumericInput(
+                              value: value,
+                              buildOptions: (parsed) =>
+                                  _options.copyWith(lineMarginValue: parsed),
+                            );
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Requis';
@@ -476,7 +486,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                 } else {
                   _updateOptions(_options.copyWith(
                     enableGlobalMargin: true,
-                    globalMarginValue: _options.globalMarginValue ?? 15.0,
+                    globalMarginValue: _options.globalMarginValue,
                   ));
                 }
               },
@@ -494,8 +504,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         if (type != null) {
                           _updateOptions(_options.copyWith(
                             globalMarginType: type,
-                            globalMarginValue:
-                                type == MarginType.percentage ? 15.0 : 10.0,
+                            globalMarginValue: _options.globalMarginValue,
                           ));
                         }
                       },
@@ -510,22 +519,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                           : Icons.attach_money,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d+\.?\d{0,2}'))
-                      ],
                       onChanged: (value) {
-                        if (value.isEmpty) {
-                          _updateOptions(
-                              _options.copyWith(globalMarginValue: null));
-                          return;
-                        }
-                        final amount =
-                            double.tryParse(value.replaceAll(',', '.'));
-                        if (amount != null) {
-                          _updateOptions(
-                              _options.copyWith(globalMarginValue: amount));
-                        }
+                        _handleNumericInput(
+                          value: value,
+                          buildOptions: (parsed) =>
+                              _options.copyWith(globalMarginValue: parsed),
+                        );
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
@@ -587,7 +586,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         newDiscounts[itemId] = SelectiveLineDiscount(
                           itemId: itemId,
                           type: _options.lineDiscountType,
-                          value: _options.lineDiscountValue ?? 5.0,
+                          value: _options.lineDiscountValue ?? 0.0,
                           originalUnitPrice: item.unitPrice ?? 0.0,
                           originalTotalPrice: item.totalPrice ?? 0.0,
                         );
@@ -595,7 +594,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                     }
                     _updateOptions(_options.copyWith(
                       enableLineDiscount: true,
-                      lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                      lineDiscountValue: _options.lineDiscountValue ?? 0.0,
                       enableSelectiveLineDiscounts: true,
                       selectiveLineDiscounts: {
                         ..._options.selectiveLineDiscounts,
@@ -611,7 +610,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                   // Pas d'items disponibles, activer simplement la remise par ligne globale
                   _updateOptions(_options.copyWith(
                     enableLineDiscount: true,
-                    lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                    lineDiscountValue: _options.lineDiscountValue ?? 0.0,
                   ));
                 } else {
                   // Quand on désactive, utiliser la méthode helper pour forcer la remise à null
@@ -620,7 +619,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                   } else {
                     _updateOptions(_options.copyWith(
                       enableLineDiscount: true,
-                      lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                      lineDiscountValue: _options.lineDiscountValue ?? 0.0,
                     ));
                   }
                 }
@@ -639,8 +638,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         if (type != null) {
                           _updateOptions(_options.copyWith(
                             lineDiscountType: type,
-                            lineDiscountValue:
-                                type == DiscountType.percentage ? 5.0 : 10.0,
+                            lineDiscountValue: _options.lineDiscountValue,
                           ));
                         }
                       },
@@ -664,28 +662,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                                   decimal: true)
                               : const TextInputType.numberWithOptions(
                                   decimal: true),
-                          inputFormatters: _options.lineDiscountType ==
-                                  DiscountType.percentage
-                              ? [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d+\.?\d{0,2}'))
-                                ]
-                              : [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d+\.?\d{0,2}'))
-                                ],
                           onChanged: (value) {
-                            if (value.isEmpty) {
-                              _updateOptions(
-                                  _options.copyWith(lineDiscountValue: null));
-                              return;
-                            }
-                            final amount =
-                                double.tryParse(value.replaceAll(',', '.'));
-                            if (amount != null) {
-                              _updateOptions(
-                                  _options.copyWith(lineDiscountValue: amount));
-                            }
+                            _handleNumericInput(
+                              value: value,
+                              buildOptions: (parsed) =>
+                                  _options.copyWith(lineDiscountValue: parsed),
+                            );
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) return 'Requis';
@@ -721,7 +703,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                 } else {
                   _updateOptions(_options.copyWith(
                     enableDiscount: true,
-                    discountValue: _options.discountValue ?? 5.0,
+                    discountValue: _options.discountValue,
                   ));
                 }
               },
@@ -739,8 +721,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         if (type != null) {
                           _updateOptions(_options.copyWith(
                             discountType: type,
-                            discountValue:
-                                type == DiscountType.percentage ? 5.0 : 10.0,
+                            discountValue: _options.discountValue,
                           ));
                         }
                       },
@@ -753,22 +734,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       icon: Icons.discount,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d+\.?\d{0,2}'))
-                      ],
                       onChanged: (value) {
-                        if (value.isEmpty) {
-                          _updateOptions(
-                              _options.copyWith(discountValue: null));
-                          return;
-                        }
-                        final amount =
-                            double.tryParse(value.replaceAll(',', '.'));
-                        if (amount != null) {
-                          _updateOptions(
-                              _options.copyWith(discountValue: amount));
-                        }
+                        _handleNumericInput(
+                          value: value,
+                          buildOptions: (parsed) =>
+                              _options.copyWith(discountValue: parsed),
+                        );
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
@@ -808,7 +779,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                 } else {
                   _updateOptions(_options.copyWith(
                     enableStorageFees: true,
-                    storageFeeAmount: _options.storageFeeAmount ?? 25.0,
+                    storageFeeAmount: _options.storageFeeAmount,
                   ));
                 }
               },
@@ -826,14 +797,9 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                         if (type != null) {
                           _updateOptions(_options.copyWith(
                             storageFeeType: type,
-                            storageFeeAmount:
-                                type == StorageFeeType.percentage ? 2.0 : 25.0,
+                            storageFeeAmount: _options.storageFeeAmount,
                           ));
-                          if (type == StorageFeeType.percentage) {
-                            _storageFeeController.text = '2';
-                          } else {
-                            _storageFeeController.text = '25';
-                          }
+                          _storageFeeController.text = '';
                         }
                       },
                     ),
@@ -846,22 +812,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                       icon: Icons.warehouse,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d+\.?\d{0,2}'))
-                      ],
                       onChanged: (value) {
-                        if (value.isEmpty) {
-                          _updateOptions(
-                              _options.copyWith(storageFeeAmount: null));
-                          return;
-                        }
-                        final amount =
-                            double.tryParse(value.replaceAll(',', '.'));
-                        if (amount != null) {
-                          _updateOptions(
-                              _options.copyWith(storageFeeAmount: amount));
-                        }
+                        _handleNumericInput(
+                          value: value,
+                          buildOptions: (parsed) =>
+                              _options.copyWith(storageFeeAmount: parsed),
+                        );
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Requis';
@@ -922,7 +878,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                     newMargins[itemId] = SelectiveItemMargin(
                       itemId: itemId,
                       type: _options.lineMarginType,
-                      value: _options.lineMarginValue ?? 10.0,
+                      value: _options.lineMarginValue ?? 0.0,
                       originalUnitPrice: item.unitPrice ?? 0.0,
                       originalTotalPrice: item.totalPrice ?? 0.0,
                     );
@@ -930,7 +886,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                 }
                 _updateOptions(_options.copyWith(
                   enableLineMargin: true,
-                  lineMarginValue: _options.lineMarginValue ?? 10.0,
+                  lineMarginValue: _options.lineMarginValue ?? 0.0,
                   enableSelectiveItemMargins: true,
                   selectiveItemMargins: {
                     ..._options.selectiveItemMargins,
@@ -945,7 +901,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               // Pas d'items disponibles, activer simplement la marge par ligne globale
               _updateOptions(_options.copyWith(
                 enableLineMargin: true,
-                lineMarginValue: _options.lineMarginValue ?? 10.0,
+                lineMarginValue: _options.lineMarginValue ?? 0.0,
               ));
             } else {
               // Quand on désactive, utiliser la méthode helper pour forcer la remise à null
@@ -954,7 +910,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               } else {
                 _updateOptions(_options.copyWith(
                   enableLineMargin: true,
-                  lineMarginValue: _options.lineMarginValue ?? 10.0,
+                  lineMarginValue: _options.lineMarginValue ?? 0.0,
                 ));
               }
             }
@@ -978,7 +934,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             } else {
               _updateOptions(_options.copyWith(
                 enableGlobalMargin: true,
-                globalMarginValue: _options.globalMarginValue ?? 15.0,
+                globalMarginValue: _options.globalMarginValue ?? 0.0,
               ));
             }
           },
@@ -1022,7 +978,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                     newDiscounts[itemId] = SelectiveLineDiscount(
                       itemId: itemId,
                       type: _options.lineDiscountType,
-                      value: _options.lineDiscountValue ?? 5.0,
+                      value: _options.lineDiscountValue ?? 0.0,
                       originalUnitPrice: item.unitPrice ?? 0.0,
                       originalTotalPrice: item.totalPrice ?? 0.0,
                     );
@@ -1030,7 +986,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
                 }
                 _updateOptions(_options.copyWith(
                   enableLineDiscount: true,
-                  lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                  lineDiscountValue: _options.lineDiscountValue,
                   enableSelectiveLineDiscounts: true,
                   selectiveLineDiscounts: {
                     ..._options.selectiveLineDiscounts,
@@ -1045,7 +1001,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               // Pas d'items disponibles, activer simplement la remise par ligne globale
               _updateOptions(_options.copyWith(
                 enableLineDiscount: true,
-                lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                lineDiscountValue: _options.lineDiscountValue,
               ));
             } else {
               // Quand on désactive, utiliser la méthode helper pour forcer la remise à null
@@ -1054,7 +1010,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               } else {
                 _updateOptions(_options.copyWith(
                   enableLineDiscount: true,
-                  lineDiscountValue: _options.lineDiscountValue ?? 5.0,
+                  lineDiscountValue: _options.lineDiscountValue,
                 ));
               }
             }
@@ -1079,7 +1035,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             } else {
               _updateOptions(_options.copyWith(
                 enableDiscount: true,
-                discountValue: _options.discountValue ?? 5.0,
+                discountValue: _options.discountValue ?? 0.0,
               ));
             }
           },
@@ -1101,7 +1057,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             } else {
               _updateOptions(_options.copyWith(
                 enableStorageFees: true,
-                storageFeeAmount: _options.storageFeeAmount ?? 25.0,
+                storageFeeAmount: _options.storageFeeAmount ?? 0.0,
               ));
             }
           },
@@ -1220,7 +1176,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (type != null) {
               _updateOptions(_options.copyWith(
                 lineMarginType: type,
-                lineMarginValue: type == MarginType.percentage ? 10.0 : 5.0,
+                lineMarginValue: _options.lineMarginValue,
               ));
             }
           },
@@ -1235,18 +1191,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               ? Icons.percent
               : Icons.attach_money,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-          ],
           onChanged: (value) {
-            if (value.isEmpty) {
-              _updateOptions(_options.copyWith(lineMarginValue: null));
-              return;
-            }
-            final amount = double.tryParse(value.replaceAll(',', '.'));
-            if (amount != null) {
-              _updateOptions(_options.copyWith(lineMarginValue: amount));
-            }
+            _handleNumericInput(
+              value: value,
+              buildOptions: (parsed) =>
+                  _options.copyWith(lineMarginValue: parsed),
+            );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
@@ -1277,7 +1227,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (type != null) {
               _updateOptions(_options.copyWith(
                 globalMarginType: type,
-                globalMarginValue: type == MarginType.percentage ? 15.0 : 10.0,
+                globalMarginValue: 0.0,
               ));
             }
           },
@@ -1292,18 +1242,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               ? Icons.percent
               : Icons.attach_money,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-          ],
           onChanged: (value) {
-            if (value.isEmpty) {
-              _updateOptions(_options.copyWith(globalMarginValue: null));
-              return;
-            }
-            final amount = double.tryParse(value.replaceAll(',', '.'));
-            if (amount != null) {
-              _updateOptions(_options.copyWith(globalMarginValue: amount));
-            }
+            _handleNumericInput(
+              value: value,
+              buildOptions: (parsed) =>
+                  _options.copyWith(globalMarginValue: parsed),
+            );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
@@ -1334,7 +1278,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (type != null) {
               _updateOptions(_options.copyWith(
                 lineDiscountType: type,
-                lineDiscountValue: type == DiscountType.percentage ? 5.0 : 10.0,
+                lineDiscountValue: _options.lineDiscountValue,
               ));
             }
           },
@@ -1349,18 +1293,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               ? Icons.percent
               : Icons.attach_money,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-          ],
           onChanged: (value) {
-            if (value.isEmpty) {
-              _updateOptions(_options.copyWith(lineDiscountValue: null));
-              return;
-            }
-            final amount = double.tryParse(value.replaceAll(',', '.'));
-            if (amount != null) {
-              _updateOptions(_options.copyWith(lineDiscountValue: amount));
-            }
+            _handleNumericInput(
+              value: value,
+              buildOptions: (parsed) =>
+                  _options.copyWith(lineDiscountValue: parsed),
+            );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
@@ -1391,7 +1329,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (type != null) {
               _updateOptions(_options.copyWith(
                 discountType: type,
-                discountValue: type == DiscountType.percentage ? 5.0 : 10.0,
+                discountValue: _options.discountValue,
               ));
             }
           },
@@ -1404,18 +1342,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               : 'Montant de remise (${widget.currencySymbol})',
           icon: Icons.discount,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-          ],
           onChanged: (value) {
-            if (value.isEmpty) {
-              _updateOptions(_options.copyWith(discountValue: null));
-              return;
-            }
-            final amount = double.tryParse(value.replaceAll(',', '.'));
-            if (amount != null) {
-              _updateOptions(_options.copyWith(discountValue: amount));
-            }
+            _handleNumericInput(
+              value: value,
+              buildOptions: (parsed) =>
+                  _options.copyWith(discountValue: parsed),
+            );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
@@ -1447,14 +1379,9 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
             if (type != null) {
               _updateOptions(_options.copyWith(
                 storageFeeType: type,
-                storageFeeAmount:
-                    type == StorageFeeType.percentage ? 2.0 : 25.0,
+                storageFeeAmount: _options.storageFeeAmount,
               ));
-              if (type == StorageFeeType.percentage) {
-                _storageFeeController.text = '2';
-              } else {
-                _storageFeeController.text = '25';
-              }
+              _storageFeeController.text = '';
             }
           },
         ),
@@ -1466,18 +1393,12 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               : 'Montant (${widget.currencySymbol})',
           icon: Icons.warehouse,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-          ],
           onChanged: (value) {
-            if (value.isEmpty) {
-              _updateOptions(_options.copyWith(storageFeeAmount: null));
-              return;
-            }
-            final amount = double.tryParse(value.replaceAll(',', '.'));
-            if (amount != null) {
-              _updateOptions(_options.copyWith(storageFeeAmount: amount));
-            }
+            _handleNumericInput(
+              value: value,
+              buildOptions: (parsed) =>
+                  _options.copyWith(storageFeeAmount: parsed),
+            );
           },
           validator: (value) {
             if (value == null || value.isEmpty) return 'Requis';
