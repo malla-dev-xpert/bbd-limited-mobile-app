@@ -806,7 +806,8 @@ class InvoiceService {
           ],
 
           // Remise par ligne
-          if (options.enableLineDiscount && options.lineDiscountValue != null) ...[
+          if (options.enableLineDiscount &&
+              options.lineDiscountValue != null) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
               padding:
@@ -816,8 +817,8 @@ class InvoiceService {
                 children: [
                   pw.Text(
                     options.lineDiscountType == DiscountType.percentage
-                        ? 'Remise par ligne ({value}%)'
-                            .replaceAll('{value}', '${options.lineDiscountValue}')
+                        ? 'Remise par ligne ({value}%)'.replaceAll(
+                            '{value}', '${options.lineDiscountValue}')
                         : 'Remise par ligne (${options.lineDiscountValue} ${currencyFormat.currencySymbol})',
                     style: pw.TextStyle(
                       fontSize: 16,
@@ -827,24 +828,23 @@ class InvoiceService {
                   ),
                   pw.SizedBox(width: 10),
                   pw.Text(
-                    '-${currencyFormat.format(
-                        options.lineDiscountType == DiscountType.percentage
-                            ? (() {
-                                // Calculer le total après la marge par ligne
-                                double totalAfterLineMargin = sousTotal;
-                                if (options.enableLineMargin &&
-                                    options.lineMarginValue != null &&
-                                    !options.enableSelectiveItemMargins) {
-                                  if (options.lineMarginType == MarginType.percentage) {
-                                    totalAfterLineMargin +=
-                                        (sousTotal * options.lineMarginValue! / 100);
-                                  } else {
-                                    totalAfterLineMargin += options.lineMarginValue!;
-                                  }
-                                }
-                                return totalAfterLineMargin * options.lineDiscountValue! / 100;
-                              })()
-                            : options.lineDiscountValue!)}',
+                    '-${currencyFormat.format(options.lineDiscountType == DiscountType.percentage ? (() {
+                        // Calculer le total après la marge par ligne
+                        double totalAfterLineMargin = sousTotal;
+                        if (options.enableLineMargin &&
+                            options.lineMarginValue != null &&
+                            !options.enableSelectiveItemMargins) {
+                          if (options.lineMarginType == MarginType.percentage) {
+                            totalAfterLineMargin +=
+                                (sousTotal * options.lineMarginValue! / 100);
+                          } else {
+                            totalAfterLineMargin += options.lineMarginValue!;
+                          }
+                        }
+                        return totalAfterLineMargin *
+                            options.lineDiscountValue! /
+                            100;
+                      })() : options.lineDiscountValue!)}',
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,
@@ -1444,6 +1444,17 @@ class InvoiceService {
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8),
                       textAlign: pw.TextAlign.center)),
+              if (isProforma) ...[
+                pw.SizedBox(width: 3),
+                pw.Container(
+                    width: 60,
+                    child: pw.Text(printLocalizations.translate('pdf_status'),
+                        style: pw.TextStyle(
+                            color: PdfColor.fromHex('#1A1E49'),
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 8),
+                        textAlign: pw.TextAlign.center)),
+              ],
             ],
           ),
         ),
@@ -1546,6 +1557,15 @@ class InvoiceService {
                       child: pw.Text(currencyFormat.format(adjustedTotalPrice),
                           style: const pw.TextStyle(fontSize: 8),
                           textAlign: pw.TextAlign.center)),
+                  if (isProforma) ...[
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 60,
+                        child: pw.Text(
+                            printLocalizations.translateStatus(item.status),
+                            style: const pw.TextStyle(fontSize: 8),
+                            textAlign: pw.TextAlign.center)),
+                  ],
                 ],
               ),
             );
@@ -1638,7 +1658,8 @@ class InvoiceService {
           ],
 
           // Remise par ligne
-          if (options.enableLineDiscount && options.lineDiscountValue != null) ...[
+          if (options.enableLineDiscount &&
+              options.lineDiscountValue != null) ...[
             pw.SizedBox(height: 8),
             pw.Padding(
               padding:
@@ -1648,8 +1669,8 @@ class InvoiceService {
                 children: [
                   pw.Text(
                     options.lineDiscountType == DiscountType.percentage
-                        ? 'Remise par ligne ({value}%)'
-                            .replaceAll('{value}', '${options.lineDiscountValue}')
+                        ? 'Remise par ligne ({value}%)'.replaceAll(
+                            '{value}', '${options.lineDiscountValue}')
                         : 'Remise par ligne (${options.lineDiscountValue} ${currencyFormat.currencySymbol})',
                     style: pw.TextStyle(
                       fontSize: 16,
@@ -1659,24 +1680,23 @@ class InvoiceService {
                   ),
                   pw.SizedBox(width: 10),
                   pw.Text(
-                    '-${currencyFormat.format(
-                        options.lineDiscountType == DiscountType.percentage
-                            ? (() {
-                                // Calculer le total après la marge par ligne
-                                double totalAfterLineMargin = sousTotal;
-                                if (options.enableLineMargin &&
-                                    options.lineMarginValue != null &&
-                                    !options.enableSelectiveItemMargins) {
-                                  if (options.lineMarginType == MarginType.percentage) {
-                                    totalAfterLineMargin +=
-                                        (sousTotal * options.lineMarginValue! / 100);
-                                  } else {
-                                    totalAfterLineMargin += options.lineMarginValue!;
-                                  }
-                                }
-                                return totalAfterLineMargin * options.lineDiscountValue! / 100;
-                              })()
-                            : options.lineDiscountValue!)}',
+                    '-${currencyFormat.format(options.lineDiscountType == DiscountType.percentage ? (() {
+                        // Calculer le total après la marge par ligne
+                        double totalAfterLineMargin = sousTotal;
+                        if (options.enableLineMargin &&
+                            options.lineMarginValue != null &&
+                            !options.enableSelectiveItemMargins) {
+                          if (options.lineMarginType == MarginType.percentage) {
+                            totalAfterLineMargin +=
+                                (sousTotal * options.lineMarginValue! / 100);
+                          } else {
+                            totalAfterLineMargin += options.lineMarginValue!;
+                          }
+                        }
+                        return totalAfterLineMargin *
+                            options.lineDiscountValue! /
+                            100;
+                      })() : options.lineDiscountValue!)}',
                     style: pw.TextStyle(
                       fontSize: 16,
                       color: PdfColors.grey700,

@@ -765,7 +765,7 @@ class PartnerPrintService {
                 ),
                 pw.SizedBox(height: 4),
                 pw.Text(
-                    '${printLocalizations.translate('pdf_status')}: ${package.status?.name ?? '-'}'),
+                    '${printLocalizations.translate('pdf_status')}: ${printLocalizations.translateStatus(package.status)}'),
                 pw.SizedBox(height: 8),
                 if (package.items != null && package.items!.isNotEmpty) ...[
                   // En-tête du tableau avec le même style que les produits

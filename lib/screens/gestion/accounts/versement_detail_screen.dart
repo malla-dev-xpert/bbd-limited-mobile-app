@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildDetailRow.dart';
@@ -26,10 +28,6 @@ import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
-import 'package:bbd_limited/components/invoice/invoice_widget.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'dart:typed_data';
-import 'package:bbd_limited/core/services/margin_calculation_service.dart';
 
 class VersementDetailScreen extends StatefulWidget {
   final Versement versement;
@@ -45,8 +43,7 @@ class VersementDetailScreen extends StatefulWidget {
   State<VersementDetailScreen> createState() => _VersementDetailScreenState();
 }
 
-class _VersementDetailScreenState extends State<VersementDetailScreen>
-    with SingleTickerProviderStateMixin {
+class _VersementDetailScreenState extends State<VersementDetailScreen> {
   final DeviseServices _deviseServices = DeviseServices();
   final AchatServices _achatServices = AchatServices();
   bool isLoading = false;
@@ -56,8 +53,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
   late NumberFormat currencyFormat;
   bool showOperationButtons = false;
   late List<Achat> _achats = [];
-  late TabController _tabController;
-  Uint8List? _logoBytes;
 
   // Options de facturation configurables
   InvoiceOptions _invoiceOptions = const InvoiceOptions();
@@ -65,29 +60,15 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     currencyFormat = NumberFormat.currency(
       locale: 'fr_FR',
       symbol: widget.versement.deviseCode ?? 'CNY',
     );
     _achats = List.from(widget.versement.achats ?? []);
-    _loadLogo();
-  }
-
-  Future<void> _loadLogo() async {
-    try {
-      final data = await rootBundle.load('assets/images/logo.png');
-      setState(() {
-        _logoBytes = data.buffer.asUint8List();
-      });
-    } catch (e) {
-      print('Erreur lors du chargement du logo: $e');
-    }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -102,11 +83,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
   Future<void> _loadVersementData() async {
     try {
       // Appeler l'API pour récupérer les données mises à jour du versement
-      // Pour l'instant, on va simplement déclencher le callback parent pour recharger
       widget.onVersementUpdated?.call();
     } catch (e) {
-      // Gérer l'erreur si nécessaire
-      print('Erreur lors du rechargement du versement: $e');
+      log('Erreur lors du rechargement du versement: $e');
     }
   }
 
@@ -114,75 +93,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
     setState(() {
       _invoiceOptions = newOptions;
     });
-  }
-
-  // Calculer les totaux pour la prévisualisation
-  Map<String, double> _calculateTotals() {
-    double sousTotal = 0;
-    final allItems = <Items>[];
-    for (final achat in _achats) {
-      for (final item in (achat.items ?? [])) {
-        if (_invoiceOptions.enableSelectiveItemMargins &&
-            _invoiceOptions.selectiveItemMargins.isNotEmpty) {
-          if (item.id == null ||
-              !_invoiceOptions.selectiveItemMargins.containsKey(item.id)) {
-            continue;
-          }
-        }
-        allItems.add(item);
-        if (_invoiceOptions.enableSelectiveItemMargins &&
-            item.id != null &&
-            _invoiceOptions.selectiveItemMargins.containsKey(item.id)) {
-          final margin = _invoiceOptions.selectiveItemMargins[item.id]!;
-          sousTotal += margin.adjustedTotalPrice;
-        } else {
-          sousTotal += item.totalPrice ?? 0;
-        }
-      }
-    }
-
-    final calculationResult =
-        MarginCalculationService.calculateWithSelectiveMargins(
-      subtotal: sousTotal,
-      items: allItems,
-      options: _invoiceOptions,
-      selectiveItemMargins: _invoiceOptions.selectiveItemMargins,
-      selectiveFeeMargins: _invoiceOptions.selectiveFeeMargins,
-    );
-
-    return {
-      'subtotal': sousTotal,
-      'total': calculationResult.finalTotal,
-    };
-  }
-
-  // Construire la vue de prévisualisation
-  Widget _buildPreviewTab() {
-    final totals = _calculateTotals();
-    final allItems = <Items>[];
-    for (final achat in _achats) {
-      allItems.addAll(achat.items ?? []);
-    }
-    final invoiceItems = convertItemsToInvoiceItems(allItems);
-
-    return InvoiceWidget(
-      invoiceNumber: widget.versement.reference ?? '',
-      invoiceDate: widget.versement.createdAt ?? DateTime.now(),
-      customerName: widget.versement.partnerName,
-      customerPhone: widget.versement.partnerPhone,
-      customerRegisterNo: widget.versement.partnerId?.toString(),
-      commissionnaireName: widget.versement.commissionnaireName,
-      commissionnairePhone: widget.versement.commissionnairePhone,
-      currency: widget.versement.deviseCode ?? 'CNY',
-      exchangeRate: 1.0,
-      montantVerser: widget.versement.montantVerser,
-      montantRestant: widget.versement.montantRestant,
-      logoBytes: _logoBytes,
-      items: invoiceItems,
-      subtotal: totals['subtotal']!,
-      total: totals['total']!,
-      isVersement: true,
-    );
   }
 
   // Ajout d'une fonction utilitaire pour calculer les totaux de factures
@@ -1204,24 +1114,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                TabBar(
-                  controller: _tabController,
-                  labelColor: const Color(0xFF1A1E49),
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: const Color(0xFF1A1E49),
-                  tabs: const [
-                    Tab(text: 'Détails'),
-                    Tab(text: 'Prévisualisation'),
-                  ],
-                ),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // Vue Détails (actuelle)
-                      SingleChildScrollView(
+          : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -1236,13 +1129,6 @@ class _VersementDetailScreenState extends State<VersementDetailScreen>
                   ],
                 ),
               ),
-                      ),
-                      // Vue Prévisualisation
-                      _buildPreviewTab(),
-                    ],
-                  ),
-                ),
-              ],
             ),
       floatingActionButton: Stack(
         alignment: Alignment.bottomRight,

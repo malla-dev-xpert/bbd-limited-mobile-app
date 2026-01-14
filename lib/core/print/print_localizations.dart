@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/print/print_language.dart';
+import 'package:bbd_limited/core/enums/status.dart';
 
 /// Service centralisé pour gérer les traductions d'impression
 /// Permet de choisir dynamiquement la langue d'impression indépendamment de la langue de l'application
@@ -50,6 +51,15 @@ class PrintLocalizations {
   /// Traduit une clé de traduction
   String translate(String key) {
     return _localizedStrings[key] ?? key;
+  }
+
+  /// Traduit un statut de colis dans la langue de la facture
+  /// Retourne une traduction professionnelle et lisible
+  String translateStatus(Status? status) {
+    if (status == null) {
+      return translate('package_status_unknown');
+    }
+    return translate(status.getTranslationKey());
   }
 
   /// Crée une instance de PrintLocalizations avec la langue par défaut
