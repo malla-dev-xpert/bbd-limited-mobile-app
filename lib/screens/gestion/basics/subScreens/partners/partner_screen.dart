@@ -145,7 +145,13 @@ class _PartnerScreenState extends State<PartnerScreen> {
               const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print_sharp),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
@@ -265,7 +271,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
         onSubmit: (updatedPartner) async {
           try {
             setState(() => _isLoading = true);
-            
+
             // Récupérer l'utilisateur connecté
             final user = await authService.getUserInfo();
             if (user == null) {
