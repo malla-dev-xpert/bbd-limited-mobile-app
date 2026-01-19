@@ -1277,4 +1277,640 @@ class PartnerPrintService {
       ),
     );
   }
+
+  /// Génère un PDF avec le solde de tous les clients
+  static Future<Uint8List> buildCustomersBalancePdfBytes(
+    List<Partner> partners, {
+    DateTimeRange? dateRange,
+    required PrintLocalizations printLocalizations,
+  }) async {
+    final pdf = pw.Document();
+
+    final logoBytes = await rootBundle
+        .load('assets/images/logo.png')
+        .then((data) => data.buffer.asUint8List());
+
+    // Calculer les données selon la règle métier
+    final customerData = _calculateCustomerBalances(partners, dateRange);
+
+    // Formater la période
+    String periodText = '';
+    if (dateRange != null) {
+      final startMonth =
+          DateFormat('MMM yyyy', 'en_US').format(dateRange.start);
+      final endMonth = DateFormat('MMM yyyy', 'en_US').format(dateRange.end);
+      periodText = '$startMonth - $endMonth';
+    } else {
+      // Si pas de période, utiliser l'année en cours
+      final now = DateTime.now();
+      final startMonth =
+          DateFormat('MMM yyyy', 'en_US').format(DateTime(now.year, 1, 1));
+      final endMonth =
+          DateFormat('MMM yyyy', 'en_US').format(DateTime(now.year, 12, 31));
+      periodText = '$startMonth - $endMonth';
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        margin: pw.EdgeInsets.zero,
+        build: (context) => [
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildCustomersBalanceHeader(
+                    logoBytes, printLocalizations, periodText),
+                pw.SizedBox(height: 24),
+                _buildCustomersBalanceTable(customerData, printLocalizations),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  static List<CustomerBalanceData> _calculateCustomerBalances(
+      List<Partner> partners, DateTimeRange? dateRange) {
+    return partners.where((partner) {
+      // Filtrer les clients avec balance = 0 ou null
+      final balance = partner.balance ?? 0.0;
+      if (balance == 0.0) return false;
+
+      // Si une période est spécifiée, filtrer selon les versements dans cette période
+      if (dateRange != null) {
+        final versements = partner.versements ?? [];
+        // Vérifier si le client a des versements dans la période
+        final hasVersementsInPeriod = versements.any((versement) {
+          final versementDate = versement.createdAt ?? DateTime(1900);
+          return versementDate
+                  .isAfter(dateRange.start.subtract(const Duration(days: 1))) &&
+              versementDate
+                  .isBefore(dateRange.end.add(const Duration(days: 1)));
+        });
+        return hasVersementsInPeriod;
+      }
+
+      // Si pas de période (all data), inclure tous les clients avec balance != 0
+      return true;
+    }).map((partner) {
+      final balance = partner.balance ?? 0.0;
+      final customerName = '${partner.firstName} ${partner.lastName}'.trim();
+
+      if (balance < 0) {
+        return CustomerBalanceData(
+          customerName: customerName,
+          receivable: balance.abs(),
+          payable: 0.0,
+        );
+      } else {
+        return CustomerBalanceData(
+          customerName: customerName,
+          receivable: 0.0,
+          payable: balance,
+        );
+      }
+    }).toList();
+  }
+
+  /// Construit l'en-tête pour le PDF des soldes clients
+  static pw.Widget _buildCustomersBalanceHeader(
+    Uint8List logoBytes,
+    PrintLocalizations printLocalizations,
+    String periodText,
+  ) {
+    final font = printLocalizations.language.code == 'zh'
+        ? pw.Font.courier()
+        : pw.Font.helvetica();
+    final fallbackFonts = [pw.Font.times(), pw.Font.courier()];
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        // En-tête avec gradient et logo circulaire (même style que les factures)
+        pw.Container(
+          decoration: pw.BoxDecoration(
+            borderRadius: pw.BorderRadius.circular(2.5),
+            border:
+                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
+          ),
+          child: pw.Row(
+            children: [
+              // Section gauche avec fond dégradé bleu clair
+              pw.Expanded(
+                child: pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: const pw.BoxDecoration(
+                    gradient: pw.LinearGradient(
+                      begin: pw.Alignment.centerLeft,
+                      end: pw.Alignment.centerRight,
+                      colors: [
+                        PdfColors.blue100, // Bleu clair
+                        PdfColors.white, // Blanc
+                      ],
+                    ),
+                    borderRadius: pw.BorderRadius.only(
+                      topLeft: pw.Radius.circular(2.5),
+                      bottomLeft: pw.Radius.circular(2.5),
+                    ),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // Nom de l'entreprise
+                      pw.Text(
+                        'BBD LIMITED',
+                        style: pw.TextStyle(
+                          fontSize: 28,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColor.fromHex('#1A1E49'),
+                          letterSpacing: 1.2,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Adresse
+                      pw.Text(
+                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                      ),
+                      pw.Text(
+                        '中国浙江省义乌市赵宅3区10栋1单元102',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                      ),
+
+                      // Ligne séparatrice bleu foncé
+                      pw.SizedBox(height: 10),
+                      pw.Container(
+                        height: 1.5,
+                        color: PdfColor.fromHex('#1A1E49'),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Informations de contact
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          // Téléphones à gauche
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'Contact :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  '0086 18678859834',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.Text(
+                                  '0086 13503032311',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.Text(
+                                  '0086 (579)85568522',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Email à droite
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'EMail :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'bbd@bbdcompany.com',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Ligne verticale séparatrice
+              pw.Container(
+                width: 1.5,
+                color: PdfColor.fromHex('#1A1E49'),
+              ),
+
+              // Section droite avec logo sur fond blanc
+              pw.Container(
+                width: 100,
+                padding: const pw.EdgeInsets.all(12),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.white,
+                  borderRadius: pw.BorderRadius.only(
+                    topRight: pw.Radius.circular(2.5),
+                    bottomRight: pw.Radius.circular(2.5),
+                  ),
+                ),
+                child: pw.Center(
+                  child: pw.Container(
+                    width: 75,
+                    height: 75,
+                    decoration: pw.BoxDecoration(
+                      color: PdfColor.fromHex('#1A1E49'),
+                      shape: pw.BoxShape.circle,
+                    ),
+                    child: pw.Center(
+                      child: pw.Image(
+                        pw.MemoryImage(logoBytes),
+                        width: 70,
+                        height: 70,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        pw.SizedBox(height: 20),
+
+        // Titre du rapport
+        pw.Text(
+          printLocalizations.translate('pdf_customers_balance'),
+          style: pw.TextStyle(
+            fontSize: 24,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+            letterSpacing: 1.2,
+            font: font,
+            fontFallback: fallbackFonts,
+          ),
+        ),
+        pw.SizedBox(height: 8),
+
+        // Période
+        pw.Text(
+          periodText,
+          style: pw.TextStyle(
+            fontSize: 12,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+            font: font,
+            fontFallback: fallbackFonts,
+          ),
+        ),
+        pw.SizedBox(height: 16),
+
+        // Ligne séparatrice
+        pw.Container(
+          height: 1,
+          color: PdfColor.fromHex('#1A1E49'),
+        ),
+      ],
+    );
+  }
+
+  /// Construit le tableau des soldes clients
+  static pw.Widget _buildCustomersBalanceTable(
+    List<CustomerBalanceData> customerData,
+    PrintLocalizations printLocalizations,
+  ) {
+    final font = printLocalizations.language.code == 'zh'
+        ? pw.Font.courier()
+        : pw.Font.helvetica();
+    final fallbackFonts = [pw.Font.times(), pw.Font.courier()];
+
+    // Calculer les totaux
+    double totalReceivable =
+        customerData.fold(0.0, (sum, data) => sum + data.receivable);
+    double totalPayable =
+        customerData.fold(0.0, (sum, data) => sum + data.payable);
+    double difference = totalReceivable - totalPayable;
+
+    return pw.Table(
+      border: pw.TableBorder.all(
+        color: PdfColors.black,
+        width: 1,
+      ),
+      columnWidths: {
+        0: const pw.FlexColumnWidth(0.5), // Numéro de ligne
+        1: const pw.FlexColumnWidth(3), // Nom du client
+        2: const pw.FlexColumnWidth(2), // Recevable
+        3: const pw.FlexColumnWidth(2), // Payable
+      },
+      children: [
+        // En-tête du tableau
+        pw.TableRow(
+          decoration: pw.BoxDecoration(
+            color: PdfColor.fromHex('#E3F2FD'), // Bleu clair
+          ),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '', // Colonne numéro vide dans l'en-tête
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_customer_name'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_receivable_dr'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_payable_cr'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        // Lignes de données
+        ...customerData.asMap().entries.map((entry) {
+          final index = entry.key;
+          final data = entry.value;
+          final isEven = index % 2 == 0;
+
+          return pw.TableRow(
+            decoration: pw.BoxDecoration(
+              color: isEven ? PdfColors.white : PdfColors.grey100,
+            ),
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  '${index + 1}',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.left,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  data.customerName,
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.left,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  data.receivable > 0
+                      ? _currencyFormat.format(data.receivable)
+                      : '',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  data.payable > 0 ? _currencyFormat.format(data.payable) : '',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+            ],
+          );
+        }),
+        // Ligne Total
+        pw.TableRow(
+          decoration: pw.BoxDecoration(
+            color:
+                PdfColor.fromHex('#F5F5F5'), // Gris clair pour la ligne Total
+          ),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_total'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                _currencyFormat.format(totalReceivable),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                _currencyFormat.format(totalPayable),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        // Ligne Différence finale (Équilibrer)
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(
+            color: PdfColors.lightBlue,
+          ),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_balance_difference'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                _currencyFormat.format(difference),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Classe pour représenter les données de balance d'un client
+class CustomerBalanceData {
+  final String customerName;
+  final double receivable;
+  final double payable;
+
+  CustomerBalanceData({
+    required this.customerName,
+    required this.receivable,
+    required this.payable,
+  });
 }

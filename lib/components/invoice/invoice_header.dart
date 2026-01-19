@@ -115,7 +115,7 @@ class InvoiceHeader extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       // Informations de contact
-                      Row(
+                      const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Téléphones à gauche
@@ -123,7 +123,7 @@ class InvoiceHeader extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Contact :',
                                   style: TextStyle(
                                     fontSize: 11,
@@ -131,22 +131,22 @@ class InvoiceHeader extends StatelessWidget {
                                     color: Colors.black87,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                const Text(
+                                SizedBox(height: 4),
+                                Text(
                                   '0086 18678859834',
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: Colors.black87,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   '0086 13503032311',
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: Colors.black87,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   '0086 (579)85568522',
                                   style: TextStyle(
                                     fontSize: 10,
@@ -162,7 +162,7 @@ class InvoiceHeader extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'EMail :',
                                   style: TextStyle(
                                     fontSize: 11,
@@ -170,8 +170,8 @@ class InvoiceHeader extends StatelessWidget {
                                     color: Colors.black87,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                const Text(
+                                SizedBox(height: 4),
+                                Text(
                                   'bbd@bbdcompany.com',
                                   style: TextStyle(
                                     fontSize: 10,
@@ -210,7 +210,7 @@ class InvoiceHeader extends StatelessWidget {
                       ? Container(
                           width: 90,
                           height: 90,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: primaryColor,
                             shape: BoxShape.circle,
                           ),
@@ -224,7 +224,7 @@ class InvoiceHeader extends StatelessWidget {
                       : Container(
                           width: 90,
                           height: 90,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: primaryColor,
                             shape: BoxShape.circle,
                           ),
