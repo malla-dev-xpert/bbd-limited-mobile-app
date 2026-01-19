@@ -9,6 +9,7 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 
 class PartnerPrintService {
   static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
@@ -1333,6 +1334,639 @@ class PartnerPrintService {
     return pdf.save();
   }
 
+  /// Génère un PDF avec le solde de tous les fournisseurs
+  static Future<Uint8List> buildSuppliersBalancePdfBytes(
+    List<Partner> suppliers, {
+    DateTimeRange? dateRange,
+    required PrintLocalizations printLocalizations,
+  }) async {
+    final pdf = pw.Document();
+
+    final logoBytes = await rootBundle
+        .load('assets/images/logo.png')
+        .then((data) => data.buffer.asUint8List());
+
+    // Calculer les données selon la règle métier
+    final supplierData = await _calculateSupplierBalances(suppliers, dateRange);
+
+    // Formater la période
+    String periodText = '';
+    if (dateRange != null) {
+      final startMonth =
+          DateFormat('MMM yyyy', 'en_US').format(dateRange.start);
+      final endMonth = DateFormat('MMM yyyy', 'en_US').format(dateRange.end);
+      periodText = '$startMonth - $endMonth';
+    } else {
+      // Si pas de période, utiliser l'année en cours
+      final now = DateTime.now();
+      final startMonth =
+          DateFormat('MMM yyyy', 'en_US').format(DateTime(now.year, 1, 1));
+      final endMonth =
+          DateFormat('MMM yyyy', 'en_US').format(DateTime(now.year, 12, 31));
+      periodText = '$startMonth - $endMonth';
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        margin: pw.EdgeInsets.zero,
+        build: (context) => [
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildSuppliersBalanceHeader(
+                    logoBytes, printLocalizations, periodText),
+                pw.SizedBox(height: 24),
+                _buildSuppliersBalanceTable(supplierData, printLocalizations),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  /// Calcule les balances des fournisseurs selon leurs items payés
+  static Future<List<SupplierBalanceData>> _calculateSupplierBalances(
+      List<Partner> suppliers, DateTimeRange? dateRange) async {
+    final itemServices = ItemServices();
+    final List<SupplierBalanceData> supplierDataList = [];
+
+    for (final supplier in suppliers) {
+      try {
+        final items = await itemServices.findItemsBySupplier(supplier.id);
+
+        // Filtrer les items selon la période si nécessaire
+        List<Items> filteredItems = items;
+        if (dateRange != null) {
+          filteredItems = items.where((item) {
+            final paymentDate = item.paiementDate;
+            if (paymentDate == null) {
+              // Si pas de date de paiement, inclure si l'item existe dans la période
+              // On peut utiliser la date de création de l'achat ou autre
+              return true; // Pour l'instant, on inclut tous les items sans date
+            }
+            return paymentDate.isAfter(
+                    dateRange.start.subtract(const Duration(days: 1))) &&
+                paymentDate
+                    .isBefore(dateRange.end.add(const Duration(days: 1)));
+          }).toList();
+        }
+
+        // Calculer les totaux
+        double totalPaid = filteredItems.fold(
+            0.0, (sum, item) => sum + (item.amountPaid ?? 0.0));
+        double totalToPay = filteredItems.fold(
+            0.0, (sum, item) => sum + (item.totalPrice ?? 0.0));
+        double remainingToPay = totalToPay - totalPaid;
+
+        // Ne pas inclure les fournisseurs avec aucun montant
+        if (totalPaid > 0 || remainingToPay > 0) {
+          supplierDataList.add(SupplierBalanceData(
+            supplierName: '${supplier.firstName} ${supplier.lastName}'.trim(),
+            totalPaid: totalPaid,
+            remainingToPay: remainingToPay > 0 ? remainingToPay : 0.0,
+          ));
+        }
+      } catch (e) {
+        // En cas d'erreur, ignorer ce fournisseur
+        print('Error loading items for supplier ${supplier.id}: $e');
+      }
+    }
+
+    return supplierDataList;
+  }
+
+  /// Construit l'en-tête pour le PDF des soldes fournisseurs
+  static pw.Widget _buildSuppliersBalanceHeader(
+    Uint8List logoBytes,
+    PrintLocalizations printLocalizations,
+    String periodText,
+  ) {
+    final font = printLocalizations.language.code == 'zh'
+        ? pw.Font.courier()
+        : pw.Font.helvetica();
+    final fallbackFonts = [pw.Font.times(), pw.Font.courier()];
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        // En-tête avec gradient et logo circulaire (même style que les factures)
+        pw.Container(
+          decoration: pw.BoxDecoration(
+            borderRadius: pw.BorderRadius.circular(2.5),
+            border:
+                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
+          ),
+          child: pw.Row(
+            children: [
+              // Section gauche avec fond dégradé bleu clair
+              pw.Expanded(
+                child: pw.Container(
+                  padding: const pw.EdgeInsets.all(16),
+                  decoration: const pw.BoxDecoration(
+                    gradient: pw.LinearGradient(
+                      begin: pw.Alignment.centerLeft,
+                      end: pw.Alignment.centerRight,
+                      colors: [
+                        PdfColors.blue100, // Bleu clair
+                        PdfColors.white, // Blanc
+                      ],
+                    ),
+                    borderRadius: pw.BorderRadius.only(
+                      topLeft: pw.Radius.circular(2.5),
+                      bottomLeft: pw.Radius.circular(2.5),
+                    ),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // Nom de l'entreprise
+                      pw.Text(
+                        'BBD LIMITED',
+                        style: pw.TextStyle(
+                          fontSize: 28,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColor.fromHex('#1A1E49'),
+                          letterSpacing: 1.2,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Adresse
+                      pw.Text(
+                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                      ),
+                      pw.Text(
+                        '中国浙江省义乌市赵宅3区10栋1单元102',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          color: PdfColors.red700,
+                          fontWeight: pw.FontWeight.normal,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                      ),
+
+                      // Ligne séparatrice bleu foncé
+                      pw.SizedBox(height: 10),
+                      pw.Container(
+                        height: 1.5,
+                        color: PdfColor.fromHex('#1A1E49'),
+                      ),
+                      pw.SizedBox(height: 10),
+
+                      // Informations de contact
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          // Téléphones à gauche
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'Contact :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  '0086 18678859834',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.Text(
+                                  '0086 13503032311',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.Text(
+                                  '0086 (579)85568522',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Email à droite
+                          pw.Expanded(
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  'EMail :',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.black,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  'bbd@bbdcompany.com',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    font: font,
+                                    fontFallback: fallbackFonts,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Ligne verticale séparatrice
+              pw.Container(
+                width: 1.5,
+                color: PdfColor.fromHex('#1A1E49'),
+              ),
+
+              // Section droite avec logo sur fond blanc
+              pw.Container(
+                width: 100,
+                padding: const pw.EdgeInsets.all(12),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.white,
+                  borderRadius: pw.BorderRadius.only(
+                    topRight: pw.Radius.circular(2.5),
+                    bottomRight: pw.Radius.circular(2.5),
+                  ),
+                ),
+                child: pw.Center(
+                  child: pw.Container(
+                    width: 75,
+                    height: 75,
+                    decoration: pw.BoxDecoration(
+                      color: PdfColor.fromHex('#1A1E49'),
+                      shape: pw.BoxShape.circle,
+                    ),
+                    child: pw.Center(
+                      child: pw.Image(
+                        pw.MemoryImage(logoBytes),
+                        width: 70,
+                        height: 70,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        pw.SizedBox(height: 20),
+
+        // Titre du rapport
+        pw.Text(
+          printLocalizations.translate('pdf_suppliers_balance'),
+          style: pw.TextStyle(
+            fontSize: 24,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+            letterSpacing: 1.2,
+            font: font,
+            fontFallback: fallbackFonts,
+          ),
+        ),
+        pw.SizedBox(height: 8),
+
+        // Période
+        pw.Text(
+          periodText,
+          style: pw.TextStyle(
+            fontSize: 12,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+            font: font,
+            fontFallback: fallbackFonts,
+          ),
+        ),
+        pw.SizedBox(height: 16),
+
+        // Ligne séparatrice
+        pw.Container(
+          height: 1,
+          color: PdfColor.fromHex('#1A1E49'),
+        ),
+      ],
+    );
+  }
+
+  /// Construit le tableau des soldes fournisseurs
+  static pw.Widget _buildSuppliersBalanceTable(
+    List<SupplierBalanceData> supplierData,
+    PrintLocalizations printLocalizations,
+  ) {
+    final font = printLocalizations.language.code == 'zh'
+        ? pw.Font.courier()
+        : pw.Font.helvetica();
+    final fallbackFonts = [pw.Font.times(), pw.Font.courier()];
+
+    // Calculer les totaux
+    double totalPaid =
+        supplierData.fold(0.0, (sum, data) => sum + data.totalPaid);
+    double totalRemaining =
+        supplierData.fold(0.0, (sum, data) => sum + data.remainingToPay);
+    double difference = totalPaid - totalRemaining;
+
+    return pw.Table(
+      border: pw.TableBorder.all(
+        color: PdfColors.black,
+        width: 1,
+      ),
+      columnWidths: {
+        0: const pw.FlexColumnWidth(0.5), // Numéro de ligne
+        1: const pw.FlexColumnWidth(3), // Nom du fournisseur
+        2: const pw.FlexColumnWidth(2), // Total payé
+        3: const pw.FlexColumnWidth(2), // Reste à payer
+      },
+      children: [
+        // En-tête du tableau
+        pw.TableRow(
+          decoration: pw.BoxDecoration(
+            color: PdfColor.fromHex('#E3F2FD'), // Bleu clair
+          ),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '', // Colonne numéro vide dans l'en-tête
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_supplier_name'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_total_paid'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_remaining_to_pay'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#1A1E49'),
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        // Lignes de données
+        ...supplierData.asMap().entries.map((entry) {
+          final index = entry.key;
+          final data = entry.value;
+          final isEven = index % 2 == 0;
+
+          return pw.TableRow(
+            decoration: pw.BoxDecoration(
+              color: isEven ? PdfColors.white : PdfColors.grey100,
+            ),
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  '${index + 1}',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.left,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  data.supplierName,
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.left,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  data.totalPaid > 0
+                      ? _currencyFormat.format(data.totalPaid)
+                      : '',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(
+                  data.remainingToPay > 0
+                      ? _currencyFormat.format(data.remainingToPay)
+                      : '',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    font: font,
+                    fontFallback: fallbackFonts,
+                  ),
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+            ],
+          );
+        }),
+        // Ligne Total
+        pw.TableRow(
+          decoration: pw.BoxDecoration(
+            color:
+                PdfColor.fromHex('#F5F5F5'), // Gris clair pour la ligne Total
+          ),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_total'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                _currencyFormat.format(totalPaid),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                _currencyFormat.format(totalRemaining),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        // Ligne Différence finale (Équilibrer)
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(
+            color: PdfColors.lightBlue,
+          ),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                printLocalizations.translate('pdf_balance_difference'),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.left,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                _currencyFormat.format(difference),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text(
+                '',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  font: font,
+                  fontFallback: fallbackFonts,
+                ),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   static List<CustomerBalanceData> _calculateCustomerBalances(
       List<Partner> partners, DateTimeRange? dateRange) {
     return partners.where((partner) {
@@ -1912,5 +2546,18 @@ class CustomerBalanceData {
     required this.customerName,
     required this.receivable,
     required this.payable,
+  });
+}
+
+/// Classe pour représenter les données de balance d'un fournisseur
+class SupplierBalanceData {
+  final String supplierName;
+  final double totalPaid; // Total payé (Dr)
+  final double remainingToPay; // Reste à payer (Cr)
+
+  SupplierBalanceData({
+    required this.supplierName,
+    required this.totalPaid,
+    required this.remainingToPay,
   });
 }

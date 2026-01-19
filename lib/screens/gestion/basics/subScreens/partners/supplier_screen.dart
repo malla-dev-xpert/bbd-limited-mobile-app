@@ -9,6 +9,12 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/p
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/supplier_list_items.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/components/print/print_config_page.dart';
+import 'package:bbd_limited/core/print/print_language.dart';
+import 'package:bbd_limited/core/print/print_localizations.dart';
+import 'package:bbd_limited/utils/partner_print_service.dart';
+import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:printing/printing.dart';
 import 'package:flutter/material.dart';
 
 class SupplierScreen extends StatefulWidget {
@@ -33,6 +39,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
   int currentPage = 0;
 
   StreamSubscription<Partner>? _partnerUpdateSubscription;
+  InvoiceOptions _invoiceOptions = const InvoiceOptions();
 
   @override
   void initState() {
@@ -145,6 +152,14 @@ class _SupplierScreenState extends State<SupplierScreen> {
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print_sharp),
+            onPressed: _showPrintOptionsDialog,
+            tooltip: AppLocalizations.of(context)
+                .translate('print_suppliers_balance'),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1A1E49),
@@ -263,7 +278,7 @@ class _SupplierScreenState extends State<SupplierScreen> {
         onSubmit: (updatedSupplier) async {
           try {
             setState(() => _isLoading = true);
-            
+
             // Récupérer l'utilisateur connecté
             final user = await authService.getUserInfo();
             if (user == null) {
@@ -404,5 +419,92 @@ class _SupplierScreenState extends State<SupplierScreen> {
         _filteredSuppliers[filteredIndex] = updatedSupplier;
       }
     });
+  }
+
+  Future<void> _showPrintOptionsDialog() async {
+    if (_filteredSuppliers.isEmpty) {
+      showErrorTopSnackBar(
+        context,
+        AppLocalizations.of(context).translate('no_supplier_found'),
+      );
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrintConfigPage(
+          title:
+              AppLocalizations.of(context).translate('print_suppliers_balance'),
+          previewButtonLabel: AppLocalizations.of(context)
+              .translate('purchase_history_preview_pdf'),
+          initialOptions: _invoiceOptions,
+          currencySymbol: '¥',
+          onOptionsChanged: (options) {
+            setState(() {
+              _invoiceOptions = options;
+            });
+          },
+          onPreview: (result) =>
+              _showPdfPreviewDialog(result.dateRange, result.printLanguage),
+          printOptionsTitle: AppLocalizations.of(context)
+              .translate('purchase_history_invoice_options'),
+          billingOptionsTitle:
+              AppLocalizations.of(context).translate('billing_options'),
+          appliedOptionsLabel: AppLocalizations.of(context)
+              .translate('currently_applied_options'),
+          showDateRange: true,
+          dateSectionTitle:
+              AppLocalizations.of(context).translate('purchase_history_date'),
+          allDataLabel: AppLocalizations.of(context).translate('all_data'),
+          filterByDateLabel:
+              AppLocalizations.of(context).translate('filter_by_date'),
+          selectPeriodPlaceholder:
+              AppLocalizations.of(context).translate('select_period'),
+          showBillingOptions: false,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showPdfPreviewDialog(
+      DateTimeRange? dateRange, PrintLanguage printLanguage) async {
+    try {
+      final printLocalizations = await PrintLocalizations.create(printLanguage);
+      if (!context.mounted) return;
+
+      final pdfBytes = await PartnerPrintService.buildSuppliersBalancePdfBytes(
+        _filteredSuppliers,
+        dateRange: dateRange,
+        printLocalizations: printLocalizations,
+      );
+
+      await showDialog(
+        context: context,
+        builder: (context) {
+          final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+          final heightFactor = isTablet ? 0.8 : 0.6;
+
+          return Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.height * heightFactor,
+              child: PdfPreview(
+                build: (format) => pdfBytes,
+                pdfFileName: 'suppliers_balance.pdf',
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (context.mounted) {
+        showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context).translate('report_generation_error'),
+        );
+        print('Error generating PDF: $e');
+      }
+    }
   }
 }
