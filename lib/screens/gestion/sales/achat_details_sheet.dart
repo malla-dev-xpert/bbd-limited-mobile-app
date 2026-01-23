@@ -76,6 +76,69 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         .replaceAll('.', ',');
   }
 
+  Future<void> _handleDeleteItem(Items item) async {
+    // 1. Demander confirmation à l'utilisateur
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title:
+            Text(AppLocalizations.of(context).translate('delete_item_title')),
+        content: Text(
+            AppLocalizations.of(context).translate('delete_item_confirmation')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(AppLocalizations.of(context).translate('delete')),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      // 2. Appel au service (Assurez-vous d'avoir accès au currentUserId)
+      final itemServices = ItemServices();
+      final authService = AuthService();
+      final user = await authService.getUserInfo();
+      // Note : Remplacez 'currentUserId' par votre variable réelle (ex: authProvider.user.id)
+      final result = await itemServices.deleteItem(
+        itemId: item.id!,
+        userId: user!.id,
+      );
+
+      if (result.isSuccess) {
+        Navigator.of(context).pop(true);
+        // 3. Mise à jour de l'UI
+        setState(() {
+          widget.achat.items?.removeWhere((i) => i.id == item.id);
+        });
+
+        showSuccessTopSnackBar(
+          context,
+          AppLocalizations.of(context).translate('delete_item_success'),
+        );
+      } else {
+        showErrorTopSnackBar(
+          context,
+          result.errorMessage ??
+              AppLocalizations.of(context).translate('delete_item_error'),
+        );
+      }
+    } catch (e) {
+      showErrorTopSnackBar(
+        context,
+        AppLocalizations.of(context).translate('delete_item_error'),
+      );
+    }
+  }
+
   Future<void> confirmArticle(String itemId) async {
     if (isLoading) return;
 
@@ -959,6 +1022,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             foregroundColor: Colors.white,
             icon: Icons.undo_outlined,
             label: AppLocalizations.of(context).translate('reverse'),
+          ),
+          SlidableAction(
+            onPressed: (_) => _handleDeleteItem(item),
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: AppLocalizations.of(context).translate('delete'),
           ),
         ],
       ),

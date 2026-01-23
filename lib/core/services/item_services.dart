@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/core/api/api_result.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:http/http.dart' as http;
@@ -154,6 +155,33 @@ class ItemServices {
         'Erreur lors de la modification de l\'item: ${e.toString()}',
         errorCode: 'INTERNAL_ERROR',
       );
+    }
+  }
+
+  Future<ApiResult<String>> deleteItem({
+    required int itemId,
+    required int userId,
+  }) async {
+    final url = Uri.parse('$baseUrl/items/delete/$itemId?userId=$userId');
+    try {
+      final response =
+          await http.delete(url).timeout(const Duration(seconds: 10));
+
+      // On décode TOUJOURS le JSON, même en cas d'erreur (400, 404, etc.)
+      final jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+      final apiResponse = ApiResponse<String>.fromJson(jsonResponse);
+
+      if (response.statusCode == 200 && (apiResponse.success ?? false)) {
+        return ApiResult.success(apiResponse.message ?? 'Suppression réussie');
+      } else {
+        // On retourne le message d'erreur précis envoyé par le backend (ex: "ITEM_NOT_FOUND")
+        return ApiResult.failure(
+          errorMessage: apiResponse.message ?? 'Erreur lors de la suppression',
+          errorCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      return ApiResult.failure(errorMessage: 'Erreur réseau : $e');
     }
   }
 }
