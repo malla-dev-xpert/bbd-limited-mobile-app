@@ -270,7 +270,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     );
   }
 
-  /// Désactive la marge globale et remet sa valeur à null
+  /// Désactive la FRAIS DE TRAVAIL et remet sa valeur à null
   InvoiceOptions _disableGlobalMargin(InvoiceOptions currentOptions) {
     return InvoiceOptions(
       enableLineMargin: currentOptions.enableLineMargin,
@@ -542,13 +542,13 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
 
             const SizedBox(height: 16),
 
-            // Marge globale
+            // FRAIS DE TRAVAIL
             _buildOptionTile(
-              title: 'Marge globale',
+              title: 'FRAIS DE TRAVAIL',
               subtitle: 'Ajouter une marge sur le total',
               value: _options.enableGlobalMargin,
               onChanged: (value) {
-                // Marge globale : simple toggle, pas de sélection d'articles
+                // FRAIS DE TRAVAIL : simple toggle, pas de sélection d'articles
                 if (value == false) {
                   _updateOptions(_disableGlobalMargin(_options));
                 } else {
@@ -771,7 +771,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
               subtitle: 'Appliquer une remise sur le total',
               value: _options.enableDiscount,
               onChanged: (value) {
-                // Remise globale : simple toggle, pas de sélection d'articles (comme marge globale)
+                // Remise globale : simple toggle, pas de sélection d'articles (comme FRAIS DE TRAVAIL)
                 if (value == false) {
                   _updateOptions(_disableDiscount(_options));
                 } else {
@@ -994,13 +994,13 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
         const SizedBox(height: 16),
 
         _buildMobileOptionCard(
-          title: 'Marge globale',
+          title: 'FRAIS DE TRAVAIL',
           subtitle: 'Ajouter une marge sur le total',
           icon: Icons.trending_up,
           color: Colors.green,
           isEnabled: _options.enableGlobalMargin,
           onToggle: (value) {
-            // Marge globale : simple toggle, pas de sélection d'articles
+            // FRAIS DE TRAVAIL : simple toggle, pas de sélection d'articles
             if (value == false) {
               _updateOptions(_disableGlobalMargin(_options));
             } else {
@@ -1101,7 +1101,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
           color: Colors.orange,
           isEnabled: _options.enableDiscount,
           onToggle: (value) {
-            // Remise globale : simple toggle, pas de sélection d'articles (comme marge globale)
+            // Remise globale : simple toggle, pas de sélection d'articles (comme FRAIS DE TRAVAIL)
             if (value == false) {
               _updateOptions(_disableDiscount(_options));
             } else {
@@ -1292,7 +1292,7 @@ class _InvoiceOptionsConfigState extends State<InvoiceOptionsConfig> {
     );
   }
 
-  /// Configuration marge globale pour mobile
+  /// Configuration FRAIS DE TRAVAIL pour mobile
   Widget _buildGlobalMarginMobileConfig() {
     return Column(
       children: [

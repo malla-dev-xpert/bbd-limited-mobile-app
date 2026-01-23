@@ -74,9 +74,10 @@ class InvoiceHeader extends StatelessWidget {
                         'BBD LIMITED',
                         style: TextStyle(
                           fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                           color: primaryColor,
                           letterSpacing: 1.5,
+                          fontStyle: FontStyle.italic,
                           shadows: [
                             Shadow(
                               offset: Offset(1, 1),
@@ -195,64 +196,11 @@ class InvoiceHeader extends StatelessWidget {
               ),
 
               // Section droite avec logo sur fond blanc
-              Container(
-                width: 120,
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(6),
-                    bottomRight: Radius.circular(6),
-                  ),
-                ),
-                child: Center(
-                  child: logoBytes != null
-                      ? Container(
-                          width: 90,
-                          height: 90,
-                          decoration: const BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: ClipOval(
-                            child: Image.memory(
-                              logoBytes!,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
-                      : Container(
-                          width: 90,
-                          height: 90,
-                          decoration: const BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'BBD',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'BATISON',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Image.memory(
+                  logoBytes!,
+                  fit: BoxFit.cover,
                 ),
               ),
             ],

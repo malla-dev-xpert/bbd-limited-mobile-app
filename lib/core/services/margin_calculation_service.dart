@@ -127,7 +127,7 @@ class MarginCalculationService {
       totalAfterFeeMargins += feeMargin.marginAmount;
     }
 
-    // Marge globale (appliquée en dernier, toujours sur le total)
+    // FRAIS DE TRAVAIL (appliquée en dernier, toujours sur le total)
     double finalTotal = totalAfterFeeMargins;
     if (options.enableGlobalMargin && options.globalMarginValue != null) {
       if (options.globalMarginType == MarginType.percentage) {

@@ -161,6 +161,7 @@ class PartnerPrintService {
                           color: PdfColor.fromHex('#1A1E49'),
                           letterSpacing: 1.2,
                           font: font,
+                          fontStyle: pw.FontStyle.italic,
                           fontFallback: fallbackFonts,
                         ),
                       ),
@@ -285,32 +286,12 @@ class PartnerPrintService {
               ),
 
               // Section droite avec logo sur fond blanc
-              pw.Container(
-                width: 100,
+              pw.Padding(
                 padding: const pw.EdgeInsets.all(12),
-                decoration: const pw.BoxDecoration(
-                  color: PdfColors.white,
-                  borderRadius: pw.BorderRadius.only(
-                    topRight: pw.Radius.circular(2.5),
-                    bottomRight: pw.Radius.circular(2.5),
-                  ),
-                ),
-                child: pw.Center(
-                  child: pw.Container(
-                    width: 75,
-                    height: 75,
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#1A1E49'),
-                      shape: pw.BoxShape.circle,
-                    ),
-                    child: pw.Center(
-                      child: pw.Image(
-                        pw.MemoryImage(logoBytes),
-                        width: 70,
-                        height: 70,
-                      ),
-                    ),
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes),
+                  width: 70,
+                  height: 70,
                 ),
               ),
             ],
@@ -1493,6 +1474,7 @@ class PartnerPrintService {
                           color: PdfColor.fromHex('#1A1E49'),
                           letterSpacing: 1.2,
                           font: font,
+                          fontStyle: pw.FontStyle.italic,
                           fontFallback: fallbackFonts,
                         ),
                       ),
@@ -1617,32 +1599,12 @@ class PartnerPrintService {
               ),
 
               // Section droite avec logo sur fond blanc
-              pw.Container(
-                width: 100,
+              pw.Padding(
                 padding: const pw.EdgeInsets.all(12),
-                decoration: const pw.BoxDecoration(
-                  color: PdfColors.white,
-                  borderRadius: pw.BorderRadius.only(
-                    topRight: pw.Radius.circular(2.5),
-                    bottomRight: pw.Radius.circular(2.5),
-                  ),
-                ),
-                child: pw.Center(
-                  child: pw.Container(
-                    width: 75,
-                    height: 75,
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#1A1E49'),
-                      shape: pw.BoxShape.circle,
-                    ),
-                    child: pw.Center(
-                      child: pw.Image(
-                        pw.MemoryImage(logoBytes),
-                        width: 70,
-                        height: 70,
-                      ),
-                    ),
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes),
+                  width: 70,
+                  height: 70,
                 ),
               ),
             ],
@@ -2063,6 +2025,7 @@ class PartnerPrintService {
                           color: PdfColor.fromHex('#1A1E49'),
                           letterSpacing: 1.2,
                           font: font,
+                          fontStyle: pw.FontStyle.italic,
                           fontFallback: fallbackFonts,
                         ),
                       ),
@@ -2187,32 +2150,12 @@ class PartnerPrintService {
               ),
 
               // Section droite avec logo sur fond blanc
-              pw.Container(
-                width: 100,
+              pw.Padding(
                 padding: const pw.EdgeInsets.all(12),
-                decoration: const pw.BoxDecoration(
-                  color: PdfColors.white,
-                  borderRadius: pw.BorderRadius.only(
-                    topRight: pw.Radius.circular(2.5),
-                    bottomRight: pw.Radius.circular(2.5),
-                  ),
-                ),
-                child: pw.Center(
-                  child: pw.Container(
-                    width: 75,
-                    height: 75,
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#1A1E49'),
-                      shape: pw.BoxShape.circle,
-                    ),
-                    child: pw.Center(
-                      child: pw.Image(
-                        pw.MemoryImage(logoBytes),
-                        width: 70,
-                        height: 70,
-                      ),
-                    ),
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes),
+                  width: 70,
+                  height: 70,
                 ),
               ),
             ],

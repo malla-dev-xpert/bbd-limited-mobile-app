@@ -30,7 +30,10 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
   late InvoiceOptions _options;
   final Map<int, bool> _selectedItems = {};
   final Map<int, TextEditingController> _marginControllers = {};
+  final Map<int, TextEditingController> _observationControllers = {};
+  final Map<int, TextEditingController> _finalPriceControllers = {};
   final Map<int, MarginType> _marginTypes = {};
+  final Map<int, MarginDisplayMode> _displayModes = {};
   final NumberFormat _currencyFormat = NumberFormat.currency(symbol: '');
 
   @override
@@ -49,12 +52,22 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
         if (_selectedItems[item.id!] == true) {
           final margin = _options.selectiveItemMargins[item.id!]!;
           _marginTypes[item.id!] = margin.type;
+          _displayModes[item.id!] = margin.displayMode;
           _marginControllers[item.id!] = TextEditingController(
             text: margin.value.toStringAsFixed(2),
           );
+          _observationControllers[item.id!] = TextEditingController(
+            text: margin.observation ?? '',
+          );
+          _finalPriceControllers[item.id!] = TextEditingController(
+            text: margin.finalPrice?.toStringAsFixed(2) ?? '',
+          );
         } else {
           _marginTypes[item.id!] = MarginType.percentage;
+          _displayModes[item.id!] = MarginDisplayMode.displayMarginOnly;
           _marginControllers[item.id!] = TextEditingController(text: '10');
+          _observationControllers[item.id!] = TextEditingController(text: '');
+          _finalPriceControllers[item.id!] = TextEditingController(text: '');
         }
       }
     }
@@ -63,6 +76,12 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
   @override
   void dispose() {
     for (final controller in _marginControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _observationControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _finalPriceControllers.values) {
       controller.dispose();
     }
     super.dispose();
@@ -76,16 +95,34 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
         final item = widget.items.firstWhere((item) => item.id == entry.key);
         final controller = _marginControllers[entry.key];
         final type = _marginTypes[entry.key] ?? MarginType.percentage;
+        final displayMode =
+            _displayModes[entry.key] ?? MarginDisplayMode.displayMarginOnly;
+        final observationController = _observationControllers[entry.key];
+        final finalPriceController = _finalPriceControllers[entry.key];
 
         if (controller != null) {
           final value = double.tryParse(controller.text);
           if (value != null && value >= 0) {
+            // Récupérer l'observation
+            final observation = observationController?.text.trim();
+
+            // Récupérer le prix final si Option A
+            double? finalPrice;
+            if (displayMode == MarginDisplayMode.modifyFinalPrice &&
+                finalPriceController != null &&
+                finalPriceController.text.trim().isNotEmpty) {
+              finalPrice = double.tryParse(finalPriceController.text);
+            }
+
             newMargins[entry.key] = SelectiveItemMargin(
               itemId: entry.key,
               type: type,
               value: value,
               originalUnitPrice: item.unitPrice ?? 0.0,
               originalTotalPrice: item.totalPrice ?? 0.0,
+              observation: observation?.isEmpty == true ? null : observation,
+              finalPrice: finalPrice,
+              displayMode: displayMode,
             );
           }
         }
@@ -323,6 +360,96 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                     },
                                   ),
 
+                                  const SizedBox(height: 12),
+
+                                  // Mode d'affichage
+                                  Text(
+                                    'Mode d\'affichage',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DropDownCustom<MarginDisplayMode>(
+                                    selectedItem: _displayModes[itemId] ??
+                                        MarginDisplayMode.displayMarginOnly,
+                                    items: MarginDisplayMode.values.toList(),
+                                    itemToString: (mode) => mode ==
+                                            MarginDisplayMode.modifyFinalPrice
+                                        ? 'Option A : Modifier le prix final'
+                                        : 'Option B : Afficher la marge',
+                                    onChanged: (mode) {
+                                      if (mode != null) {
+                                        setState(() {
+                                          _displayModes[itemId] = mode;
+                                          // Réinitialiser le prix final si on passe en Option B
+                                          if (mode ==
+                                              MarginDisplayMode
+                                                  .displayMarginOnly) {
+                                            _finalPriceControllers[itemId]
+                                                ?.text = '';
+                                          }
+                                        });
+                                        _updateOptions();
+                                      }
+                                    },
+                                  ),
+
+                                  // Prix final modifié (Option A uniquement)
+                                  if (_displayModes[itemId] ==
+                                      MarginDisplayMode.modifyFinalPrice) ...[
+                                    const SizedBox(height: 12),
+                                    buildTextField(
+                                      controller:
+                                          _finalPriceControllers[itemId]!,
+                                      label:
+                                          'Prix final modifié (${widget.currencySymbol})',
+                                      icon: Icons.edit,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      onChanged: (_) => _updateOptions(),
+                                      validator: (value) {
+                                        if (value != null && value.isNotEmpty) {
+                                          final amount = double.tryParse(value);
+                                          if (amount == null || amount < 0) {
+                                            return localizations
+                                                .translate('invalid_amount');
+                                          }
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 12),
+
+                                  // Observation
+                                  TextFormField(
+                                    controller:
+                                        _observationControllers[itemId]!,
+                                    keyboardType: TextInputType.multiline,
+                                    maxLines: 3,
+                                    onChanged: (_) => _updateOptions(),
+                                    decoration: InputDecoration(
+                                      labelText: 'Observation (optionnel)',
+                                      prefixIcon:
+                                          Icon(Icons.note, color: Colors.black),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                    ),
+                                  ),
+
                                   const SizedBox(height: 8),
 
                                   // Aperçu du calcul
@@ -337,6 +464,20 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                         if (value == null)
                                           return const SizedBox.shrink();
 
+                                        final displayMode =
+                                            _displayModes[itemId] ??
+                                                MarginDisplayMode
+                                                    .displayMarginOnly;
+                                        final finalPriceText =
+                                            _finalPriceControllers[itemId]
+                                                ?.text
+                                                .trim();
+                                        final double? finalPrice =
+                                            finalPriceText?.isNotEmpty == true
+                                                ? double.tryParse(
+                                                    finalPriceText!)
+                                                : null;
+
                                         final margin = SelectiveItemMargin(
                                           itemId: itemId,
                                           type: _marginTypes[itemId] ??
@@ -346,6 +487,8 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                               item.unitPrice ?? 0.0,
                                           originalTotalPrice:
                                               item.totalPrice ?? 0.0,
+                                          finalPrice: finalPrice,
+                                          displayMode: displayMode,
                                         );
 
                                         return Container(
@@ -385,11 +528,29 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                                     'original_total'),
                                                 '${_currencyFormat.format(item.totalPrice ?? 0)} ${widget.currencySymbol}',
                                               ),
-                                              _buildPreviewRow(
-                                                localizations
-                                                    .translate('margin_amount'),
-                                                '+${_currencyFormat.format(margin.marginAmount)} ${widget.currencySymbol}',
-                                              ),
+                                              if (displayMode ==
+                                                  MarginDisplayMode
+                                                      .displayMarginOnly) ...[
+                                                _buildPreviewRow(
+                                                  localizations.translate(
+                                                      'margin_amount'),
+                                                  '+${_currencyFormat.format(margin.marginAmount)} ${widget.currencySymbol}',
+                                                ),
+                                                _buildPreviewRow(
+                                                  'Pourcentage',
+                                                  '${margin.realMarginPercentage.toStringAsFixed(2)}%',
+                                                ),
+                                              ] else if (finalPrice !=
+                                                  null) ...[
+                                                _buildPreviewRow(
+                                                  'Marge réelle',
+                                                  '+${_currencyFormat.format(margin.marginAmount)} ${widget.currencySymbol}',
+                                                ),
+                                                _buildPreviewRow(
+                                                  'Pourcentage réel',
+                                                  '${margin.realMarginPercentage.toStringAsFixed(2)}%',
+                                                ),
+                                              ],
                                               const Divider(height: 16),
                                               _buildPreviewRow(
                                                 localizations.translate(

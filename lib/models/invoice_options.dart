@@ -154,7 +154,7 @@ class InvoiceOptions {
             globalMarginValue! < minAmount ||
             globalMarginValue! > maxAmount)) {
       errors.add(
-          'La marge globale doit être entre ${currencyFormat(minAmount)} et ${currencyFormat(maxAmount)}');
+          'La FRAIS DE TRAVAIL doit être entre ${currencyFormat(minAmount)} et ${currencyFormat(maxAmount)}');
     }
 
     if (enableGlobalMargin &&
@@ -163,7 +163,7 @@ class InvoiceOptions {
             globalMarginValue! < minPercentage ||
             globalMarginValue! > maxPercentage)) {
       errors.add(
-          'La marge globale en pourcentage doit être entre $minPercentage% et $maxPercentage%');
+          'La FRAIS DE TRAVAIL en pourcentage doit être entre $minPercentage% et $maxPercentage%');
     }
 
     if (enableLineDiscount &&
@@ -291,7 +291,7 @@ class InvoiceOptions {
       }
     }
 
-    // Marge globale (appliquée en dernier, toujours sur le total)
+    // FRAIS DE TRAVAIL (appliquée en dernier, toujours sur le total)
     if (enableGlobalMargin && globalMarginValue != null) {
       if (globalMarginType == MarginType.percentage) {
         total += (total * globalMarginValue! / 100);

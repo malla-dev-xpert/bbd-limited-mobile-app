@@ -1,5 +1,14 @@
 import 'package:bbd_limited/models/invoice_options.dart';
 
+/// Mode d'affichage de la marge
+enum MarginDisplayMode {
+  /// Option A : Modifier le prix final (recalcul automatique de la marge)
+  modifyFinalPrice,
+
+  /// Option B : Afficher la marge actuelle sans modifier le prix
+  displayMarginOnly,
+}
+
 /// Marge sélective appliquée à un article spécifique
 class SelectiveItemMargin {
   /// ID de l'article (pour l'identifier de manière unique)
@@ -17,8 +26,26 @@ class SelectiveItemMargin {
   /// Prix total original (avant marge)
   final double originalTotalPrice;
 
+  /// Observation ou commentaire lié à la marge (optionnel)
+  final String? observation;
+
+  /// Prix final modifié manuellement (Option A) - null si non utilisé
+  final double? finalPrice;
+
+  /// Mode d'affichage de la marge
+  final MarginDisplayMode displayMode;
+
   /// Prix unitaire avec marge appliquée
   double get adjustedUnitPrice {
+    // Si Option A et prix final modifié, calculer à partir du prix final
+    if (displayMode == MarginDisplayMode.modifyFinalPrice &&
+        finalPrice != null &&
+        originalTotalPrice > 0) {
+      final quantity = originalTotalPrice / originalUnitPrice;
+      return quantity > 0 ? finalPrice! / quantity : finalPrice!;
+    }
+
+    // Calcul standard
     if (type == MarginType.percentage) {
       return originalUnitPrice * (1 + value / 100);
     } else {
@@ -29,6 +56,13 @@ class SelectiveItemMargin {
 
   /// Prix total avec marge appliquée
   double get adjustedTotalPrice {
+    // Si Option A et prix final modifié, utiliser le prix final
+    if (displayMode == MarginDisplayMode.modifyFinalPrice &&
+        finalPrice != null) {
+      return finalPrice!;
+    }
+
+    // Calcul standard
     if (type == MarginType.percentage) {
       return originalTotalPrice * (1 + value / 100);
     } else {
@@ -41,12 +75,21 @@ class SelectiveItemMargin {
     return adjustedTotalPrice - originalTotalPrice;
   }
 
+  /// Pourcentage réel de la marge (calculé à partir du prix final si Option A)
+  double get realMarginPercentage {
+    if (originalTotalPrice == 0) return 0.0;
+    return (marginAmount / originalTotalPrice) * 100;
+  }
+
   const SelectiveItemMargin({
     required this.itemId,
     required this.type,
     required this.value,
     required this.originalUnitPrice,
     required this.originalTotalPrice,
+    this.observation,
+    this.finalPrice,
+    this.displayMode = MarginDisplayMode.displayMarginOnly,
   });
 
   /// Copie avec modifications
@@ -56,6 +99,9 @@ class SelectiveItemMargin {
     double? value,
     double? originalUnitPrice,
     double? originalTotalPrice,
+    String? observation,
+    double? finalPrice,
+    MarginDisplayMode? displayMode,
   }) {
     return SelectiveItemMargin(
       itemId: itemId ?? this.itemId,
@@ -63,6 +109,9 @@ class SelectiveItemMargin {
       value: value ?? this.value,
       originalUnitPrice: originalUnitPrice ?? this.originalUnitPrice,
       originalTotalPrice: originalTotalPrice ?? this.originalTotalPrice,
+      observation: observation ?? this.observation,
+      finalPrice: finalPrice ?? this.finalPrice,
+      displayMode: displayMode ?? this.displayMode,
     );
   }
 
@@ -88,6 +137,14 @@ class SelectiveItemMargin {
       value: (json['value'] as num).toDouble(),
       originalUnitPrice: (json['originalUnitPrice'] as num).toDouble(),
       originalTotalPrice: (json['originalTotalPrice'] as num).toDouble(),
+      observation: json['observation'] as String?,
+      finalPrice: json['finalPrice']?.toDouble(),
+      displayMode: json['displayMode'] != null
+          ? MarginDisplayMode.values.firstWhere(
+              (e) => e.name == json['displayMode'],
+              orElse: () => MarginDisplayMode.displayMarginOnly,
+            )
+          : MarginDisplayMode.displayMarginOnly,
     );
   }
 }
@@ -281,10 +338,10 @@ class SelectiveMarginCalculationResult {
   /// Sous-total après marges sur articles
   final double subtotalAfterItemMargins;
 
-  /// Total après toutes les marges (sauf marge globale)
+  /// Total après toutes les marges (sauf FRAIS DE TRAVAIL)
   final double totalAfterSelectiveMargins;
 
-  /// Total final avec marge globale (si activée)
+  /// Total final avec FRAIS DE TRAVAIL (si activée)
   final double finalTotal;
 
   /// Détails des marges par article

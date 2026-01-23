@@ -10,6 +10,7 @@ import 'package:bbd_limited/models/cashWithdrawal.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:bbd_limited/core/services/margin_calculation_service.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/models/selective_margin.dart';
 
 class InvoiceService {
   static Future<Uint8List> buildVersementPdfBytes(
@@ -249,6 +250,7 @@ class InvoiceService {
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColor.fromHex('#1A1E49'),
                           letterSpacing: 1.2,
+                          fontStyle: pw.FontStyle.italic,
                         ),
                       ),
                       pw.SizedBox(height: 10),
@@ -348,32 +350,12 @@ class InvoiceService {
               ),
 
               // Section droite avec logo sur fond blanc
-              pw.Container(
-                width: 100,
+              pw.Padding(
                 padding: const pw.EdgeInsets.all(12),
-                decoration: const pw.BoxDecoration(
-                  color: PdfColors.white,
-                  borderRadius: pw.BorderRadius.only(
-                    topRight: pw.Radius.circular(2.5),
-                    bottomRight: pw.Radius.circular(2.5),
-                  ),
-                ),
-                child: pw.Center(
-                  child: pw.Container(
-                    width: 75,
-                    height: 75,
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#1A1E49'),
-                      shape: pw.BoxShape.circle,
-                    ),
-                    child: pw.Center(
-                      child: pw.Image(
-                        pw.MemoryImage(logoBytes),
-                        width: 70,
-                        height: 70,
-                      ),
-                    ),
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes),
+                  width: 70,
+                  height: 70,
                 ),
               ),
             ],
@@ -646,13 +628,14 @@ class InvoiceService {
               // Calculer le prix ajusté si marge sélective activée
               double adjustedUnitPrice = item.unitPrice ?? 0;
               double adjustedTotalPrice = item.totalPrice ?? 0;
+              SelectiveItemMargin? currentMargin;
 
               if (options.enableSelectiveItemMargins &&
                   item.id != null &&
                   options.selectiveItemMargins.containsKey(item.id)) {
-                final margin = options.selectiveItemMargins[item.id]!;
-                adjustedUnitPrice = margin.adjustedUnitPrice;
-                adjustedTotalPrice = margin.adjustedTotalPrice;
+                currentMargin = options.selectiveItemMargins[item.id]!;
+                adjustedUnitPrice = currentMargin.adjustedUnitPrice;
+                adjustedTotalPrice = currentMargin.adjustedTotalPrice;
               }
 
               // Appliquer la remise sélective par ligne si présente
@@ -678,62 +661,196 @@ class InvoiceService {
               final totalWeight =
                   0.0; // Par défaut, peut être calculé si disponible
 
-              return pw.Container(
-                color: PdfColors.white,
-                padding:
-                    const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                child: pw.Row(
-                  children: [
-                    pw.Expanded(
-                        flex: 3,
-                        child: pw.Text(item.description ?? '',
-                            style: const pw.TextStyle(fontSize: 8),
-                            maxLines: 2)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 40,
-                        child: pw.Text(totalCBM.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 40,
-                        child: pw.Text(totalWeight.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 30,
-                        child: pw.Text(carton.toString(),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(totalQuantity.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 40,
-                        child: pw.Text(currencyFormat.format(adjustedUnitPrice),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(
-                            currencyFormat.format(adjustedTotalPrice),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
+              // Déterminer si le prix final a été modifié (Option A)
+              final isPriceModified = currentMargin != null &&
+                  currentMargin.displayMode ==
+                      MarginDisplayMode.modifyFinalPrice &&
+                  currentMargin.finalPrice != null;
+
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Ligne principale de l'article
+                  pw.Container(
+                    color: PdfColors.white,
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 4, horizontal: 4),
+                    child: pw.Row(
+                      children: [
+                        pw.Expanded(
+                            flex: 3,
+                            child: pw.Text(item.description ?? '',
+                                style: const pw.TextStyle(fontSize: 8),
+                                maxLines: 2)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 40,
+                            child: pw.Text(totalCBM.toStringAsFixed(2),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 40,
+                            child: pw.Text(totalWeight.toStringAsFixed(2),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 30,
+                            child: pw.Text(carton.toString(),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 50,
+                            child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 50,
+                            child: pw.Text(totalQuantity.toStringAsFixed(2),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 40,
+                            child: pw.Text(
+                                currencyFormat.format(adjustedUnitPrice),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 50,
+                            child: pw.Text(
+                                currencyFormat.format(adjustedTotalPrice),
+                                style: pw.TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: isPriceModified
+                                      ? pw.FontWeight.bold
+                                      : pw.FontWeight.normal,
+                                  color: isPriceModified
+                                      ? PdfColor.fromHex('#1A1E49')
+                                      : PdfColors.black,
+                                ),
+                                textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
+                  ),
+                  // Affichage de la marge (Option B) ou information sur le prix modifié (Option A)
+                  if (currentMargin != null) ...[
+                    pw.Padding(
+                      padding:
+                          const pw.EdgeInsets.only(left: 8, top: 2, bottom: 4),
+                      child: pw.Row(
+                        children: [
+                          if (currentMargin.displayMode ==
+                              MarginDisplayMode.displayMarginOnly) ...[
+                            // Option B : Afficher la marge
+                            pw.Text(
+                              'Marge: ',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColors.grey700,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                            pw.Text(
+                              '+${currencyFormat.format(currentMargin.marginAmount)}',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColor.fromHex('#1A1E49'),
+                                fontStyle: pw.FontStyle.italic,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.SizedBox(width: 8),
+                            pw.Text(
+                              '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColors.grey700,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                          ] else if (currentMargin.displayMode ==
+                                  MarginDisplayMode.modifyFinalPrice &&
+                              currentMargin.finalPrice != null) ...[
+                            // Option A : Afficher le prix original et la marge réelle
+                            pw.Text(
+                              'Prix original: ',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColors.grey700,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                            pw.Text(
+                              currencyFormat
+                                  .format(currentMargin.originalTotalPrice),
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColors.grey700,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                            pw.SizedBox(width: 8),
+                            pw.Text(
+                              'Marge réelle: ',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColors.grey700,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                            pw.Text(
+                              '+${currencyFormat.format(currentMargin.marginAmount)}',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColor.fromHex('#1A1E49'),
+                                fontStyle: pw.FontStyle.italic,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.SizedBox(width: 8),
+                            pw.Text(
+                              '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
+                              style: pw.TextStyle(
+                                fontSize: 7,
+                                color: PdfColors.grey700,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    // Affichage de l'observation si présente
+                    if (currentMargin.observation != null &&
+                        currentMargin.observation!.trim().isNotEmpty) ...[
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(
+                            left: 8, top: 2, bottom: 4),
+                        child: pw.Container(
+                          padding: const pw.EdgeInsets.all(4),
+                          decoration: pw.BoxDecoration(
+                            color: PdfColors.grey100,
+                            borderRadius: pw.BorderRadius.circular(4),
+                          ),
+                          child: pw.Text(
+                            'Observation: ${currentMargin.observation}',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey800,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                            maxLines: 3,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
-                ),
+                ],
               );
             }(),
       ],
@@ -1247,6 +1364,7 @@ class InvoiceService {
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColor.fromHex('#1A1E49'),
                           letterSpacing: 1.2,
+                          fontStyle: pw.FontStyle.italic,
                         ),
                       ),
                       pw.SizedBox(height: 10),
@@ -1346,32 +1464,12 @@ class InvoiceService {
               ),
 
               // Section droite avec logo sur fond blanc
-              pw.Container(
-                width: 100,
+              pw.Padding(
                 padding: const pw.EdgeInsets.all(12),
-                decoration: const pw.BoxDecoration(
-                  color: PdfColors.white,
-                  borderRadius: pw.BorderRadius.only(
-                    topRight: pw.Radius.circular(2.5),
-                    bottomRight: pw.Radius.circular(2.5),
-                  ),
-                ),
-                child: pw.Center(
-                  child: pw.Container(
-                    width: 75,
-                    height: 75,
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#1A1E49'),
-                      shape: pw.BoxShape.circle,
-                    ),
-                    child: pw.Center(
-                      child: pw.Image(
-                        pw.MemoryImage(logoBytes),
-                        width: 70,
-                        height: 70,
-                      ),
-                    ),
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes),
+                  width: 70,
+                  height: 70,
                 ),
               ),
             ],
@@ -1568,13 +1666,14 @@ class InvoiceService {
             // Calculer le prix ajusté si marge sélective activée
             double adjustedUnitPrice = item.unitPrice ?? 0;
             double adjustedTotalPrice = item.totalPrice ?? 0;
+            SelectiveItemMargin? currentMargin;
 
             if (options.enableSelectiveItemMargins &&
                 item.id != null &&
                 options.selectiveItemMargins.containsKey(item.id)) {
-              final margin = options.selectiveItemMargins[item.id]!;
-              adjustedUnitPrice = margin.adjustedUnitPrice;
-              adjustedTotalPrice = margin.adjustedTotalPrice;
+              currentMargin = options.selectiveItemMargins[item.id]!;
+              adjustedUnitPrice = currentMargin.adjustedUnitPrice;
+              adjustedTotalPrice = currentMargin.adjustedTotalPrice;
             }
 
             // Appliquer la remise sélective par ligne si présente
@@ -1599,85 +1698,221 @@ class InvoiceService {
             final totalWeight =
                 0.0; // Par défaut, peut être calculé si disponible
 
-            return pw.Container(
-              color: PdfColors.white,
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-              child: pw.Row(
-                children: [
-                  pw.Expanded(
-                      flex: 3,
-                      child: pw.Text(item.description ?? '',
-                          style: const pw.TextStyle(fontSize: 8), maxLines: 2)),
-                  pw.SizedBox(width: 3),
-                  if (includeSupplierInfo) ...[
-                    pw.Container(
-                        width: 60,
-                        child: pw.Text(item.supplierName ?? '-',
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center,
-                            maxLines: 2)),
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(item.supplierPhone ?? '-',
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center,
-                            maxLines: 2)),
-                    pw.SizedBox(width: 3),
-                  ],
-                  pw.Container(
-                      width: 40,
-                      child: pw.Text(totalCBM.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  pw.SizedBox(width: 3),
-                  pw.Container(
-                      width: 40,
-                      child: pw.Text(totalWeight.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  pw.SizedBox(width: 3),
-                  pw.Container(
-                      width: 30,
-                      child: pw.Text(carton.toString(),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  pw.SizedBox(width: 3),
-                  pw.Container(
-                      width: 50,
-                      child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  pw.SizedBox(width: 3),
-                  pw.Container(
-                      width: 50,
-                      child: pw.Text(totalQuantity.toStringAsFixed(2),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  pw.SizedBox(width: 3),
-                  pw.Container(
-                      width: 40,
-                      child: pw.Text(currencyFormat.format(adjustedUnitPrice),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  pw.SizedBox(width: 3),
-                  pw.Container(
-                      width: 50,
-                      child: pw.Text(currencyFormat.format(adjustedTotalPrice),
-                          style: const pw.TextStyle(fontSize: 8),
-                          textAlign: pw.TextAlign.center)),
-                  if (isProforma) ...[
-                    pw.SizedBox(width: 3),
-                    pw.Container(
-                        width: 60,
+            // Déterminer si le prix final a été modifié (Option A)
+            final isPriceModified = currentMargin != null &&
+                currentMargin.displayMode ==
+                    MarginDisplayMode.modifyFinalPrice &&
+                currentMargin.finalPrice != null;
+
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Ligne principale de l'article
+                pw.Container(
+                  color: PdfColors.white,
+                  padding:
+                      const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                  child: pw.Row(
+                    children: [
+                      pw.Expanded(
+                          flex: 3,
+                          child: pw.Text(item.description ?? '',
+                              style: const pw.TextStyle(fontSize: 8),
+                              maxLines: 2)),
+                      pw.SizedBox(width: 3),
+                      if (includeSupplierInfo) ...[
+                        pw.Container(
+                            width: 60,
+                            child: pw.Text(item.supplierName ?? '-',
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                                maxLines: 2)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 50,
+                            child: pw.Text(item.supplierPhone ?? '-',
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                                maxLines: 2)),
+                        pw.SizedBox(width: 3),
+                      ],
+                      pw.Container(
+                          width: 40,
+                          child: pw.Text(totalCBM.toStringAsFixed(2),
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 40,
+                          child: pw.Text(totalWeight.toStringAsFixed(2),
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 30,
+                          child: pw.Text(carton.toString(),
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 50,
+                          child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 50,
+                          child: pw.Text(totalQuantity.toStringAsFixed(2),
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 40,
+                          child: pw.Text(
+                              currencyFormat.format(adjustedUnitPrice),
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 50,
+                          child:
+                              pw.Text(currencyFormat.format(adjustedTotalPrice),
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: isPriceModified
+                                        ? pw.FontWeight.bold
+                                        : pw.FontWeight.normal,
+                                    color: isPriceModified
+                                        ? PdfColor.fromHex('#1A1E49')
+                                        : PdfColors.black,
+                                  ),
+                                  textAlign: pw.TextAlign.center)),
+                      if (isProforma) ...[
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 60,
+                            child: pw.Text(
+                                printLocalizations.translateStatus(item.status),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center)),
+                      ],
+                    ],
+                  ),
+                ),
+                // Affichage de la marge (Option B) ou information sur le prix modifié (Option A)
+                if (currentMargin != null) ...[
+                  pw.Padding(
+                    padding:
+                        const pw.EdgeInsets.only(left: 8, top: 2, bottom: 4),
+                    child: pw.Row(
+                      children: [
+                        if (currentMargin.displayMode ==
+                            MarginDisplayMode.displayMarginOnly) ...[
+                          // Option B : Afficher la marge
+                          pw.Text(
+                            'Marge: ',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey700,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                          ),
+                          pw.Text(
+                            '+${currencyFormat.format(currentMargin.marginAmount)}',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColor.fromHex('#1A1E49'),
+                              fontStyle: pw.FontStyle.italic,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey700,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                          ),
+                        ] else if (currentMargin.displayMode ==
+                                MarginDisplayMode.modifyFinalPrice &&
+                            currentMargin.finalPrice != null) ...[
+                          // Option A : Afficher le prix original et la marge réelle
+                          pw.Text(
+                            'Prix original: ',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey700,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                          ),
+                          pw.Text(
+                            currencyFormat
+                                .format(currentMargin.originalTotalPrice),
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey700,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            'Marge réelle: ',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey700,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                          ),
+                          pw.Text(
+                            '+${currencyFormat.format(currentMargin.marginAmount)}',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColor.fromHex('#1A1E49'),
+                              fontStyle: pw.FontStyle.italic,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
+                            style: pw.TextStyle(
+                              fontSize: 7,
+                              color: PdfColors.grey700,
+                              fontStyle: pw.FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // Affichage de l'observation si présente
+                  if (currentMargin.observation != null &&
+                      currentMargin.observation!.trim().isNotEmpty) ...[
+                    pw.Padding(
+                      padding:
+                          const pw.EdgeInsets.only(left: 8, top: 2, bottom: 4),
+                      child: pw.Container(
+                        padding: const pw.EdgeInsets.all(4),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.grey100,
+                          borderRadius: pw.BorderRadius.circular(4),
+                        ),
                         child: pw.Text(
-                            printLocalizations.translateStatus(item.status),
-                            style: const pw.TextStyle(fontSize: 8),
-                            textAlign: pw.TextAlign.center)),
+                          'Observation: ${currentMargin.observation}',
+                          style: pw.TextStyle(
+                            fontSize: 7,
+                            color: PdfColors.grey800,
+                            fontStyle: pw.FontStyle.italic,
+                          ),
+                          maxLines: 3,
+                        ),
+                      ),
+                    ),
                   ],
                 ],
-              ),
+              ],
             );
           }(),
       ],

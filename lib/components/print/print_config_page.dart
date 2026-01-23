@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:bbd_limited/components/invoice_options_config.dart';
 import 'package:bbd_limited/components/selective_fee_margin_config.dart';
+import 'package:bbd_limited/components/selective_margin_config.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/print/print_language.dart';
@@ -165,6 +166,16 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                     if (widget.showBillingOptions) ...[
                       const SizedBox(height: 16),
                       _buildBillingOptionsCard(isMobile),
+                      // Marges sélectives par article (uniquement si items disponibles)
+                      if (widget.items != null && widget.items!.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        SelectiveMarginConfig(
+                          items: widget.items!,
+                          options: _options,
+                          onOptionsChanged: _handleOptionsChanged,
+                          currencySymbol: widget.currencySymbol,
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       SelectiveFeeMarginConfig(
                         options: _options,
