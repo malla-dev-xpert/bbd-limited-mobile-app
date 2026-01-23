@@ -1024,8 +1024,12 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             label: AppLocalizations.of(context).translate('reverse'),
           ),
           SlidableAction(
-            onPressed: (_) => _handleDeleteItem(item),
-            backgroundColor: Colors.red,
+            onPressed: (item.status != Status.RECEIVED)
+                ? (_) => _handleDeleteItem(item)
+                : null,
+            backgroundColor: (item.status != Status.RECEIVED)
+                ? Colors.red
+                : Colors.grey[300]!,
             foregroundColor: Colors.white,
             icon: Icons.delete,
             label: AppLocalizations.of(context).translate('delete'),

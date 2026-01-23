@@ -1654,8 +1654,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                   label: AppLocalizations.of(context).translate('reverse'),
                 ),
                 SlidableAction(
-                  onPressed: (_) => _handleDeleteItem(item, achat),
-                  backgroundColor: Colors.red,
+                  onPressed: (item.status != Status.RECEIVED)
+                      ? (_) => _handleDeleteItem(item, achat)
+                      : null,
+                  backgroundColor: (item.status != Status.RECEIVED)
+                      ? Colors.red
+                      : Colors.grey[300]!,
                   foregroundColor: Colors.white,
                   icon: Icons.delete,
                   label: AppLocalizations.of(context).translate('delete'),
