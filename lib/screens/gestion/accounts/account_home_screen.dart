@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
@@ -310,6 +311,16 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       if (user == null) {
         showErrorTopSnackBar(context,
             AppLocalizations.of(context).translate('error_user_not_connected'));
+        return;
+      }
+
+      // Vérification des droits d'accès (Admin uniquement)
+      if (!AccessControlService().canDeletePayment(user)) {
+        showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context).translate('access_denied_admin_only') ??
+              'Accès refusé : Réservé aux administrateurs',
+        );
         return;
       }
 

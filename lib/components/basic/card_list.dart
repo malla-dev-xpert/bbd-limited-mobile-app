@@ -38,103 +38,132 @@ class MenuCategory {
 List<MenuCategory> getMenuCategories(
     BuildContext context, AppLocalizations localizations,
     {User? user, bool isAdmin = false}) {
-  // Si l'utilisateur est restreint, on ne montre aucune option
-  if (user != null && !AccessControlService().canShowBasicHomeOptions(user)) {
-    return [];
+  final isRestricted =
+      user != null && AccessControlService().isRestrictedBranch(user);
+
+  List<CardData> basicInfoItems = [];
+
+  // 1. Partenaires (Accessible à tous)
+  basicInfoItems.add(
+    CardData(
+      icon: Icons.person_3_rounded,
+      title: localizations.translate('home_manage_partners_title'),
+      backgroundColor: Colors.grey[50]!,
+      iconColor: const Color(0xFF13084F),
+      titleColor: const Color(0xFF13084F),
+      onPressed: (context) {
+        Navigator.of(context).pushNamed('/partners');
+      },
+      description: localizations.translate('home_manage_partners_desc'),
+    ),
+  );
+
+  // 2. Fournisseurs (Masqué pour restreints)
+  if (!isRestricted) {
+    basicInfoItems.add(
+      CardData(
+        icon: Icons.local_shipping,
+        title: localizations.translate('home_manage_suppliers_title'),
+        backgroundColor: Colors.grey[50]!,
+        iconColor: const Color(0xFF13084F),
+        titleColor: const Color(0xFF13084F),
+        onPressed: (context) {
+          Navigator.of(context).pushNamed('/suppliers');
+        },
+        description: localizations.translate('home_manage_suppliers_desc'),
+      ),
+    );
   }
 
-  return [
-    // Catégorie: Informations de base
+  // 3. Entrepôts (Accessible à tous)
+  basicInfoItems.add(
+    CardData(
+      icon: Icons.warehouse,
+      title: localizations.translate('home_manage_warehouses_title'),
+      backgroundColor: Colors.grey[50]!,
+      iconColor: const Color(0xFF13084F),
+      titleColor: const Color(0xFF13084F),
+      onPressed: (context) {
+        Navigator.of(context).pushNamed('/warehouse');
+      },
+      description: localizations.translate('home_manage_warehouses_desc'),
+    ),
+  );
+
+  // 4. Ports (Masqué pour restreints)
+  if (!isRestricted) {
+    basicInfoItems.add(
+      CardData(
+        icon: Icons.info,
+        title: localizations.translate('home_manage_ports_title'),
+        backgroundColor: Colors.grey[50]!,
+        iconColor: const Color(0xFF13084F),
+        titleColor: const Color(0xFF13084F),
+        onPressed: (context) {
+          Navigator.of(context).pushNamed('/harbor');
+        },
+        description: localizations.translate('home_manage_ports_desc'),
+      ),
+    );
+  }
+
+  // 5. Devises (Accessible à tous)
+  basicInfoItems.add(
+    CardData(
+      icon: Icons.monetization_on_rounded,
+      title: localizations.translate('home_manage_devices_title'),
+      backgroundColor: Colors.grey[50]!,
+      iconColor: const Color(0xFF13084F),
+      titleColor: const Color(0xFF13084F),
+      onPressed: (context) {
+        Navigator.of(context).pushNamed('/devises');
+      },
+      description: localizations.translate('home_manage_devices_desc'),
+    ),
+  );
+
+  List<MenuCategory> categories = [
     MenuCategory(
       title: localizations.translate('home_basic_info'),
-      items: [
-        CardData(
-          icon: Icons.person_3_rounded,
-          title: localizations.translate('home_manage_partners_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/partners');
-          },
-          description: localizations.translate('home_manage_partners_desc'),
-        ),
-        CardData(
-          icon: Icons.local_shipping,
-          title: localizations.translate('home_manage_suppliers_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/suppliers');
-          },
-          description: localizations.translate('home_manage_suppliers_desc'),
-        ),
-        CardData(
-          icon: Icons.warehouse,
-          title: localizations.translate('home_manage_warehouses_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/warehouse');
-          },
-          description: localizations.translate('home_manage_warehouses_desc'),
-        ),
-        CardData(
-          icon: Icons.info,
-          title: localizations.translate('home_manage_ports_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/harbor');
-          },
-          description: localizations.translate('home_manage_ports_desc'),
-        ),
-        CardData(
-          icon: Icons.monetization_on_rounded,
-          title: localizations.translate('home_manage_devices_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/devises');
-          },
-          description: localizations.translate('home_manage_devices_desc'),
-        ),
-      ],
+      items: basicInfoItems,
     ),
-    // Catégorie: Inventaire et Logistique
-    MenuCategory(
-      title: localizations.translate('home_inventory_logistics'),
-      items: [
-        CardData(
-          icon: Icons.inventory_2,
-          title: localizations.translate('home_manage_packages_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/package');
-          },
-          description: localizations.translate('home_manage_packages_desc'),
-        ),
-        CardData(
-          icon: Icons.view_quilt,
-          title: localizations.translate('home_manage_containers_title'),
-          backgroundColor: Colors.grey[50]!,
-          iconColor: const Color(0xFF13084F),
-          titleColor: const Color(0xFF13084F),
-          onPressed: (context) {
-            Navigator.of(context).pushNamed('/container');
-          },
-          description: localizations.translate('home_manage_containers_desc'),
-        ),
-      ],
-    ),
-    // Catégorie: Administration (si admin)
-    if (isAdmin)
+  ];
+
+  // Catégorie: Inventaire et Logistique (Masqué pour restreints)
+  if (!isRestricted) {
+    categories.add(
+      MenuCategory(
+        title: localizations.translate('home_inventory_logistics'),
+        items: [
+          CardData(
+            icon: Icons.inventory_2,
+            title: localizations.translate('home_manage_packages_title'),
+            backgroundColor: Colors.grey[50]!,
+            iconColor: const Color(0xFF13084F),
+            titleColor: const Color(0xFF13084F),
+            onPressed: (context) {
+              Navigator.of(context).pushNamed('/package');
+            },
+            description: localizations.translate('home_manage_packages_desc'),
+          ),
+          CardData(
+            icon: Icons.view_quilt,
+            title: localizations.translate('home_manage_containers_title'),
+            backgroundColor: Colors.grey[50]!,
+            iconColor: const Color(0xFF13084F),
+            titleColor: const Color(0xFF13084F),
+            onPressed: (context) {
+              Navigator.of(context).pushNamed('/container');
+            },
+            description: localizations.translate('home_manage_containers_desc'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  if (isAdmin && !isRestricted) {
+    categories.add(
       MenuCategory(
         title: localizations.translate('home_administration'),
         items: [
@@ -151,7 +180,10 @@ List<MenuCategory> getMenuCategories(
           ),
         ],
       ),
-  ];
+    );
+  }
+
+  return categories;
 }
 
 // Fonction de compatibilité pour l'ancien code

@@ -29,6 +29,10 @@ class AccessControlService {
     Routes.forgotPassword,
     Routes.main,
     Routes.home,
+    Routes.partners,
+    Routes.devises,
+    Routes.warehouse,
+    Routes.accounts,
   };
 
   /// Vérifie si l'utilisateur peut naviguer vers une route donnée
@@ -74,5 +78,10 @@ class AccessControlService {
       return true;
     }
     return false;
+  }
+
+  /// Vérifie si l'utilisateur peut supprimer un paiement (Admin seulement)
+  bool canDeletePayment(User user) {
+    return user.role?.permissions.contains('IS_ADMIN') ?? false;
   }
 }

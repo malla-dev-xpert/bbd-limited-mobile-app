@@ -7,10 +7,13 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_ho
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
+import 'package:bbd_limited/screens/gestion/accounts/account_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/purchase_page.dart';
 
 import 'package:bbd_limited/screens/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
 
@@ -27,9 +30,28 @@ class Routes {
   static const String suppliers = '/suppliers';
   static const String containers = '/container';
   static const String purchase = '/purchase';
+  static const String accounts = '/accounts';
   static const String activityHistory = '/activity-history';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    // Liste des routes publiques accessibles sans authentification ou gérant leur propre auth
+    const publicRoutes = [login, forgotPassword, main, home];
+
+    // Vérification de l'authentification et des droits d'accès
+    if (!publicRoutes.contains(settings.name)) {
+      final user = AuthService.currentUser;
+
+      // Si l'utilisateur n'est pas connecté, rediriger vers login
+      if (user == null) {
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
+      }
+
+      // Vérification des droits d'accès via AccessControlService
+      if (!AccessControlService().canAccessRoute(user, settings.name ?? '')) {
+        return MaterialPageRoute(builder: (_) => const MainScreen());
+      }
+    }
+
     switch (settings.name) {
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
@@ -55,6 +77,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const ContainerScreen());
       case activityHistory:
         return MaterialPageRoute(builder: (_) => const ActivityHistoryScreen());
+      case accounts:
+        return MaterialPageRoute(builder: (_) => AccountHomeScreen());
       case purchase:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(

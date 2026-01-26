@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 
 class VersementListWidget extends StatelessWidget {
   final List<dynamic>? versements;
@@ -56,10 +58,14 @@ class VersementListWidget extends StatelessWidget {
             symbol: versement.deviseCode ?? 'CNY',
           );
 
+          final user = AuthService.currentUser;
+          final canDelete =
+              user != null && AccessControlService().canDeletePayment(user);
+
           return Container(
             padding: const EdgeInsets.all(0),
             child: (onEditVersement != null ||
-                    onDeleteVersement != null ||
+                    (onDeleteVersement != null && canDelete) ||
                     onTransferVersement != null)
                 ? Slidable(
                     endActionPane: ActionPane(
@@ -84,7 +90,7 @@ class VersementListWidget extends StatelessWidget {
                             label:
                                 AppLocalizations.of(context).translate('edit'),
                           ),
-                        if (onDeleteVersement != null)
+                        if (onDeleteVersement != null && canDelete)
                           SlidableAction(
                             onPressed: (context) =>
                                 onDeleteVersement!(versement),

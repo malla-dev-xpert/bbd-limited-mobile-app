@@ -847,6 +847,7 @@
   "disable_account_warning": "La désactivation de ce compte empêchera l'utilisateur de se connecter à l'application.",
   "disabling": "Désactivation...",
   "confirm_disable_account_message": "Êtes-vous sûr de vouloir désactiver le compte de {firstName} ?\n\nCette action empêchera l'utilisateur de se connecter à l'application.",
+  "access_denied_admin_only": "Accès refusé : Réservé aux administrateurs",
   "email_optional": "Email (optionnel)",
   "phone_optional": "Téléphone (optionnel)",
   "select_role": "Sélectionner un rôle",

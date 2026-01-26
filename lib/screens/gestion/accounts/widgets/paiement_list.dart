@@ -2,6 +2,8 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
+import 'package:bbd_limited/core/services/auth_services.dart';
 
 class PaiementListItem extends StatelessWidget {
   final Versement versement;
@@ -36,6 +38,10 @@ class PaiementListItem extends StatelessWidget {
             ? Icons.person
             : Icons.business;
 
+    final user = AuthService.currentUser;
+    final canDelete =
+        user != null && AccessControlService().canDeletePayment(user);
+
     return Slidable(
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
@@ -55,13 +61,14 @@ class PaiementListItem extends StatelessWidget {
             icon: Icons.edit,
             label: 'Modifier',
           ),
-          SlidableAction(
-            onPressed: (context) => onDelete(),
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: 'Supprimer',
-          ),
+          if (canDelete)
+            SlidableAction(
+              onPressed: (context) => onDelete(),
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Supprimer',
+            ),
         ],
       ),
       child: ListTile(

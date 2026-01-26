@@ -16,6 +16,7 @@
   "delete_item_message": "Are you sure you want to delete this item?",
   "delete_item_success": "Item deleted successfully",
   "delete_item_error": "Error during deletion",
+  "access_denied_admin_only": "Access denied: Only for administrators",
   "save": "Save",
   "edit": "Edit",
   "delete": "Delete",

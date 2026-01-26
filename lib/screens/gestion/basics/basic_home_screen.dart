@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _user = AuthService.currentUser;
     _loadUserInfo();
     // _loadExpeditionsStats();
   }

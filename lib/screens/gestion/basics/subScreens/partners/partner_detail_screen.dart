@@ -12,6 +12,7 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
@@ -440,8 +441,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     } catch (e) {
       if (context.mounted) {
-      showErrorTopSnackBar(context,
-          AppLocalizations.of(context).translate('report_generation_error'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('report_generation_error'));
         print('Error generating PDF: $e');
       }
     }
@@ -962,6 +963,15 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       if (user == null) {
         showErrorTopSnackBar(context,
             AppLocalizations.of(context).translate('error_user_not_connected'));
+        return;
+      }
+
+      if (!AccessControlService().canDeletePayment(user)) {
+        showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context).translate('access_denied_admin_only') ??
+              'Accès refusé : Réservé aux administrateurs',
+        );
         return;
       }
 

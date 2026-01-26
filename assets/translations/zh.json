@@ -18,6 +18,7 @@
   "delete_item_message": "您确定要删除此项目吗？此操作无法撤消。",
   "delete_item_success": "项目删除成功",
   "delete_item_error": "删除项目时出错",
+  "access_denied_admin_only": "拒绝访问：仅限管理员",
   "reverse": "撤销",
   "add": "添加",
   "create": "创建",
