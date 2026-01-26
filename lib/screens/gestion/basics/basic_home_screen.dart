@@ -180,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ...getMenuCategories(
                 context,
                 localizations,
+                user: _user,
                 isAdmin: _user?.role?.permissions.contains('IS_ADMIN') ?? false,
               ).map((category) {
                 return SliverMainAxisGroup(

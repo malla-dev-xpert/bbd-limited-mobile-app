@@ -16,6 +16,7 @@ class AuthService {
   static const String _tokenKey = 'jwt';
   static const String _tokenTimestampKey = 'token_timestamp';
   static const int _tokenValidityHours = 24; // Token valide pendant 24h
+  static User? currentUser;
 
   Future<bool> login(String username, String password) async {
     try {
@@ -95,6 +96,7 @@ class AuthService {
     await storage.delete(key: _tokenKey);
     await storage.delete(key: _usernameKey);
     await storage.delete(key: _tokenTimestampKey);
+    currentUser = null;
     return null;
   }
 
@@ -121,7 +123,9 @@ class AuthService {
       if (response.statusCode == 200) {
         final userData = json.decode(utf8.decode(response.bodyBytes));
         // print('Données utilisateur reçues: $userData');
-        return User.fromJson(userData);
+        final user = User.fromJson(userData);
+        currentUser = user;
+        return user;
       }
       return null;
     } catch (e) {

@@ -1,5 +1,7 @@
 // card_data.dart
 
+import 'package:bbd_limited/core/services/access_control_service.dart';
+import 'package:bbd_limited/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
@@ -35,7 +37,12 @@ class MenuCategory {
 
 List<MenuCategory> getMenuCategories(
     BuildContext context, AppLocalizations localizations,
-    {bool isAdmin = false}) {
+    {User? user, bool isAdmin = false}) {
+  // Si l'utilisateur est restreint, on ne montre aucune option
+  if (user != null && !AccessControlService().canShowBasicHomeOptions(user)) {
+    return [];
+  }
+
   return [
     // Catégorie: Informations de base
     MenuCategory(
