@@ -1,6 +1,9 @@
 import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -11,6 +14,8 @@ class ContainerInfoForm extends StatefulWidget {
   final TextEditingController size;
   final bool initialAvailability;
   final Partner? selectedSupplier;
+  final int? initialDepartureHarborId;
+  final int? initialArrivalHarborId;
   final Function(bool)? onAvailabilityChanged;
   final Function(Partner?)? onSupplierChanged;
 
@@ -20,6 +25,8 @@ class ContainerInfoForm extends StatefulWidget {
     required this.size,
     this.initialAvailability = false,
     this.selectedSupplier,
+    this.initialDepartureHarborId,
+    this.initialArrivalHarborId,
     this.onAvailabilityChanged,
     this.onSupplierChanged,
   }) : super(key: key);
@@ -32,8 +39,14 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
   late bool _isAvailable;
   List<Partner> suppliers = [];
   Partner? selectedSupplier;
+  List<Harbor> harbors = [];
+  Harbor? selectedDepartureHarbor;
+  Harbor? selectedArrivalHarbor;
   bool get isAvailable => _isAvailable;
+  int? get departureHarborId => selectedDepartureHarbor?.id;
+  int? get arrivalHarborId => selectedArrivalHarbor?.id;
   final PartnerServices _partnerServices = PartnerServices();
+  final HarborServices _harborServices = HarborServices();
   String? _selectedSize;
 
   @override
@@ -41,6 +54,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     super.initState();
     _isAvailable = widget.initialAvailability;
     _loadSuppliers();
+    _loadHarbors();
     if (widget.size.text.isNotEmpty) {
       _selectedSize = widget.size.text;
     }
@@ -51,6 +65,39 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     setState(() {
       suppliers = data;
     });
+  }
+
+  Future<void> _loadHarbors() async {
+    try {
+      final data = await _harborServices.findAll();
+      setState(() {
+        final wasEmpty = harbors.isEmpty;
+        harbors = data;
+        if (wasEmpty) {
+          if (widget.initialDepartureHarborId != null) {
+            final found = data
+                .where((h) => h.id == widget.initialDepartureHarborId)
+                .toList();
+            selectedDepartureHarbor = found.isEmpty ? null : found.first;
+          }
+          if (widget.initialArrivalHarborId != null) {
+            final found = data
+                .where((h) => h.id == widget.initialArrivalHarborId)
+                .toList();
+            selectedArrivalHarbor = found.isEmpty ? null : found.first;
+          }
+        }
+      });
+    } catch (_) {
+      setState(() => harbors = []);
+    }
+  }
+
+  Future<void> _showAddHarborModal() async {
+    final added = await showAddHarborModal(context);
+    if (added == true) {
+      await _loadHarbors();
+    }
   }
 
   void _showCreateSupplierBottomSheet() {
@@ -160,6 +207,68 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                flex: 3,
+                child: DropDownCustom<Harbor>(
+                  items: harbors,
+                  selectedItem: selectedDepartureHarbor,
+                  onChanged: (h) {
+                    setState(() => selectedDepartureHarbor = h);
+                  },
+                  itemToString: (h) =>
+                      '${h.name ?? ''}${(h.location ?? '').isNotEmpty ? ' - ${h.location}' : ''}',
+                  hintText: AppLocalizations.of(context)!
+                      .translate('choose_departure_port'),
+                  prefixIcon: Icons.sailing,
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: _showAddHarborModal,
+                  icon: const Icon(Icons.add),
+                  tooltip: AppLocalizations.of(context)!
+                      .translate('container_form_add_port'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                flex: 3,
+                child: DropDownCustom<Harbor>(
+                  items: harbors,
+                  selectedItem: selectedArrivalHarbor,
+                  onChanged: (h) {
+                    setState(() => selectedArrivalHarbor = h);
+                  },
+                  itemToString: (h) =>
+                      '${h.name ?? ''}${(h.location ?? '').isNotEmpty ? ' - ${h.location}' : ''}',
+                  hintText: AppLocalizations.of(context)!
+                      .translate('choose_arrival_port'),
+                  prefixIcon: Icons.pin_drop,
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: _showAddHarborModal,
+                  icon: const Icon(Icons.add),
+                  tooltip: AppLocalizations.of(context)!
+                      .translate('container_form_add_port'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Row(

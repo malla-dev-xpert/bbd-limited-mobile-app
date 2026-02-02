@@ -1262,6 +1262,7 @@
   "container_form_supplier_phone": "供应商电话",
   "container_form_save": "保存集装箱",
   "container_form_saved": "集装箱保存成功",
+  "container_form_add_port": "添加港口",
   "container_form_validation_size": "尺寸是必填项",
   "container_form_validation_fees": "费用必须是有效数字",
   "container_add_package_title": "向集装箱添加包裹",

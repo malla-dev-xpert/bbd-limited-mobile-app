@@ -1334,6 +1334,7 @@
   "container_form_supplier_phone": "Téléphone du fournisseur",
   "container_form_save": "Enregistrer le conteneur",
   "container_form_saved": "Conteneur enregistré avec succès",
+  "container_form_add_port": "Ajouter un port",
   "container_form_validation_size": "La taille est requise",
   "container_form_validation_fees": "Les frais doivent être des nombres valides",
   "container_add_package_title": "Ajouter des colis au conteneur",

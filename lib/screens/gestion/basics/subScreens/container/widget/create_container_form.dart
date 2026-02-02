@@ -29,9 +29,11 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   final _mainFeesFormKey = GlobalKey<FormState>();
   final _extraFeesFormKey = GlobalKey<ExtraFeesFormState>();
 
-  // Store form values
+  // Store form values (step 1: preserved when leaving step 0 for submit)
   bool isAvailable = false;
   Partner? selectedSupplier;
+  int? savedDepartureHarborId;
+  int? savedArrivalHarborId;
 
   final TextEditingController refController = TextEditingController();
   final TextEditingController sizeController = TextEditingController();
@@ -110,6 +112,10 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       final valid = _formKey.currentState?.validate() ?? false;
       if (valid) {
         setState(() {
+          savedDepartureHarborId =
+              _containerInfoKey.currentState?.departureHarborId;
+          savedArrivalHarborId =
+              _containerInfoKey.currentState?.arrivalHarborId;
           currentStep = 1;
           widget.onStepChanged?.call(currentStep);
         });
@@ -264,6 +270,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         isAvailable,
         user.id.toInt(),
         selectedSupplier?.id,
+        savedDepartureHarborId,
+        savedArrivalHarborId,
         locFee,
         locationFeeCurrency?.code,
         locRate,

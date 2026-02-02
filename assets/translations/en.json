@@ -1313,6 +1313,7 @@
   "container_form_supplier_phone": "Supplier phone",
   "container_form_save": "Save container",
   "container_form_saved": "Container saved successfully",
+  "container_form_add_port": "Add port",
   "container_form_validation_size": "Size is required",
   "container_form_validation_fees": "Fees must be valid numbers",
   "container_add_package_title": "Add packages to container",

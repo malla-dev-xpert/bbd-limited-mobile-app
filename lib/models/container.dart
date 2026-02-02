@@ -54,8 +54,15 @@ class Containers {
   final double? telxFeeCNY;
   final double? otherFeesCNY;
   final double? marginCNY;
-  // final int? harborId;
-  // final String? harborName;
+
+  /** Port de départ. */
+  final int? departureHarborId;
+  final String? departureHarborName;
+  final String? departureHarborLocation;
+  /** Port d'arrivée. */
+  final int? arrivalHarborId;
+  final String? arrivalHarborName;
+  final String? arrivalHarborLocation;
 
   Containers copyWith({
     int? id,
@@ -107,6 +114,12 @@ class Containers {
     double? telxFeeCNY,
     double? otherFeesCNY,
     double? marginCNY,
+    int? departureHarborId,
+    String? departureHarborName,
+    String? departureHarborLocation,
+    int? arrivalHarborId,
+    String? arrivalHarborName,
+    String? arrivalHarborLocation,
   }) {
     return Containers(
       id: id ?? this.id,
@@ -165,8 +178,14 @@ class Containers {
       telxFeeCNY: telxFeeCNY ?? this.telxFeeCNY,
       otherFeesCNY: otherFeesCNY ?? this.otherFeesCNY,
       marginCNY: marginCNY ?? this.marginCNY,
-      // harborId: harborId ?? this.harborId,
-      // harborName: harborName ?? this.harborName,
+      departureHarborId: departureHarborId ?? this.departureHarborId,
+      departureHarborName: departureHarborName ?? this.departureHarborName,
+      departureHarborLocation:
+          departureHarborLocation ?? this.departureHarborLocation,
+      arrivalHarborId: arrivalHarborId ?? this.arrivalHarborId,
+      arrivalHarborName: arrivalHarborName ?? this.arrivalHarborName,
+      arrivalHarborLocation:
+          arrivalHarborLocation ?? this.arrivalHarborLocation,
     );
   }
 
@@ -232,6 +251,17 @@ class Containers {
     if (marginCurrencyCode != null)
       json['marginCurrencyCode'] = marginCurrencyCode;
     if (marginRateToCNY != null) json['marginRateToCNY'] = marginRateToCNY;
+    if (departureHarborId != null)
+      json['departureHarborId'] = departureHarborId;
+    if (departureHarborName != null)
+      json['departureHarborName'] = departureHarborName;
+    if (departureHarborLocation != null)
+      json['departureHarborLocation'] = departureHarborLocation;
+    if (arrivalHarborId != null) json['arrivalHarborId'] = arrivalHarborId;
+    if (arrivalHarborName != null)
+      json['arrivalHarborName'] = arrivalHarborName;
+    if (arrivalHarborLocation != null)
+      json['arrivalHarborLocation'] = arrivalHarborLocation;
 
     return json;
   }
@@ -286,8 +316,12 @@ class Containers {
     this.telxFeeCNY,
     this.otherFeesCNY,
     this.marginCNY,
-    // this.harborId,
-    // this.harborName,
+    this.departureHarborId,
+    this.departureHarborName,
+    this.departureHarborLocation,
+    this.arrivalHarborId,
+    this.arrivalHarborName,
+    this.arrivalHarborLocation,
   });
 
   factory Containers.fromJson(Map<String, dynamic> json) {
@@ -367,6 +401,12 @@ class Containers {
       telxFeeCNY: (json['telxFeeCNY'] as num?)?.toDouble(),
       otherFeesCNY: (json['otherFeesCNY'] as num?)?.toDouble(),
       marginCNY: (json['marginCNY'] as num?)?.toDouble(),
+      departureHarborId: json['departureHarborId'] as int?,
+      departureHarborName: json['departureHarborName'] as String?,
+      departureHarborLocation: json['departureHarborLocation'] as String?,
+      arrivalHarborId: json['arrivalHarborId'] as int?,
+      arrivalHarborName: json['arrivalHarborName'] as String?,
+      arrivalHarborLocation: json['arrivalHarborLocation'] as String?,
     );
   }
 }

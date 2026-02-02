@@ -51,6 +51,11 @@ class ContainerListItem extends StatelessWidget {
     return container.packages!.every((p) => p.clientId == firstClientId);
   }
 
+  String _formatHarbor(String? name) {
+    if (name == null || name.isEmpty) return '—';
+    return name;
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -326,6 +331,60 @@ class ContainerListItem extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (container.departureHarborName != null ||
+                        container.departureHarborId != null ||
+                        container.arrivalHarborName != null ||
+                        container.arrivalHarborId != null) ...[
+                      SizedBox(height: isTablet ? 10 : 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.sailing,
+                            size: isTablet ? 20 : 14,
+                            color: Colors.grey[600],
+                          ),
+                          SizedBox(width: isTablet ? 6 : 4),
+                          Expanded(
+                            child: Text(
+                              _formatHarbor(container.departureHarborName),
+                              style: TextStyle(
+                                fontSize: isTablet ? 16 : 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 8 : 4),
+                            child: Icon(
+                              Icons.arrow_forward,
+                              size: isTablet ? 18 : 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          Icon(
+                            Icons.pin_drop,
+                            size: isTablet ? 20 : 14,
+                            color: Colors.grey[600],
+                          ),
+                          SizedBox(width: isTablet ? 6 : 4),
+                          Expanded(
+                            child: Text(
+                              _formatHarbor(container.arrivalHarborName),
+                              style: TextStyle(
+                                fontSize: isTablet ? 16 : 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     SizedBox(height: isTablet ? 8 : 4),
                     Row(
                       children: [

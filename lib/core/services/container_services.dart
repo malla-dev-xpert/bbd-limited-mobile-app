@@ -57,6 +57,8 @@ class ContainerServices {
     bool isAvailable,
     int? userId,
     int? supplierId,
+    int? departureHarborId,
+    int? arrivalHarborId,
     double? locationFee,
     String? locationFeeCurrencyCode,
     double? locationFeeRateToCNY,
@@ -94,6 +96,9 @@ class ContainerServices {
         "size": size,
         "isAvailable": isAvailable,
       };
+      if (departureHarborId != null)
+        body["departureHarborId"] = departureHarborId;
+      if (arrivalHarborId != null) body["arrivalHarborId"] = arrivalHarborId;
 
       // Ajouter les frais et leurs devises/taux seulement s'ils ne sont pas null
       if (locationFee != null) {

@@ -59,9 +59,15 @@ class EditContainerModalState extends State<EditContainerModal> {
   bool isLoading = false;
   bool isLoadingDevises = false;
 
-  // Store form values
+  // Store form values (step 1: preserved when leaving step 0 for submit)
   bool isAvailable = false;
   Partner? selectedSupplier;
+  int? savedDepartureHarborId;
+  int? savedArrivalHarborId;
+  String? savedDepartureHarborName;
+  String? savedDepartureHarborLocation;
+  String? savedArrivalHarborName;
+  String? savedArrivalHarborLocation;
 
   // Currency selections
   Devise? locationFeeCurrency;
@@ -230,7 +236,15 @@ class EditContainerModalState extends State<EditContainerModal> {
     if (currentStep == 0) {
       final valid = _formKey.currentState?.validate() ?? false;
       if (valid) {
+        final info = _containerInfoKey.currentState;
         setState(() {
+          savedDepartureHarborId = info?.departureHarborId;
+          savedArrivalHarborId = info?.arrivalHarborId;
+          savedDepartureHarborName = info?.selectedDepartureHarbor?.name;
+          savedDepartureHarborLocation =
+              info?.selectedDepartureHarbor?.location;
+          savedArrivalHarborName = info?.selectedArrivalHarbor?.name;
+          savedArrivalHarborLocation = info?.selectedArrivalHarbor?.location;
           currentStep = 1;
           widget.onStepChanged?.call(currentStep);
         });
@@ -366,6 +380,12 @@ class EditContainerModalState extends State<EditContainerModal> {
         size: size,
         isAvailable: isAvailable,
         supplier_id: selectedSupplier?.id,
+        departureHarborId: savedDepartureHarborId,
+        departureHarborName: savedDepartureHarborName,
+        departureHarborLocation: savedDepartureHarborLocation,
+        arrivalHarborId: savedArrivalHarborId,
+        arrivalHarborName: savedArrivalHarborName,
+        arrivalHarborLocation: savedArrivalHarborLocation,
         locationFee: locFee,
         locationFeeCurrencyCode: locationFeeCurrency?.code,
         locationFeeRateToCNY:
@@ -449,6 +469,9 @@ class EditContainerModalState extends State<EditContainerModal> {
                       size: sizeController,
                       initialAvailability:
                           widget.container.isAvailable ?? false,
+                      initialDepartureHarborId:
+                          widget.container.departureHarborId,
+                      initialArrivalHarborId: widget.container.arrivalHarborId,
                       onAvailabilityChanged: (value) {
                         setState(() {
                           isAvailable = value;
@@ -459,7 +482,6 @@ class EditContainerModalState extends State<EditContainerModal> {
                           selectedSupplier = value;
                         });
                       },
-                      // initialSupplierId: widget.container.supplier_id, // à activer si ContainerInfoForm le supporte
                     ),
                     const SizedBox(height: 24),
                   ],
