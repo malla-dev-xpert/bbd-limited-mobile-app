@@ -302,6 +302,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _filterOperations(_searchController.text);
   }
 
+  /// Total des versements en CNY : somme des montants convertis en CNY (montantConvertiCNY / montantCNY).
+  /// Ne fait aucun calcul de conversion côté Flutter : utilise uniquement les valeurs fournies par le backend.
   void _calculateTotalVersementsCNY() {
     if (_partner.versements == null || _partner.versements!.isEmpty) {
       setState(() {
@@ -312,14 +314,16 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     double totalCNY = 0.0;
     for (var versement in _partner.versements!) {
-      if (versement.montantVerser == null) continue;
-      // Utiliser montantCNY fourni par le backend si disponible
-      if (versement.montantCNY != null && versement.montantCNY! > 0) {
-        totalCNY += versement.montantCNY!;
-      } else if (versement.deviseCode == 'CNY') {
+      // Priorité : montant converti en CNY fourni par le backend (montant_converti_cny)
+      final montantConvertiCNY =
+          versement.montantConvertiCNY ?? versement.montantCNY;
+      if (montantConvertiCNY != null && montantConvertiCNY > 0) {
+        totalCNY += montantConvertiCNY;
+      } else if (versement.deviseCode == 'CNY' &&
+          versement.montantVerser != null) {
         totalCNY += versement.montantVerser!;
       }
-      // Devises autres que CNY sans montantCNY : non additionnées (pas de calcul côté Flutter)
+      // Devises autres que CNY sans montant converti : non additionnées (pas de calcul côté Flutter)
     }
 
     setState(() {

@@ -26,8 +26,12 @@ class Versement {
   final String? note;
   final double? tauxUtilise;
 
-  /// Montant en CNY calculé par le backend (lecture seule, jamais calculé côté Flutter)
+  /// Montant converti en CNY par le backend (lecture seule, jamais calculé côté Flutter).
+  /// Correspond à la colonne backend montant_converti_cny / montantConvertiCNY.
   final double? montantCNY;
+
+  /// Alias pour montantCNY (montant converti en CNY).
+  double? get montantConvertiCNY => montantCNY;
 
   Versement copyWith(
       {int? id,
@@ -183,8 +187,12 @@ class Versement {
         tauxUtilise: json['tauxUtilise'] != null
             ? (json['tauxUtilise'] as num).toDouble()
             : null,
-        montantCNY: json['montantCNY'] != null
-            ? (json['montantCNY'] as num).toDouble()
-            : null);
+        montantCNY: _parseMontantConvertiCNY(json));
+  }
+
+  /// Lit le montant converti en CNY (backend peut envoyer montantConvertiCNY ou montantCNY).
+  static double? _parseMontantConvertiCNY(Map<String, dynamic> json) {
+    final value = json['montantConvertiCNY'] ?? json['montantCNY'];
+    return value != null ? (value as num).toDouble() : null;
   }
 }
