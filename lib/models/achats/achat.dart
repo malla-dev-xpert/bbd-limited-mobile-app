@@ -11,6 +11,10 @@ class Achat {
   final bool? isDebt;
   final int? clientId;
   Status? status;
+  final double? tauxUtiliseToCNY;
+  final double? montantTotalCNY;
+  final double? totalCbn;
+  final double? totalWeight;
 
   Achat copyWith({
     int? id,
@@ -23,6 +27,10 @@ class Achat {
     bool? isDebt,
     int? clientId,
     Status? status,
+    double? tauxUtiliseToCNY,
+    double? montantTotalCNY,
+    double? totalCbn,
+    double? totalWeight,
   }) {
     return Achat(
       id: id ?? this.id,
@@ -35,6 +43,10 @@ class Achat {
       isDebt: isDebt ?? this.isDebt,
       clientId: clientId ?? this.clientId,
       status: status ?? this.status,
+      tauxUtiliseToCNY: tauxUtiliseToCNY ?? this.tauxUtiliseToCNY,
+      montantTotalCNY: montantTotalCNY ?? this.montantTotalCNY,
+      totalCbn: totalCbn ?? this.totalCbn,
+      totalWeight: totalWeight ?? this.totalWeight,
     );
   }
 
@@ -49,6 +61,10 @@ class Achat {
     this.isDebt,
     this.clientId,
     this.status,
+    this.tauxUtiliseToCNY,
+    this.montantTotalCNY,
+    this.totalCbn,
+    this.totalWeight,
   });
 
   Map<String, dynamic> toJson() {
@@ -63,6 +79,10 @@ class Achat {
       'isDebt': isDebt,
       'clientId': clientId,
       'status': status?.name,
+      'tauxUtiliseToCNY': tauxUtiliseToCNY,
+      'montantTotalCNY': montantTotalCNY,
+      'totalCbn': totalCbn,
+      'totalWeight': totalWeight,
     };
   }
 
@@ -97,6 +117,18 @@ class Achat {
       isDebt: json['isDebt'] as bool?,
       clientId: json['clientId'] as int?,
       status: status,
+      tauxUtiliseToCNY: json['tauxUtiliseToCNY'] != null
+          ? (json['tauxUtiliseToCNY'] as num).toDouble()
+          : null,
+      montantTotalCNY: json['montantTotalCNY'] != null
+          ? (json['montantTotalCNY'] as num).toDouble()
+          : null,
+      totalCbn: json['totalCbn'] != null
+          ? (json['totalCbn'] as num).toDouble()
+          : null,
+      totalWeight: json['totalWeight'] != null
+          ? (json['totalWeight'] as num).toDouble()
+          : null,
     );
   }
 }
@@ -121,6 +153,13 @@ class Items {
   final int? paidByUserId;
   final double? amountPaid;
   final String? paidByUserName;
+  final double? totalPriceRateToCNY;
+  final double? totalPriceCNY;
+  final double? weight;
+  final double? cartonLength;
+  final double? cartonWidth;
+  final double? cartonHeight;
+  final double? cbn;
   Items({
     this.id,
     this.description,
@@ -141,6 +180,13 @@ class Items {
     this.paidByUserId,
     this.amountPaid,
     this.paidByUserName,
+    this.totalPriceRateToCNY,
+    this.totalPriceCNY,
+    this.weight,
+    this.cartonLength,
+    this.cartonWidth,
+    this.cartonHeight,
+    this.cbn,
   });
 
   Items copyWith({
@@ -163,6 +209,13 @@ class Items {
     int? paidByUserId,
     double? amountPaid,
     String? paidByUserName,
+    double? totalPriceRateToCNY,
+    double? totalPriceCNY,
+    double? weight,
+    double? cartonLength,
+    double? cartonWidth,
+    double? cartonHeight,
+    double? cbn,
   }) {
     return Items(
       id: id ?? this.id,
@@ -184,6 +237,13 @@ class Items {
       paidByUserId: paidByUserId ?? this.paidByUserId,
       amountPaid: amountPaid ?? this.amountPaid,
       paidByUserName: paidByUserName ?? this.paidByUserName,
+      totalPriceRateToCNY: totalPriceRateToCNY ?? this.totalPriceRateToCNY,
+      totalPriceCNY: totalPriceCNY ?? this.totalPriceCNY,
+      weight: weight ?? this.weight,
+      cartonLength: cartonLength ?? this.cartonLength,
+      cartonWidth: cartonWidth ?? this.cartonWidth,
+      cartonHeight: cartonHeight ?? this.cartonHeight,
+      cbn: cbn ?? this.cbn,
     );
   }
 
@@ -208,6 +268,13 @@ class Items {
       'paidByUserId': paidByUserId,
       'amountPaid': amountPaid,
       'paidByUserName': paidByUserName,
+      'totalPriceRateToCNY': totalPriceRateToCNY,
+      'totalPriceCNY': totalPriceCNY,
+      'weight': weight,
+      'cartonLength': cartonLength,
+      'cartonWidth': cartonWidth,
+      'cartonHeight': cartonHeight,
+      'cbn': cbn,
     };
   }
 
@@ -254,6 +321,24 @@ class Items {
           ? (json['amountPaid'] as num).toDouble()
           : null,
       paidByUserName: json['paidByUserName'] as String?,
+      totalPriceRateToCNY: json['totalPriceRateToCNY'] != null
+          ? (json['totalPriceRateToCNY'] as num).toDouble()
+          : null,
+      totalPriceCNY: json['totalPriceCNY'] != null
+          ? (json['totalPriceCNY'] as num).toDouble()
+          : null,
+      weight:
+          json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+      cartonLength: json['cartonLength'] != null
+          ? (json['cartonLength'] as num).toDouble()
+          : null,
+      cartonWidth: json['cartonWidth'] != null
+          ? (json['cartonWidth'] as num).toDouble()
+          : null,
+      cartonHeight: json['cartonHeight'] != null
+          ? (json['cartonHeight'] as num).toDouble()
+          : null,
+      cbn: json['cbn'] != null ? (json['cbn'] as num).toDouble() : null,
     );
   }
 }
