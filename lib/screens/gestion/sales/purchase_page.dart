@@ -1470,28 +1470,10 @@ class _PurchasePageState extends State<PurchasePage> {
                       child: RadioListTile<bool>(
                         title: Text(
                           AppLocalizations.of(context)
-                              .translate('price_per_carton'),
-                          style: const TextStyle(fontSize: 16),
+                              .translate('price_per_total_quantity'),
+                          style: const TextStyle(fontSize: 12),
                         ),
                         value: true,
-                        groupValue: _isPricePerCarton,
-                        onChanged: (value) {
-                          setState(() {
-                            _isPricePerCarton = value ?? true;
-                          });
-                        },
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                    Expanded(
-                      child: RadioListTile<bool>(
-                        title: Text(
-                          AppLocalizations.of(context)
-                              .translate('price_per_total_quantity'),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        value: false,
                         groupValue: _isPricePerCarton,
                         onChanged: (value) {
                           setState(() {
@@ -1502,6 +1484,24 @@ class _PurchasePageState extends State<PurchasePage> {
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
+                    Expanded(
+                      child: RadioListTile<bool>(
+                        title: Text(
+                          AppLocalizations.of(context)
+                              .translate('price_per_carton'),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        value: false,
+                        groupValue: _isPricePerCarton,
+                        onChanged: (value) {
+                          setState(() {
+                            _isPricePerCarton = value ?? true;
+                          });
+                        },
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    )
                   ],
                 ),
               ],
@@ -1512,8 +1512,8 @@ class _PurchasePageState extends State<PurchasePage> {
           buildTextField(
             controller: _unitPriceController,
             label: _isPricePerCarton
-                ? AppLocalizations.of(context).translate('price_per_carton')
-                : AppLocalizations.of(context).translate('unit_price'),
+                ? AppLocalizations.of(context).translate('unit_price')
+                : AppLocalizations.of(context).translate('price_per_carton'),
             icon: Icons.currency_yen,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (value) =>
