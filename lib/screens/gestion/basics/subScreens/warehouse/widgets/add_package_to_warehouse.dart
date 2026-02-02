@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/providers/package_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/create_container_page.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_partner_bottom_sheet.dart';
@@ -346,7 +346,8 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       controller: _weightController,
                       label: "Poids (kg)",
                       icon: Icons.scale,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'Ce champ est requis';
@@ -361,7 +362,8 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       controller: _cbnController,
                       label: "CBN",
                       icon: Icons.monitor_weight,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'Ce champ est requis';
@@ -622,20 +624,15 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
           flex: 1,
           child: IconButton(
             onPressed: () => {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const CreateContainerForm(),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateContainerPage(),
                 ),
-              ).then((_) {
-                provider.loadContainers();
+              ).then((result) {
+                if (result == true) {
+                  provider.loadContainers();
+                }
               }),
             },
             icon: const Icon(Icons.add),

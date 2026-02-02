@@ -7,11 +7,10 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/models/harbor.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/create_container_page.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/create_warehouse_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
@@ -854,20 +853,15 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
   }
 
   void _showCreateContainerBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const CreateContainerForm(),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateContainerPage(),
       ),
-    ).then((_) {
-      _loadContainers(); // Recharger la liste des clients après la création
+    ).then((result) {
+      if (result == true) {
+        _loadContainers(); // Recharger la liste des clients après la création
+      }
     });
   }
 

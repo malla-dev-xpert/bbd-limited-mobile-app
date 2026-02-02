@@ -5,8 +5,8 @@ import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_detail_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/edit_container_modal.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/create_container_page.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/edit_container_page.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
@@ -100,34 +100,29 @@ class _ContainerScreen extends State<ContainerScreen> {
     }
   }
 
-  void _showEditContainerModal(BuildContext context, Containers container) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return EditContainerModal(
+  Future<void> _showEditContainerModal(
+      BuildContext context, Containers container) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditContainerPage(
           container: container,
           onContainerUpdated: () => fetchContainers(reset: true),
-        );
-      },
+        ),
+      ),
     );
+
+    if (result == true) {
+      fetchContainers(reset: true);
+    }
   }
 
   Future<void> _openCreateConatinerBottomSheet(BuildContext context) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateContainerPage(),
       ),
-      builder: (context) {
-        return const CreateContainerForm();
-      },
     );
 
     if (result == true) {

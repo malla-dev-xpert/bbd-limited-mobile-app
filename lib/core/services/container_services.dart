@@ -58,35 +58,121 @@ class ContainerServices {
     int? userId,
     int? supplierId,
     double? locationFee,
+    String? locationFeeCurrencyCode,
+    double? locationFeeRateToCNY,
     double? localCharge,
+    String? localChargeCurrencyCode,
+    double? localChargeRateToCNY,
     double? loadingFee,
+    String? loadingFeeCurrencyCode,
+    double? loadingFeeRateToCNY,
     double? overweightFee,
+    String? overweightFeeCurrencyCode,
+    double? overweightFeeRateToCNY,
     double? checkingFee,
+    String? checkingFeeCurrencyCode,
+    double? checkingFeeRateToCNY,
     double? telxFee,
+    String? telxFeeCurrencyCode,
+    double? telxFeeRateToCNY,
     double? otherFees,
+    String? otherFeesCurrencyCode,
+    double? otherFeesRateToCNY,
     double? margin,
+    String? marginCurrencyCode,
+    double? marginRateToCNY,
   ) async {
     try {
       String url = '$baseUrl/containers/create?userId=$userId';
       if (supplierId != null) {
         url += '&supplierId=$supplierId';
       }
+
+      // Construire le body JSON avec seulement les champs non nuls
+      final Map<String, dynamic> body = {
+        "reference": reference,
+        "size": size,
+        "isAvailable": isAvailable,
+      };
+
+      // Ajouter les frais et leurs devises/taux seulement s'ils ne sont pas null
+      if (locationFee != null) {
+        body["locationFee"] = locationFee;
+        if (locationFeeCurrencyCode != null) {
+          body["locationFeeCurrencyCode"] = locationFeeCurrencyCode;
+        }
+        if (locationFeeRateToCNY != null) {
+          body["locationFeeRateToCNY"] = locationFeeRateToCNY;
+        }
+      }
+      if (localCharge != null) {
+        body["localCharge"] = localCharge;
+        if (localChargeCurrencyCode != null) {
+          body["localChargeCurrencyCode"] = localChargeCurrencyCode;
+        }
+        if (localChargeRateToCNY != null) {
+          body["localChargeRateToCNY"] = localChargeRateToCNY;
+        }
+      }
+      if (loadingFee != null) {
+        body["loadingFee"] = loadingFee;
+        if (loadingFeeCurrencyCode != null) {
+          body["loadingFeeCurrencyCode"] = loadingFeeCurrencyCode;
+        }
+        if (loadingFeeRateToCNY != null) {
+          body["loadingFeeRateToCNY"] = loadingFeeRateToCNY;
+        }
+      }
+      if (overweightFee != null) {
+        body["overweightFee"] = overweightFee;
+        if (overweightFeeCurrencyCode != null) {
+          body["overweightFeeCurrencyCode"] = overweightFeeCurrencyCode;
+        }
+        if (overweightFeeRateToCNY != null) {
+          body["overweightFeeRateToCNY"] = overweightFeeRateToCNY;
+        }
+      }
+      if (checkingFee != null) {
+        body["checkingFee"] = checkingFee;
+        if (checkingFeeCurrencyCode != null) {
+          body["checkingFeeCurrencyCode"] = checkingFeeCurrencyCode;
+        }
+        if (checkingFeeRateToCNY != null) {
+          body["checkingFeeRateToCNY"] = checkingFeeRateToCNY;
+        }
+      }
+      if (telxFee != null) {
+        body["telxFee"] = telxFee;
+        if (telxFeeCurrencyCode != null) {
+          body["telxFeeCurrencyCode"] = telxFeeCurrencyCode;
+        }
+        if (telxFeeRateToCNY != null) {
+          body["telxFeeRateToCNY"] = telxFeeRateToCNY;
+        }
+      }
+      if (otherFees != null) {
+        body["otherFees"] = otherFees;
+        if (otherFeesCurrencyCode != null) {
+          body["otherFeesCurrencyCode"] = otherFeesCurrencyCode;
+        }
+        if (otherFeesRateToCNY != null) {
+          body["otherFeesRateToCNY"] = otherFeesRateToCNY;
+        }
+      }
+      if (margin != null) {
+        body["margin"] = margin;
+        if (marginCurrencyCode != null) {
+          body["marginCurrencyCode"] = marginCurrencyCode;
+        }
+        if (marginRateToCNY != null) {
+          body["marginRateToCNY"] = marginRateToCNY;
+        }
+      }
+
       final response = await http.post(
         Uri.parse(url),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "reference": reference,
-          "size": size,
-          "isAvailable": isAvailable,
-          "locationFee": locationFee,
-          "localCharge": localCharge,
-          "loadingFee": loadingFee,
-          "overweightFee": overweightFee,
-          "checkingFee": checkingFee,
-          "telxFee": telxFee,
-          "otherFees": otherFees,
-          "margin": margin,
-        }),
+        body: jsonEncode(body),
       );
 
       print("-------------------------------------------");
@@ -124,6 +210,8 @@ class ContainerServices {
           response.body ==
               'Impossible de supprimer : Des colis existent dans ce conteneur.') {
         return "PACKAGE_EXIST";
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
       }
     } catch (e) {
       throw Exception("Erreur lors de la suppression du conteneur : $e");
@@ -153,6 +241,8 @@ class ContainerServices {
           response.body ==
               'Impossible de démarrer la livraison, pas de colis dans le conteneur.') {
         return "NO_PACKAGE_FOR_DELIVERY";
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
       }
     } catch (e) {
       throw Exception("Erreur lors du démarrage de la livraison : $e");
@@ -180,6 +270,8 @@ class ContainerServices {
       } else if (response.statusCode == 409 &&
           response.body == 'Le conteneur n\'est pas en status INPROGRESS.') {
         return "CONTAINER_NOT_IN_PROGRESS";
+      } else {
+        throw Exception("Erreur (${response.statusCode}) : ${response.body}");
       }
     } catch (e) {
       throw Exception("Erreur lors du démarrage de la livraison : $e");

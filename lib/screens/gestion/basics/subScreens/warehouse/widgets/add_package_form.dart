@@ -1,5 +1,5 @@
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/create_container_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -244,7 +244,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       controller: _weightController,
                       label: "Poids (kg)",
                       icon: Icons.scale,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true)
                           return 'Ce champ est requis';
@@ -258,7 +259,8 @@ class _AddPackageFormState extends State<AddPackageForm> {
                       controller: _cbnController,
                       label: "CBN",
                       icon: Icons.monitor_weight,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value?.isEmpty ?? true)
                           return 'Ce champ est requis';
@@ -447,21 +449,15 @@ class _AddPackageFormState extends State<AddPackageForm> {
           flex: 1,
           child: IconButton(
             onPressed: () => {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const CreateContainerForm(),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateContainerPage(),
                 ),
-              ).then((_) {
-                provider
-                    .loadContainers(); // Recharger la liste des clients après la création
+              ).then((result) {
+                if (result == true) {
+                  provider.loadContainers();
+                }
               }),
             },
             icon: const Icon(Icons.add),

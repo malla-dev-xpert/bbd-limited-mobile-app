@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_info_form.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
-import 'package:bbd_limited/core/services/container_services.dart'; // <-- à créer
+import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/models/partner.dart'; // Import correct pour Partner
+import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class CreateContainerForm extends StatefulWidget {
-  const CreateContainerForm({super.key});
+  final Function(int)? onStepChanged;
+
+  const CreateContainerForm({super.key, this.onStepChanged});
 
   @override
-  State<CreateContainerForm> createState() => _CreateContainerFormState();
+  State<CreateContainerForm> createState() => CreateContainerFormState();
 }
 
-class _CreateContainerFormState extends State<CreateContainerForm> {
+class CreateContainerFormState extends State<CreateContainerForm> {
   int currentStep = 0;
+
+  int get step => currentStep;
+  bool get isLoadingState => isLoading;
   final _formKey = GlobalKey<FormState>();
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
   final _mainFeesFormKey = GlobalKey<FormState>();
@@ -39,31 +46,95 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
   final TextEditingController otherFeesController = TextEditingController();
   final TextEditingController marginController = TextEditingController();
 
+  // Rate controllers
+  final TextEditingController locationFeeRateController =
+      TextEditingController();
+  final TextEditingController localChargeRateController =
+      TextEditingController();
+  final TextEditingController loadingFeeRateController =
+      TextEditingController();
+  final TextEditingController overweightFeeRateController =
+      TextEditingController();
+  final TextEditingController checkingFeeRateController =
+      TextEditingController();
+  final TextEditingController telxFeeRateController = TextEditingController();
+  final TextEditingController otherFeesRateController = TextEditingController();
+  final TextEditingController marginRateController = TextEditingController();
+
+  // Currency selections
+  Devise? locationFeeCurrency;
+  Devise? localChargeCurrency;
+  Devise? loadingFeeCurrency;
+  Devise? overweightFeeCurrency;
+  Devise? checkingFeeCurrency;
+  Devise? telxFeeCurrency;
+  Devise? otherFeesCurrency;
+  Devise? marginCurrency;
+
+  // Devises list
+  List<Devise> devises = [];
+  bool isLoadingDevises = false;
+
   bool isLoading = false;
 
   final AuthService authService = AuthService();
   final ContainerServices containerService = ContainerServices();
+  final DeviseServices deviseService = DeviseServices();
 
-  void _goToNextStep() {
-    if (currentStep == 0) {
-      final valid = _formKey.currentState?.validate() ?? false;
-      if (valid) {
-        setState(() => currentStep = 1);
-      } else {
-        print('[DEBUG] Échec validation étape 1');
-      }
-    } else if (currentStep == 1) {
-      final valid = _mainFeesFormKey.currentState?.validate() ?? false;
-      if (valid) {
-        setState(() => currentStep = 2);
-      }
+  @override
+  void initState() {
+    super.initState();
+    _loadDevises();
+    // Notifier le parent de l'étape initiale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onStepChanged?.call(currentStep);
+    });
+  }
+
+  Future<void> _loadDevises() async {
+    setState(() => isLoadingDevises = true);
+    try {
+      final loadedDevises = await deviseService.findAllDevises();
+      setState(() {
+        devises = loadedDevises;
+        isLoadingDevises = false;
+      });
+    } catch (e) {
+      setState(() => isLoadingDevises = false);
+      // Silently fail - devises will remain empty
     }
   }
 
-  void _goToPreviousStep() {
-    if (currentStep > 0) {
-      setState(() => currentStep -= 1);
+  void goToNextStep() {
+    if (currentStep == 0) {
+      final valid = _formKey.currentState?.validate() ?? false;
+      if (valid) {
+        setState(() {
+          currentStep = 1;
+          widget.onStepChanged?.call(currentStep);
+        });
+      }
+    } else if (currentStep == 1) {
+      // Tous les champs sont optionnels, on peut toujours passer à l'étape suivante
+      // La validation se fait uniquement au niveau des champs individuels
+      setState(() {
+        currentStep = 2;
+        widget.onStepChanged?.call(currentStep);
+      });
     }
+  }
+
+  void goToPreviousStep() {
+    if (currentStep > 0) {
+      setState(() {
+        currentStep -= 1;
+        widget.onStepChanged?.call(currentStep);
+      });
+    }
+  }
+
+  void submitForm() {
+    _submitForm();
   }
 
   Future<void> _submitForm() async {
@@ -77,10 +148,16 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       }
       final reference = refController.text.trim();
       final size = sizeController.text.trim();
-      // Conversion des champs de frais en double
-      double parseFee(String text) {
+      // Conversion des champs de frais en double (nullable)
+      double? parseFee(String text) {
         final value = text.trim();
-        return value.isEmpty ? 0.0 : (double.tryParse(value) ?? 0.0);
+        return value.isEmpty ? null : double.tryParse(value);
+      }
+
+      // Conversion des taux en double (nullable)
+      double? parseRate(String text) {
+        final value = text.trim();
+        return value.isEmpty ? null : double.tryParse(value);
       }
 
       final response = await containerService.create(
@@ -90,13 +167,29 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
         user.id.toInt(),
         selectedSupplier?.id,
         parseFee(locationFeeController.text),
+        locationFeeCurrency?.code,
+        parseRate(locationFeeRateController.text),
         parseFee(localChargeController.text),
+        localChargeCurrency?.code,
+        parseRate(localChargeRateController.text),
         parseFee(loadingFeeController.text),
+        loadingFeeCurrency?.code,
+        parseRate(loadingFeeRateController.text),
         parseFee(overweightFeeController.text),
+        overweightFeeCurrency?.code,
+        parseRate(overweightFeeRateController.text),
         parseFee(checkingFeeController.text),
+        checkingFeeCurrency?.code,
+        parseRate(checkingFeeRateController.text),
         parseFee(telxFeeController.text),
+        telxFeeCurrency?.code,
+        parseRate(telxFeeRateController.text),
         parseFee(otherFeesController.text),
+        otherFeesCurrency?.code,
+        parseRate(otherFeesRateController.text),
         parseFee(marginController.text),
+        marginCurrency?.code,
+        parseRate(marginRateController.text),
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
@@ -120,7 +213,7 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: SingleChildScrollView(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24),
+            bottom: MediaQuery.of(context).viewInsets.bottom + 100),
         child: Builder(
           builder: (context) {
             if (currentStep == 0) {
@@ -129,24 +222,6 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!
-                              .translate('container_create'),
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 16),
                     ContainerInfoForm(
                       key: _containerInfoKey,
@@ -165,20 +240,6 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                       },
                     ),
                     const SizedBox(height: 24),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 14.0),
-                        child: confirmationButton(
-                          isLoading: false,
-                          onPressed: _goToNextStep,
-                          label:
-                              AppLocalizations.of(context)!.translate('next'),
-                          icon: Icons.arrow_forward,
-                          subLabel: "",
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               );
@@ -188,54 +249,50 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: _goToPreviousStep,
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                        Text(
-                          AppLocalizations.of(context)!
-                              .translate('container_form_location_fee'),
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 16),
                     MainFeesForm(
                       locationFeeController: locationFeeController,
+                      locationFeeRateController: locationFeeRateController,
                       localChargeController: localChargeController,
+                      localChargeRateController: localChargeRateController,
                       loadingFeeController: loadingFeeController,
+                      loadingFeeRateController: loadingFeeRateController,
+                      devises: devises,
+                      isLoadingDevises: isLoadingDevises,
+                      locationFeeCurrency: locationFeeCurrency,
+                      localChargeCurrency: localChargeCurrency,
+                      loadingFeeCurrency: loadingFeeCurrency,
+                      onLocationFeeCurrencyChanged: (currency) {
+                        setState(() {
+                          locationFeeCurrency = currency;
+                          if (currency?.rate != null) {
+                            locationFeeRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
+                      onLocalChargeCurrencyChanged: (currency) {
+                        setState(() {
+                          localChargeCurrency = currency;
+                          if (currency?.rate != null) {
+                            localChargeRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
+                      onLoadingFeeCurrencyChanged: (currency) {
+                        setState(() {
+                          loadingFeeCurrency = currency;
+                          if (currency?.rate != null) {
+                            loadingFeeRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
                       getSupplier: () =>
                           _containerInfoKey.currentState?.selectedSupplier,
                     ),
                     const SizedBox(height: 24),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 14.0),
-                        child: confirmationButton(
-                          isLoading: false,
-                          onPressed: _goToNextStep,
-                          label:
-                              AppLocalizations.of(context)!.translate('next'),
-                          icon: Icons.arrow_forward,
-                          subLabel: "",
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               );
@@ -245,58 +302,72 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: _goToPreviousStep,
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                        Text(
-                          AppLocalizations.of(context)!
-                              .translate('container_form_other_fees'),
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 16),
                     ExtraFeesForm(
                       overweightFeeController: overweightFeeController,
+                      overweightFeeRateController: overweightFeeRateController,
                       checkingFeeController: checkingFeeController,
+                      checkingFeeRateController: checkingFeeRateController,
                       telxFeeController: telxFeeController,
+                      telxFeeRateController: telxFeeRateController,
                       otherFeesController: otherFeesController,
+                      otherFeesRateController: otherFeesRateController,
                       marginController: marginController,
-                      locationFeeController: locationFeeController,
-                      localChargeController: localChargeController,
-                      loadingFeeController: loadingFeeController,
+                      marginRateController: marginRateController,
+                      devises: devises,
+                      isLoadingDevises: isLoadingDevises,
+                      overweightFeeCurrency: overweightFeeCurrency,
+                      checkingFeeCurrency: checkingFeeCurrency,
+                      telxFeeCurrency: telxFeeCurrency,
+                      otherFeesCurrency: otherFeesCurrency,
+                      marginCurrency: marginCurrency,
+                      onOverweightFeeCurrencyChanged: (currency) {
+                        setState(() {
+                          overweightFeeCurrency = currency;
+                          if (currency?.rate != null) {
+                            overweightFeeRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
+                      onCheckingFeeCurrencyChanged: (currency) {
+                        setState(() {
+                          checkingFeeCurrency = currency;
+                          if (currency?.rate != null) {
+                            checkingFeeRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
+                      onTelxFeeCurrencyChanged: (currency) {
+                        setState(() {
+                          telxFeeCurrency = currency;
+                          if (currency?.rate != null) {
+                            telxFeeRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
+                      onOtherFeesCurrencyChanged: (currency) {
+                        setState(() {
+                          otherFeesCurrency = currency;
+                          if (currency?.rate != null) {
+                            otherFeesRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
+                      onMarginCurrencyChanged: (currency) {
+                        setState(() {
+                          marginCurrency = currency;
+                          if (currency?.rate != null) {
+                            marginRateController.text =
+                                currency!.rate.toString();
+                          }
+                        });
+                      },
                     ),
                     const SizedBox(height: 24),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 14.0),
-                        child: confirmationButton(
-                          isLoading: isLoading,
-                          onPressed: _submitForm,
-                          label: AppLocalizations.of(context)!
-                              .translate('container_form_save'),
-                          icon: Icons.check_circle_outline_outlined,
-                          subLabel: AppLocalizations.of(context)!
-                              .translate('container_form_saving'),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               );
@@ -312,28 +383,58 @@ class _CreateContainerFormState extends State<CreateContainerForm> {
     refController.dispose();
     sizeController.dispose();
     locationFeeController.dispose();
+    locationFeeRateController.dispose();
     localChargeController.dispose();
+    localChargeRateController.dispose();
     loadingFeeController.dispose();
+    loadingFeeRateController.dispose();
     overweightFeeController.dispose();
+    overweightFeeRateController.dispose();
     checkingFeeController.dispose();
+    checkingFeeRateController.dispose();
     telxFeeController.dispose();
+    telxFeeRateController.dispose();
     otherFeesController.dispose();
+    otherFeesRateController.dispose();
     marginController.dispose();
+    marginRateController.dispose();
     super.dispose();
   }
 }
 
 class MainFeesForm extends StatefulWidget {
   final TextEditingController locationFeeController;
+  final TextEditingController locationFeeRateController;
   final TextEditingController localChargeController;
+  final TextEditingController localChargeRateController;
   final TextEditingController loadingFeeController;
+  final TextEditingController loadingFeeRateController;
+  final List<Devise> devises;
+  final bool isLoadingDevises;
+  final Devise? locationFeeCurrency;
+  final Devise? localChargeCurrency;
+  final Devise? loadingFeeCurrency;
+  final Function(Devise?) onLocationFeeCurrencyChanged;
+  final Function(Devise?) onLocalChargeCurrencyChanged;
+  final Function(Devise?) onLoadingFeeCurrencyChanged;
   final Partner? Function() getSupplier;
 
   const MainFeesForm({
     super.key,
     required this.locationFeeController,
+    required this.locationFeeRateController,
     required this.localChargeController,
+    required this.localChargeRateController,
     required this.loadingFeeController,
+    required this.loadingFeeRateController,
+    required this.devises,
+    required this.isLoadingDevises,
+    required this.locationFeeCurrency,
+    required this.localChargeCurrency,
+    required this.loadingFeeCurrency,
+    required this.onLocationFeeCurrencyChanged,
+    required this.onLocalChargeCurrencyChanged,
+    required this.onLoadingFeeCurrencyChanged,
     required this.getSupplier,
   });
 
@@ -343,82 +444,158 @@ class MainFeesForm extends StatefulWidget {
 
 class MainFeesFormState extends State<MainFeesForm> {
   bool validate() {
-    final supplier = widget.getSupplier();
-    final locationFee = widget.locationFeeController.text.trim();
-    final localCharge = widget.localChargeController.text.trim();
-    final loadingFee = widget.loadingFeeController.text.trim();
-    print(
-        '[DEBUG] locationFee="$locationFee" localCharge="$localCharge" loadingFee="$loadingFee" supplier=$supplier');
-    if (supplier != null && locationFee.isEmpty) {
-      showErrorTopSnackBar(
-          context,
-          AppLocalizations.of(context)!
-              .translate('container_form_validation_fees'));
-      return false;
-    }
-    if (localCharge.isEmpty) {
-      showErrorTopSnackBar(
-          context,
-          AppLocalizations.of(context)!
-              .translate('container_form_validation_fees'));
-      return false;
-    }
-    if (loadingFee.isEmpty) {
-      showErrorTopSnackBar(
-          context,
-          AppLocalizations.of(context)!
-              .translate('container_form_validation_fees'));
-      return false;
-    }
+    // Tous les champs sont maintenant optionnels
+    // La validation se fait uniquement au niveau des champs individuels (format numérique)
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    final supplier = widget.getSupplier();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Location Fee
         buildTextField(
           controller: widget.locationFeeController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_location_fee') +
-              (supplier != null ? " *" : " (optionnel)"),
+              " (optionnel)",
           icon: Icons.business,
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (value) {
-            if (supplier != null && (value == null || value.isEmpty)) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
               return AppLocalizations.of(context)!
                   .translate('container_form_validation_fees');
             }
             return null;
           },
         ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.locationFeeCurrency,
+                onChanged: widget.onLocationFeeCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.locationFeeRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
+        // Local Charge
         buildTextField(
           controller: widget.localChargeController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_local_charge') +
-              " *",
+              " (optionnel)",
           icon: Icons.location_city,
-          keyboardType: TextInputType.number,
-          validator: (value) => value == null || value.isEmpty
-              ? AppLocalizations.of(context)!
-                  .translate('container_form_validation_fees')
-              : null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.localChargeCurrency,
+                onChanged: widget.onLocalChargeCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.localChargeRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
+        // Loading Fee
         buildTextField(
           controller: widget.loadingFeeController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_loading_fee') +
-              " *",
+              " (optionnel)",
           icon: Icons.local_shipping,
-          keyboardType: TextInputType.number,
-          validator: (value) => value == null || value.isEmpty
-              ? AppLocalizations.of(context)!
-                  .translate('container_form_validation_fees')
-              : null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.loadingFeeCurrency,
+                onChanged: widget.onLoadingFeeCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.loadingFeeRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -427,25 +604,52 @@ class MainFeesFormState extends State<MainFeesForm> {
 
 class ExtraFeesForm extends StatefulWidget {
   final TextEditingController overweightFeeController;
+  final TextEditingController overweightFeeRateController;
   final TextEditingController checkingFeeController;
+  final TextEditingController checkingFeeRateController;
   final TextEditingController telxFeeController;
+  final TextEditingController telxFeeRateController;
   final TextEditingController otherFeesController;
+  final TextEditingController otherFeesRateController;
   final TextEditingController marginController;
-  // Pour le calcul du total
-  final TextEditingController locationFeeController;
-  final TextEditingController localChargeController;
-  final TextEditingController loadingFeeController;
+  final TextEditingController marginRateController;
+  final List<Devise> devises;
+  final bool isLoadingDevises;
+  final Devise? overweightFeeCurrency;
+  final Devise? checkingFeeCurrency;
+  final Devise? telxFeeCurrency;
+  final Devise? otherFeesCurrency;
+  final Devise? marginCurrency;
+  final Function(Devise?) onOverweightFeeCurrencyChanged;
+  final Function(Devise?) onCheckingFeeCurrencyChanged;
+  final Function(Devise?) onTelxFeeCurrencyChanged;
+  final Function(Devise?) onOtherFeesCurrencyChanged;
+  final Function(Devise?) onMarginCurrencyChanged;
 
   const ExtraFeesForm({
     super.key,
     required this.overweightFeeController,
+    required this.overweightFeeRateController,
     required this.checkingFeeController,
+    required this.checkingFeeRateController,
     required this.telxFeeController,
+    required this.telxFeeRateController,
     required this.otherFeesController,
+    required this.otherFeesRateController,
     required this.marginController,
-    required this.locationFeeController,
-    required this.localChargeController,
-    required this.loadingFeeController,
+    required this.marginRateController,
+    required this.devises,
+    required this.isLoadingDevises,
+    required this.overweightFeeCurrency,
+    required this.checkingFeeCurrency,
+    required this.telxFeeCurrency,
+    required this.otherFeesCurrency,
+    required this.marginCurrency,
+    required this.onOverweightFeeCurrencyChanged,
+    required this.onCheckingFeeCurrencyChanged,
+    required this.onTelxFeeCurrencyChanged,
+    required this.onOtherFeesCurrencyChanged,
+    required this.onMarginCurrencyChanged,
   });
 
   @override
@@ -453,49 +657,9 @@ class ExtraFeesForm extends StatefulWidget {
 }
 
 class ExtraFeesFormState extends State<ExtraFeesForm> {
-  double get totalFees {
-    double sum = 0;
-    sum += double.tryParse(widget.locationFeeController.text) ?? 0;
-    sum += double.tryParse(widget.localChargeController.text) ?? 0;
-    sum += double.tryParse(widget.loadingFeeController.text) ?? 0;
-    sum += double.tryParse(widget.overweightFeeController.text) ?? 0;
-    sum += double.tryParse(widget.checkingFeeController.text) ?? 0;
-    sum += double.tryParse(widget.telxFeeController.text) ?? 0;
-    sum += double.tryParse(widget.otherFeesController.text) ?? 0;
-    return sum;
-  }
-
   bool validate() {
-    // Aucun champ obligatoire ici, marge optionnelle
+    // Aucun champ obligatoire ici, tous les frais sont optionnels
     return true;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    widget.locationFeeController.addListener(_onChanged);
-    widget.localChargeController.addListener(_onChanged);
-    widget.loadingFeeController.addListener(_onChanged);
-    widget.overweightFeeController.addListener(_onChanged);
-    widget.checkingFeeController.addListener(_onChanged);
-    widget.telxFeeController.addListener(_onChanged);
-    widget.otherFeesController.addListener(_onChanged);
-  }
-
-  @override
-  void dispose() {
-    widget.locationFeeController.removeListener(_onChanged);
-    widget.localChargeController.removeListener(_onChanged);
-    widget.loadingFeeController.removeListener(_onChanged);
-    widget.overweightFeeController.removeListener(_onChanged);
-    widget.checkingFeeController.removeListener(_onChanged);
-    widget.telxFeeController.removeListener(_onChanged);
-    widget.otherFeesController.removeListener(_onChanged);
-    super.dispose();
-  }
-
-  void _onChanged() {
-    setState(() {});
   }
 
   @override
@@ -503,70 +667,244 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Overweight Fee
         buildTextField(
           controller: widget.overweightFeeController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_overweight_fee') +
               " (optionnel)",
           icon: Icons.scale,
-          keyboardType: TextInputType.number,
-          validator: null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.overweightFeeCurrency,
+                onChanged: widget.onOverweightFeeCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.overweightFeeRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
+        // Checking Fee
         buildTextField(
           controller: widget.checkingFeeController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_checking_fee') +
               " (optionnel)",
           icon: Icons.verified,
-          keyboardType: TextInputType.number,
-          validator: null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.checkingFeeCurrency,
+                onChanged: widget.onCheckingFeeCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.checkingFeeRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
+        // Telx Fee
         buildTextField(
           controller: widget.telxFeeController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_telx_fee') +
               " (optionnel)",
           icon: Icons.phone_android,
-          keyboardType: TextInputType.number,
-          validator: null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.telxFeeCurrency,
+                onChanged: widget.onTelxFeeCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.telxFeeRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
+        // Other Fees
         buildTextField(
           controller: widget.otherFeesController,
           label: AppLocalizations.of(context)!
                   .translate('container_form_other_fees') +
               " (optionnel)",
           icon: Icons.more_horiz,
-          keyboardType: TextInputType.number,
-          validator: null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: Text(
-                AppLocalizations.of(context)!
-                        .translate('container_total_fees') +
-                    " : ",
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.otherFeesCurrency,
+                onChanged: widget.onOtherFeesCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
               ),
             ),
-            Text(
-              "${totalFees.toStringAsFixed(2)}",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.otherFeesRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 16),
+        // Margin
         buildTextField(
           controller: widget.marginController,
           label:
-              AppLocalizations.of(context)!.translate('container_form_margin'),
+              AppLocalizations.of(context)!.translate('container_form_margin') +
+                  " (optionnel)",
           icon: Icons.add,
-          keyboardType: TextInputType.number,
-          validator: null,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) {
+            if (value != null &&
+                value.isNotEmpty &&
+                double.tryParse(value) == null) {
+              return AppLocalizations.of(context)!
+                  .translate('container_form_validation_fees');
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.marginCurrency,
+                onChanged: widget.onMarginCurrencyChanged,
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.marginRateController,
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+              ),
+            ),
+          ],
         ),
       ],
     );

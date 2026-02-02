@@ -20,13 +20,29 @@ class Containers {
   final String? supplierPhone;
   // Nouveaux champs de frais
   final double? locationFee;
+  final String? locationFeeCurrencyCode;
+  final double? locationFeeRateToCNY;
   final double? localCharge;
+  final String? localChargeCurrencyCode;
+  final double? localChargeRateToCNY;
   final double? loadingFee;
+  final String? loadingFeeCurrencyCode;
+  final double? loadingFeeRateToCNY;
   final double? overweightFee;
+  final String? overweightFeeCurrencyCode;
+  final double? overweightFeeRateToCNY;
   final double? checkingFee;
+  final String? checkingFeeCurrencyCode;
+  final double? checkingFeeRateToCNY;
   final double? telxFee;
+  final String? telxFeeCurrencyCode;
+  final double? telxFeeRateToCNY;
   final double? otherFees;
+  final String? otherFeesCurrencyCode;
+  final double? otherFeesRateToCNY;
   final double? margin;
+  final String? marginCurrencyCode;
+  final double? marginRateToCNY;
   final double? amount;
   // final int? harborId;
   // final String? harborName;
@@ -49,13 +65,29 @@ class Containers {
     String? supplierName,
     String? supplierPhone,
     double? locationFee,
+    String? locationFeeCurrencyCode,
+    double? locationFeeRateToCNY,
     double? localCharge,
+    String? localChargeCurrencyCode,
+    double? localChargeRateToCNY,
     double? loadingFee,
+    String? loadingFeeCurrencyCode,
+    double? loadingFeeRateToCNY,
     double? overweightFee,
+    String? overweightFeeCurrencyCode,
+    double? overweightFeeRateToCNY,
     double? checkingFee,
+    String? checkingFeeCurrencyCode,
+    double? checkingFeeRateToCNY,
     double? telxFee,
+    String? telxFeeCurrencyCode,
+    double? telxFeeRateToCNY,
     double? otherFees,
+    String? otherFeesCurrencyCode,
+    double? otherFeesRateToCNY,
     double? margin,
+    String? marginCurrencyCode,
+    double? marginRateToCNY,
     double? amount,
   }) {
     return Containers(
@@ -76,13 +108,36 @@ class Containers {
       supplierName: supplierName ?? this.supplierName,
       supplierPhone: supplierPhone ?? this.supplierPhone,
       locationFee: locationFee ?? this.locationFee,
+      locationFeeCurrencyCode:
+          locationFeeCurrencyCode ?? this.locationFeeCurrencyCode,
+      locationFeeRateToCNY: locationFeeRateToCNY ?? this.locationFeeRateToCNY,
       localCharge: localCharge ?? this.localCharge,
+      localChargeCurrencyCode:
+          localChargeCurrencyCode ?? this.localChargeCurrencyCode,
+      localChargeRateToCNY: localChargeRateToCNY ?? this.localChargeRateToCNY,
       loadingFee: loadingFee ?? this.loadingFee,
+      loadingFeeCurrencyCode:
+          loadingFeeCurrencyCode ?? this.loadingFeeCurrencyCode,
+      loadingFeeRateToCNY: loadingFeeRateToCNY ?? this.loadingFeeRateToCNY,
       overweightFee: overweightFee ?? this.overweightFee,
+      overweightFeeCurrencyCode:
+          overweightFeeCurrencyCode ?? this.overweightFeeCurrencyCode,
+      overweightFeeRateToCNY:
+          overweightFeeRateToCNY ?? this.overweightFeeRateToCNY,
       checkingFee: checkingFee ?? this.checkingFee,
+      checkingFeeCurrencyCode:
+          checkingFeeCurrencyCode ?? this.checkingFeeCurrencyCode,
+      checkingFeeRateToCNY: checkingFeeRateToCNY ?? this.checkingFeeRateToCNY,
       telxFee: telxFee ?? this.telxFee,
+      telxFeeCurrencyCode: telxFeeCurrencyCode ?? this.telxFeeCurrencyCode,
+      telxFeeRateToCNY: telxFeeRateToCNY ?? this.telxFeeRateToCNY,
       otherFees: otherFees ?? this.otherFees,
+      otherFeesCurrencyCode:
+          otherFeesCurrencyCode ?? this.otherFeesCurrencyCode,
+      otherFeesRateToCNY: otherFeesRateToCNY ?? this.otherFeesRateToCNY,
       margin: margin ?? this.margin,
+      marginCurrencyCode: marginCurrencyCode ?? this.marginCurrencyCode,
+      marginRateToCNY: marginRateToCNY ?? this.marginRateToCNY,
       amount: amount ?? this.amount,
       // harborId: harborId ?? this.harborId,
       // harborName: harborName ?? this.harborName,
@@ -90,7 +145,7 @@ class Containers {
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> json = {
       'id': id,
       'reference': reference,
       'size': size,
@@ -119,6 +174,40 @@ class Containers {
       // 'harborId': harborId,
       // 'harborName': harborName,
     };
+
+    // Ajouter les champs de devises et taux seulement s'ils ne sont pas null
+    if (locationFeeCurrencyCode != null)
+      json['locationFeeCurrencyCode'] = locationFeeCurrencyCode;
+    if (locationFeeRateToCNY != null)
+      json['locationFeeRateToCNY'] = locationFeeRateToCNY;
+    if (localChargeCurrencyCode != null)
+      json['localChargeCurrencyCode'] = localChargeCurrencyCode;
+    if (localChargeRateToCNY != null)
+      json['localChargeRateToCNY'] = localChargeRateToCNY;
+    if (loadingFeeCurrencyCode != null)
+      json['loadingFeeCurrencyCode'] = loadingFeeCurrencyCode;
+    if (loadingFeeRateToCNY != null)
+      json['loadingFeeRateToCNY'] = loadingFeeRateToCNY;
+    if (overweightFeeCurrencyCode != null)
+      json['overweightFeeCurrencyCode'] = overweightFeeCurrencyCode;
+    if (overweightFeeRateToCNY != null)
+      json['overweightFeeRateToCNY'] = overweightFeeRateToCNY;
+    if (checkingFeeCurrencyCode != null)
+      json['checkingFeeCurrencyCode'] = checkingFeeCurrencyCode;
+    if (checkingFeeRateToCNY != null)
+      json['checkingFeeRateToCNY'] = checkingFeeRateToCNY;
+    if (telxFeeCurrencyCode != null)
+      json['telxFeeCurrencyCode'] = telxFeeCurrencyCode;
+    if (telxFeeRateToCNY != null) json['telxFeeRateToCNY'] = telxFeeRateToCNY;
+    if (otherFeesCurrencyCode != null)
+      json['otherFeesCurrencyCode'] = otherFeesCurrencyCode;
+    if (otherFeesRateToCNY != null)
+      json['otherFeesRateToCNY'] = otherFeesRateToCNY;
+    if (marginCurrencyCode != null)
+      json['marginCurrencyCode'] = marginCurrencyCode;
+    if (marginRateToCNY != null) json['marginRateToCNY'] = marginRateToCNY;
+
+    return json;
   }
 
   Containers({
@@ -139,13 +228,29 @@ class Containers {
     this.supplierName,
     this.supplierPhone,
     this.locationFee,
+    this.locationFeeCurrencyCode,
+    this.locationFeeRateToCNY,
     this.localCharge,
+    this.localChargeCurrencyCode,
+    this.localChargeRateToCNY,
     this.loadingFee,
+    this.loadingFeeCurrencyCode,
+    this.loadingFeeRateToCNY,
     this.overweightFee,
+    this.overweightFeeCurrencyCode,
+    this.overweightFeeRateToCNY,
     this.checkingFee,
+    this.checkingFeeCurrencyCode,
+    this.checkingFeeRateToCNY,
     this.telxFee,
+    this.telxFeeCurrencyCode,
+    this.telxFeeRateToCNY,
     this.otherFees,
+    this.otherFeesCurrencyCode,
+    this.otherFeesRateToCNY,
     this.margin,
+    this.marginCurrencyCode,
+    this.marginRateToCNY,
     this.amount,
     // this.harborId,
     // this.harborName,
@@ -195,13 +300,30 @@ class Containers {
       supplierName: json['supplierName'] as String?,
       supplierPhone: json['supplierPhone'] as String?,
       locationFee: (json['locationFee'] as num?)?.toDouble(),
+      locationFeeCurrencyCode: json['locationFeeCurrencyCode'] as String?,
+      locationFeeRateToCNY: (json['locationFeeRateToCNY'] as num?)?.toDouble(),
       localCharge: (json['localCharge'] as num?)?.toDouble(),
+      localChargeCurrencyCode: json['localChargeCurrencyCode'] as String?,
+      localChargeRateToCNY: (json['localChargeRateToCNY'] as num?)?.toDouble(),
       loadingFee: (json['loadingFee'] as num?)?.toDouble(),
+      loadingFeeCurrencyCode: json['loadingFeeCurrencyCode'] as String?,
+      loadingFeeRateToCNY: (json['loadingFeeRateToCNY'] as num?)?.toDouble(),
       overweightFee: (json['overweightFee'] as num?)?.toDouble(),
+      overweightFeeCurrencyCode: json['overweightFeeCurrencyCode'] as String?,
+      overweightFeeRateToCNY:
+          (json['overweightFeeRateToCNY'] as num?)?.toDouble(),
       checkingFee: (json['checkingFee'] as num?)?.toDouble(),
+      checkingFeeCurrencyCode: json['checkingFeeCurrencyCode'] as String?,
+      checkingFeeRateToCNY: (json['checkingFeeRateToCNY'] as num?)?.toDouble(),
       telxFee: (json['telxFee'] as num?)?.toDouble(),
+      telxFeeCurrencyCode: json['telxFeeCurrencyCode'] as String?,
+      telxFeeRateToCNY: (json['telxFeeRateToCNY'] as num?)?.toDouble(),
       otherFees: (json['otherFees'] as num?)?.toDouble(),
+      otherFeesCurrencyCode: json['otherFeesCurrencyCode'] as String?,
+      otherFeesRateToCNY: (json['otherFeesRateToCNY'] as num?)?.toDouble(),
       margin: (json['margin'] as num?)?.toDouble(),
+      marginCurrencyCode: json['marginCurrencyCode'] as String?,
+      marginRateToCNY: (json['marginRateToCNY'] as num?)?.toDouble(),
       amount: (json['amount'] as num?)?.toDouble(),
     );
   }
