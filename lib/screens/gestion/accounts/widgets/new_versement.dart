@@ -100,8 +100,13 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
           widget.versementToEdit!.commissionnairePhone ?? '';
       noteController.text = widget.versementToEdit!.note ?? '';
       myDate = widget.versementToEdit!.createdAt ?? DateTime.now();
-      tauxUtiliseController.text =
-          widget.versementToEdit!.tauxUtilise?.toString() ?? '';
+      // Taux : 1 si CNY, sinon valeur du versement (Flutter ne calcule jamais)
+      if (widget.versementToEdit!.deviseCode == 'CNY') {
+        tauxUtiliseController.text = '1';
+      } else {
+        tauxUtiliseController.text =
+            widget.versementToEdit!.tauxUtilise?.toString() ?? '';
+      }
 
       if (widget.versementToEdit!.type != null) {
         selectedType = VersementType.values.firstWhere(
@@ -208,17 +213,25 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         return;
       }
 
-      if (tauxUtiliseController.text.isEmpty) {
-        showErrorTopSnackBar(context,
-            AppLocalizations.of(context).translate('please_enter_rate'));
-        return;
-      }
-
-      final tauxUtilise = double.tryParse(tauxUtiliseController.text) ?? 0.0;
-      if (tauxUtilise <= 0) {
-        showErrorTopSnackBar(
-            context, AppLocalizations.of(context).translate('invalid_rate'));
-        return;
+      // Taux : obligatoire si devise != CNY ; fixé à 1 si devise = CNY (Flutter ne calcule jamais)
+      final double tauxUtilise;
+      if (selectedDevise!.code == 'CNY') {
+        tauxUtilise = 1.0;
+      } else {
+        if (tauxUtiliseController.text.trim().isEmpty) {
+          showErrorTopSnackBar(
+              context,
+              AppLocalizations.of(context)
+                  .translate('rate_required_if_not_cny'));
+          return;
+        }
+        final parsed = double.tryParse(tauxUtiliseController.text.trim());
+        if (parsed == null || parsed <= 0) {
+          showErrorTopSnackBar(
+              context, AppLocalizations.of(context).translate('invalid_rate'));
+          return;
+        }
+        tauxUtilise = parsed;
       }
 
       if (selectedType == null) {
@@ -261,6 +274,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
         "commissionnairePhone": commissionnairePhoneController.text,
         "type": selectedType.toString().split('.').last,
         "note": noteController.text,
+        "deviseId": selectedDevise!.id,
+        "deviseCode": selectedDevise!.code,
         "tauxUtilise": tauxUtilise,
       });
 
@@ -321,6 +336,22 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
     });
   }
 
+  Widget _buildRateToCnyField() {
+    final isCny = selectedDevise?.code == 'CNY';
+    final label = isCny
+        ? AppLocalizations.of(context).translate('rate_to_cny_fixed')
+        : AppLocalizations.of(context)
+            .translate('rate_to_cny_label')
+            .replaceAll('%s', selectedDevise?.code ?? '');
+    return buildTextField(
+      controller: tauxUtiliseController,
+      label: label,
+      icon: Icons.trending_up,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      readOnly: isCny,
+    );
+  }
+
   bool _validateFirstStep() {
     if (widget.isVersementScreen && selectedCLients == null) {
       showErrorTopSnackBar(context,
@@ -346,16 +377,19 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
               .translate('please_select_valid_currency'));
       return false;
     }
-    if (tauxUtiliseController.text.isEmpty) {
-      showErrorTopSnackBar(
-          context, AppLocalizations.of(context).translate('please_enter_rate'));
-      return false;
-    }
-    final tauxUtilise = double.tryParse(tauxUtiliseController.text) ?? 0.0;
-    if (tauxUtilise <= 0) {
-      showErrorTopSnackBar(
-          context, AppLocalizations.of(context).translate('invalid_rate'));
-      return false;
+    // Taux : obligatoire si devise != CNY ; si CNY, pas de saisie requise (fixé à 1)
+    if (selectedDevise!.code != 'CNY') {
+      if (tauxUtiliseController.text.trim().isEmpty) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        return false;
+      }
+      final tauxUtilise = double.tryParse(tauxUtiliseController.text.trim());
+      if (tauxUtilise == null || tauxUtilise <= 0) {
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('invalid_rate'));
+        return false;
+      }
     }
     return true;
   }
@@ -567,8 +601,10 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                                   onChanged: (currency) {
                                     setState(() {
                                       selectedDevise = currency;
-                                      // Pré-remplir le taux avec le taux de la devise sélectionnée
-                                      if (currency?.rate != null) {
+                                      // CNY : taux fixé à 1 (non éditable). Sinon pré-remplir depuis la devise (suggestion uniquement)
+                                      if (currency?.code == 'CNY') {
+                                        tauxUtiliseController.text = '1';
+                                      } else if (currency?.rate != null) {
                                         tauxUtiliseController.text =
                                             currency!.rate.toString();
                                       } else {
@@ -590,14 +626,7 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                             ],
                           ),
                           const SizedBox(height: 10),
-                          buildTextField(
-                            controller: tauxUtiliseController,
-                            label: AppLocalizations.of(context)
-                                .translate('exchange_rate'),
-                            icon: Icons.trending_up,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                          ),
+                          _buildRateToCnyField(),
                         ],
                       ),
                       Column(
@@ -717,132 +746,121 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
   }
 
   void _showAddDeviseDialog() {
-    String? nameError;
-    String? codeError;
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              backgroundColor: Colors.white,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                width: MediaQuery.of(context).size.width * 0.95,
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.7,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(context)
-                                .translate('add_new_currency'),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1E49),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context).translate('add_new_devise'),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1E49),
+                      ),
                     ),
-                    const SizedBox(height: 24),
-                    DeviseForm(
-                      isLoading: _isLoading,
-                      isEditing: false,
-                      nameError: nameError,
-                      codeError: codeError,
-                      onSubmit: (name, code, rate) async {
-                        setState(() => _isLoading = true);
-                        try {
-                          final user = await authService.getUserInfo();
-                          if (user == null) {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('invalid_user_session'));
-                            return;
-                          }
-
-                          final result = await ref
-                              .read(deviseListProvider.notifier)
-                              .createDevise(
-                                name: name,
-                                code: code,
-                                rate: rate,
-                                userId: user.id,
-                              );
-
-                          log("Résultat création devise: $result");
-
-                          if (result == "SUCCESS") {
-                            Navigator.pop(context);
-                            // Recharger la liste des devises pour l'afficher dans le dropdown
-                            await _loadDevisesData();
-                            showSuccessTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('currency_created_success'));
-                          } else if (result == "NAME_EXIST") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('currency_name_exists'));
-                          } else if (result == "CODE_EXIST") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('currency_code_exists'));
-                          } else if (result == "RATE_NOT_FOUND") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('conversion_rate_not_found'));
-                          } else if (result == "RATE_SERVICE_ERROR") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('rate_service_error'));
-                          } else if (result == "CONNECTION_ERROR") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('connection_error'));
-                          } else {
-                            // Affiche le message d'erreur tel quel s'il provient du backend
-                            showErrorTopSnackBar(
-                                context,
-                                result ??
-                                    AppLocalizations.of(context)
-                                        .translate('unknown_error'));
-                          }
-                        } catch (e) {
-                          showErrorTopSnackBar(context,
-                              '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
-                        } finally {
-                          setState(() => _isLoading = false);
-                        }
-                      },
-                    ),
-                  ],
-                ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
               ),
-            );
-          },
+              const SizedBox(height: 24),
+              DeviseForm(
+                isLoading: _isLoading,
+                isEditing: false,
+                onSubmit: (name, code, rate) async {
+                  setState(() => _isLoading = true);
+                  try {
+                    final user = await authService.getUserInfo();
+                    if (user == null) {
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('invalid_user_session'));
+                      return;
+                    }
+
+                    final result = await ref
+                        .read(deviseListProvider.notifier)
+                        .createDevise(
+                          name: name,
+                          code: code,
+                          rateToCny: rate,
+                          userId: user.id,
+                        );
+
+                    log("Résultat création devise: $result");
+
+                    if (result == "SUCCESS") {
+                      Navigator.pop(context);
+                      await _loadDevisesData();
+                      showSuccessTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('devise_created_success'));
+                    } else if (result == "NAME_EXIST") {
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('devise_name_exists'));
+                    } else if (result == "CODE_EXIST") {
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('devise_code_exists'));
+                    } else if (result == "RATE_NOT_FOUND") {
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('exchange_rate_not_found'));
+                    } else if (result == "RATE_SERVICE_ERROR") {
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('exchange_rate_service_error'));
+                    } else if (result == "CONNECTION_ERROR") {
+                      showErrorTopSnackBar(
+                          context,
+                          AppLocalizations.of(context)
+                              .translate('network_error'));
+                    } else {
+                      showErrorTopSnackBar(
+                          context,
+                          result ??
+                              AppLocalizations.of(context)
+                                  .translate('unknown_error'));
+                    }
+                  } catch (e) {
+                    showErrorTopSnackBar(context,
+                        '${AppLocalizations.of(context).translate('server_error')}: ${e.toString()}');
+                  } finally {
+                    setState(() => _isLoading = false);
+                  }
+                },
+              ),
+            ],
+          ),
         );
       },
     );

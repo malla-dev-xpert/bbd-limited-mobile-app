@@ -9,7 +9,6 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
-import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/access_control_service.dart';
@@ -58,7 +57,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   List<Packages>? _filteredPackages;
   List<Achat>? _filteredDebts;
   OperationType _selectedOperationType = OperationType.versements;
-  final ExchangeRateService _exchangeRateService = ExchangeRateService();
   double _totalVersementsUSD = 0.0;
   VersementType? _selectedVersementType;
   final GlobalKey _filterIconKey = GlobalKey();
@@ -89,11 +87,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _loadDebts();
   }
 
-  Future<void> _initializeData() async {
-    await _calculateTotalVersementsUSD();
-    if (mounted) {
-      setState(() {});
-    }
+  void _initializeData() {
+    _calculateTotalVersementsCNY();
   }
 
   Future<void> _loadDebts() async {
@@ -160,7 +155,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       });
 
       await _loadDebts();
-      await _calculateTotalVersementsUSD(); // Recalculer le total après le rafraîchissement
+      _calculateTotalVersementsCNY();
 
       // Notifier le parent que le partenaire a été mis à jour
       if (widget.onPartnerUpdated != null) {
@@ -307,7 +302,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     _filterOperations(_searchController.text);
   }
 
-  Future<void> _calculateTotalVersementsUSD() async {
+  void _calculateTotalVersementsCNY() {
     if (_partner.versements == null || _partner.versements!.isEmpty) {
       setState(() {
         _totalVersementsUSD = 0.0;
@@ -317,27 +312,18 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     double totalCNY = 0.0;
     for (var versement in _partner.versements!) {
-      if (versement.montantVerser != null && versement.deviseCode != null) {
-        if (versement.deviseCode == 'CNY') {
-          // Si la devise est déjà en CNY, ajouter directement
-          totalCNY += versement.montantVerser!;
-        } else {
-          // Utiliser le taux utilisé lors du versement s'il existe
-          if (versement.tauxUtilise != null && versement.tauxUtilise! > 0) {
-            // Convertir en CNY en utilisant le taux utilisé lors du versement
-            totalCNY += versement.montantVerser! * versement.tauxUtilise!;
-          } else {
-            // Fallback: utiliser le taux de change actuel si tauxUtilise n'est pas disponible
-            final rate = await _exchangeRateService
-                .getExchangeRate(versement.deviseCode!);
-            totalCNY += versement.montantVerser! * rate;
-          }
-        }
+      if (versement.montantVerser == null) continue;
+      // Utiliser montantCNY fourni par le backend si disponible
+      if (versement.montantCNY != null && versement.montantCNY! > 0) {
+        totalCNY += versement.montantCNY!;
+      } else if (versement.deviseCode == 'CNY') {
+        totalCNY += versement.montantVerser!;
       }
+      // Devises autres que CNY sans montantCNY : non additionnées (pas de calcul côté Flutter)
     }
 
     setState(() {
-      _totalVersementsUSD = totalCNY; // Maintenant c'est en CNY
+      _totalVersementsUSD = totalCNY;
     });
   }
 
@@ -441,8 +427,8 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       );
     } catch (e) {
       if (context.mounted) {
-      showErrorTopSnackBar(context,
-          AppLocalizations.of(context).translate('report_generation_error'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('report_generation_error'));
         print('Error generating PDF: $e');
       }
     }

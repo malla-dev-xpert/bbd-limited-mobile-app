@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
@@ -274,10 +275,90 @@ class EditContainerModalState extends State<EditContainerModal> {
         return value.isEmpty ? null : double.tryParse(value);
       }
 
-      // Conversion des taux en double (nullable)
+      // Conversion des taux : CNY => 1.0 (Flutter ne calcule jamais)
       double? parseRate(String text) {
         final value = text.trim();
         return value.isEmpty ? null : double.tryParse(value);
+      }
+
+      double? effectiveRate(Devise? currency, String rateText) {
+        if (currency == null) return null;
+        if (currency.code == 'CNY') return 1.0;
+        return parseRate(rateText);
+      }
+
+      bool validateFeeRate(double? fee, Devise? currency, double? rate) {
+        if (fee == null || fee <= 0 || currency == null) return true;
+        if (currency.code == 'CNY') return true;
+        return rate != null && rate > 0;
+      }
+
+      final locFee = parseFee(locationFeeController.text);
+      if (!validateFeeRate(locFee, locationFeeCurrency,
+          effectiveRate(locationFeeCurrency, locationFeeRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final locCharge = parseFee(localChargeController.text);
+      if (!validateFeeRate(locCharge, localChargeCurrency,
+          effectiveRate(localChargeCurrency, localChargeRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final loadFee = parseFee(loadingFeeController.text);
+      if (!validateFeeRate(loadFee, loadingFeeCurrency,
+          effectiveRate(loadingFeeCurrency, loadingFeeRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final overFee = parseFee(overweightFeeController.text);
+      if (!validateFeeRate(
+          overFee,
+          overweightFeeCurrency,
+          effectiveRate(
+              overweightFeeCurrency, overweightFeeRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final checkFee = parseFee(checkingFeeController.text);
+      if (!validateFeeRate(checkFee, checkingFeeCurrency,
+          effectiveRate(checkingFeeCurrency, checkingFeeRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final telFee = parseFee(telxFeeController.text);
+      if (!validateFeeRate(telFee, telxFeeCurrency,
+          effectiveRate(telxFeeCurrency, telxFeeRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final otherFee = parseFee(otherFeesController.text);
+      if (!validateFeeRate(otherFee, otherFeesCurrency,
+          effectiveRate(otherFeesCurrency, otherFeesRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final margFee = parseFee(marginController.text);
+      if (!validateFeeRate(margFee, marginCurrency,
+          effectiveRate(marginCurrency, marginRateController.text))) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
       }
 
       final updatedContainer = widget.container.copyWith(
@@ -285,30 +366,38 @@ class EditContainerModalState extends State<EditContainerModal> {
         size: size,
         isAvailable: isAvailable,
         supplier_id: selectedSupplier?.id,
-        locationFee: parseFee(locationFeeController.text),
+        locationFee: locFee,
         locationFeeCurrencyCode: locationFeeCurrency?.code,
-        locationFeeRateToCNY: parseRate(locationFeeRateController.text),
-        localCharge: parseFee(localChargeController.text),
+        locationFeeRateToCNY:
+            effectiveRate(locationFeeCurrency, locationFeeRateController.text),
+        localCharge: locCharge,
         localChargeCurrencyCode: localChargeCurrency?.code,
-        localChargeRateToCNY: parseRate(localChargeRateController.text),
-        loadingFee: parseFee(loadingFeeController.text),
+        localChargeRateToCNY:
+            effectiveRate(localChargeCurrency, localChargeRateController.text),
+        loadingFee: loadFee,
         loadingFeeCurrencyCode: loadingFeeCurrency?.code,
-        loadingFeeRateToCNY: parseRate(loadingFeeRateController.text),
-        overweightFee: parseFee(overweightFeeController.text),
+        loadingFeeRateToCNY:
+            effectiveRate(loadingFeeCurrency, loadingFeeRateController.text),
+        overweightFee: overFee,
         overweightFeeCurrencyCode: overweightFeeCurrency?.code,
-        overweightFeeRateToCNY: parseRate(overweightFeeRateController.text),
-        checkingFee: parseFee(checkingFeeController.text),
+        overweightFeeRateToCNY: effectiveRate(
+            overweightFeeCurrency, overweightFeeRateController.text),
+        checkingFee: checkFee,
         checkingFeeCurrencyCode: checkingFeeCurrency?.code,
-        checkingFeeRateToCNY: parseRate(checkingFeeRateController.text),
-        telxFee: parseFee(telxFeeController.text),
+        checkingFeeRateToCNY:
+            effectiveRate(checkingFeeCurrency, checkingFeeRateController.text),
+        telxFee: telFee,
         telxFeeCurrencyCode: telxFeeCurrency?.code,
-        telxFeeRateToCNY: parseRate(telxFeeRateController.text),
-        otherFees: parseFee(otherFeesController.text),
+        telxFeeRateToCNY:
+            effectiveRate(telxFeeCurrency, telxFeeRateController.text),
+        otherFees: otherFee,
         otherFeesCurrencyCode: otherFeesCurrency?.code,
-        otherFeesRateToCNY: parseRate(otherFeesRateController.text),
-        margin: parseFee(marginController.text),
+        otherFeesRateToCNY:
+            effectiveRate(otherFeesCurrency, otherFeesRateController.text),
+        margin: margFee,
         marginCurrencyCode: marginCurrency?.code,
-        marginRateToCNY: parseRate(marginRateController.text),
+        marginRateToCNY:
+            effectiveRate(marginCurrency, marginRateController.text),
       );
       final response = await containerService.update(
         widget.container.id!,
@@ -398,27 +487,39 @@ class EditContainerModalState extends State<EditContainerModal> {
                       onLocationFeeCurrencyChanged: (currency) {
                         setState(() {
                           locationFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            locationFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             locationFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            locationFeeRateController.clear();
                           }
                         });
                       },
                       onLocalChargeCurrencyChanged: (currency) {
                         setState(() {
                           localChargeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            localChargeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             localChargeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            localChargeRateController.clear();
                           }
                         });
                       },
                       onLoadingFeeCurrencyChanged: (currency) {
                         setState(() {
                           loadingFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            loadingFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             loadingFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            loadingFeeRateController.clear();
                           }
                         });
                       },
@@ -457,45 +558,65 @@ class EditContainerModalState extends State<EditContainerModal> {
                       onOverweightFeeCurrencyChanged: (currency) {
                         setState(() {
                           overweightFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            overweightFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             overweightFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            overweightFeeRateController.clear();
                           }
                         });
                       },
                       onCheckingFeeCurrencyChanged: (currency) {
                         setState(() {
                           checkingFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            checkingFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             checkingFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            checkingFeeRateController.clear();
                           }
                         });
                       },
                       onTelxFeeCurrencyChanged: (currency) {
                         setState(() {
                           telxFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            telxFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             telxFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            telxFeeRateController.clear();
                           }
                         });
                       },
                       onOtherFeesCurrencyChanged: (currency) {
                         setState(() {
                           otherFeesCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            otherFeesRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             otherFeesRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            otherFeesRateController.clear();
                           }
                         });
                       },
                       onMarginCurrencyChanged: (currency) {
                         setState(() {
                           marginCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            marginRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             marginRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            marginRateController.clear();
                           }
                         });
                       },

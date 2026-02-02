@@ -107,6 +107,87 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
+  Widget _infoRowWithFormattedValue(String label, Widget valueWidget,
+      {IconData? icon}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Colors.grey[600]),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.grey[600], fontSize: 17),
+            ),
+          ),
+          Expanded(
+            child: valueWidget,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Affiche un montant. amountCNY uniquement si renvoyé par l'API (jamais de calcul côté Flutter).
+  Widget _formatFeeWidget({
+    required double? amount,
+    required String? currencyCode,
+    double? amountCNY,
+  }) {
+    if (amount == null) {
+      return Text(
+        '-',
+        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        textAlign: TextAlign.right,
+      );
+    }
+
+    final displayCurrency =
+        currencyCode?.isNotEmpty == true ? currencyCode! : 'CNY';
+
+    // Si l'API fournit amountCNY et devise != CNY, afficher les deux
+    if (amountCNY != null &&
+        amountCNY > 0 &&
+        displayCurrency != 'CNY' &&
+        displayCurrency.isNotEmpty) {
+      return Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '${amount.toStringAsFixed(2)} $displayCurrency',
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const TextSpan(text: ' '),
+            TextSpan(
+              text: '(${amountCNY.toStringAsFixed(2)} CNY)',
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Colors.green,
+              ),
+            ),
+          ],
+        ),
+        textAlign: TextAlign.right,
+      );
+    }
+
+    // Sinon afficher uniquement montant + devise
+    return Text(
+      '${amount.toStringAsFixed(2)} $displayCurrency',
+      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+      textAlign: TextAlign.right,
+    );
+  }
+
   Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0, top: 16),
@@ -835,61 +916,77 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
                 child: Column(
                   children: [
-                    _infoRow(
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_location_fee'),
-                        container.locationFee != null
-                            ? '${container.locationFee} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.locationFee,
+                          currencyCode: container.locationFeeCurrencyCode,
+                          amountCNY: container.locationFeeCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_loading_fee'),
-                        container.loadingFee != null
-                            ? '${container.loadingFee} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.loadingFee,
+                          currencyCode: container.loadingFeeCurrencyCode,
+                          amountCNY: container.loadingFeeCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_local_charge'),
-                        container.localCharge != null
-                            ? '${container.localCharge} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.localCharge,
+                          currencyCode: container.localChargeCurrencyCode,
+                          amountCNY: container.localChargeCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_overweight_fee'),
-                        container.overweightFee != null
-                            ? '${container.overweightFee} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.overweightFee,
+                          currencyCode: container.overweightFeeCurrencyCode,
+                          amountCNY: container.overweightFeeCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_checking_fee'),
-                        container.checkingFee != null
-                            ? '${container.checkingFee} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.checkingFee,
+                          currencyCode: container.checkingFeeCurrencyCode,
+                          amountCNY: container.checkingFeeCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_telx_fee'),
-                        container.telxFee != null
-                            ? '${container.telxFee} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.telxFee,
+                          currencyCode: container.telxFeeCurrencyCode,
+                          amountCNY: container.telxFeeCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_other_fees'),
-                        container.otherFees != null
-                            ? '${container.otherFees} CNY'
-                            : '0.0'),
-                    _infoRow(
+                        _formatFeeWidget(
+                          amount: container.otherFees,
+                          currencyCode: container.otherFeesCurrencyCode,
+                          amountCNY: container.otherFeesCNY,
+                        )),
+                    _infoRowWithFormattedValue(
                         AppLocalizations.of(context)
                             .translate('container_form_margin'),
-                        container.margin != null
-                            ? '${container.margin} CNY'
-                            : '0.0'),
+                        _formatFeeWidget(
+                          amount: container.margin,
+                          currencyCode: container.marginCurrencyCode,
+                          amountCNY: container.marginCNY,
+                        )),
                     const Divider(),
                     _infoRow(
                         AppLocalizations.of(context)
                             .translate('container_total_fees'),
                         container.amount != null
-                            ? '${container.amount} CNY'
-                            : '0.0',
+                            ? '${container.amount!.toStringAsFixed(2)} CNY'
+                            : '0.0 CNY',
                         icon: Icons.attach_money),
                   ],
                 ),

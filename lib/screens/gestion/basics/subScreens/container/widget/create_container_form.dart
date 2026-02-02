@@ -154,10 +154,108 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         return value.isEmpty ? null : double.tryParse(value);
       }
 
-      // Conversion des taux en double (nullable)
+      // Conversion des taux en double (nullable). CNY => 1.0 (Flutter ne calcule jamais)
       double? parseRate(String text) {
         final value = text.trim();
         return value.isEmpty ? null : double.tryParse(value);
+      }
+
+      double? effectiveRate(Devise? currency, String rateText) {
+        if (currency == null) return null;
+        if (currency.code == 'CNY') return 1.0;
+        return parseRate(rateText);
+      }
+
+      // Validation : si devise != CNY et montant saisi, taux obligatoire et > 0
+      bool validateFeeRate(double? fee, Devise? currency, double? rate) {
+        if (fee == null || fee <= 0 || currency == null) return true;
+        if (currency.code == 'CNY') return true;
+        return rate != null && rate > 0;
+      }
+
+      final locFee = parseFee(locationFeeController.text);
+      final locRate =
+          effectiveRate(locationFeeCurrency, locationFeeRateController.text);
+      if (!validateFeeRate(locFee, locationFeeCurrency, locRate)) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final locCharge = parseFee(localChargeController.text);
+      if (!validateFeeRate(locCharge, localChargeCurrency,
+          effectiveRate(localChargeCurrency, localChargeRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final loadFee = parseFee(loadingFeeController.text);
+      if (!validateFeeRate(loadFee, loadingFeeCurrency,
+          effectiveRate(loadingFeeCurrency, loadingFeeRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final overFee = parseFee(overweightFeeController.text);
+      if (!validateFeeRate(
+          overFee,
+          overweightFeeCurrency,
+          effectiveRate(
+              overweightFeeCurrency, overweightFeeRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final checkFee = parseFee(checkingFeeController.text);
+      if (!validateFeeRate(checkFee, checkingFeeCurrency,
+          effectiveRate(checkingFeeCurrency, checkingFeeRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final telFee = parseFee(telxFeeController.text);
+      if (!validateFeeRate(telFee, telxFeeCurrency,
+          effectiveRate(telxFeeCurrency, telxFeeRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final otherFee = parseFee(otherFeesController.text);
+      if (!validateFeeRate(otherFee, otherFeesCurrency,
+          effectiveRate(otherFeesCurrency, otherFeesRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+      final margFee = parseFee(marginController.text);
+      if (!validateFeeRate(margFee, marginCurrency,
+          effectiveRate(marginCurrency, marginRateController.text))) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
       }
 
       final response = await containerService.create(
@@ -166,30 +264,30 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         isAvailable,
         user.id.toInt(),
         selectedSupplier?.id,
-        parseFee(locationFeeController.text),
+        locFee,
         locationFeeCurrency?.code,
-        parseRate(locationFeeRateController.text),
-        parseFee(localChargeController.text),
+        locRate,
+        locCharge,
         localChargeCurrency?.code,
-        parseRate(localChargeRateController.text),
-        parseFee(loadingFeeController.text),
+        effectiveRate(localChargeCurrency, localChargeRateController.text),
+        loadFee,
         loadingFeeCurrency?.code,
-        parseRate(loadingFeeRateController.text),
-        parseFee(overweightFeeController.text),
+        effectiveRate(loadingFeeCurrency, loadingFeeRateController.text),
+        overFee,
         overweightFeeCurrency?.code,
-        parseRate(overweightFeeRateController.text),
-        parseFee(checkingFeeController.text),
+        effectiveRate(overweightFeeCurrency, overweightFeeRateController.text),
+        checkFee,
         checkingFeeCurrency?.code,
-        parseRate(checkingFeeRateController.text),
-        parseFee(telxFeeController.text),
+        effectiveRate(checkingFeeCurrency, checkingFeeRateController.text),
+        telFee,
         telxFeeCurrency?.code,
-        parseRate(telxFeeRateController.text),
-        parseFee(otherFeesController.text),
+        effectiveRate(telxFeeCurrency, telxFeeRateController.text),
+        otherFee,
         otherFeesCurrency?.code,
-        parseRate(otherFeesRateController.text),
-        parseFee(marginController.text),
+        effectiveRate(otherFeesCurrency, otherFeesRateController.text),
+        margFee,
         marginCurrency?.code,
-        parseRate(marginRateController.text),
+        effectiveRate(marginCurrency, marginRateController.text),
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
@@ -265,27 +363,39 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                       onLocationFeeCurrencyChanged: (currency) {
                         setState(() {
                           locationFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            locationFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             locationFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            locationFeeRateController.clear();
                           }
                         });
                       },
                       onLocalChargeCurrencyChanged: (currency) {
                         setState(() {
                           localChargeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            localChargeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             localChargeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            localChargeRateController.clear();
                           }
                         });
                       },
                       onLoadingFeeCurrencyChanged: (currency) {
                         setState(() {
                           loadingFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            loadingFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             loadingFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            loadingFeeRateController.clear();
                           }
                         });
                       },
@@ -324,45 +434,65 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                       onOverweightFeeCurrencyChanged: (currency) {
                         setState(() {
                           overweightFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            overweightFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             overweightFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            overweightFeeRateController.clear();
                           }
                         });
                       },
                       onCheckingFeeCurrencyChanged: (currency) {
                         setState(() {
                           checkingFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            checkingFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             checkingFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            checkingFeeRateController.clear();
                           }
                         });
                       },
                       onTelxFeeCurrencyChanged: (currency) {
                         setState(() {
                           telxFeeCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            telxFeeRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             telxFeeRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            telxFeeRateController.clear();
                           }
                         });
                       },
                       onOtherFeesCurrencyChanged: (currency) {
                         setState(() {
                           otherFeesCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            otherFeesRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             otherFeesRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            otherFeesRateController.clear();
                           }
                         });
                       },
                       onMarginCurrencyChanged: (currency) {
                         setState(() {
                           marginCurrency = currency;
-                          if (currency?.rate != null) {
+                          if (currency?.code == 'CNY') {
+                            marginRateController.text = '1';
+                          } else if (currency?.rate != null) {
                             marginRateController.text =
                                 currency!.rate.toString();
+                          } else {
+                            marginRateController.clear();
                           }
                         });
                       },
@@ -497,6 +627,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.locationFeeCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -545,6 +676,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.localChargeCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -593,6 +725,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.loadingFeeCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -710,6 +843,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.overweightFeeCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -758,6 +892,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.checkingFeeCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -806,6 +941,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.telxFeeCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -854,6 +990,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.otherFeesCurrency?.code == 'CNY',
               ),
             ),
           ],
@@ -902,6 +1039,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: null,
+                readOnly: widget.marginCurrency?.code == 'CNY',
               ),
             ),
           ],

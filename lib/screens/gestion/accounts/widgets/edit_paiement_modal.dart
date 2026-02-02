@@ -2,9 +2,12 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -30,13 +33,17 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
   DateTime? myDate;
 
   final TextEditingController montantVerserController = TextEditingController();
+  final TextEditingController tauxUtiliseController = TextEditingController();
 
   final AuthService authService = AuthService();
   final PartnerServices partnerServices = PartnerServices();
   final VersementServices versementServices = VersementServices();
+  final DeviseServices deviseService = DeviseServices();
 
   List<Partner> clients = [];
   Partner? selectedClient;
+  List<Devise> devises = [];
+  Devise? selectedDevise;
 
   @override
   void initState() {
@@ -44,13 +51,27 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
     montantVerserController.text =
         widget.versement.montantVerser?.toString() ?? '0';
     myDate = widget.versement.createdAt ?? DateTime.now();
+    if (widget.versement.deviseCode == 'CNY') {
+      tauxUtiliseController.text = '1';
+    } else {
+      tauxUtiliseController.text =
+          widget.versement.tauxUtilise?.toString() ?? '';
+    }
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    montantVerserController.dispose();
+    tauxUtiliseController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
     setState(() => isLoading = true);
     try {
       final clientData = await partnerServices.findCustomers(page: 0);
+      final deviseData = await deviseService.findAllDevises(page: 0);
 
       if (clientData.isNotEmpty) {
         if (widget.versement.partnerId != null) {
@@ -69,8 +90,20 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
         }
       }
 
+      Devise? initialDevise;
+      if (widget.versement.deviseCode != null && deviseData.isNotEmpty) {
+        try {
+          initialDevise = deviseData.firstWhere(
+            (d) => d.code == widget.versement.deviseCode,
+            orElse: () => deviseData.first,
+          );
+        } catch (_) {}
+      }
+
       setState(() {
         clients = clientData;
+        devises = deviseData;
+        selectedDevise = initialDevise;
         isLoading = false;
       });
     } catch (_) {
@@ -86,6 +119,37 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
       return;
     }
 
+    final montant = double.tryParse(montantVerserController.text) ?? 0.0;
+    if (montant <= 0) {
+      showErrorTopSnackBar(
+          context, AppLocalizations.of(context).translate('invalid_amount'));
+      return;
+    }
+    if (selectedDevise == null || selectedDevise!.id == null) {
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('please_select_valid_currency'));
+      return;
+    }
+    final double tauxUtilise;
+    if (selectedDevise!.code == 'CNY') {
+      tauxUtilise = 1.0;
+    } else {
+      if (tauxUtiliseController.text.trim().isEmpty) {
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('rate_required_if_not_cny'));
+        return;
+      }
+      final parsed = double.tryParse(tauxUtiliseController.text.trim());
+      if (parsed == null || parsed <= 0) {
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('invalid_rate'));
+        return;
+      }
+      tauxUtilise = parsed;
+    }
+
     setState(() => isLoading = true);
 
     try {
@@ -96,11 +160,13 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
         return;
       }
 
-      final montant = double.tryParse(montantVerserController.text) ?? 0.0;
-
       final versementDto = Versement.fromJson({
         "montantVerser": montant,
         "createdAt": myDate!.toIso8601String(),
+        "partnerId": selectedClient!.id,
+        "deviseId": selectedDevise!.id,
+        "deviseCode": selectedDevise!.code,
+        "tauxUtilise": tauxUtilise,
       });
 
       final success = await versementServices.updatePaiement(
@@ -189,9 +255,48 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
                         children: [
                           buildTextField(
                             controller: montantVerserController,
-                            label: "Montant versé",
+                            label: AppLocalizations.of(context)
+                                .translate('amount_to_pay'),
                             icon: Icons.attach_money,
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                          ),
+                          const SizedBox(height: 20),
+                          DropDownCustom<Devise>(
+                            items: devises,
+                            selectedItem: selectedDevise,
+                            onChanged: (currency) {
+                              setState(() {
+                                selectedDevise = currency;
+                                if (currency?.code == 'CNY') {
+                                  tauxUtiliseController.text = '1';
+                                } else if (currency?.rate != null) {
+                                  tauxUtiliseController.text =
+                                      currency!.rate.toString();
+                                } else {
+                                  tauxUtiliseController.clear();
+                                }
+                              });
+                            },
+                            itemToString: (currency) => currency.code,
+                            hintText: AppLocalizations.of(context)
+                                .translate('choose_currency'),
+                            prefixIcon: Icons.currency_exchange,
+                          ),
+                          const SizedBox(height: 20),
+                          buildTextField(
+                            controller: tauxUtiliseController,
+                            label: selectedDevise?.code == 'CNY'
+                                ? AppLocalizations.of(context)
+                                    .translate('rate_to_cny_fixed')
+                                : AppLocalizations.of(context)
+                                    .translate('rate_to_cny_label')
+                                    .replaceAll(
+                                        '%s', selectedDevise?.code ?? ''),
+                            icon: Icons.trending_up,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            readOnly: selectedDevise?.code == 'CNY',
                           ),
                           const SizedBox(height: 20),
                           DropDownCustom<Partner>(
@@ -202,11 +307,9 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
                                 selectedClient = client;
                               });
                             },
-                            itemToString:
-                                (client) =>
-                                    '${client.firstName + " " + client.lastName} | ${client.phoneNumber}',
-                            hintText:
-                                widget.versement.partnerName ??
+                            itemToString: (client) =>
+                                '${client.firstName + " " + client.lastName} | ${client.phoneNumber}',
+                            hintText: widget.versement.partnerName ??
                                 'Choisir un client...',
                             prefixIcon: Icons.person_3,
                           ),

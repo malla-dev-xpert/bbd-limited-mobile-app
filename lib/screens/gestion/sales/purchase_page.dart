@@ -522,15 +522,8 @@ class _PurchasePageState extends State<PurchasePage> {
       final createAchatDto = CreateAchatDto(
         versementId: selectedVersement?.id,
         items: localItems.map((item) {
-          // Pour les achats avec versement dans une devise étrangère,
-          // convertissez le prix unitaire si nécessaire
-          double unitPrice = item['unitPrice'];
-          if (selectedVersement != null &&
-              widget.devise != null &&
-              widget.devise!.code != 'CNY' &&
-              widget.tauxChange != null) {
-            unitPrice = item['unitPrice'] * widget.tauxChange!;
-          }
+          // Flutter n'effectue aucune conversion : montant original envoyé au backend
+          final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0.0;
 
           final createItemDto = CreateItemDto(
             description: item['description']?.toString() ?? '',
