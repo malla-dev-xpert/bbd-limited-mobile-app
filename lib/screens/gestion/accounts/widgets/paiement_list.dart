@@ -2,6 +2,7 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/utils/amount_format.dart';
 import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 
@@ -23,10 +24,7 @@ class PaiementListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(
-      locale: 'fr_FR',
-      symbol: versement.deviseCode ?? 'USD',
-    );
+    final currencySymbol = versement.deviseCode ?? 'USD';
 
     final montantRestant = versement.montantRestant ?? 0.0;
     final isNegative = montantRestant < 0;
@@ -100,14 +98,16 @@ class PaiementListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  currencyFormat.format(versement.montantVerser),
+                  formatAmountWithSymbol(
+                      versement.montantVerser ?? 0, currencySymbol),
                   style: const TextStyle(
                     color: Color(0xFF7F78AF),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
-                  currencyFormat.format(versement.montantRestant),
+                  formatAmountWithSymbol(
+                      versement.montantRestant ?? 0, currencySymbol),
                   style: TextStyle(
                     color: statusColor,
                     fontWeight: FontWeight.w600,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/utils/amount_format.dart';
 
 class PartnerBalanceCard extends StatelessWidget {
   final Partner partner;
@@ -18,10 +18,6 @@ class PartnerBalanceCard extends StatelessWidget {
     final balance = partner.balance ?? 0.0;
     final isNegative = balance <= 0;
     final statusColor = isNegative ? Colors.red[200] : Colors.green[200];
-    final currencyFormat = NumberFormat.currency(
-      locale: 'fr_FR',
-      symbol: 'CNY',
-    );
 
     return Card(
       elevation: 4,
@@ -69,7 +65,7 @@ class PartnerBalanceCard extends StatelessWidget {
                       size: 24,
                     ),
                     Text(
-                      currencyFormat.format(balance),
+                      formatAmountWithSymbol(balance, 'CNY'),
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -99,14 +95,12 @@ class PartnerBalanceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          AppLocalizations.of(context).translate('total_amount_paid'),
+                          AppLocalizations.of(context)
+                              .translate('total_amount_paid'),
                           style: TextStyle(color: Colors.grey[50]),
                         ),
                         Text(
-                          NumberFormat.currency(
-                            locale: 'fr_FR',
-                            symbol: 'CNY',
-                          ).format(totalVersementsUSD),
+                          formatAmountWithSymbol(totalVersementsUSD, 'CNY'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,

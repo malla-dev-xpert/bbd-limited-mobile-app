@@ -10,6 +10,7 @@ import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart'
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
+import 'package:bbd_limited/utils/amount_format.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
@@ -52,6 +53,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       StreamController<void>.broadcast();
 
   final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'CNY');
+  // Montants lisibles : 12 000.34 (séparateur de milliers = espace)
+  static String _formatAmountCNY(double value) => '${formatAmount(value)} CNY';
   final GlobalKey _filterIconKey = GlobalKey();
   Timer? _searchTimer;
 
@@ -675,8 +678,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                 child: _StatItem(
                                   title: AppLocalizations.of(context)
                                       .translate('total_amount'),
-                                  value: currencyFormat
-                                      .format(_totalVersementsUSD),
+                                  value: _formatAmountCNY(_totalVersementsUSD),
                                   valueStyle: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,

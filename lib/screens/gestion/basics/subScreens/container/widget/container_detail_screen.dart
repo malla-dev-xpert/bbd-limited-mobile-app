@@ -9,6 +9,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/utils/amount_format.dart';
 
 class ContainerDetailPage extends StatefulWidget {
   final Containers container;
@@ -132,6 +133,18 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
+  /// Total des frais en CNY : somme des montants convertis en CNY fournis par le backend.
+  static double _totalFeesCNY(Containers c) {
+    return (c.locationFeeCNY ?? 0) +
+        (c.localChargeCNY ?? 0) +
+        (c.loadingFeeCNY ?? 0) +
+        (c.overweightFeeCNY ?? 0) +
+        (c.checkingFeeCNY ?? 0) +
+        (c.telxFeeCNY ?? 0) +
+        (c.otherFeesCNY ?? 0) +
+        (c.marginCNY ?? 0);
+  }
+
   /// Affiche un montant. amountCNY uniquement si renvoyé par l'API (jamais de calcul côté Flutter).
   Widget _formatFeeWidget({
     required double? amount,
@@ -158,7 +171,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
         TextSpan(
           children: [
             TextSpan(
-              text: '${amount.toStringAsFixed(2)} $displayCurrency',
+              text: '${formatAmount(amount)} $displayCurrency',
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -167,7 +180,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
             ),
             const TextSpan(text: ' '),
             TextSpan(
-              text: '(${amountCNY.toStringAsFixed(2)} CNY)',
+              text: '(${formatAmount(amountCNY)} CNY)',
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -182,7 +195,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
 
     // Sinon afficher uniquement montant + devise
     return Text(
-      '${amount.toStringAsFixed(2)} $displayCurrency',
+      '${formatAmount(amount)} $displayCurrency',
       style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
       textAlign: TextAlign.right,
     );
@@ -984,9 +997,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     _infoRow(
                         AppLocalizations.of(context)
                             .translate('container_total_fees'),
-                        container.amount != null
-                            ? '${container.amount!.toStringAsFixed(2)} CNY'
-                            : '0.0 CNY',
+                        '${formatAmount(_totalFeesCNY(container))} CNY',
                         icon: Icons.attach_money),
                   ],
                 ),

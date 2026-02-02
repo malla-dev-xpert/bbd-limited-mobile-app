@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/utils/amount_format.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -53,10 +54,7 @@ class VersementListWidget extends StatelessWidget {
           final isNegative = montantRestant < 0;
           final statusColor = isNegative ? Colors.red[400] : Colors.green[400];
 
-          final versementCurrencyFormat = NumberFormat.currency(
-            locale: 'fr_FR',
-            symbol: versement.deviseCode ?? 'CNY',
-          );
+          final currencySymbol = versement.deviseCode ?? 'CNY';
 
           final user = AuthService.currentUser;
           final canDelete =
@@ -102,10 +100,10 @@ class VersementListWidget extends StatelessWidget {
                           ),
                       ],
                     ),
-                    child: _buildListTile(context, versement,
-                        versementCurrencyFormat, statusColor, isNegative),
+                    child: _buildListTile(context, versement, currencySymbol,
+                        statusColor, isNegative),
                   )
-                : _buildListTile(context, versement, versementCurrencyFormat,
+                : _buildListTile(context, versement, currencySymbol,
                     statusColor, isNegative),
           );
         },
@@ -113,12 +111,8 @@ class VersementListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildListTile(
-      BuildContext context,
-      Versement versement,
-      NumberFormat versementCurrencyFormat,
-      Color? statusColor,
-      bool isNegative) {
+  Widget _buildListTile(BuildContext context, Versement versement,
+      String currencySymbol, Color? statusColor, bool isNegative) {
     return ListTile(
       onTap: () => onVersementTap(versement),
       title: Text(
@@ -143,11 +137,13 @@ class VersementListWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                versementCurrencyFormat.format(versement.montantVerser),
+                formatAmountWithSymbol(
+                    versement.montantVerser ?? 0, currencySymbol),
                 style: const TextStyle(fontSize: 16, color: Colors.blue),
               ),
               Text(
-                versementCurrencyFormat.format(versement.montantRestant),
+                formatAmountWithSymbol(
+                    versement.montantRestant ?? 0, currencySymbol),
                 style: TextStyle(
                   color: statusColor,
                   fontWeight: FontWeight.w600,
