@@ -54,17 +54,18 @@ class DeviseListNotifier extends StateNotifier<AsyncValue<List<Devise>>> {
     }
   }
 
+  /// [rateToCny] = valeur de 1 unité de la devise en CNY (ex: 0.00138 pour XOF). Jamais l'inverse.
   Future<String?> createDevise({
     required String name,
     required String code,
-    double? rate,
+    double? rateToCny,
     required int userId,
   }) async {
     try {
       final result = await _deviseServices.create(
         name: name,
         code: code,
-        rate: rate,
+        rateToCny: rateToCny,
         userId: userId,
       );
       if (result == "SUCCESS") {

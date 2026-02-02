@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
-import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -24,7 +23,6 @@ class DevicesScreen extends ConsumerStatefulWidget {
 
 class _DeviseState extends ConsumerState<DevicesScreen> {
   final DeviseServices deviseServices = DeviseServices();
-  final ExchangeRateService exchangeRateService = ExchangeRateService();
   final ScrollController _scrollController = ScrollController();
   late final KeyboardVisibilityController _keyboardVisibilityController;
   late final StreamSubscription<bool> _keyboardSubscription;
@@ -150,7 +148,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                         .createDevise(
                           name: name,
                           code: code,
-                          rate: rate,
+                          rateToCny: rate,
                           userId: user.id,
                         );
 
@@ -243,7 +241,8 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                   if (user == null) {
                     showErrorTopSnackBar(
                       context,
-                      AppLocalizations.of(context).translate('user_not_connected'),
+                      AppLocalizations.of(context)
+                          .translate('user_not_connected'),
                     );
                     setState(() => _isLoading = false);
                     return;

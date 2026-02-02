@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
-import 'package:bbd_limited/core/services/exchange_rate_service.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/partner_notification_service.dart';
 import 'package:bbd_limited/models/versement.dart';
@@ -26,7 +25,6 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   final TextEditingController searchController = TextEditingController();
   final VersementServices _versementServices = VersementServices();
   final AuthService _authService = AuthService();
-  final ExchangeRateService _exchangeRateService = ExchangeRateService();
   final PartnerServices _partnerServices = PartnerServices();
   final PartnerNotificationService _partnerNotificationService =
       PartnerNotificationService();
@@ -79,7 +77,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
     super.dispose();
   }
 
-  Future<void> _calculateTotalVersementsUSD() async {
+  void _calculateTotalVersementsCNY() {
     if (_allVersements.isEmpty) {
       if (!mounted) return;
       setState(() {
@@ -88,23 +86,19 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
       return;
     }
 
-    double totalUSD = 0.0;
+    double totalCNY = 0.0;
     for (var versement in _allVersements) {
-      if (versement.montantVerser != null && versement.deviseCode != null) {
-        if (versement.deviseCode == 'CNY') {
-          totalUSD += versement.montantVerser!;
-        } else {
-          final rate =
-              await _exchangeRateService.getExchangeRate(versement.deviseCode!);
-          if (!mounted) return;
-          totalUSD += versement.montantVerser! / rate;
-        }
+      if (versement.montantVerser == null) continue;
+      if (versement.montantCNY != null && versement.montantCNY! > 0) {
+        totalCNY += versement.montantCNY!;
+      } else if (versement.deviseCode == 'CNY') {
+        totalCNY += versement.montantVerser!;
       }
     }
 
     if (!mounted) return;
     setState(() {
-      _totalVersementsUSD = totalUSD;
+      _totalVersementsUSD = totalCNY;
     });
   }
 
@@ -135,7 +129,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
           currentPage++;
         }
       });
-      await _calculateTotalVersementsUSD();
+      _calculateTotalVersementsCNY();
     } catch (e) {
       if (!mounted) return;
       showErrorTopSnackBar(context,

@@ -26,6 +26,9 @@ class Versement {
   final String? note;
   final double? tauxUtilise;
 
+  /// Montant en CNY calculé par le backend (lecture seule, jamais calculé côté Flutter)
+  final double? montantCNY;
+
   Versement copyWith(
       {int? id,
       String? reference,
@@ -46,7 +49,8 @@ class Versement {
       String? deviseCode,
       String? type,
       String? note,
-      double? tauxUtilise}) {
+      double? tauxUtilise,
+      double? montantCNY}) {
     return Versement(
         id: id ?? this.id,
         reference: reference ?? this.reference,
@@ -68,7 +72,8 @@ class Versement {
         deviseCode: deviseCode ?? this.deviseCode,
         type: type ?? this.type,
         note: note ?? this.note,
-        tauxUtilise: tauxUtilise ?? this.tauxUtilise);
+        tauxUtilise: tauxUtilise ?? this.tauxUtilise,
+        montantCNY: montantCNY ?? this.montantCNY);
   }
 
   Versement(
@@ -91,7 +96,8 @@ class Versement {
       this.deviseCode,
       this.type,
       this.note,
-      this.tauxUtilise});
+      this.tauxUtilise,
+      this.montantCNY});
 
   Map<String, dynamic> toJson() {
     return {
@@ -115,7 +121,8 @@ class Versement {
       'deviseCode': deviseCode,
       'type': type,
       'note': note,
-      'tauxUtilise': tauxUtilise
+      'tauxUtilise': tauxUtilise,
+      // montantCNY n'est jamais envoyé : calculé exclusivement par le backend
     };
   }
 
@@ -175,6 +182,9 @@ class Versement {
         note: json['note'] as String?,
         tauxUtilise: json['tauxUtilise'] != null
             ? (json['tauxUtilise'] as num).toDouble()
+            : null,
+        montantCNY: json['montantCNY'] != null
+            ? (json['montantCNY'] as num).toDouble()
             : null);
   }
 }

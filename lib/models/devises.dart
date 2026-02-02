@@ -9,6 +9,9 @@ class Devise {
   final DateTime? createdAt;
   final DateTime? editedAt;
 
+  /// Alias explicite : même valeur que [rate], sémantique rateToCny.
+  double? get rateToCny => rate;
+
   Devise copyWith({
     int? id,
     String? name,
@@ -35,6 +38,7 @@ class Devise {
       'name': name,
       'code': code,
       'rate': rate,
+      'rateToCny': rate,
       'status': status?.name,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
@@ -52,11 +56,13 @@ class Devise {
   });
 
   factory Devise.fromJson(Map<String, dynamic> json) {
+    // Backend peut renvoyer "rateToCny" ou "rate" ; on accepte les deux, jamais d'inversion
+    final rateValue = json['rateToCny'] ?? json['rate'];
     return Devise(
       id: json['id'],
       name: json['name'],
       code: json['code'],
-      rate: json['rate'] != null ? (json['rate'] as num).toDouble() : null,
+      rate: rateValue != null ? (rateValue as num).toDouble() : null,
       status: Status.values.firstWhere(
         (e) => e.name == json['status'],
         orElse: () => Status.CREATE,

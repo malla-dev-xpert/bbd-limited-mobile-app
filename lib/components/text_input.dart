@@ -12,9 +12,11 @@ Widget buildTextField({
   VoidCallback? onEditingComplete,
   ValueChanged<String>? onFieldSubmitted,
   List<TextInputFormatter>? inputFormatters,
+  bool readOnly = false,
 }) {
   return TextFormField(
     controller: controller,
+    readOnly: readOnly,
     keyboardType: keyboardType,
     autocorrect: false,
     inputFormatters: inputFormatters,

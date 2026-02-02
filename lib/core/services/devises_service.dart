@@ -8,10 +8,12 @@ class DeviseServices {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? ''; // Récupère l'URL du backend
 
+  /// Crée une devise. [rateToCny] = valeur de 1 unité de la devise en CNY (ex: 0.00138 pour XOF).
+  /// Jamais l'inverse (ex: 79.58 pour 1 CNY = 79.58 XOF).
   Future<String> create({
     required String name,
     required String code,
-    double? rate,
+    double? rateToCny,
     required int userId,
   }) async {
     try {
@@ -21,7 +23,8 @@ class DeviseServices {
         body: jsonEncode({
           "name": name,
           "code": code,
-          "rate": rate,
+          "rate": rateToCny,
+          "rateToCny": rateToCny,
         }),
       );
 

@@ -44,6 +44,16 @@ class Containers {
   final String? marginCurrencyCode;
   final double? marginRateToCNY;
   final double? amount;
+
+  /// Montants CNY calculés par le backend (lecture seule, jamais calculés côté Flutter)
+  final double? locationFeeCNY;
+  final double? localChargeCNY;
+  final double? loadingFeeCNY;
+  final double? overweightFeeCNY;
+  final double? checkingFeeCNY;
+  final double? telxFeeCNY;
+  final double? otherFeesCNY;
+  final double? marginCNY;
   // final int? harborId;
   // final String? harborName;
 
@@ -89,6 +99,14 @@ class Containers {
     String? marginCurrencyCode,
     double? marginRateToCNY,
     double? amount,
+    double? locationFeeCNY,
+    double? localChargeCNY,
+    double? loadingFeeCNY,
+    double? overweightFeeCNY,
+    double? checkingFeeCNY,
+    double? telxFeeCNY,
+    double? otherFeesCNY,
+    double? marginCNY,
   }) {
     return Containers(
       id: id ?? this.id,
@@ -139,6 +157,14 @@ class Containers {
       marginCurrencyCode: marginCurrencyCode ?? this.marginCurrencyCode,
       marginRateToCNY: marginRateToCNY ?? this.marginRateToCNY,
       amount: amount ?? this.amount,
+      locationFeeCNY: locationFeeCNY ?? this.locationFeeCNY,
+      localChargeCNY: localChargeCNY ?? this.localChargeCNY,
+      loadingFeeCNY: loadingFeeCNY ?? this.loadingFeeCNY,
+      overweightFeeCNY: overweightFeeCNY ?? this.overweightFeeCNY,
+      checkingFeeCNY: checkingFeeCNY ?? this.checkingFeeCNY,
+      telxFeeCNY: telxFeeCNY ?? this.telxFeeCNY,
+      otherFeesCNY: otherFeesCNY ?? this.otherFeesCNY,
+      marginCNY: marginCNY ?? this.marginCNY,
       // harborId: harborId ?? this.harborId,
       // harborName: harborName ?? this.harborName,
     );
@@ -252,6 +278,14 @@ class Containers {
     this.marginCurrencyCode,
     this.marginRateToCNY,
     this.amount,
+    this.locationFeeCNY,
+    this.localChargeCNY,
+    this.loadingFeeCNY,
+    this.overweightFeeCNY,
+    this.checkingFeeCNY,
+    this.telxFeeCNY,
+    this.otherFeesCNY,
+    this.marginCNY,
     // this.harborId,
     // this.harborName,
   });
@@ -325,6 +359,14 @@ class Containers {
       marginCurrencyCode: json['marginCurrencyCode'] as String?,
       marginRateToCNY: (json['marginRateToCNY'] as num?)?.toDouble(),
       amount: (json['amount'] as num?)?.toDouble(),
+      locationFeeCNY: (json['locationFeeCNY'] as num?)?.toDouble(),
+      localChargeCNY: (json['localChargeCNY'] as num?)?.toDouble(),
+      loadingFeeCNY: (json['loadingFeeCNY'] as num?)?.toDouble(),
+      overweightFeeCNY: (json['overweightFeeCNY'] as num?)?.toDouble(),
+      checkingFeeCNY: (json['checkingFeeCNY'] as num?)?.toDouble(),
+      telxFeeCNY: (json['telxFeeCNY'] as num?)?.toDouble(),
+      otherFeesCNY: (json['otherFeesCNY'] as num?)?.toDouble(),
+      marginCNY: (json['marginCNY'] as num?)?.toDouble(),
     );
   }
 }
