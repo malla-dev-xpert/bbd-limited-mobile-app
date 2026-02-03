@@ -33,6 +33,9 @@ class _EditContainerPageState extends State<EditContainerPage> {
       case 2:
         return AppLocalizations.of(context)!
             .translate('container_form_other_fees');
+      case 3:
+        return AppLocalizations.of(context)!
+            .translate('container_items_step_title');
       default:
         return AppLocalizations.of(context)!.translate('container_edit');
     }
@@ -100,7 +103,7 @@ class _EditContainerPageState extends State<EditContainerPage> {
               Expanded(
                 child: confirmationButton(
                   isLoading: _formKey.currentState?.isLoadingState ?? false,
-                  onPressed: _currentStep < 2
+                  onPressed: _currentStep < 3
                       ? () {
                           _formKey.currentState?.goToNextStep();
                         }
@@ -112,8 +115,8 @@ class _EditContainerPageState extends State<EditContainerPage> {
                       : AppLocalizations.of(context)!
                               .translate('container_form_save') ??
                           'Enregistrer',
-                  icon: _currentStep < 2 ? Icons.arrow_forward : Icons.check,
-                  subLabel: _currentStep < 2
+                  icon: _currentStep < 3 ? Icons.arrow_forward : Icons.check,
+                  subLabel: _currentStep < 3
                       ? ""
                       : AppLocalizations.of(context)!
                               .translate('container_form_saving') ??

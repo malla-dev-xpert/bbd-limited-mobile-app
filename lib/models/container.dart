@@ -1,4 +1,5 @@
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/packages.dart';
 
 class Containers {
@@ -13,6 +14,9 @@ class Containers {
   bool? isTeam;
   final Status? status;
   List<Packages>? packages;
+
+  /// Items in this container (from backend GET container details).
+  List<Items>? items;
   final int? userId;
   final String? userName;
   final int? supplier_id;
@@ -76,6 +80,7 @@ class Containers {
     bool? isTeam,
     Status? status,
     List<Packages>? packages,
+    List<Items>? items,
     int? userId,
     String? userName,
     int? supplier_id,
@@ -133,6 +138,7 @@ class Containers {
       isTeam: isTeam ?? this.isTeam,
       status: status ?? this.status,
       packages: packages ?? this.packages,
+      items: items ?? this.items,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       supplier_id: supplier_id ?? this.supplier_id,
@@ -202,6 +208,7 @@ class Containers {
       'isTeam': isTeam,
       'status': status?.name,
       'packages': packages?.map((e) => e.toJson()).toList(),
+      'items': items?.map((e) => e.toJson()).toList(),
       'userId': userId,
       'userName': userName,
       'supplier_id': supplier_id,
@@ -278,6 +285,7 @@ class Containers {
     this.isTeam,
     this.status,
     this.packages,
+    this.items,
     this.userId,
     this.userName,
     this.supplier_id,
@@ -344,6 +352,11 @@ class Containers {
           .toList();
     }
 
+    List<Items> itemList = [];
+    if (json['items'] != null) {
+      itemList = (json['items'] as List).map((e) => Items.fromJson(e)).toList();
+    }
+
     return Containers(
       id: json['id'] as int?,
       reference: json['reference'] as String?,
@@ -362,6 +375,7 @@ class Containers {
       isTeam: json['isTeam'] as bool?,
       status: status,
       packages: packageList,
+      items: itemList,
       userId: json['userId'] as int?,
       userName: json['userName'] as String?,
       supplier_id: json['supplier_id'] as int?,

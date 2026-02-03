@@ -59,6 +59,7 @@ class ContainerServices {
     int? supplierId,
     int? departureHarborId,
     int? arrivalHarborId,
+    List<int>? itemIds,
     double? locationFee,
     String? locationFeeCurrencyCode,
     double? locationFeeRateToCNY,
@@ -99,6 +100,7 @@ class ContainerServices {
       if (departureHarborId != null)
         body["departureHarborId"] = departureHarborId;
       if (arrivalHarborId != null) body["arrivalHarborId"] = arrivalHarborId;
+      if (itemIds != null && itemIds.isNotEmpty) body["itemIds"] = itemIds;
 
       // Ajouter les frais et leurs devises/taux seulement s'ils ne sont pas null
       if (locationFee != null) {
@@ -283,15 +285,26 @@ class ContainerServices {
     }
   }
 
-  Future<String?> update(int id, int? userId, Containers dto) async {
+  Future<String?> update(
+    int id,
+    int? userId,
+    Containers dto, {
+    List<int>? itemIds,
+    List<int>? itemIdsToRemove,
+  }) async {
     try {
       final url = Uri.parse('$baseUrl/containers/update/$id?userId=$userId');
       final headers = {'Content-Type': 'application/json'};
+      final body = dto.toJson();
+      if (itemIds != null && itemIds.isNotEmpty) body['itemIds'] = itemIds;
+      if (itemIdsToRemove != null && itemIdsToRemove.isNotEmpty) {
+        body['itemIdsToRemove'] = itemIdsToRemove;
+      }
 
       final response = await http.put(
         url,
         headers: headers,
-        body: jsonEncode(dto.toJson()),
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 409 &&
@@ -307,6 +320,50 @@ class ContainerServices {
       }
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Adds items to a container. POST /embarquer/items.
+  /// Returns "SUCCESS" or an error code (CONTAINER_NOT_AVAILABLE, etc.).
+  Future<String> addItemsToContainer(
+    int containerId,
+    List<int> itemIds, {
+    int? userId,
+  }) async {
+    if (itemIds.isEmpty) return "SUCCESS";
+    try {
+      String url = '$baseUrl/embarquer/items';
+      if (userId != null) url += '?userId=$userId';
+      final request = ContainerItemsRequest(
+        containerId: containerId,
+        itemIds: itemIds,
+      );
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == HttpStatus.created ||
+          response.statusCode == 200) {
+        return "SUCCESS";
+      }
+      if (response.statusCode == HttpStatus.conflict) {
+        final body = response.body;
+        if (body.contains("pas disponible") || body.contains("not available")) {
+          return "CONTAINER_NOT_AVAILABLE";
+        }
+        if (body.contains("déjà") || body.contains("already")) {
+          return "ITEM_ALREADY_IN_CONTAINER";
+        }
+        return "CONFLICT_ERROR";
+      }
+      if (response.statusCode == HttpStatus.notFound) {
+        return "CONTAINER_NOT_FOUND";
+      }
+      return "SERVER_ERROR: ${response.statusCode}";
+    } catch (e) {
+      return "UNEXPECTED_ERROR: ${e.toString()}";
     }
   }
 

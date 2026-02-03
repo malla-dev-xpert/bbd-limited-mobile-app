@@ -2,9 +2,11 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/add_package_to_container_modal.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/add_items_to_container_modal.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -31,6 +33,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   final ContainerServices containerServices = ContainerServices();
   final AuthService authService = AuthService();
   final PackageServices packageServices = PackageServices();
+  final ItemServices itemServices = ItemServices();
   final TextEditingController searchController = TextEditingController();
 
   @override
@@ -222,13 +225,12 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     return container.packages!.every((p) => p.clientId == firstClientId);
   }
 
-  Widget _buildModernPackageCard(dynamic pkg) {
+  Widget _buildModernItemCard(Items item) {
     final isTablet = MediaQuery.of(context).size.width >= 600;
     final cardPadding = isTablet ? 20.0 : 16.0;
     final iconSize = isTablet ? 20.0 : 18.0;
     final fontSize = isTablet ? 18.0 : 17.0;
     final titleFontSize = isTablet ? 20.0 : 18.0;
-
     return Container(
       margin: EdgeInsets.symmetric(
         vertical: isTablet ? 8.0 : 6.0,
@@ -237,10 +239,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -254,15 +253,12 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
-          onTap: () {
-            // Action on tap if needed
-          },
+          onTap: () {},
           child: Padding(
             padding: EdgeInsets.all(cardPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with reference and type
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -271,7 +267,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            pkg.ref ?? 'N/A',
+                            item.description ?? 'N/A',
                             style: TextStyle(
                               fontSize: titleFontSize,
                               fontWeight: FontWeight.bold,
@@ -280,45 +276,18 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isTablet ? 12.0 : 10.0,
-                              vertical: isTablet ? 6.0 : 4.0,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.blue[400]!,
-                                  Colors.blue[600]!,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius:
-                                  BorderRadius.circular(isTablet ? 20.0 : 16.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              pkg.expeditionType ?? 'N/A',
+                          if (item.quantity != null || item.carton != null)
+                            Text(
+                              '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}',
                               style: TextStyle(
-                                color: Colors.white,
                                 fontSize: fontSize,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
+                                color: Colors.grey[600],
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),
-                    if (isTablet) ...[
-                      const SizedBox(width: 16),
+                    if (isTablet)
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -326,107 +295,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
-                          Icons.local_shipping,
+                          Icons.inventory_2,
                           color: Colors.grey[600],
                           size: iconSize,
                         ),
                       ),
-                    ],
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // Client information
-                _buildInfoRow(
-                  icon: Icons.person_outline,
-                  iconSize: iconSize,
-                  label: pkg.clientName ?? 'N/A',
-                  value: pkg.clientPhone ?? '',
-                  isTablet: isTablet,
-                  fontSize: fontSize,
-                ),
-
-                const SizedBox(height: 12),
-
-                // Cartons information
-                _buildInfoRow(
-                  icon: Icons.inventory_2_outlined,
-                  iconSize: iconSize,
-                  label: AppLocalizations.of(context)
-                      .translate('container_cartons'),
-                  value: '${pkg.itemQuantity ?? 0}',
-                  isTablet: isTablet,
-                  fontSize: fontSize,
-                ),
-
-                const SizedBox(height: 12),
-
-                // Location information in row
-                Row(
-                  children: [
-                    // Departure location
-                    Expanded(
-                      child: _buildCompactInfoRow(
-                        icon: Icons.location_on_outlined,
-                        iconSize: iconSize,
-                        label: AppLocalizations.of(context)
-                            .translate('container_departure'),
-                        value: pkg.startCountry ?? 'N/A',
-                        isTablet: isTablet,
-                        fontSize: fontSize,
-                      ),
-                    ),
-                    SizedBox(width: isTablet ? 16.0 : 8.0),
-                    // Arrival location
-                    Expanded(
-                      child: _buildCompactInfoRow(
-                        icon: Icons.location_on_outlined,
-                        iconSize: iconSize,
-                        label: AppLocalizations.of(context)
-                            .translate('container_arrival'),
-                        value: pkg.destinationCountry ?? 'N/A',
-                        isTablet: isTablet,
-                        fontSize: fontSize,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Date information in row
-                Row(
-                  children: [
-                    // Departure date
-                    Expanded(
-                      child: _buildCompactInfoRow(
-                        icon: Icons.calendar_today_outlined,
-                        iconSize: iconSize,
-                        label: AppLocalizations.of(context)
-                            .translate('container_departure'),
-                        value: pkg.startDate != null
-                            ? DateFormat('dd/MM/yyyy').format(pkg.startDate!)
-                            : 'N/A',
-                        isTablet: isTablet,
-                        fontSize: fontSize,
-                      ),
-                    ),
-                    SizedBox(width: isTablet ? 16.0 : 8.0),
-                    // Arrival date
-                    Expanded(
-                      child: _buildCompactInfoRow(
-                        icon: Icons.calendar_today_outlined,
-                        iconSize: iconSize,
-                        label: AppLocalizations.of(context)
-                            .translate('container_arrival'),
-                        value: pkg.arrivalDate != null
-                            ? DateFormat('dd/MM/yyyy').format(pkg.arrivalDate!)
-                            : 'N/A',
-                        isTablet: isTablet,
-                        fontSize: fontSize,
-                      ),
-                    ),
                   ],
                 ),
               ],
@@ -437,131 +310,20 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
-  Widget _buildInfoRow({
-    required IconData icon,
-    required double iconSize,
-    required String label,
-    required String value,
-    required bool isTablet,
-    required double fontSize,
-    bool isCompact = false,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.all(isTablet ? 6.0 : 4.0),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(
-            icon,
-            size: iconSize,
-            color: Colors.grey[600],
-          ),
-        ),
-        SizedBox(width: isTablet ? 12.0 : 8.0),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!isCompact) ...[
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-              ],
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCompactInfoRow({
-    required IconData icon,
-    required double iconSize,
-    required String label,
-    required String value,
-    required bool isTablet,
-    required double fontSize,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(isTablet ? 4.0 : 3.0),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Icon(
-                icon,
-                size: iconSize * 0.8,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(width: isTablet ? 6.0 : 4.0),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: fontSize * 0.85,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: isTablet ? 4.0 : 2.0),
-        Padding(
-          padding: EdgeInsets.only(left: isTablet ? 28.0 : 22.0),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: fontSize,
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
+  List<Items> get _filteredItems {
+    final list = container.items ?? [];
+    if (searchQuery.isEmpty) return list;
+    final query = searchQuery.toLowerCase();
+    return list.where((item) {
+      return item.description?.toLowerCase().contains(query) == true;
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredPackages = container.packages?.where((pkg) {
-      if (searchQuery.isEmpty) return true;
-      final query = searchQuery.toLowerCase();
-      return pkg.ref?.toLowerCase().contains(query) == true ||
-          pkg.clientName?.toLowerCase().contains(query) == true ||
-          pkg.clientPhone?.toLowerCase().contains(query) == true;
-    }).toList();
-
+    final hasContent =
+        (container.items != null && container.items!.isNotEmpty) ||
+            (container.packages != null && container.packages!.isNotEmpty);
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -1026,12 +788,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   ],
                 ),
               ),
-              // Liste des colis
-              if (container.packages != null &&
-                  container.packages!.isNotEmpty) ...[
-                _sectionTitle(AppLocalizations.of(context)
-                    .translate('container_packages')),
-                const SizedBox(height: 16),
+              // Liste des items dans le conteneur (Embarquer des items)
+              _sectionTitle(
+                  AppLocalizations.of(context).translate('container_items')),
+              const SizedBox(height: 16),
+              if (container.items != null && container.items!.isNotEmpty) ...[
                 Row(
                   children: [
                     if (container.status == Status.PENDING) ...[
@@ -1039,7 +800,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                         child: buildTextField(
                           controller: searchController,
                           label: AppLocalizations.of(context)
-                              .translate('container_search_packages'),
+                              .translate('container_search_items'),
                           icon: Icons.search,
                         ),
                       ),
@@ -1051,14 +812,15 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                         ),
                         child: IconButton(
                           onPressed: () async {
-                            final selectedPackages =
-                                await showAddPackagesToContainerDialog(
+                            final selectedItems =
+                                await showAddItemsToContainerDialog(
                               context,
                               container.id!,
-                              packageServices,
+                              containerServices,
+                              itemServices,
                             );
-                            if (selectedPackages != null &&
-                                selectedPackages.isNotEmpty) {
+                            if (selectedItems != null &&
+                                selectedItems.isNotEmpty) {
                               final updatedContainer = await containerServices
                                   .getContainerDetails(container.id!);
                               setState(() {
@@ -1068,7 +830,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           },
                           icon: const Icon(Icons.add, color: Colors.white),
                           tooltip: AppLocalizations.of(context)
-                              .translate('container_add_packages'),
+                              .translate('container_add_items'),
                         ),
                       ),
                     ]
@@ -1089,26 +851,26 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   height: MediaQuery.of(context).size.width < 600
                       ? MediaQuery.of(context).size.height * 0.4
                       : MediaQuery.of(context).size.height * 0.5,
-                  child: container.packages == null ||
-                          container.packages!.isEmpty
+                  child: (container.items == null || container.items!.isEmpty)
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(AppLocalizations.of(context)
-                                  .translate('container_no_packages')),
+                                  .translate('container_no_items')),
                               if (container.status == Status.PENDING) ...[
                                 const SizedBox(height: 16),
                                 TextButton.icon(
                                   onPressed: () async {
-                                    final selectedPackages =
-                                        await showAddPackagesToContainerDialog(
+                                    final selectedItems =
+                                        await showAddItemsToContainerDialog(
                                       context,
                                       container.id!,
-                                      packageServices,
+                                      containerServices,
+                                      itemServices,
                                     );
-                                    if (selectedPackages != null &&
-                                        selectedPackages.isNotEmpty) {
+                                    if (selectedItems != null &&
+                                        selectedItems.isNotEmpty) {
                                       final updatedContainer =
                                           await containerServices
                                               .getContainerDetails(
@@ -1119,7 +881,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     }
                                   },
                                   label: Text(AppLocalizations.of(context)
-                                      .translate('container_add_packages')),
+                                      .translate('container_add_items')),
                                   icon: const Icon(Icons.add),
                                 ),
                               ],
@@ -1137,10 +899,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           displacement: 40,
                           color: Theme.of(context).primaryColor,
                           backgroundColor: Colors.white,
-                          child: filteredPackages?.isEmpty == true
-                              ? const Center(
+                          child: _filteredItems.isEmpty
+                              ? Center(
                                   child: Text(
-                                    "Aucun colis ne correspond à votre recherche",
+                                    AppLocalizations.of(context)
+                                        .translate('container_no_items_search'),
                                     textAlign: TextAlign.center,
                                   ),
                                 )
@@ -1148,11 +911,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                   shrinkWrap: true,
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
-                                  itemCount: filteredPackages?.length ?? 0,
+                                  itemCount: _filteredItems.length,
                                   itemBuilder: (context, index) {
-                                    final pkg = filteredPackages![index];
+                                    final item = _filteredItems[index];
                                     return Dismissible(
-                                      key: Key('${pkg.id}'),
+                                      key: Key('item_${item.id}'),
                                       direction:
                                           container.status != Status.INPROGRESS
                                               ? DismissDirection.endToStart
@@ -1183,7 +946,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                     content: Text(AppLocalizations
                                                             .of(context)
                                                         .translate(
-                                                            'container_remove_package_confirm')),
+                                                            'container_remove_item_confirm')),
                                                     actions: [
                                                       TextButton(
                                                         onPressed: () =>
@@ -1227,33 +990,33 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                                 setState(() {
                                                   isLoading = true;
                                                 });
-                                                final result = await packageServices
-                                                    .removePackageFromContainer(
-                                                  packageId: pkg.id!,
+                                                final result = await itemServices
+                                                    .removeItemFromContainer(
+                                                  itemId: item.id!,
                                                   containerId: container.id!,
-                                                  userId: user!.id.toInt(),
+                                                  userId: user?.id.toInt(),
                                                 );
                                                 if (result == "REMOVED") {
                                                   setState(() {
-                                                    container.packages!
-                                                        .removeWhere((p) =>
-                                                            p.id == pkg.id);
+                                                    container.items!
+                                                        .removeWhere((i) =>
+                                                            i.id == item.id);
                                                   });
                                                   showSuccessTopSnackBar(
                                                       context,
                                                       AppLocalizations.of(
                                                               context)
                                                           .translate(
-                                                              'container_package_removed'));
+                                                              'container_item_removed'));
                                                   return true;
                                                 } else if (result ==
-                                                    "PACKAGE_NOT_IN_CONTAINER") {
+                                                    "ITEM_NOT_IN_CONTAINER") {
                                                   showErrorTopSnackBar(
                                                       context,
                                                       AppLocalizations.of(
                                                               context)
                                                           .translate(
-                                                              'container_package_not_in_container'));
+                                                              'container_item_not_in_container'));
                                                 } else if (result ==
                                                     "CONTAINER_INPROGRESS") {
                                                   showErrorTopSnackBar(
@@ -1277,17 +1040,15 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                               return false;
                                             }
                                           : null,
-                                      child: _buildModernPackageCard(pkg),
+                                      child: _buildModernItemCard(item),
                                     );
                                   },
                                 ),
                         ),
                 ),
               ),
-              // Actions principales
-              if (container.packages != null &&
-                  container.packages!.isNotEmpty &&
-                  container.status == Status.PENDING)
+              // Actions principales (démarrer livraison si conteneur a des items ou des colis)
+              if (hasContent && container.status == Status.PENDING)
                 Padding(
                   padding: EdgeInsets.only(
                       top: MediaQuery.of(context).size.width < 600

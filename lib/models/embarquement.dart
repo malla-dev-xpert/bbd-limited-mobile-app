@@ -5,9 +5,22 @@ class EmbarquementRequest {
   EmbarquementRequest({required this.containerId, required this.packageId});
 
   Map<String, dynamic> toJson() => {
-    'containerId': containerId,
-    'packageId': packageId,
-  };
+        'containerId': containerId,
+        'packageId': packageId,
+      };
+}
+
+/// Request body for POST /embarquer/items (add items to container).
+class ContainerItemsRequest {
+  final int containerId;
+  final List<int> itemIds;
+
+  ContainerItemsRequest({required this.containerId, required this.itemIds});
+
+  Map<String, dynamic> toJson() => {
+        'containerId': containerId,
+        'itemIds': itemIds,
+      };
 }
 
 class HarborEmbarquementRequest {
@@ -20,7 +33,7 @@ class HarborEmbarquementRequest {
   });
 
   Map<String, dynamic> toJson() => {
-    'harborId': harborId,
-    'containerId': containerId,
-  };
+        'harborId': harborId,
+        'containerId': containerId,
+      };
 }

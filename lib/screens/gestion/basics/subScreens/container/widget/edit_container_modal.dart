@@ -2,6 +2,8 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_info_form.dart';
@@ -85,6 +87,12 @@ class EditContainerModalState extends State<EditContainerModal> {
   final AuthService authService = AuthService();
   final ContainerServices containerService = ContainerServices();
   final DeviseServices deviseService = DeviseServices();
+  final ItemServices itemService = ItemServices();
+
+  List<Items> _availableItems = [];
+  final Set<int> _selectedItemIdsToAdd = {};
+  final Set<int> _selectedItemIdsToRemove = {};
+  bool _isLoadingItems = false;
 
   @override
   void initState() {
@@ -250,12 +258,29 @@ class EditContainerModalState extends State<EditContainerModal> {
         });
       }
     } else if (currentStep == 1) {
-      // Tous les champs sont optionnels, on peut toujours passer à l'étape suivante
-      // La validation se fait uniquement au niveau des champs individuels
       setState(() {
         currentStep = 2;
         widget.onStepChanged?.call(currentStep);
       });
+    } else if (currentStep == 2) {
+      setState(() {
+        currentStep = 3;
+        widget.onStepChanged?.call(currentStep);
+        _loadAvailableItems();
+      });
+    }
+  }
+
+  Future<void> _loadAvailableItems() async {
+    setState(() => _isLoadingItems = true);
+    try {
+      final list = await itemService.findAllNotInContainer();
+      setState(() {
+        _availableItems = list.toList();
+        _isLoadingItems = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingItems = false);
     }
   }
 
@@ -419,10 +444,18 @@ class EditContainerModalState extends State<EditContainerModal> {
         marginRateToCNY:
             effectiveRate(marginCurrency, marginRateController.text),
       );
+      final itemIdsToAdd =
+          _selectedItemIdsToAdd.isEmpty ? null : _selectedItemIdsToAdd.toList();
+      final itemIdsToRemove = _selectedItemIdsToRemove.isEmpty
+          ? null
+          : _selectedItemIdsToRemove.toList();
+
       final response = await containerService.update(
         widget.container.id!,
         user.id,
         updatedContainer,
+        itemIds: itemIdsToAdd,
+        itemIdsToRemove: itemIdsToRemove,
       );
       if (response == "UPDATED") {
         widget.onContainerUpdated();
@@ -552,7 +585,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                   ],
                 ),
               );
-            } else {
+            } else if (currentStep == 2) {
               return Form(
                 key: _extraFeesFormKey,
                 child: Column(
@@ -643,6 +676,109 @@ class EditContainerModalState extends State<EditContainerModal> {
                         });
                       },
                     ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              );
+            } else {
+              // Step 3: Items (add / remove)
+              final loc = AppLocalizations.of(context)!;
+              final containerItems = widget.container.items ?? [];
+              if (_isLoadingItems) {
+                return const Center(
+                    child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: CircularProgressIndicator()));
+              }
+              final availableToAdd =
+                  _availableItems.where((i) => i.containerId == null).toList();
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      loc.translate('container_items_step_title'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1E49),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      loc.translate('container_items_step_subtitle'),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 16),
+                    if (containerItems.isNotEmpty) ...[
+                      Text(
+                        loc.translate('container_items_in_container'),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      ...containerItems.map((item) {
+                        final toRemove =
+                            _selectedItemIdsToRemove.contains(item.id);
+                        return CheckboxListTile(
+                          value: toRemove,
+                          onChanged: (v) {
+                            setState(() {
+                              if (v == true && item.id != null) {
+                                _selectedItemIdsToRemove.add(item.id!);
+                              } else {
+                                _selectedItemIdsToRemove.remove(item.id);
+                              }
+                            });
+                          },
+                          title: Text(item.description ?? 'N/A'),
+                          subtitle: Text(toRemove
+                              ? loc.translate('container_will_remove')
+                              : ''),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        );
+                      }),
+                      const SizedBox(height: 16),
+                    ],
+                    if (availableToAdd.isNotEmpty) ...[
+                      Text(
+                        loc.translate('container_items_available_to_add'),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      ...availableToAdd.map((item) {
+                        final toAdd = _selectedItemIdsToAdd.contains(item.id);
+                        return CheckboxListTile(
+                          value: toAdd,
+                          onChanged: (v) {
+                            setState(() {
+                              if (v == true && item.id != null) {
+                                _selectedItemIdsToAdd.add(item.id!);
+                              } else {
+                                _selectedItemIdsToAdd.remove(item.id);
+                              }
+                            });
+                          },
+                          title: Text(item.description ?? 'N/A'),
+                          subtitle: Text(
+                              '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        );
+                      }),
+                    ],
+                    if (availableToAdd.isEmpty && containerItems.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Center(
+                            child: Text(
+                          loc.translate('container_no_items_available'),
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        )),
+                      ),
                     const SizedBox(height: 24),
                   ],
                 ),

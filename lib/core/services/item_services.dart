@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:io';
 import 'package:bbd_limited/core/api/api_result.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:http/http.dart' as http;
@@ -53,6 +53,56 @@ class ItemServices {
       }
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Fetches all items (e.g. GET /items). Used for container item selection.
+  /// Filter client-side: not assigned to any container, not deleted.
+  Future<List<Items>> findAllNotInContainer() async {
+    try {
+      final url = Uri.parse('$baseUrl/items/not-in-container');
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonBody =
+            json.decode(utf8.decode(response.bodyBytes));
+        return jsonBody.map((e) => Items.fromJson(e)).toList();
+      }
+      throw Exception(
+          "Erreur lors du chargement des articles (${response.statusCode})");
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Removes an item from a container. DELETE /items/{itemId}/container/{containerId}.
+  Future<String> removeItemFromContainer({
+    required int itemId,
+    required int containerId,
+    int? userId,
+  }) async {
+    try {
+      String path = '$baseUrl/items/$itemId/container/$containerId';
+      if (userId != null) path += '?userId=$userId';
+      final response = await http.delete(Uri.parse(path));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return "REMOVED";
+      }
+      if (response.statusCode == 404) return "NOT_FOUND";
+      if (response.statusCode == 409 || response.statusCode == 400) {
+        final body = response.body.toLowerCase();
+        if (body.contains("inprogress") || body.contains("in progress")) {
+          return "CONTAINER_INPROGRESS";
+        }
+        if (body.contains("not in") || body.contains("not_in")) {
+          return "ITEM_NOT_IN_CONTAINER";
+        }
+        return "UNKNOWN_ERROR";
+      }
+      return "SERVER_ERROR";
+    } on SocketException {
+      return "NETWORK_ERROR";
+    } catch (e) {
+      return "UNEXPECTED_ERROR: ${e.toString()}";
     }
   }
 

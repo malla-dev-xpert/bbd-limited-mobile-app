@@ -144,6 +144,9 @@ class Items {
   final int? supplierId;
   final String? supplierName;
   final int? packageId;
+
+  /// When set, item is assigned to this container (for filtering available items).
+  final int? containerId;
   final String? supplierPhone;
   final double? salesRate;
   final String? invoiceNumber;
@@ -172,6 +175,7 @@ class Items {
     this.supplierName,
     this.supplierPhone,
     this.packageId,
+    this.containerId,
     this.salesRate,
     this.invoiceNumber,
     this.status,
@@ -201,6 +205,7 @@ class Items {
     String? supplierName,
     String? supplierPhone,
     int? packageId,
+    int? containerId,
     double? salesRate,
     String? invoiceNumber,
     Status? status,
@@ -229,6 +234,7 @@ class Items {
       supplierName: supplierName ?? this.supplierName,
       supplierPhone: supplierPhone ?? this.supplierPhone,
       packageId: packageId ?? this.packageId,
+      containerId: containerId ?? this.containerId,
       salesRate: salesRate ?? this.salesRate,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
@@ -260,6 +266,7 @@ class Items {
       'supplierName': supplierName,
       'supplierPhone': supplierPhone,
       'packageId': packageId,
+      'containerId': containerId,
       'salesRate': salesRate,
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
@@ -307,6 +314,7 @@ class Items {
       supplierName: json['supplierName'] as String?,
       supplierPhone: json['supplierPhone'] as String?,
       packageId: json['packageId'] as int?,
+      containerId: json['containerId'] as int?,
       salesRate: json['salesRate'] != null
           ? (json['salesRate'] as num).toDouble()
           : null,

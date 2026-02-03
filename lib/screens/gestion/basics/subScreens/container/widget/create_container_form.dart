@@ -3,9 +3,11 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/c
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/devises.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -82,15 +84,32 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   final AuthService authService = AuthService();
   final ContainerServices containerService = ContainerServices();
   final DeviseServices deviseService = DeviseServices();
+  final ItemServices itemService = ItemServices();
+
+  List<Items> _availableItems = [];
+  final Set<int> _selectedItemIds = {};
+  bool _isLoadingItems = false;
 
   @override
   void initState() {
     super.initState();
     _loadDevises();
-    // Notifier le parent de l'étape initiale
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onStepChanged?.call(currentStep);
     });
+  }
+
+  Future<void> _loadAvailableItems() async {
+    setState(() => _isLoadingItems = true);
+    try {
+      final list = await itemService.findAllNotInContainer();
+      setState(() {
+        _availableItems = list.toList();
+        _isLoadingItems = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingItems = false);
+    }
   }
 
   Future<void> _loadDevises() async {
@@ -121,11 +140,15 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         });
       }
     } else if (currentStep == 1) {
-      // Tous les champs sont optionnels, on peut toujours passer à l'étape suivante
-      // La validation se fait uniquement au niveau des champs individuels
       setState(() {
         currentStep = 2;
         widget.onStepChanged?.call(currentStep);
+      });
+    } else if (currentStep == 2) {
+      setState(() {
+        currentStep = 3;
+        widget.onStepChanged?.call(currentStep);
+        _loadAvailableItems();
       });
     }
   }
@@ -264,6 +287,9 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         return;
       }
 
+      final selectedIds =
+          _selectedItemIds.isEmpty ? null : _selectedItemIds.toList();
+
       final response = await containerService.create(
         reference,
         size,
@@ -272,6 +298,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         selectedSupplier?.id,
         savedDepartureHarborId,
         savedArrivalHarborId,
+        selectedIds,
         locFee,
         locationFeeCurrency?.code,
         locRate,
@@ -414,7 +441,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   ],
                 ),
               );
-            } else {
+            } else if (currentStep == 2) {
               return Form(
                 key: _extraFeesFormKey,
                 child: Column(
@@ -508,6 +535,79 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                     const SizedBox(height: 24),
                   ],
                 ),
+              );
+            } else {
+              // Step 3: Items selection (optional)
+              final loc = AppLocalizations.of(context)!;
+              if (_isLoadingItems) {
+                return const Center(
+                    child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: CircularProgressIndicator()));
+              }
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    loc.translate('container_items_step_title'),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1E49),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    loc.translate('container_items_step_subtitle'),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_availableItems.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: Text(
+                          loc.translate('container_no_items_available'),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    ..._availableItems.map((item) {
+                      final isSelected = _selectedItemIds.contains(item.id);
+                      return CheckboxListTile(
+                        value: isSelected,
+                        onChanged: (_) {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedItemIds.remove(item.id);
+                            } else {
+                              if (item.id != null) {
+                                _selectedItemIds.add(item.id!);
+                              }
+                            }
+                          });
+                        },
+                        title: Text(item.description ?? 'N/A'),
+                        subtitle: Text(
+                            '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
+                        secondary: Icon(
+                          Icons.inventory_2,
+                          color: Colors.green[400],
+                        ),
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    }),
+                  const SizedBox(height: 24),
+                ],
               );
             }
           },

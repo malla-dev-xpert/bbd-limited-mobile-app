@@ -87,8 +87,8 @@ class _PurchasePageState extends State<PurchasePage> {
       TextEditingController();
   final TextEditingController _salesRateController = TextEditingController();
 
-  // Mode de calcul du prix (par défaut: par carton)
-  bool _isPricePerCarton = true;
+  // Mode de calcul du prix (par défaut: par quantité totale)
+  bool _isPricePerCarton = false;
 
   // État pour gérer la navigation entre les pages
   bool _showAddItemForm = false;
@@ -1473,11 +1473,11 @@ class _PurchasePageState extends State<PurchasePage> {
                               .translate('price_per_total_quantity'),
                           style: const TextStyle(fontSize: 12),
                         ),
-                        value: true,
+                        value: false,
                         groupValue: _isPricePerCarton,
                         onChanged: (value) {
                           setState(() {
-                            _isPricePerCarton = value ?? false;
+                            _isPricePerCarton = value ?? true;
                           });
                         },
                         dense: true,
@@ -1491,11 +1491,11 @@ class _PurchasePageState extends State<PurchasePage> {
                               .translate('price_per_carton'),
                           style: const TextStyle(fontSize: 12),
                         ),
-                        value: false,
+                        value: true,
                         groupValue: _isPricePerCarton,
                         onChanged: (value) {
                           setState(() {
-                            _isPricePerCarton = value ?? true;
+                            _isPricePerCarton = value ?? false;
                           });
                         },
                         dense: true,
@@ -1512,8 +1512,8 @@ class _PurchasePageState extends State<PurchasePage> {
           buildTextField(
             controller: _unitPriceController,
             label: _isPricePerCarton
-                ? AppLocalizations.of(context).translate('unit_price')
-                : AppLocalizations.of(context).translate('price_per_carton'),
+                ? AppLocalizations.of(context).translate('price_per_carton')
+                : AppLocalizations.of(context).translate('unit_price'),
             icon: Icons.currency_yen,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (value) =>
