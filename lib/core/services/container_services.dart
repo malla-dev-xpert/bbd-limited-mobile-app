@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:bbd_limited/core/api/api_result.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:http/http.dart' as http;
@@ -237,11 +238,6 @@ class ContainerServices {
     try {
       final response = await http.get(url);
 
-      print("----------------------------------------");
-      print(response.body);
-      print(response.statusCode);
-      print("----------------------------------------");
-
       if (response.statusCode == 201 || response.statusCode == 200) {
         return "SUCCESS";
       } else if (response.statusCode == 409 &&
@@ -324,15 +320,19 @@ class ContainerServices {
   }
 
   /// Adds items to a container. POST /embarquer/items.
-  /// Returns "SUCCESS" or an error code (CONTAINER_NOT_AVAILABLE, etc.).
-  Future<String> addItemsToContainer(
+  /// Returns ApiResult; on error, errorMessage is taken from backend response when available.
+  Future<ApiResult<Object?>> addItemsToContainer(
     int containerId,
     List<int> itemIds, {
     int? userId,
   }) async {
-    if (itemIds.isEmpty) return "SUCCESS";
+    if (itemIds.isEmpty) {
+      return ApiResult.failure(
+        errorMessage: 'NO_ITEMS_PROVIDED',
+      );
+    }
     try {
-      String url = '$baseUrl/embarquer/items';
+      String url = '$baseUrl/containers/embarquer/items';
       if (userId != null) url += '?userId=$userId';
       final request = ContainerItemsRequest(
         containerId: containerId,
@@ -346,24 +346,33 @@ class ContainerServices {
 
       if (response.statusCode == HttpStatus.created ||
           response.statusCode == 200) {
-        return "SUCCESS";
+        return ApiResult.success(null);
       }
-      if (response.statusCode == HttpStatus.conflict) {
-        final body = response.body;
-        if (body.contains("pas disponible") || body.contains("not available")) {
-          return "CONTAINER_NOT_AVAILABLE";
+
+      String? errorMessage;
+      try {
+        final jsonBody = jsonDecode(utf8.decode(response.bodyBytes))
+            as Map<String, dynamic>?;
+        if (jsonBody != null) {
+          final apiResponse = ApiResponse<dynamic>.fromJson(jsonBody);
+          errorMessage = apiResponse.message;
+          if (errorMessage == null &&
+              apiResponse.errors != null &&
+              apiResponse.errors!.isNotEmpty) {
+            errorMessage = apiResponse.errors!.join('\n');
+          }
         }
-        if (body.contains("déjà") || body.contains("already")) {
-          return "ITEM_ALREADY_IN_CONTAINER";
-        }
-        return "CONFLICT_ERROR";
+      } catch (_) {
+        // ignore parse errors, use fallback below
       }
-      if (response.statusCode == HttpStatus.notFound) {
-        return "CONTAINER_NOT_FOUND";
-      }
-      return "SERVER_ERROR: ${response.statusCode}";
+      errorMessage ??= response.body.isNotEmpty
+          ? response.body
+          : 'HTTP ${response.statusCode}';
+      return ApiResult.failure(errorMessage: errorMessage);
     } catch (e) {
-      return "UNEXPECTED_ERROR: ${e.toString()}";
+      return ApiResult.failure(
+        errorMessage: e.toString(),
+      );
     }
   }
 

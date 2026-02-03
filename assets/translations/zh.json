@@ -1150,6 +1150,7 @@
   "container_item_removed": "物品已移除",
   "container_item_not_in_container": "物品不属于此集装箱",
   "container_embark_items": "添加物品",
+  "container_embark_items_button": "添加所选物品",
   "container_items_embarked_success": "物品添加成功",
   "container_item_already_in_container": "物品已存在于另一个集装箱中",
   "container_embark_error": "添加物品时出错",

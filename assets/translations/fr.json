@@ -1299,6 +1299,7 @@
   "container_item_removed": "Item retiré du conteneur",
   "container_item_not_in_container": "L'item n'appartient pas à ce conteneur",
   "container_embark_items": "Embarquer des items",
+  "container_embark_items_button": "Embarquer les items",
   "container_items_embarked_success": "Items embarqués avec succès",
   "container_item_already_in_container": "Un ou plusieurs items sont déjà dans un conteneur",
   "container_embark_error": "Erreur lors de l'embarquement",

@@ -7,7 +7,7 @@ import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/container.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/add_items_to_container_modal.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/embark_items_page.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -891,15 +891,15 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                         ),
                         child: IconButton(
                           onPressed: () async {
-                            final selectedItems =
-                                await showAddItemsToContainerDialog(
+                            final embarked = await Navigator.push<bool>(
                               context,
-                              container.id!,
-                              containerServices,
-                              itemServices,
+                              MaterialPageRoute<bool>(
+                                builder: (context) => EmbarkItemsPage(
+                                  containerId: container.id!,
+                                ),
+                              ),
                             );
-                            if (selectedItems != null &&
-                                selectedItems.isNotEmpty) {
+                            if (embarked == true && mounted) {
                               final updatedContainer = await containerServices
                                   .getContainerDetails(container.id!);
                               setState(() {
@@ -941,15 +941,15 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                 const SizedBox(height: 16),
                                 TextButton.icon(
                                   onPressed: () async {
-                                    final selectedItems =
-                                        await showAddItemsToContainerDialog(
+                                    final embarked = await Navigator.push<bool>(
                                       context,
-                                      container.id!,
-                                      containerServices,
-                                      itemServices,
+                                      MaterialPageRoute<bool>(
+                                        builder: (context) => EmbarkItemsPage(
+                                          containerId: container.id!,
+                                        ),
+                                      ),
                                     );
-                                    if (selectedItems != null &&
-                                        selectedItems.isNotEmpty) {
+                                    if (embarked == true && mounted) {
                                       final updatedContainer =
                                           await containerServices
                                               .getContainerDetails(
