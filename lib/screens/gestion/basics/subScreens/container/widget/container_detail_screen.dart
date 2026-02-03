@@ -630,24 +630,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                       _infoRow(
                           AppLocalizations.of(context)
                               .translate('departure_port'),
-                          [
-                            container.departureHarborName,
-                            if (container.departureHarborLocation != null &&
-                                container.departureHarborLocation!.isNotEmpty)
-                              container.departureHarborLocation
-                          ].whereType<String>().join(' - '),
+                          container.departureHarborName,
                           icon: Icons.sailing),
                     if (container.arrivalHarborName != null ||
                         container.arrivalHarborId != null)
                       _infoRow(
                           AppLocalizations.of(context)
                               .translate('arrival_port'),
-                          [
-                            container.arrivalHarborName,
-                            if (container.arrivalHarborLocation != null &&
-                                container.arrivalHarborLocation!.isNotEmpty)
-                              container.arrivalHarborLocation
-                          ].whereType<String>().join(' - '),
+                          container.arrivalHarborName,
                           icon: Icons.pin_drop),
                     if (container.startDeliveryDate != null)
                       _infoRow(

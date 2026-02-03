@@ -722,6 +722,12 @@ class EditContainerModalState extends State<EditContainerModal> {
                       ...containerItems.map((item) {
                         final toRemove =
                             _selectedItemIdsToRemove.contains(item.id);
+                        final clientDisplay =
+                            item.clientName?.isNotEmpty == true
+                                ? item.clientName
+                                : (item.clientId != null
+                                    ? '#${item.clientId}'
+                                    : '—');
                         return CheckboxListTile(
                           value: toRemove,
                           onChanged: (v) {
@@ -734,9 +740,21 @@ class EditContainerModalState extends State<EditContainerModal> {
                             });
                           },
                           title: Text(item.description ?? 'N/A'),
-                          subtitle: Text(toRemove
-                              ? loc.translate('container_will_remove')
-                              : ''),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (toRemove)
+                                Text(loc.translate('container_will_remove')),
+                              Text(
+                                '${loc.translate('weight')}: ${item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
                           controlAffinity: ListTileControlAffinity.leading,
                         );
                       }),
@@ -751,6 +769,12 @@ class EditContainerModalState extends State<EditContainerModal> {
                       const SizedBox(height: 8),
                       ...availableToAdd.map((item) {
                         final toAdd = _selectedItemIdsToAdd.contains(item.id);
+                        final clientDisplay =
+                            item.clientName?.isNotEmpty == true
+                                ? item.clientName
+                                : (item.clientId != null
+                                    ? '#${item.clientId}'
+                                    : '—');
                         return CheckboxListTile(
                           value: toAdd,
                           onChanged: (v) {
@@ -763,8 +787,22 @@ class EditContainerModalState extends State<EditContainerModal> {
                             });
                           },
                           title: Text(item.description ?? 'N/A'),
-                          subtitle: Text(
-                              '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                  '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${loc.translate('weight')}: ${item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
                           controlAffinity: ListTileControlAffinity.leading,
                         );
                       }),

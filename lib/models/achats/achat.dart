@@ -150,6 +150,9 @@ class Items {
 
   /// Client ID from the achat (purchase) this item belongs to.
   final int? clientId;
+
+  /// Client name from the achat (for display in lists).
+  final String? clientName;
   final String? supplierPhone;
   final double? salesRate;
   final String? invoiceNumber;
@@ -180,6 +183,7 @@ class Items {
     this.packageId,
     this.containerId,
     this.clientId,
+    this.clientName,
     this.salesRate,
     this.invoiceNumber,
     this.status,
@@ -211,6 +215,7 @@ class Items {
     int? packageId,
     int? containerId,
     int? clientId,
+    String? clientName,
     double? salesRate,
     String? invoiceNumber,
     Status? status,
@@ -241,6 +246,7 @@ class Items {
       packageId: packageId ?? this.packageId,
       containerId: containerId ?? this.containerId,
       clientId: clientId ?? this.clientId,
+      clientName: clientName ?? this.clientName,
       salesRate: salesRate ?? this.salesRate,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
@@ -274,6 +280,7 @@ class Items {
       'packageId': packageId,
       'containerId': containerId,
       'clientId': clientId,
+      'clientName': clientName,
       'salesRate': salesRate,
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
@@ -323,6 +330,7 @@ class Items {
       packageId: json['packageId'] as int?,
       containerId: json['containerId'] as int?,
       clientId: json['clientId'] as int?,
+      clientName: json['clientName'] as String?,
       salesRate: json['salesRate'] != null
           ? (json['salesRate'] as num).toDouble()
           : null,

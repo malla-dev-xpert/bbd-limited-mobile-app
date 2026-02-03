@@ -10,6 +10,7 @@ import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class CreateContainerForm extends StatefulWidget {
@@ -110,6 +111,163 @@ class CreateContainerFormState extends State<CreateContainerForm> {
     } catch (e) {
       setState(() => _isLoadingItems = false);
     }
+  }
+
+  Widget _buildStepCard({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildItemSelectionCard({
+    required Items item,
+    required AppLocalizations loc,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final weight = item.weight ?? 0;
+    final cbn = item.cbn ?? 0;
+    final clientDisplay = item.clientName?.isNotEmpty == true
+        ? item.clientName!
+        : (item.clientId != null ? '#${item.clientId}' : '—');
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: isSelected,
+                      onChanged: (_) => onTap(),
+                      activeColor: const Color(0xFF1A1E49),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1E49).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.inventory_2,
+                        color: Color(0xFF1A1E49),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.description ?? 'N/A',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${item.quantity ?? 0} ${loc.translate('total_quantity')}${item.carton != null ? ' · ${item.carton} ${loc.translate('carton')}' : ''}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(color: Colors.grey[200], height: 1),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ItemDetailChip(
+                      text: '${loc.translate('weight')}: $weight',
+                      icon: Icons.scale,
+                    ),
+                    const SizedBox(width: 8),
+                    ItemDetailChip(
+                      text: '${loc.translate('cbn')}: $cbn',
+                      icon: Icons.straighten,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.person_outline,
+                          size: 16, color: Colors.blue[700]),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${loc.translate('package_client')}: $clientDisplay',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue[900],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadDevises() async {
@@ -356,21 +514,23 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 16),
-                    ContainerInfoForm(
-                      key: _containerInfoKey,
-                      refController: refController,
-                      size: sizeController,
-                      initialAvailability: false,
-                      onAvailabilityChanged: (value) {
-                        setState(() {
-                          isAvailable = value;
-                        });
-                      },
-                      onSupplierChanged: (value) {
-                        setState(() {
-                          selectedSupplier = value;
-                        });
-                      },
+                    _buildStepCard(
+                      child: ContainerInfoForm(
+                        key: _containerInfoKey,
+                        refController: refController,
+                        size: sizeController,
+                        initialAvailability: false,
+                        onAvailabilityChanged: (value) {
+                          setState(() {
+                            isAvailable = value;
+                          });
+                        },
+                        onSupplierChanged: (value) {
+                          setState(() {
+                            selectedSupplier = value;
+                          });
+                        },
+                      ),
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -383,59 +543,61 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 16),
-                    MainFeesForm(
-                      locationFeeController: locationFeeController,
-                      locationFeeRateController: locationFeeRateController,
-                      localChargeController: localChargeController,
-                      localChargeRateController: localChargeRateController,
-                      loadingFeeController: loadingFeeController,
-                      loadingFeeRateController: loadingFeeRateController,
-                      devises: devises,
-                      isLoadingDevises: isLoadingDevises,
-                      locationFeeCurrency: locationFeeCurrency,
-                      localChargeCurrency: localChargeCurrency,
-                      loadingFeeCurrency: loadingFeeCurrency,
-                      onLocationFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          locationFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            locationFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            locationFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            locationFeeRateController.clear();
-                          }
-                        });
-                      },
-                      onLocalChargeCurrencyChanged: (currency) {
-                        setState(() {
-                          localChargeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            localChargeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            localChargeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            localChargeRateController.clear();
-                          }
-                        });
-                      },
-                      onLoadingFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          loadingFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            loadingFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            loadingFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            loadingFeeRateController.clear();
-                          }
-                        });
-                      },
-                      getSupplier: () =>
-                          _containerInfoKey.currentState?.selectedSupplier,
+                    _buildStepCard(
+                      child: MainFeesForm(
+                        locationFeeController: locationFeeController,
+                        locationFeeRateController: locationFeeRateController,
+                        localChargeController: localChargeController,
+                        localChargeRateController: localChargeRateController,
+                        loadingFeeController: loadingFeeController,
+                        loadingFeeRateController: loadingFeeRateController,
+                        devises: devises,
+                        isLoadingDevises: isLoadingDevises,
+                        locationFeeCurrency: locationFeeCurrency,
+                        localChargeCurrency: localChargeCurrency,
+                        loadingFeeCurrency: loadingFeeCurrency,
+                        onLocationFeeCurrencyChanged: (currency) {
+                          setState(() {
+                            locationFeeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              locationFeeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              locationFeeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              locationFeeRateController.clear();
+                            }
+                          });
+                        },
+                        onLocalChargeCurrencyChanged: (currency) {
+                          setState(() {
+                            localChargeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              localChargeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              localChargeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              localChargeRateController.clear();
+                            }
+                          });
+                        },
+                        onLoadingFeeCurrencyChanged: (currency) {
+                          setState(() {
+                            loadingFeeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              loadingFeeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              loadingFeeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              loadingFeeRateController.clear();
+                            }
+                          });
+                        },
+                        getSupplier: () =>
+                            _containerInfoKey.currentState?.selectedSupplier,
+                      ),
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -448,102 +610,107 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 16),
-                    ExtraFeesForm(
-                      overweightFeeController: overweightFeeController,
-                      overweightFeeRateController: overweightFeeRateController,
-                      checkingFeeController: checkingFeeController,
-                      checkingFeeRateController: checkingFeeRateController,
-                      telxFeeController: telxFeeController,
-                      telxFeeRateController: telxFeeRateController,
-                      otherFeesController: otherFeesController,
-                      otherFeesRateController: otherFeesRateController,
-                      marginController: marginController,
-                      marginRateController: marginRateController,
-                      devises: devises,
-                      isLoadingDevises: isLoadingDevises,
-                      overweightFeeCurrency: overweightFeeCurrency,
-                      checkingFeeCurrency: checkingFeeCurrency,
-                      telxFeeCurrency: telxFeeCurrency,
-                      otherFeesCurrency: otherFeesCurrency,
-                      marginCurrency: marginCurrency,
-                      onOverweightFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          overweightFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            overweightFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            overweightFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            overweightFeeRateController.clear();
-                          }
-                        });
-                      },
-                      onCheckingFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          checkingFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            checkingFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            checkingFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            checkingFeeRateController.clear();
-                          }
-                        });
-                      },
-                      onTelxFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          telxFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            telxFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            telxFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            telxFeeRateController.clear();
-                          }
-                        });
-                      },
-                      onOtherFeesCurrencyChanged: (currency) {
-                        setState(() {
-                          otherFeesCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            otherFeesRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            otherFeesRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            otherFeesRateController.clear();
-                          }
-                        });
-                      },
-                      onMarginCurrencyChanged: (currency) {
-                        setState(() {
-                          marginCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            marginRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            marginRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            marginRateController.clear();
-                          }
-                        });
-                      },
+                    _buildStepCard(
+                      child: ExtraFeesForm(
+                        overweightFeeController: overweightFeeController,
+                        overweightFeeRateController:
+                            overweightFeeRateController,
+                        checkingFeeController: checkingFeeController,
+                        checkingFeeRateController: checkingFeeRateController,
+                        telxFeeController: telxFeeController,
+                        telxFeeRateController: telxFeeRateController,
+                        otherFeesController: otherFeesController,
+                        otherFeesRateController: otherFeesRateController,
+                        marginController: marginController,
+                        marginRateController: marginRateController,
+                        devises: devises,
+                        isLoadingDevises: isLoadingDevises,
+                        overweightFeeCurrency: overweightFeeCurrency,
+                        checkingFeeCurrency: checkingFeeCurrency,
+                        telxFeeCurrency: telxFeeCurrency,
+                        otherFeesCurrency: otherFeesCurrency,
+                        marginCurrency: marginCurrency,
+                        onOverweightFeeCurrencyChanged: (currency) {
+                          setState(() {
+                            overweightFeeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              overweightFeeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              overweightFeeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              overweightFeeRateController.clear();
+                            }
+                          });
+                        },
+                        onCheckingFeeCurrencyChanged: (currency) {
+                          setState(() {
+                            checkingFeeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              checkingFeeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              checkingFeeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              checkingFeeRateController.clear();
+                            }
+                          });
+                        },
+                        onTelxFeeCurrencyChanged: (currency) {
+                          setState(() {
+                            telxFeeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              telxFeeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              telxFeeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              telxFeeRateController.clear();
+                            }
+                          });
+                        },
+                        onOtherFeesCurrencyChanged: (currency) {
+                          setState(() {
+                            otherFeesCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              otherFeesRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              otherFeesRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              otherFeesRateController.clear();
+                            }
+                          });
+                        },
+                        onMarginCurrencyChanged: (currency) {
+                          setState(() {
+                            marginCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              marginRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              marginRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              marginRateController.clear();
+                            }
+                          });
+                        },
+                      ),
                     ),
                     const SizedBox(height: 24),
                   ],
                 ),
               );
             } else {
-              // Step 3: Items selection (optional)
+              // Step 3: Items selection (optional) - design inspiré des historiques d'achats
               final loc = AppLocalizations.of(context)!;
               if (_isLoadingItems) {
                 return const Center(
-                    child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: CircularProgressIndicator()));
+                  child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
               }
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -568,44 +735,47 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   ),
                   const SizedBox(height: 16),
                   if (_availableItems.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24.0),
-                      child: Center(
-                        child: Text(
-                          loc.translate('container_no_items_available'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                    _buildStepCard(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.inventory_2,
+                                size: 48,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                loc.translate('container_no_items_available'),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     )
                   else
-                    ..._availableItems.map((item) {
-                      final isSelected = _selectedItemIds.contains(item.id);
-                      return CheckboxListTile(
-                        value: isSelected,
-                        onChanged: (_) {
-                          setState(() {
-                            if (isSelected) {
-                              _selectedItemIds.remove(item.id);
-                            } else {
-                              if (item.id != null) {
+                    ..._availableItems.map((item) => _buildItemSelectionCard(
+                          item: item,
+                          loc: loc,
+                          isSelected: _selectedItemIds.contains(item.id),
+                          onTap: () {
+                            setState(() {
+                              if (_selectedItemIds.contains(item.id)) {
+                                _selectedItemIds.remove(item.id);
+                              } else if (item.id != null) {
                                 _selectedItemIds.add(item.id!);
                               }
-                            }
-                          });
-                        },
-                        title: Text(item.description ?? 'N/A'),
-                        subtitle: Text(
-                            '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
-                        secondary: Icon(
-                          Icons.inventory_2,
-                          color: Colors.green[400],
-                        ),
-                        controlAffinity: ListTileControlAffinity.leading,
-                      );
-                    }),
+                            });
+                          },
+                        )),
                   const SizedBox(height: 24),
                 ],
               );

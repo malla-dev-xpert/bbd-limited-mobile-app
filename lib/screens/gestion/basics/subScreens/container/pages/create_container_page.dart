@@ -36,11 +36,20 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(_getStepTitle()),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        title: Text(
+          _getStepTitle(),
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+            color: Colors.white,
+          ),
+        ),
         elevation: 0,
+        backgroundColor: const Color(0xFF1A1E49),
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -50,7 +59,6 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
               )
             : null,
       ),
-      backgroundColor: Colors.white,
       body: CreateContainerForm(
         key: _formKey,
         onStepChanged: (step) {
@@ -65,10 +73,9 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, -2),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
