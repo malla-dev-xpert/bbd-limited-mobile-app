@@ -44,14 +44,20 @@ class ContainerListItem extends StatelessWidget {
     }
   }
 
-  // Vérifie si tous les items sont pour le même client (clientId vient de l'achat dont l'item appartient)
   bool _allItemsSameClient() {
     final items = container.items;
     if (items != null && items.isNotEmpty) {
-      final clientIds = items.map((i) => i.clientId).whereType<int>().toSet();
-      if (clientIds.isNotEmpty) return clientIds.length == 1;
+      final keys = <String>{};
+      for (final i in items) {
+        if (i.clientId != null) {
+          keys.add('id_${i.clientId}');
+        } else if (i.clientName != null && i.clientName!.trim().isNotEmpty) {
+          keys.add('name_${i.clientName!.trim()}');
+        }
+      }
+      if (keys.length >= 2) return false;
+      return true;
     }
-    // Fallback: colis si pas d'items ou pas de clientId sur les items
     if (container.packages == null || container.packages!.isEmpty) return true;
     final firstClientId = container.packages!.first.clientId;
     return container.packages!.every((p) => p.clientId == firstClientId);
@@ -150,7 +156,7 @@ class ContainerListItem extends StatelessWidget {
                                       _allItemsSameClient() ||
                                               container.isTeam == true
                                           ? Icons.person
-                                          : Icons.people,
+                                          : Icons.group_work,
                                       size: isTablet ? 24 : 16,
                                       color: Colors.deepPurple[800],
                                     ),
@@ -232,7 +238,7 @@ class ContainerListItem extends StatelessWidget {
                                         _allItemsSameClient() ||
                                                 container.isTeam == true
                                             ? Icons.person
-                                            : Icons.people,
+                                            : Icons.group_work,
                                         size: isTablet ? 24 : 16,
                                         color: Colors.deepPurple[800],
                                       ),

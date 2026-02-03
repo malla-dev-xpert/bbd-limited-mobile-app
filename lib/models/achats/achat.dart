@@ -153,6 +153,9 @@ class Items {
 
   /// Client name from the achat (for display in lists).
   final String? clientName;
+
+  /// Client phone from the achat (for display).
+  final String? clientPhone;
   final String? supplierPhone;
   final double? salesRate;
   final String? invoiceNumber;
@@ -184,6 +187,7 @@ class Items {
     this.containerId,
     this.clientId,
     this.clientName,
+    this.clientPhone,
     this.salesRate,
     this.invoiceNumber,
     this.status,
@@ -216,6 +220,7 @@ class Items {
     int? containerId,
     int? clientId,
     String? clientName,
+    String? clientPhone,
     double? salesRate,
     String? invoiceNumber,
     Status? status,
@@ -247,6 +252,7 @@ class Items {
       containerId: containerId ?? this.containerId,
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
+      clientPhone: clientPhone ?? this.clientPhone,
       salesRate: salesRate ?? this.salesRate,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       status: status ?? this.status,
@@ -281,6 +287,7 @@ class Items {
       'containerId': containerId,
       'clientId': clientId,
       'clientName': clientName,
+      'clientPhone': clientPhone,
       'salesRate': salesRate,
       'invoiceNumber': invoiceNumber,
       'status': status?.name,
@@ -331,6 +338,7 @@ class Items {
       containerId: json['containerId'] as int?,
       clientId: json['clientId'] as int?,
       clientName: json['clientName'] as String?,
+      clientPhone: json['clientPhone'] as String?,
       salesRate: json['salesRate'] != null
           ? (json['salesRate'] as num).toDouble()
           : null,

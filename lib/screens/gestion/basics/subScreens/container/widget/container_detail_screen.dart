@@ -219,14 +219,20 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
-  // Vérifie si tous les items sont pour le même client (clientId vient de l'achat dont l'item appartient)
   bool _allItemsSameClient() {
     final items = container.items;
     if (items != null && items.isNotEmpty) {
-      final clientIds = items.map((i) => i.clientId).whereType<int>().toSet();
-      if (clientIds.isNotEmpty) return clientIds.length == 1;
+      final keys = <String>{};
+      for (final i in items) {
+        if (i.clientId != null) {
+          keys.add('id_${i.clientId}');
+        } else if (i.clientName != null && i.clientName!.trim().isNotEmpty) {
+          keys.add('name_${i.clientName!.trim()}');
+        }
+      }
+      if (keys.length >= 2) return false;
+      return true;
     }
-    // Fallback: colis si pas d'items ou pas de clientId sur les items
     if (container.packages == null || container.packages!.isEmpty) return true;
     final firstClientId = container.packages!.first.clientId;
     return container.packages!.every((p) => p.clientId == firstClientId);
@@ -391,6 +397,66 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     ),
                   ],
                 ),
+                if (item.clientName != null &&
+                        item.clientName!.trim().isNotEmpty ||
+                    item.clientPhone != null &&
+                        item.clientPhone!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (item.clientName != null &&
+                            item.clientName!.trim().isNotEmpty)
+                          Row(
+                            children: [
+                              Icon(Icons.person_outline,
+                                  size: 16, color: Colors.blue[700]),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item.clientName!.trim(),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue[900],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (item.clientPhone != null &&
+                            item.clientPhone!.trim().isNotEmpty) ...[
+                          if (item.clientName != null &&
+                              item.clientName!.trim().isNotEmpty)
+                            const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.phone_outlined,
+                                  size: 16, color: Colors.blue[700]),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item.clientPhone!.trim(),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
