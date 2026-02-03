@@ -1787,6 +1787,24 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
+                    // Poids et CBN (0 si null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ItemDetailChip(
+                          text:
+                              '${AppLocalizations.of(context).translate('weight')}: ${item.weight ?? 0}',
+                          icon: Icons.scale,
+                        ),
+                        const SizedBox(width: 16),
+                        ItemDetailChip(
+                          text:
+                              '${AppLocalizations.of(context).translate('cbn')}: ${item.cbn ?? 0}',
+                          icon: Icons.straighten,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                     // Taux d'achat et total en colonne pour une meilleure lisibilité
                     Column(
                       children: [

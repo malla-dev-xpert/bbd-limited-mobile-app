@@ -44,8 +44,14 @@ class ContainerListItem extends StatelessWidget {
     }
   }
 
-  // Vérifie si tous les colis sont pour le même client
-  bool _allPackagesSameClient() {
+  // Vérifie si tous les items sont pour le même client (clientId vient de l'achat dont l'item appartient)
+  bool _allItemsSameClient() {
+    final items = container.items;
+    if (items != null && items.isNotEmpty) {
+      final clientIds = items.map((i) => i.clientId).whereType<int>().toSet();
+      if (clientIds.isNotEmpty) return clientIds.length == 1;
+    }
+    // Fallback: colis si pas d'items ou pas de clientId sur les items
     if (container.packages == null || container.packages!.isEmpty) return true;
     final firstClientId = container.packages!.first.clientId;
     return container.packages!.every((p) => p.clientId == firstClientId);
@@ -133,7 +139,7 @@ class ContainerListItem extends StatelessWidget {
                                   Container(
                                     padding: EdgeInsets.all(isTablet ? 8 : 4),
                                     decoration: BoxDecoration(
-                                      color: _allPackagesSameClient() ||
+                                      color: _allItemsSameClient() ||
                                               container.isTeam == true
                                           ? Colors.blue[50]
                                           : Colors.deepPurple[50],
@@ -141,7 +147,7 @@ class ContainerListItem extends StatelessWidget {
                                           isTablet ? 16 : 10),
                                     ),
                                     child: Icon(
-                                      _allPackagesSameClient() ||
+                                      _allItemsSameClient() ||
                                               container.isTeam == true
                                           ? Icons.person
                                           : Icons.people,
@@ -215,7 +221,7 @@ class ContainerListItem extends StatelessWidget {
                                     Container(
                                       padding: EdgeInsets.all(isTablet ? 8 : 4),
                                       decoration: BoxDecoration(
-                                        color: _allPackagesSameClient() ||
+                                        color: _allItemsSameClient() ||
                                                 container.isTeam == true
                                             ? Colors.blue[50]
                                             : Colors.deepPurple[50],
@@ -223,7 +229,7 @@ class ContainerListItem extends StatelessWidget {
                                             isTablet ? 16 : 10),
                                       ),
                                       child: Icon(
-                                        _allPackagesSameClient() ||
+                                        _allItemsSameClient() ||
                                                 container.isTeam == true
                                             ? Icons.person
                                             : Icons.people,
@@ -301,7 +307,7 @@ class ContainerListItem extends StatelessWidget {
                             ),
                             SizedBox(width: isTablet ? 8 : 4),
                             Text(
-                              "${container.packages?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} ${AppLocalizations.of(context)!.translate('container_packages_count')}",
+                              "${container.items?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} ${AppLocalizations.of(context)!.translate('container_packages_count')}",
                               style: TextStyle(
                                 fontSize: isTablet ? 18 : 16,
                                 color: Colors.grey[600],

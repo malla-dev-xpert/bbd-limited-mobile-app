@@ -1316,7 +1316,7 @@
   "container_deleted": "Container deleted successfully",
   "container_search": "Search for a container...",
   "container_waiting": "Container waiting",
-  "container_packages_count": "packages",
+  "container_packages_count": "items",
   "container_start_delivery_date": "Delivery start date",
   "container_confirm_delivery_date": "Delivery confirmation date",
   "container_delivery_confirmation_date": "Delivery confirmation date",

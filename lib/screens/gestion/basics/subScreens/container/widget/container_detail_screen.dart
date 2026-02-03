@@ -1,3 +1,4 @@
+import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -218,32 +219,36 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
-  // Vérifie si tous les colis sont pour le même client
-  bool _allPackagesSameClient() {
+  // Vérifie si tous les items sont pour le même client (clientId vient de l'achat dont l'item appartient)
+  bool _allItemsSameClient() {
+    final items = container.items;
+    if (items != null && items.isNotEmpty) {
+      final clientIds = items.map((i) => i.clientId).whereType<int>().toSet();
+      if (clientIds.isNotEmpty) return clientIds.length == 1;
+    }
+    // Fallback: colis si pas d'items ou pas de clientId sur les items
     if (container.packages == null || container.packages!.isEmpty) return true;
     final firstClientId = container.packages!.first.clientId;
     return container.packages!.every((p) => p.clientId == firstClientId);
   }
 
+  String _formatItemAmount(double? amount) {
+    if (amount == null) return '0,00';
+    return amount.toStringAsFixed(2).replaceAll('.', ',');
+  }
+
   Widget _buildModernItemCard(Items item) {
-    final isTablet = MediaQuery.of(context).size.width >= 600;
-    final cardPadding = isTablet ? 20.0 : 16.0;
-    final iconSize = isTablet ? 20.0 : 18.0;
-    final fontSize = isTablet ? 18.0 : 17.0;
-    final titleFontSize = isTablet ? 20.0 : 18.0;
+    final loc = AppLocalizations.of(context);
     return Container(
-      margin: EdgeInsets.symmetric(
-        vertical: isTablet ? 8.0 : 6.0,
-        horizontal: isTablet ? 4.0 : 2.0,
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 2.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: isTablet ? 12.0 : 8.0,
+            blurRadius: 8.0,
             offset: const Offset(0, 4),
             spreadRadius: 0,
           ),
@@ -252,54 +257,138 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(isTablet ? 16.0 : 12.0),
+          borderRadius: BorderRadius.circular(12.0),
           onTap: () {},
           child: Padding(
-            padding: EdgeInsets.all(cardPadding),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // En-tête (même design historique, sans icône delivery)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1E49).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.inventory_2,
+                        color: Color(0xFF1A1E49),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             item.description ?? 'N/A',
-                            style: TextStyle(
-                              fontSize: titleFontSize,
+                            style: const TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A1E49),
-                              letterSpacing: 0.5,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
-                          if (item.quantity != null || item.carton != null)
-                            Text(
-                              '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}',
+                          const SizedBox(height: 4),
+                          RichText(
+                            text: TextSpan(
                               style: TextStyle(
-                                fontSize: fontSize,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
+                              children: [
+                                TextSpan(
+                                  text: '${loc.translate('invoice_number')}: ',
+                                ),
+                                TextSpan(
+                                  text: item.invoiceNumber ?? 'N/A',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
                             ),
+                          ),
                         ],
                       ),
                     ),
-                    if (isTablet)
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.inventory_2,
-                          color: Colors.grey[600],
-                          size: iconSize,
-                        ),
-                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(color: Colors.grey[200], height: 1),
+                const SizedBox(height: 12),
+                // Carton, quantité/carton
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ItemDetailChip(
+                      text: '${loc.translate('carton')}: ${item.carton ?? 0}',
+                      icon: Icons.inventory,
+                    ),
+                    const SizedBox(width: 16),
+                    ItemDetailChip(
+                      text:
+                          '${loc.translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                      icon: Icons.format_list_numbered,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Quantité totale, prix unitaire (icône yen)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ItemDetailChip(
+                      text:
+                          '${loc.translate('total_quantity')}: ${item.quantity ?? 0}',
+                      icon: Icons.numbers,
+                    ),
+                    const SizedBox(width: 8),
+                    ItemDetailChip(
+                      text: '${_formatItemAmount(item.unitPrice)} ¥',
+                      icon: Icons.currency_yen,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Poids et CBN (0 si null)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ItemDetailChip(
+                      text: '${loc.translate('weight')}: ${item.weight ?? 0}',
+                      icon: Icons.scale,
+                    ),
+                    const SizedBox(width: 16),
+                    ItemDetailChip(
+                      text: '${loc.translate('cbn')}: ${item.cbn ?? 0}',
+                      icon: Icons.straighten,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Taux de vente et total (icône yen)
+                Column(
+                  children: [
+                    ItemDetailChip(
+                      text:
+                          '${loc.translate('sales_rate')}: ${item.salesRate ?? 0}',
+                      icon: Icons.trending_up,
+                      fullWidth: true,
+                    ),
+                    const SizedBox(height: 8),
+                    ItemDetailChip(
+                      text:
+                          '${loc.translate('total')}: ${_formatItemAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                      icon: Icons.currency_yen,
+                      fullWidth: true,
+                    ),
                   ],
                 ),
               ],
@@ -335,7 +424,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           elevation: 0,
           iconTheme: const IconThemeData(color: Color(0xFF1A1E49)),
           actions: [
-            if (!_allPackagesSameClient() && container.isTeam == false)
+            if (!_allItemsSameClient() && container.isTeam == false)
               isLoading
                   ? const SizedBox(
                       width: 24,
