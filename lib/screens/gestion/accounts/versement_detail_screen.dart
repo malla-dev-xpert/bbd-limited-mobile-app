@@ -25,7 +25,7 @@ import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:bbd_limited/core/print/print_language.dart';
 import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
-import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
+import 'package:bbd_limited/screens/gestion/sales/achat_detail_screen.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 
@@ -172,12 +172,16 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
   }
 
   void _showAchatDetails(BuildContext context, Achat achat) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AchatDetailsSheet(achat: achat),
-    );
+    Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AchatDetailScreen(
+          achat: achat,
+          onItemConfirmed: () => widget.onVersementUpdated?.call(),
+          onItemReversed: () => widget.onVersementUpdated?.call(),
+        ),
+      ),
+    ).then((_) => _loadVersementData());
   }
 
   void _showEditDateDialog(Achat achat) {

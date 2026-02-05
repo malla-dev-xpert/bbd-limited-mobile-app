@@ -25,12 +25,18 @@ class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
   final VoidCallback? onItemConfirmed;
   final VoidCallback? onItemReversed;
+  /// When true, widget is used inside a full-screen page (no bottom sheet chrome).
+  final bool fullScreen;
+  /// When set, Edit action opens this callback (e.g. push EditArticleScreen) instead of the edit bottom sheet.
+  final Future<void> Function(Items item)? onEditArticle;
 
   const AchatDetailsSheet({
     super.key,
     required this.achat,
     this.onItemConfirmed,
     this.onItemReversed,
+    this.fullScreen = false,
+    this.onEditArticle,
   });
 
   @override
@@ -810,69 +816,53 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           description.contains(query) ||
           invoice.contains(query);
     }).toList();
-    return Container(
-      // MODIFIE : largeur max et hauteur optimisée
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header fixe - Responsive
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!widget.fullScreen) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Ligne 1: Titre et bouton fermer
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)
-                          .translate('purchase_history_details_title'),
-                      style: TextStyle(
-                          fontSize:
-                              MediaQuery.of(context).size.width < 400 ? 20 : 24,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5),
-                    ),
-                  ),
-                  // Bouton fermer
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              // Ligne 2: Badge dette si applicable
-              if (achat.isDebt == true)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF7F78AF).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF7F78AF)),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context)
-                        .translate('purchase_history_debt'),
-                    style: const TextStyle(
-                      color: Color(0xFF7F78AF),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)
+                      .translate('purchase_history_details_title'),
+                  style: TextStyle(
+                      fontSize:
+                          MediaQuery.of(context).size.width < 400 ? 20 : 24,
                       fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                      letterSpacing: -0.5),
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Champ de recherche fixe - Responsive
-          buildTextField(
+          const SizedBox(height: 4),
+        ],
+        if (achat.isDebt == true) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF7F78AF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF7F78AF)),
+            ),
+            child: Text(
+              AppLocalizations.of(context).translate('purchase_history_debt'),
+              style: const TextStyle(
+                color: Color(0xFF7F78AF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        // Champ de recherche fixe - Responsive
+        buildTextField(
             controller: _searchController,
             label: MediaQuery.of(context).size.width < 400
                 ? AppLocalizations.of(context).translate('search')
@@ -885,87 +875,102 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               });
             },
           ),
-          const SizedBox(height: 16),
-          // Contenu scrollable
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                      achat.isDebt == true
-                          ? AppLocalizations.of(context)
-                              .translate('purchase_history_date')
-                          : AppLocalizations.of(context)
-                              .translate('purchase_history_reference'),
-                      achat.isDebt == true
-                          ? DateFormat('dd/MM/yyyy HH:mm')
-                              .format(achat.createdAt ?? DateTime.now())
-                          : (achat.referenceVersement ??
-                              AppLocalizations.of(context)
-                                  .translate('not_available'))),
+        const SizedBox(height: 16),
+        // Contenu scrollable
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow(
+                    achat.isDebt == true
+                        ? AppLocalizations.of(context)
+                            .translate('purchase_history_date')
+                        : AppLocalizations.of(context)
+                            .translate('purchase_history_reference'),
+                    achat.isDebt == true
+                        ? DateFormat('dd/MM/yyyy HH:mm')
+                            .format(achat.createdAt ?? DateTime.now())
+                        : (achat.referenceVersement ??
+                            AppLocalizations.of(context)
+                                .translate('not_available'))),
+                _buildInfoRow(
+                    AppLocalizations.of(context)
+                        .translate('purchase_history_client'),
+                    achat.client ??
+                        AppLocalizations.of(context)
+                            .translate('not_available')),
+                if (achat.clientPhone != null)
                   _buildInfoRow(
                       AppLocalizations.of(context)
-                          .translate('purchase_history_client'),
-                      achat.client ??
-                          AppLocalizations.of(context)
-                              .translate('not_available')),
-                  if (achat.clientPhone != null)
-                    _buildInfoRow(
-                        AppLocalizations.of(context)
-                            .translate('purchase_history_phone'),
-                        achat.clientPhone!),
-                  _buildInfoRow(
+                          .translate('purchase_history_phone'),
+                      achat.clientPhone!),
+                _buildInfoRow(
+                    AppLocalizations.of(context)
+                        .translate('purchase_history_total_amount'),
+                    '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
+                const SizedBox(height: 20),
+                // Section Articles achetés avec bouton d'export
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
                       AppLocalizations.of(context)
-                          .translate('purchase_history_total_amount'),
-                      '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
-                  const SizedBox(height: 20),
-                  // Section Articles achetés avec bouton d'export
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)
-                            .translate('purchase_history_purchased_items'),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      // Bouton d'export PDF
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1E49),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.print,
-                              color: Colors.white, size: 20),
-                          onPressed: () => _handlePrintAchat(achat),
-                          tooltip: AppLocalizations.of(context)
-                              .translate('purchase_history_export_pdf'),
-                          padding: const EdgeInsets.all(8),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (filteredItems.isNotEmpty)
-                    ...filteredItems.map((item) => _buildItemCard(item, achat))
-                  else
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(AppLocalizations.of(context)
-                            .translate('purchase_history_no_items')),
+                          .translate('purchase_history_purchased_items'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                ],
-              ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1E49),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.print,
+                            color: Colors.white, size: 20),
+                        onPressed: () => _handlePrintAchat(achat),
+                        tooltip: AppLocalizations.of(context)
+                            .translate('purchase_history_export_pdf'),
+                        padding: const EdgeInsets.all(8),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (filteredItems.isNotEmpty)
+                  ...filteredItems.map((item) => _buildItemCard(item, achat))
+                else
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(AppLocalizations.of(context)
+                          .translate('purchase_history_no_items')),
+                    ),
+                  ),
+              ],
             ),
           ),
-        ],
+        ),
+      ],
+    );
+
+    if (widget.fullScreen) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: content,
+      );
+    }
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      padding: const EdgeInsets.all(20),
+      child: content,
     );
   }
 
@@ -1006,7 +1011,13 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         extentRatio: 0.35,
         children: [
           SlidableAction(
-            onPressed: (_) => _showEditArticleDialog(item),
+            onPressed: (_) {
+              if (widget.onEditArticle != null) {
+                widget.onEditArticle!(item);
+              } else {
+                _showEditArticleDialog(item);
+              }
+            },
             backgroundColor: const Color(0xFF1976D2),
             foregroundColor: Colors.white,
             icon: Icons.edit,

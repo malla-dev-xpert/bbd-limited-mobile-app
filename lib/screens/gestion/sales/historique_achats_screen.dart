@@ -7,13 +7,11 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'achat_details_sheet.dart';
-import 'package:bbd_limited/core/services/partner_services.dart';
+import 'achat_detail_screen.dart';
+import 'package:bbd_limited/screens/gestion/sales/edit_article_screen.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
 
@@ -659,12 +657,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   }
 
   void _showAchatDetails(BuildContext context, Achat achat) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AchatDetailsSheet(achat: achat),
-    );
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AchatDetailScreen(achat: achat),
+      ),
+    ).then((_) => setState(() {}));
   }
 
   void _showEditDateDialog(Achat achat) {
@@ -973,423 +971,33 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   }
 
   void _showEditArticleDialog(Items item, Achat achat) async {
-    final descriptionController = TextEditingController(text: item.description);
-    final cartonController =
-        TextEditingController(text: item.carton?.toString() ?? '');
-    final quantityPerCartonController =
-        TextEditingController(text: item.quantityPerCarton?.toString() ?? '');
-    final quantityController =
-        TextEditingController(text: item.quantity?.toString() ?? '');
-    final unitPriceController =
-        TextEditingController(text: item.unitPrice?.toString() ?? '');
-    final salesRateController =
-        TextEditingController(text: item.salesRate?.toString() ?? '');
-    final invoiceNumberController =
-        TextEditingController(text: item.invoiceNumber ?? '');
-    Partner? selectedSupplier;
-    List<Partner> suppliers = [];
-    bool loadingSuppliers = true;
-    String? errorMsg;
-
-    // Fonction pour recalculer la quantité totale
-    void calculateTotalQuantity() {
-      final carton = int.tryParse(cartonController.text) ?? 0;
-      final quantityPerCarton =
-          int.tryParse(quantityPerCartonController.text) ?? 0;
-      final totalQuantity = carton * quantityPerCarton;
-      quantityController.text = totalQuantity.toString();
-    }
-
-    // Ajouter des listeners pour recalculer automatiquement
-    cartonController.addListener(calculateTotalQuantity);
-    quantityPerCartonController.addListener(calculateTotalQuantity);
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateModal) {
-            if (loadingSuppliers) {
-              PartnerServices().findSuppliers().then((list) {
-                setStateModal(() {
-                  suppliers = list;
-                  if (suppliers.isNotEmpty) {
-                    selectedSupplier = suppliers.firstWhere(
-                      (s) => s.id == item.supplierId,
-                      orElse: () => suppliers[0],
-                    );
-                  } else {
-                    selectedSupplier = null;
-                  }
-                  loadingSuppliers = false;
-                });
-              }).catchError((e) {
-                setStateModal(() {
-                  errorMsg = AppLocalizations.of(context)
-                      .translate('error_loading_suppliers');
-                  loadingSuppliers = false;
-                });
-              });
-            }
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              padding: EdgeInsets.fromLTRB(
-                  24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
-              child: loadingSuppliers
-                  ? const SizedBox(
-                      height: 200,
-                      child: Center(child: CircularProgressIndicator()))
-                  : errorMsg != null
-                      ? Text(errorMsg!)
-                      : SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context).translate(
-                                    'purchase_history_edit_item_title'),
-                                textAlign: TextAlign.start,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    letterSpacing: -0.5),
-                              ),
-                              const SizedBox(height: 30),
-                              buildTextField(
-                                controller: invoiceNumberController,
-                                label: AppLocalizations.of(context)
-                                    .translate('invoice_number'),
-                                icon: Icons.receipt_long,
-                              ),
-                              const SizedBox(height: 12),
-
-                              buildTextField(
-                                controller: descriptionController,
-                                label: AppLocalizations.of(context).translate(
-                                    'purchase_history_edit_description'),
-                                icon: Icons.description,
-                              ),
-
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: buildTextField(
-                                      controller: cartonController,
-                                      label: AppLocalizations.of(context)
-                                          .translate('carton'),
-                                      icon: Icons.inventory_2,
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: buildTextField(
-                                      controller: quantityPerCartonController,
-                                      label: AppLocalizations.of(context)
-                                          .translate('quantity_per_carton'),
-                                      icon: Icons.format_list_numbered,
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              // Champ quantité totale (lecture seule)
-                              TextFormField(
-                                controller: quantityController,
-                                keyboardType: TextInputType.number,
-                                enabled: false, // Lecture seule
-                                decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context)
-                                      .translate('total_quantity'),
-                                  prefixIcon: Icon(Icons.calculate,
-                                      color: Colors.grey[600]),
-                                  filled: true,
-                                  fillColor: Colors.grey[100],
-                                  hintText: AppLocalizations.of(context)
-                                      .translate('calculated_automatically'),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: Colors.grey.shade300),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              buildTextField(
-                                controller: unitPriceController,
-                                label: AppLocalizations.of(context).translate(
-                                    'purchase_history_edit_unit_price'),
-                                icon: Icons.attach_money,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                              ),
-                              const SizedBox(height: 12),
-                              buildTextField(
-                                controller: salesRateController,
-                                label: AppLocalizations.of(context).translate(
-                                    'purchase_history_edit_purchase_rate'),
-                                icon: Icons.percent,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                              ),
-                              const SizedBox(height: 12),
-                              DropDownCustom<Partner>(
-                                items: suppliers,
-                                selectedItem: selectedSupplier,
-                                onChanged: (val) =>
-                                    setStateModal(() => selectedSupplier = val),
-                                itemToString: (p) => ((p.firstName +
-                                        (p.lastName.isNotEmpty
-                                            ? ' ' + p.lastName
-                                            : ''))
-                                    .trim()),
-                                hintText: AppLocalizations.of(context)
-                                    .translate(
-                                        'purchase_history_edit_supplier'),
-                                prefixIcon: Icons.person,
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: Text(AppLocalizations.of(context)
-                                          .translate(
-                                              'purchase_history_edit_cancel')),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: confirmationButton(
-                                      icon: Icons.save,
-                                      label: AppLocalizations.of(context)
-                                          .translate(
-                                              'purchase_history_edit_save'),
-                                      isLoading: isLoading,
-                                      subLabel: 'Modification...',
-                                      onPressed: () async {
-                                        if (isLoading) return;
-                                        setState(() {
-                                          isLoading = true;
-                                        });
-                                        final user =
-                                            await AuthService().getUserInfo();
-                                        if (user == null) {
-                                          showErrorTopSnackBar(
-                                              context,
-                                              AppLocalizations.of(context)
-                                                  .translate(
-                                                      'user_not_connected'));
-                                          setState(() {
-                                            isLoading = false;
-                                          });
-                                          return;
-                                        }
-                                        try {
-                                          // Calculer la quantité totale automatiquement
-                                          final carton = int.tryParse(
-                                                  cartonController.text) ??
-                                              0;
-                                          final quantityPerCarton = int.tryParse(
-                                                  quantityPerCartonController
-                                                      .text) ??
-                                              0;
-                                          final totalQuantity =
-                                              carton * quantityPerCarton;
-
-                                          final updatedItem = Items(
-                                            id: item.id,
-                                            description:
-                                                descriptionController.text,
-                                            carton: carton,
-                                            quantityPerCarton:
-                                                quantityPerCarton,
-                                            quantity: totalQuantity,
-                                            unitPrice: double.tryParse(
-                                                unitPriceController.text),
-                                            totalPrice: totalQuantity *
-                                                (double.tryParse(
-                                                        unitPriceController
-                                                            .text) ??
-                                                    0),
-                                            supplierId: selectedSupplier?.id,
-                                            supplierName: ((selectedSupplier
-                                                                ?.firstName ??
-                                                            '') +
-                                                        ((selectedSupplier
-                                                                        ?.lastName ??
-                                                                    '')
-                                                                .isNotEmpty
-                                                            ? ' ' +
-                                                                (selectedSupplier
-                                                                        ?.lastName ??
-                                                                    '')
-                                                            : ''))
-                                                    .trim()
-                                                    .isNotEmpty
-                                                ? ((selectedSupplier
-                                                            ?.firstName ??
-                                                        '') +
-                                                    ((selectedSupplier
-                                                                    ?.lastName ??
-                                                                '')
-                                                            .isNotEmpty
-                                                        ? ' ' +
-                                                            (selectedSupplier
-                                                                    ?.lastName ??
-                                                                '')
-                                                        : ''))
-                                                : null,
-                                            supplierPhone:
-                                                selectedSupplier?.phoneNumber,
-                                            packageId: item.packageId,
-                                            salesRate: double.tryParse(
-                                                salesRateController.text),
-                                            status: item.status,
-                                            invoiceNumber:
-                                                invoiceNumberController.text
-                                                        .trim()
-                                                        .isEmpty
-                                                    ? null
-                                                    : invoiceNumberController
-                                                        .text
-                                                        .trim(),
-                                          );
-                                          final itemServices = ItemServices();
-                                          try {
-                                            final result =
-                                                await itemServices.updateItem(
-                                              itemId: item.id!,
-                                              userId: user.id,
-                                              item: updatedItem,
-                                            );
-                                            if (result.success == true) {
-                                              setState(() {
-                                                // Mettre à jour l'item dans tous les achats
-                                                for (var a in _achats) {
-                                                  final idx = a.items
-                                                          ?.indexWhere((i) =>
-                                                              i.id ==
-                                                              item.id) ??
-                                                      -1;
-                                                  if (idx != -1) {
-                                                    a.items![idx] = updatedItem;
-                                                  }
-                                                }
-                                                for (var a in _filteredAchats) {
-                                                  final idx = a.items
-                                                          ?.indexWhere((i) =>
-                                                              i.id ==
-                                                              item.id) ??
-                                                      -1;
-                                                  if (idx != -1) {
-                                                    a.items![idx] = updatedItem;
-                                                  }
-                                                }
-                                              });
-                                              showSuccessTopSnackBar(
-                                                  context,
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'purchase_history_item_modified_success'));
-                                              Navigator.pop(context);
-                                            }
-                                          } on ItemUpdateException catch (e) {
-                                            // Gérer les erreurs selon le code d'erreur
-                                            if (e.errorCode ==
-                                                'ITEM_NOT_FOUND') {
-                                              showErrorTopSnackBar(
-                                                  context,
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'purchase_history_item_not_found'));
-                                            } else if (e.errorCode ==
-                                                'USER_NOT_FOUND') {
-                                              showErrorTopSnackBar(
-                                                  context,
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'purchase_history_user_not_found'));
-                                            } else if (e.errorCode ==
-                                                'CLIENT_MISMATCH') {
-                                              showErrorTopSnackBar(
-                                                  context,
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'purchase_history_client_mismatch'));
-                                            } else if (e.errorCode ==
-                                                'SUPPLIER_NOT_FOUND') {
-                                              showErrorTopSnackBar(
-                                                  context,
-                                                  AppLocalizations.of(context)
-                                                      .translate(
-                                                          'purchase_history_supplier_not_found'));
-                                            } else {
-                                              showErrorTopSnackBar(
-                                                  context,
-                                                  e.message.isNotEmpty
-                                                      ? e.message
-                                                      : AppLocalizations.of(
-                                                              context)
-                                                          .translate(
-                                                              'purchase_history_error_occurred')
-                                                          .replaceAll(
-                                                              '{error}',
-                                                              e.errorCode ??
-                                                                  'UNKNOWN'));
-                                            }
-                                          } catch (e) {
-                                            showErrorTopSnackBar(
-                                                context,
-                                                AppLocalizations.of(context)
-                                                    .translate(
-                                                        'purchase_history_error_occurred')
-                                                    .replaceAll('{error}',
-                                                        e.toString()));
-                                          }
-                                        } catch (e) {
-                                          showErrorTopSnackBar(
-                                              context,
-                                              AppLocalizations.of(context)
-                                                  .translate(
-                                                      'purchase_history_error_occurred')
-                                                  .replaceAll(
-                                                      '{error}', e.toString()));
-                                        } finally {
-                                          setState(() {
-                                            isLoading = false;
-                                          });
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-            );
-          },
-        );
-      },
+    final updated = await Navigator.push<Items>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditArticleScreen(item: item, achat: achat),
+      ),
     );
+    if (updated != null && mounted) {
+      setState(() {
+        for (var a in _achats) {
+          final idx = a.items?.indexWhere((i) => i.id == updated.id) ?? -1;
+          if (idx != -1) {
+            a.items![idx] = updated;
+            break;
+          }
+        }
+        for (var a in _filteredAchats) {
+          final idx = a.items?.indexWhere((i) => i.id == updated.id) ?? -1;
+          if (idx != -1) {
+            a.items![idx] = updated;
+            break;
+          }
+        }
+      });
+    }
   }
 
-  void _confirmReverseArticle(Items item, Achat achat) {
+    void _confirmReverseArticle(Items item, Achat achat) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

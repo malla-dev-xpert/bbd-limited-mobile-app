@@ -168,10 +168,12 @@ class Items {
   final double? totalPriceRateToCNY;
   final double? totalPriceCNY;
   final double? weight;
+  final double? totalWeight;
   final double? cartonLength;
   final double? cartonWidth;
   final double? cartonHeight;
   final double? cbn;
+  final double? cbnTotal;
   Items({
     this.id,
     this.description,
@@ -199,10 +201,12 @@ class Items {
     this.totalPriceRateToCNY,
     this.totalPriceCNY,
     this.weight,
+    this.totalWeight,
     this.cartonLength,
     this.cartonWidth,
     this.cartonHeight,
     this.cbn,
+    this.cbnTotal,
   });
 
   Items copyWith({
@@ -236,6 +240,8 @@ class Items {
     double? cartonWidth,
     double? cartonHeight,
     double? cbn,
+    double? totalWeight,
+    double? cbnTotal,
   }) {
     return Items(
       id: id ?? this.id,
@@ -268,6 +274,8 @@ class Items {
       cartonWidth: cartonWidth ?? this.cartonWidth,
       cartonHeight: cartonHeight ?? this.cartonHeight,
       cbn: cbn ?? this.cbn,
+      totalWeight: totalWeight ?? this.totalWeight,
+      cbnTotal: cbnTotal ?? this.cbnTotal,
     );
   }
 
@@ -303,6 +311,8 @@ class Items {
       'cartonWidth': cartonWidth,
       'cartonHeight': cartonHeight,
       'cbn': cbn,
+      'totalWeight': totalWeight,
+      'cbnTotal': cbnTotal,
     };
   }
 
@@ -371,6 +381,12 @@ class Items {
           ? (json['cartonHeight'] as num).toDouble()
           : null,
       cbn: json['cbn'] != null ? (json['cbn'] as num).toDouble() : null,
+      totalWeight: json['totalWeight'] != null
+          ? (json['totalWeight'] as num).toDouble()
+          : null,
+      cbnTotal: json['cbnTotal'] != null
+          ? (json['cbnTotal'] as num).toDouble()
+          : null,
     );
   }
 }
