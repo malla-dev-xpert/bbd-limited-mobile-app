@@ -56,6 +56,26 @@ class ItemServices {
     }
   }
 
+  /// Récupère les items du partenaire.
+  Future<List<Items>> getItemsByPartnerId(int partnerId) async {
+    try {
+      final url = Uri.parse('$baseUrl/items/partner/$partnerId');
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonBody =
+            json.decode(utf8.decode(response.bodyBytes));
+        return jsonBody
+            .map((e) => Items.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw Exception(
+            "Erreur lors du chargement des articles du partenaire (${response.statusCode}): ${response.body}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Fetches all items (e.g. GET /items). Used for container item selection.
   /// Filter client-side: not assigned to any container, not deleted.
   Future<List<Items>> findAllNotInContainer() async {

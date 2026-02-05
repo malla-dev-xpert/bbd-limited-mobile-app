@@ -19,18 +19,19 @@ class OperationTypeSelector extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _buildOperationTypeButton(OperationType.versements,
-                AppLocalizations.of(context).translate('versements'), Icons.payments_outlined),
+            child: _buildOperationTypeButton(
+              OperationType.versements,
+              AppLocalizations.of(context).translate('versements'),
+              Icons.payments_outlined,
+            ),
           ),
           const SizedBox(width: 5),
           Expanded(
             child: _buildOperationTypeButton(
-                OperationType.expeditions, AppLocalizations.of(context).translate('packages'), Icons.inventory_2),
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: _buildOperationTypeButton(
-                OperationType.debts, AppLocalizations.of(context).translate('debts'), Icons.money_off_csred),
+              OperationType.articles,
+              AppLocalizations.of(context).translate('items'),
+              Icons.inventory_2,
+            ),
           ),
         ],
       ),

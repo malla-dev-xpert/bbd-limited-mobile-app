@@ -5,22 +5,16 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
-import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
+import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/create_package_form.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
-import 'package:bbd_limited/screens/gestion/sales/achat_details_sheet.dart';
-import 'package:bbd_limited/routes.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
@@ -32,9 +26,9 @@ import 'widgets/balance_card_widget.dart';
 import 'widgets/operation_type_selector.dart';
 import 'widgets/date_filter.dart';
 import 'widgets/versement_list.dart';
-import 'widgets/debt_list.dart';
+import 'widgets/partner_articles_list.dart';
 
-enum OperationType { versements, expeditions, debts }
+enum OperationType { versements, articles }
 
 class PartnerDetailScreen extends StatefulWidget {
   final Partner partner;
@@ -54,8 +48,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   late Partner _partner;
   final TextEditingController _searchController = TextEditingController();
   List<dynamic>? _filteredVersements;
-  List<Packages>? _filteredPackages;
-  List<Achat>? _filteredDebts;
+  List<Items>? _partnerItems;
   OperationType _selectedOperationType = OperationType.versements;
   double _totalVersementsUSD = 0.0;
   VersementType? _selectedVersementType;
@@ -77,36 +70,27 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     super.initState();
     _partner = widget.partner;
     _filteredVersements = _partner.versements;
-    _filteredPackages = _partner.packages;
-    _filteredDebts = [];
     _dateDebutController = TextEditingController();
     _dateFinController = TextEditingController();
     _sortVersementsByDate();
-    _sortExpeditionsByDate();
     _initializeData();
-    _loadDebts();
+    _loadPartnerItems();
   }
 
   void _initializeData() {
     _calculateTotalVersementsCNY();
   }
 
-  Future<void> _loadDebts() async {
+  Future<void> _loadPartnerItems() async {
+    if (_partner.id == null) {
+      setState(() => _partnerItems = []);
+      return;
+    }
     try {
-      final achats = await AchatServices().findAll();
-      final filteredDebts = achats
-          .where((a) =>
-              a.isDebt == true &&
-              ((a.clientPhone != null &&
-                      a.clientPhone == _partner.phoneNumber) ||
-                  (a.clientId != null && a.clientId == _partner.id)))
-          .toList();
-
-      setState(() {
-        _filteredDebts = filteredDebts;
-      });
+      final list = await ItemServices().getItemsByPartnerId(_partner.id!);
+      setState(() => _partnerItems = list);
     } catch (e) {
-      print('Erreur lors du chargement des dettes: $e');
+      setState(() => _partnerItems = []);
     }
   }
 
@@ -126,16 +110,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
     }
   }
 
-  void _sortExpeditionsByDate() {
-    if (_filteredPackages != null) {
-      _filteredPackages!.sort((a, b) {
-        final dateA = a.startDate ?? DateTime(1900);
-        final dateB = b.startDate ?? DateTime(1900);
-        return dateB.compareTo(dateA);
-      });
-    }
-  }
-
   Future<void> _refreshData() async {
     try {
       final partnerServices = PartnerServices();
@@ -148,13 +122,10 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       setState(() {
         _partner = freshPartner;
         _filteredVersements = _partner.versements;
-        _filteredPackages = _partner.packages;
-        _filteredDebts = [];
         _sortVersementsByDate();
-        _sortExpeditionsByDate();
       });
 
-      await _loadDebts();
+      await _loadPartnerItems();
       _calculateTotalVersementsCNY();
 
       // Notifier le parent que le partenaire a été mis à jour
@@ -172,19 +143,14 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
       setState(() {
         if (_selectedOperationType == OperationType.versements) {
           _filteredVersements = _partner.versements?.where((versement) {
-            // Filtre texte
             final searchText = query.isEmpty ||
                 (versement.reference
                         ?.toLowerCase()
                         .contains(query.toLowerCase()) ??
                     false);
-
-            // Filtre type
             bool typeMatch = _selectedVersementType == null ||
                 versement.type ==
                     _selectedVersementType!.toString().split('.').last;
-
-            // Filtre date
             bool dateMatch = true;
             if (_selectedDateDebut != null || _selectedDateFin != null) {
               final dateVersement = versement.createdAt;
@@ -205,66 +171,22 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             }
             return searchText && typeMatch && dateMatch;
           }).toList();
-        } else if (_selectedOperationType == OperationType.expeditions) {
-          _filteredPackages = _partner.packages?.where((package) {
-            // Filtre texte
-            final searchText = query.isEmpty ||
-                (package.ref?.toLowerCase().contains(query.toLowerCase()) ??
-                    false);
-
-            // Filtre date
-            bool dateMatch = true;
-            if (_selectedDateDebut != null || _selectedDateFin != null) {
-              final datePackage = package.startDate;
-              if (datePackage == null) {
-                dateMatch = false;
-              } else {
-                if (_selectedDateDebut != null) {
-                  dateMatch = dateMatch &&
-                      datePackage.isAfter(_selectedDateDebut!
-                          .subtract(const Duration(days: 1)));
-                }
-                if (_selectedDateFin != null) {
-                  dateMatch = dateMatch &&
-                      datePackage.isBefore(
-                          _selectedDateFin!.add(const Duration(days: 1)));
-                }
-              }
-            }
-            return searchText && dateMatch;
-          }).toList();
-        } else if (_selectedOperationType == OperationType.debts) {
-          _filteredDebts = _filteredDebts?.where((debt) {
-            // Filtre texte
-            final searchText =
-                query.isEmpty || (debt.id?.toString().contains(query) ?? false);
-
-            // Filtre date
-            bool dateMatch = true;
-            if (_selectedDateDebut != null || _selectedDateFin != null) {
-              final dateDebt = debt.createdAt;
-              if (dateDebt == null) {
-                dateMatch = false;
-              } else {
-                if (_selectedDateDebut != null) {
-                  dateMatch = dateMatch &&
-                      dateDebt.isAfter(_selectedDateDebut!
-                          .subtract(const Duration(days: 1)));
-                }
-                if (_selectedDateFin != null) {
-                  dateMatch = dateMatch &&
-                      dateDebt.isBefore(
-                          _selectedDateFin!.add(const Duration(days: 1)));
-                }
-              }
-            }
-            return searchText && dateMatch;
-          }).toList();
+        } else if (_selectedOperationType == OperationType.articles) {
+          // _filteredPartnerItems est un getter basé sur _searchController → rebuild suffit
         }
         _sortVersementsByDate();
-        _sortExpeditionsByDate();
       });
     });
+  }
+
+  List<Items> get _filteredPartnerItems {
+    final list = _partnerItems ?? [];
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isEmpty) return list;
+    return list.where((item) {
+      return (item.description?.toLowerCase().contains(query) ?? false) ||
+          (item.invoiceNumber?.toLowerCase().contains(query) ?? false);
+    }).toList();
   }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
@@ -473,6 +395,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Widget _buildFloatingActionButton() {
+    if (_selectedOperationType != OperationType.versements) {
+      return const SizedBox.shrink();
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
@@ -480,21 +405,9 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextButton.icon(
-        onPressed: () {
-          if (_selectedOperationType == OperationType.versements) {
-            _showCreateVersementBottomSheet(context);
-          } else if (_selectedOperationType == OperationType.expeditions) {
-            _showCreateExpeditionBottomSheet(context);
-          } else {
-            _showCreateDebtBottomSheet(context);
-          }
-        },
+        onPressed: () => _showCreateVersementBottomSheet(context),
         label: Text(
-          _selectedOperationType == OperationType.versements
-              ? AppLocalizations.of(context).translate('new_versement')
-              : _selectedOperationType == OperationType.expeditions
-                  ? AppLocalizations.of(context).translate('new_package')
-                  : AppLocalizations.of(context).translate('new_debt'),
+          AppLocalizations.of(context).translate('new_versement'),
           style: const TextStyle(color: Colors.white),
         ),
         icon: const Icon(Icons.add, color: Colors.white),
@@ -679,131 +592,11 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
         onDeleteVersement: _deleteVersement,
         onTransferVersement: _showTransferVersementModal,
       );
-    } else if (_selectedOperationType == OperationType.expeditions) {
-      return _buildExpeditionsList(context);
     } else {
-      return DebtListWidget(
-        debts: _filteredDebts,
+      return PartnerArticlesListWidget(
+        items: _filteredPartnerItems,
         onRefresh: _refreshData,
-        onDebtTap: _showAchatDetails,
       );
-    }
-  }
-
-  Widget _buildExpeditionsList(BuildContext context) {
-    if (_filteredPackages == null || _filteredPackages!.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height * 0.2,
-        ),
-        child: Center(
-          child: Text(
-            AppLocalizations.of(context).translate('no_packages_found'),
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _refreshData,
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 100),
-        itemCount: _filteredPackages?.length ?? 0,
-        itemBuilder: (context, index) {
-          final package = _filteredPackages![index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: PackageListItem(
-              packages: package,
-              onTap: () => _showPackageDetails(context, package),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showPackageDetails(BuildContext context, Packages package) async {
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PackageDetailsScreen(
-          packages: package,
-          onStart: (updatedExpedition) {
-            _refreshData();
-          },
-          onEdit: (updatedExpedition) {
-            _refreshData();
-          },
-          onDelete: (updatedExpedition) {
-            _refreshData();
-          },
-        ),
-      ),
-    );
-    if (result == true) {
-      await _refreshData();
-      // Notifier le parent que le partenaire a été mis à jour
-      if (widget.onPartnerUpdated != null) {
-        widget.onPartnerUpdated!(_partner);
-      }
-    }
-  }
-
-  void _showAchatDetails(BuildContext context, Achat achat) async {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AchatDetailsSheet(
-        achat: achat,
-        onItemConfirmed: () async {
-          // Rafraîchir les données du partenaire quand un article est confirmé
-          await _refreshData();
-          // Notifier le parent que le partenaire a été mis à jour
-          if (widget.onPartnerUpdated != null) {
-            widget.onPartnerUpdated!(_partner);
-          }
-        },
-        onItemReversed: () async {
-          // Rafraîchir les données du partenaire quand un article est reversé
-          await _refreshData();
-          // Notifier le parent que le partenaire a été mis à jour
-          if (widget.onPartnerUpdated != null) {
-            widget.onPartnerUpdated!(_partner);
-          }
-        },
-      ),
-    );
-  }
-
-  Future<void> _showCreateExpeditionBottomSheet(BuildContext context) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return CreateExpeditionForm(
-          clientId: widget.partner.id.toString(),
-          onExpeditionCreated: () async {
-            await _refreshData();
-          },
-        );
-      },
-    );
-
-    if (result == true) {
-      await _refreshData();
-      // Notifier le parent que le partenaire a été mis à jour
-      if (widget.onPartnerUpdated != null) {
-        widget.onPartnerUpdated!(_partner);
-      }
     }
   }
 
@@ -828,28 +621,6 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
 
     if (result == true) {
       await _refreshData();
-      // Notifier le parent que le partenaire a été mis à jour
-      if (widget.onPartnerUpdated != null) {
-        widget.onPartnerUpdated!(_partner);
-      }
-    }
-  }
-
-  Future<void> _showCreateDebtBottomSheet(BuildContext context) async {
-    final result = await Navigator.pushNamed(
-      context,
-      Routes.purchase,
-      arguments: {
-        'clientId': _partner.id,
-        'onPurchaseComplete': (achat) async {
-          await _loadDebts();
-          setState(() {});
-        },
-      },
-    );
-    if (result == true) {
-      await _loadDebts();
-      setState(() {});
       // Notifier le parent que le partenaire a été mis à jour
       if (widget.onPartnerUpdated != null) {
         widget.onPartnerUpdated!(_partner);
