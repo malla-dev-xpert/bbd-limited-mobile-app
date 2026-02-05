@@ -1174,6 +1174,23 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('weight')}: ${item.totalWeight ?? item.weight ?? 0}',
+                        icon: Icons.scale,
+                      ),
+                      const SizedBox(width: 8),
+                      ItemDetailChip(
+                        text:
+                            '${AppLocalizations.of(context).translate('cbn')}: ${item.cbnTotal ?? item.cbn ?? 0}',
+                        icon: Icons.inventory_2,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   // Taux d'achat et total en colonne pour une meilleure lisibilité
                   Column(
                     children: [

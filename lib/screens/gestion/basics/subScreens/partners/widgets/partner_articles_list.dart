@@ -39,7 +39,8 @@ class PartnerArticlesListWidget extends StatelessWidget {
                   Icon(Icons.inventory_2, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
-                    AppLocalizations.of(context).translate('purchase_history_no_items'),
+                    AppLocalizations.of(context)
+                        .translate('purchase_history_no_items'),
                     style: TextStyle(fontSize: 20, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
@@ -118,7 +119,8 @@ class PartnerArticlesListWidget extends StatelessWidget {
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600]),
                           children: [
                             TextSpan(
                               text: '${loc.translate('invoice_number')}: ',
@@ -158,7 +160,8 @@ class PartnerArticlesListWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 ItemDetailChip(
-                  text: '${loc.translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
+                  text:
+                      '${loc.translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
                   icon: Icons.format_list_numbered,
                 ),
               ],
@@ -168,7 +171,8 @@ class PartnerArticlesListWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ItemDetailChip(
-                  text: '${loc.translate('total_quantity')}: ${item.quantity ?? 0}',
+                  text:
+                      '${loc.translate('total_quantity')}: ${item.quantity ?? 0}',
                   icon: Icons.numbers,
                 ),
                 const SizedBox(width: 8),
@@ -183,12 +187,12 @@ class PartnerArticlesListWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ItemDetailChip(
-                  text: '${loc.translate('weight')}: ${item.weight ?? 0}',
+                  text: '${loc.translate('weight')}: ${item.totalWeight ?? 0}',
                   icon: Icons.scale,
                 ),
                 const SizedBox(width: 16),
                 ItemDetailChip(
-                  text: '${loc.translate('cbn')}: ${item.cbn ?? 0}',
+                  text: '${loc.translate('cbn')}: ${item.cbnTotal ?? 0}',
                   icon: Icons.straighten,
                 ),
               ],
@@ -197,13 +201,15 @@ class PartnerArticlesListWidget extends StatelessWidget {
             Column(
               children: [
                 ItemDetailChip(
-                  text: '${loc.translate('sales_rate')}: ${item.salesRate ?? 0}',
+                  text:
+                      '${loc.translate('sales_rate')}: ${item.salesRate ?? 0}',
                   icon: Icons.trending_up,
                   fullWidth: true,
                 ),
                 const SizedBox(height: 8),
                 ItemDetailChip(
-                  text: '${loc.translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
+                  text:
+                      '${loc.translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
                   icon: Icons.calculate,
                   fullWidth: true,
                 ),

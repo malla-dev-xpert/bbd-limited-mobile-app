@@ -209,6 +209,9 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
           double.tryParse(_heightController.text.replaceAll(',', '.')) ?? 0.0;
       // Dimensions en cm → CBN en m³ = (L × l × H) / 1000000
       final cbnIndividualM3 = (lengthCm * widthCm * heightCm) / 1000000;
+      final cbnTotalM3 = cbnIndividualM3 * carton;
+      final weightIndividual = weight ?? 0.0;
+      final totalWeightValue = weightIndividual * totalQuantity;
 
       final updated = Items(
         id: widget.item.id,
@@ -232,10 +235,12 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
             ? null
             : _invoiceController.text.trim(),
         weight: weight,
+        totalWeight: totalWeightValue,
         cartonLength: lengthCm,
         cartonWidth: widthCm,
         cartonHeight: heightCm,
         cbn: cbnIndividualM3,
+        cbnTotal: cbnTotalM3,
       );
 
       final result = await ItemServices().updateItem(

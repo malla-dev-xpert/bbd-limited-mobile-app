@@ -123,8 +123,8 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final weight = item.weight ?? 0;
-    final cbn = item.cbn ?? 0;
+    final weight = item.totalWeight ?? 0;
+    final cbn = item.cbnTotal ?? 0;
     final clientDisplay = item.clientName?.isNotEmpty == true
         ? item.clientName!
         : (item.clientId != null ? '#${item.clientId}' : '—');

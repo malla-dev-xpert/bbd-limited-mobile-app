@@ -747,7 +747,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                               if (toRemove)
                                 Text(loc.translate('container_will_remove')),
                               Text(
-                                '${loc.translate('weight')}: ${item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
+                                '${loc.translate('weight')}: ${item.totalWeight ?? 0} · ${loc.translate('cbn')}: ${item.cbnTotal ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],
@@ -795,7 +795,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                                   '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
                               const SizedBox(height: 4),
                               Text(
-                                '${loc.translate('weight')}: ${item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
+                                '${loc.translate('weight')}: ${item.totalWeight ?? item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbnTotal ?? item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],

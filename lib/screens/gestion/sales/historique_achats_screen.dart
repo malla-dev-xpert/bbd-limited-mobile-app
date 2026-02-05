@@ -997,7 +997,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     }
   }
 
-    void _confirmReverseArticle(Items item, Achat achat) {
+  void _confirmReverseArticle(Items item, Achat achat) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1401,13 +1401,13 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                       children: [
                         ItemDetailChip(
                           text:
-                              '${AppLocalizations.of(context).translate('weight')}: ${item.weight ?? 0}',
+                              '${AppLocalizations.of(context).translate('weight')}: ${item.totalWeight ?? 0}',
                           icon: Icons.scale,
                         ),
                         const SizedBox(width: 16),
                         ItemDetailChip(
                           text:
-                              '${AppLocalizations.of(context).translate('cbn')}: ${item.cbn ?? 0}',
+                              '${AppLocalizations.of(context).translate('cbn')}: ${item.cbnTotal ?? 0}',
                           icon: Icons.straighten,
                         ),
                       ],

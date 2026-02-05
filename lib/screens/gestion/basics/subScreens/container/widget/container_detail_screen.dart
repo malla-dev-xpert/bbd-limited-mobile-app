@@ -368,12 +368,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ItemDetailChip(
-                      text: '${loc.translate('weight')}: ${item.weight ?? 0}',
+                      text:
+                          '${loc.translate('weight')}: ${item.totalWeight ?? 0}',
                       icon: Icons.scale,
                     ),
                     const SizedBox(width: 16),
                     ItemDetailChip(
-                      text: '${loc.translate('cbn')}: ${item.cbn ?? 0}',
+                      text: '${loc.translate('cbn')}: ${item.cbnTotal ?? 0}',
                       icon: Icons.straighten,
                     ),
                   ],

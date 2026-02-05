@@ -140,8 +140,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final weight = item.weight ?? 0;
-    final cbn = item.cbn ?? 0;
+    final weight = item.totalWeight ?? item.weight ?? 0;
+    final cbn = item.cbnTotal ?? item.cbn ?? 0;
     final clientDisplay = item.clientName?.isNotEmpty == true
         ? item.clientName!
         : (item.clientId != null ? '#${item.clientId}' : '—');
