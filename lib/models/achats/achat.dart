@@ -15,23 +15,24 @@ class Achat {
   final double? montantTotalCNY;
   final double? totalCbn;
   final double? totalWeight;
+  final String? code;
 
-  Achat copyWith({
-    int? id,
-    String? referenceVersement,
-    String? client,
-    String? clientPhone,
-    List<Items>? items,
-    double? montantTotal,
-    DateTime? createdAt,
-    bool? isDebt,
-    int? clientId,
-    Status? status,
-    double? tauxUtiliseToCNY,
-    double? montantTotalCNY,
-    double? totalCbn,
-    double? totalWeight,
-  }) {
+  Achat copyWith(
+      {int? id,
+      String? referenceVersement,
+      String? client,
+      String? clientPhone,
+      List<Items>? items,
+      double? montantTotal,
+      DateTime? createdAt,
+      bool? isDebt,
+      int? clientId,
+      Status? status,
+      double? tauxUtiliseToCNY,
+      double? montantTotalCNY,
+      double? totalCbn,
+      double? totalWeight,
+      String? code}) {
     return Achat(
       id: id ?? this.id,
       referenceVersement: referenceVersement ?? this.referenceVersement,
@@ -47,6 +48,7 @@ class Achat {
       montantTotalCNY: montantTotalCNY ?? this.montantTotalCNY,
       totalCbn: totalCbn ?? this.totalCbn,
       totalWeight: totalWeight ?? this.totalWeight,
+      code: code ?? this.code,
     );
   }
 
@@ -65,6 +67,7 @@ class Achat {
     this.montantTotalCNY,
     this.totalCbn,
     this.totalWeight,
+    this.code,
   });
 
   Map<String, dynamic> toJson() {
@@ -83,6 +86,7 @@ class Achat {
       'montantTotalCNY': montantTotalCNY,
       'totalCbn': totalCbn,
       'totalWeight': totalWeight,
+      'code': code,
     };
   }
 
@@ -129,6 +133,7 @@ class Achat {
       totalWeight: json['totalWeight'] != null
           ? (json['totalWeight'] as num).toDouble()
           : null,
+      code: json['code'] as String?,
     );
   }
 }
