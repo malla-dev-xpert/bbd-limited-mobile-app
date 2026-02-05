@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
@@ -25,8 +26,10 @@ class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
   final VoidCallback? onItemConfirmed;
   final VoidCallback? onItemReversed;
+
   /// When true, widget is used inside a full-screen page (no bottom sheet chrome).
   final bool fullScreen;
+
   /// When set, Edit action opens this callback (e.g. push EditArticleScreen) instead of the edit bottom sheet.
   final Future<void> Function(Items item)? onEditArticle;
 
@@ -863,18 +866,18 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         ],
         // Champ de recherche fixe - Responsive
         buildTextField(
-            controller: _searchController,
-            label: MediaQuery.of(context).size.width < 400
-                ? AppLocalizations.of(context).translate('search')
-                : AppLocalizations.of(context)
-                    .translate('purchase_history_search_hint'),
-            icon: Icons.search,
-            onChanged: (val) {
-              setState(() {
-                _searchQuery = val;
-              });
-            },
-          ),
+          controller: _searchController,
+          label: MediaQuery.of(context).size.width < 400
+              ? AppLocalizations.of(context).translate('search')
+              : AppLocalizations.of(context)
+                  .translate('purchase_history_search_hint'),
+          icon: Icons.search,
+          onChanged: (val) {
+            setState(() {
+              _searchQuery = val;
+            });
+          },
+        ),
         const SizedBox(height: 16),
         // Contenu scrollable
         Expanded(
@@ -905,6 +908,62 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                       AppLocalizations.of(context)
                           .translate('purchase_history_phone'),
                       achat.clientPhone!),
+                if (achat.code != null && achat.code!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context).translate('code'),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                achat.code!,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                  fontFamily: 'monospace',
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () {
+                                  Clipboard.setData(
+                                      ClipboardData(text: achat.code!));
+                                  showSuccessTopSnackBar(
+                                      context,
+                                      AppLocalizations.of(context)
+                                          .translate('code_copied'));
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.copy,
+                                    size: 20,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 _buildInfoRow(
                     AppLocalizations.of(context)
                         .translate('purchase_history_total_amount'),

@@ -204,6 +204,8 @@
   "reply": "Répondre",
   "forward": "Transférer",
   "copy": "Copier",
+  "code": "Code",
+  "code_copied": "Code copié",
   "paste": "Coller",
   "cut": "Couper",
   "redo": "Rétablir",

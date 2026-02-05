@@ -206,6 +206,8 @@
   "reply": "Reply",
   "forward": "Forward",
   "copy": "Copy",
+  "code": "Code",
+  "code_copied": "Code copied",
   "paste": "Paste",
   "cut": "Cut",
   "redo": "Redo",

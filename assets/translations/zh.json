@@ -202,6 +202,8 @@
   "reply": "回复",
   "forward": "转发",
   "copy": "复制",
+  "code": "代码",
+  "code_copied": "代码已复制",
   "paste": "粘贴",
   "cut": "剪切",
   "redo": "重做",

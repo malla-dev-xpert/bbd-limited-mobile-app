@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/update_achat_dto.dart';
@@ -135,6 +136,56 @@ class _DebtListWidgetState extends State<DebtListWidget> {
                                       ),
                                     ],
                                   ),
+                                  if (achat.code != null &&
+                                      achat.code!.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.qr_code_2,
+                                          size: 16,
+                                          color: Colors.grey[700]!,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            achat.code!,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[800],
+                                              fontFamily: 'monospace',
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(
+                                                  text: achat.code!));
+                                              showSuccessTopSnackBar(
+                                                  context,
+                                                  AppLocalizations.of(context)
+                                                      .translate(
+                                                          'code_copied'));
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: Icon(
+                                                Icons.copy,
+                                                size: 18,
+                                                color: Colors.grey[700]!,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                   if (achat.isDebt == true)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8),
