@@ -2209,6 +2209,7 @@
   "total_versements": "Total des versements",
   "search_by_reference_or_client": "Rechercher par référence ou client...",
   "filter_by_date": "Filtrer par date",
+  "filter_by_date_title": "Filtrer par date",
   "filter_all_users": "Tous les utilisateurs",
   "filter_date_today": "Aujourd'hui",
   "filter_date_yesterday": "Hier",

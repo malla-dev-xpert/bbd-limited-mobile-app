@@ -352,6 +352,7 @@
   "plane": "Plane",
   "all_data": "All data",
   "filter_by_date": "Filter by date",
+  "filter_by_date_title": "Filter by date",
   "filter_all_users": "All users",
   "filter_date_today": "Today",
   "filter_date_yesterday": "Yesterday",

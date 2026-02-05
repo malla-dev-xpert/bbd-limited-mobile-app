@@ -327,6 +327,7 @@
   "plane": "空运",
   "all_data": "所有数据",
   "filter_by_date": "按日期筛选",
+  "filter_by_date_title": "按日期筛选",
   "filter_all_users": "所有用户",
   "filter_date_today": "今天",
   "filter_date_yesterday": "昨天",
