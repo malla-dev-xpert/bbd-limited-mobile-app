@@ -59,11 +59,11 @@ class Containers {
   final double? otherFeesCNY;
   final double? marginCNY;
 
-  /** Port de départ. */
+  final DateTime? departureDate;
+  final DateTime? arrivalDate;
   final int? departureHarborId;
   final String? departureHarborName;
   final String? departureHarborLocation;
-  /** Port d'arrivée. */
   final int? arrivalHarborId;
   final String? arrivalHarborName;
   final String? arrivalHarborLocation;
@@ -119,6 +119,8 @@ class Containers {
     double? telxFeeCNY,
     double? otherFeesCNY,
     double? marginCNY,
+    DateTime? departureDate,
+    DateTime? arrivalDate,
     int? departureHarborId,
     String? departureHarborName,
     String? departureHarborLocation,
@@ -184,6 +186,8 @@ class Containers {
       telxFeeCNY: telxFeeCNY ?? this.telxFeeCNY,
       otherFeesCNY: otherFeesCNY ?? this.otherFeesCNY,
       marginCNY: marginCNY ?? this.marginCNY,
+      departureDate: departureDate ?? this.departureDate,
+      arrivalDate: arrivalDate ?? this.arrivalDate,
       departureHarborId: departureHarborId ?? this.departureHarborId,
       departureHarborName: departureHarborName ?? this.departureHarborName,
       departureHarborLocation:
@@ -258,6 +262,10 @@ class Containers {
     if (marginCurrencyCode != null)
       json['marginCurrencyCode'] = marginCurrencyCode;
     if (marginRateToCNY != null) json['marginRateToCNY'] = marginRateToCNY;
+    if (departureDate != null)
+      json['departureDate'] = departureDate!.toIso8601String();
+    if (arrivalDate != null)
+      json['arrivalDate'] = arrivalDate!.toIso8601String();
     if (departureHarborId != null)
       json['departureHarborId'] = departureHarborId;
     if (departureHarborName != null)
@@ -324,6 +332,8 @@ class Containers {
     this.telxFeeCNY,
     this.otherFeesCNY,
     this.marginCNY,
+    this.departureDate,
+    this.arrivalDate,
     this.departureHarborId,
     this.departureHarborName,
     this.departureHarborLocation,
@@ -415,6 +425,12 @@ class Containers {
       telxFeeCNY: (json['telxFeeCNY'] as num?)?.toDouble(),
       otherFeesCNY: (json['otherFeesCNY'] as num?)?.toDouble(),
       marginCNY: (json['marginCNY'] as num?)?.toDouble(),
+      departureDate: json['departureDate'] != null
+          ? DateTime.parse(json['departureDate'])
+          : null,
+      arrivalDate: json['arrivalDate'] != null
+          ? DateTime.parse(json['arrivalDate'])
+          : null,
       departureHarborId: json['departureHarborId'] as int?,
       departureHarborName: json['departureHarborName'] as String?,
       departureHarborLocation: json['departureHarborLocation'] as String?,

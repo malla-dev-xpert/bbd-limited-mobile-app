@@ -60,6 +60,8 @@ class ContainerServices {
     int? supplierId,
     int? departureHarborId,
     int? arrivalHarborId,
+    DateTime? departureDate,
+    DateTime? arrivalDate,
     List<int>? itemIds,
     double? locationFee,
     String? locationFeeCurrencyCode,
@@ -101,6 +103,10 @@ class ContainerServices {
       if (departureHarborId != null)
         body["departureHarborId"] = departureHarborId;
       if (arrivalHarborId != null) body["arrivalHarborId"] = arrivalHarborId;
+      if (departureDate != null)
+        body["departureDate"] = departureDate.toIso8601String();
+      if (arrivalDate != null)
+        body["arrivalDate"] = arrivalDate.toIso8601String();
       if (itemIds != null && itemIds.isNotEmpty) body["itemIds"] = itemIds;
 
       // Ajouter les frais et leurs devises/taux seulement s'ils ne sont pas null

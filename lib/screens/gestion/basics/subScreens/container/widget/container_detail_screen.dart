@@ -88,7 +88,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (icon != null) ...[
             Icon(icon, size: 18, color: Colors.grey[600]),
@@ -706,6 +706,20 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               .translate('arrival_port'),
                           container.arrivalHarborName,
                           icon: Icons.pin_drop),
+                    if (container.departureDate != null)
+                      _infoRow(
+                          AppLocalizations.of(context)
+                              .translate('departure_date'),
+                          DateFormat.yMMMMEEEEd()
+                              .format(container.departureDate!),
+                          icon: Icons.calendar_today),
+                    if (container.arrivalDate != null)
+                      _infoRow(
+                          AppLocalizations.of(context)
+                              .translate('estimated_arrival_date'),
+                          DateFormat.yMMMMEEEEd()
+                              .format(container.arrivalDate!),
+                          icon: Icons.calendar_today),
                     if (container.startDeliveryDate != null)
                       _infoRow(
                           AppLocalizations.of(context)

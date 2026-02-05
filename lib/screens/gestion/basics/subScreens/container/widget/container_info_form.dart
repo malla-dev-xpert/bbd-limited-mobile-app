@@ -8,6 +8,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/c
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class ContainerInfoForm extends StatefulWidget {
   final TextEditingController refController;
@@ -16,6 +17,8 @@ class ContainerInfoForm extends StatefulWidget {
   final Partner? selectedSupplier;
   final int? initialDepartureHarborId;
   final int? initialArrivalHarborId;
+  final DateTime? initialDepartureDate;
+  final DateTime? initialArrivalDate;
   final Function(bool)? onAvailabilityChanged;
   final Function(Partner?)? onSupplierChanged;
 
@@ -27,6 +30,8 @@ class ContainerInfoForm extends StatefulWidget {
     this.selectedSupplier,
     this.initialDepartureHarborId,
     this.initialArrivalHarborId,
+    this.initialDepartureDate,
+    this.initialArrivalDate,
     this.onAvailabilityChanged,
     this.onSupplierChanged,
   }) : super(key: key);
@@ -45,6 +50,10 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
   bool get isAvailable => _isAvailable;
   int? get departureHarborId => selectedDepartureHarbor?.id;
   int? get arrivalHarborId => selectedArrivalHarbor?.id;
+  DateTime? _departureDate;
+  DateTime? _arrivalDate;
+  DateTime? get departureDate => _departureDate;
+  DateTime? get arrivalDate => _arrivalDate;
   final PartnerServices _partnerServices = PartnerServices();
   final HarborServices _harborServices = HarborServices();
   String? _selectedSize;
@@ -53,6 +62,8 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
   void initState() {
     super.initState();
     _isAvailable = widget.initialAvailability;
+    _departureDate = widget.initialDepartureDate;
+    _arrivalDate = widget.initialArrivalDate;
     _loadSuppliers();
     _loadHarbors();
     if (widget.size.text.isNotEmpty) {
@@ -109,6 +120,63 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     ).then((_) {
       _loadSuppliers();
     });
+  }
+
+  Widget _buildDateTile({
+    required String label,
+    required DateTime? date,
+    required VoidCallback onTap,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.grey[700], size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        date != null ? DateFormat.yMd().format(date) : '—',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: date != null
+                              ? Colors.grey[800]
+                              : Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.calendar_today,
+                    size: 20, color: Colors.grey[600]),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSizeButton(String size) {
@@ -269,6 +337,42 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          _buildDateTile(
+            label: AppLocalizations.of(context)!
+                .translate('departure_date'),
+            date: _departureDate,
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _departureDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) {
+                setState(() => _departureDate = picked);
+              }
+            },
+            icon: Icons.event,
+          ),
+          const SizedBox(height: 10),
+          _buildDateTile(
+            label: AppLocalizations.of(context)!
+                .translate('estimated_arrival_date'),
+            date: _arrivalDate,
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _arrivalDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) {
+                setState(() => _arrivalDate = picked);
+              }
+            },
+            icon: Icons.event,
           ),
           const SizedBox(height: 10),
           Row(

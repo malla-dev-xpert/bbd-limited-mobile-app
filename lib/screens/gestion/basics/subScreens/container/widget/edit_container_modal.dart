@@ -66,6 +66,8 @@ class EditContainerModalState extends State<EditContainerModal> {
   Partner? selectedSupplier;
   int? savedDepartureHarborId;
   int? savedArrivalHarborId;
+  DateTime? savedDepartureDate;
+  DateTime? savedArrivalDate;
   String? savedDepartureHarborName;
   String? savedDepartureHarborLocation;
   String? savedArrivalHarborName;
@@ -248,6 +250,8 @@ class EditContainerModalState extends State<EditContainerModal> {
         setState(() {
           savedDepartureHarborId = info?.departureHarborId;
           savedArrivalHarborId = info?.arrivalHarborId;
+          savedDepartureDate = info?.departureDate;
+          savedArrivalDate = info?.arrivalDate;
           savedDepartureHarborName = info?.selectedDepartureHarbor?.name;
           savedDepartureHarborLocation =
               info?.selectedDepartureHarbor?.location;
@@ -405,6 +409,8 @@ class EditContainerModalState extends State<EditContainerModal> {
         size: size,
         isAvailable: isAvailable,
         supplier_id: selectedSupplier?.id,
+        departureDate: savedDepartureDate,
+        arrivalDate: savedArrivalDate,
         departureHarborId: savedDepartureHarborId,
         departureHarborName: savedDepartureHarborName,
         departureHarborLocation: savedDepartureHarborLocation,
@@ -505,6 +511,8 @@ class EditContainerModalState extends State<EditContainerModal> {
                       initialDepartureHarborId:
                           widget.container.departureHarborId,
                       initialArrivalHarborId: widget.container.arrivalHarborId,
+                      initialDepartureDate: widget.container.departureDate,
+                      initialArrivalDate: widget.container.arrivalDate,
                       onAvailabilityChanged: (value) {
                         setState(() {
                           isAvailable = value;
