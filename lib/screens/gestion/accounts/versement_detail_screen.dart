@@ -525,21 +525,25 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Montant total',
+                              'Montant total : ',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
                               ),
                             ),
-                            Text(
-                              currencyFormat.format(achat.montantTotal ?? 0),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1E49),
+                            Expanded(
+                              child: Text(
+                                currencyFormat.format(achat.montantTotal ?? 0),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1A1E49),
+                                ),
+                                textAlign: TextAlign.end,
                               ),
                             ),
                           ],
