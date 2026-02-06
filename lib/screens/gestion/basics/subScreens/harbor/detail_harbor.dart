@@ -1,19 +1,17 @@
-import 'dart:developer';
-
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/harbor.dart';
-import 'package:bbd_limited/models/packages.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_detail_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/edit_container_page.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_container_to_harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:iconify_flutter/iconify_flutter.dart';
-import 'package:iconify_flutter/icons/carbon.dart';
 
 class HarborDetailPage extends StatefulWidget {
   final Harbor harbor;
@@ -141,7 +139,6 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
 
       if (mounted) setState(() => _isLoading = true);
 
-      // Appel au service
       final result = await _harborServices.retrieveContainerToHarbor(
         container.id!.toInt(),
         user.id.toInt(),
@@ -149,7 +146,6 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
       );
 
       if (result == "SUCCESS" && mounted) {
-        // Rafraîchir les données du port
         final updatedHarbor = await _harborServices.getHarborDetails(
           widget.harbor.id,
         );
@@ -173,7 +169,6 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
           context,
           "Erreur lors de la suppression: ${e.toString()}",
         );
-        log(e.toString());
       }
       return false;
     } finally {
@@ -181,14 +176,50 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
     }
   }
 
-  void _showContainerDetails(Containers item) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => _ContainerDetailsModal(item: item),
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  Future<void> _openContainerDetail(Containers item) async {
+    if (item.id == null) return;
+    setState(() => _isLoading = true);
+    try {
+      final fullContainer =
+          await _containerServices.getContainerDetails(item.id!);
+      if (!mounted) return;
+      final updated = await Navigator.push<Containers>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ContainerDetailPage(
+            container: fullContainer,
+          ),
+        ),
+      );
+      if (updated != null && mounted) {
+        setState(() {
+          final idx =
+              widget.harbor.containers?.indexWhere((c) => c.id == updated.id);
+          if (idx != null && idx >= 0 && widget.harbor.containers != null) {
+            widget.harbor.containers![idx] = updated;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(
+          context,
+          "Erreur lors du chargement du conteneur: ${e.toString()}",
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _openEditContainer(Containers item) async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditContainerPage(
+          container: item,
+          onContainerUpdated: () => fetchPackages(),
+        ),
       ),
     );
   }
@@ -262,9 +293,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
             ],
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
-              title: Padding(
-                padding: const EdgeInsets.all(0),
-                child: Column(
+              title: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -351,7 +380,6 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                     ),
                   ],
                 ),
-              ),
               centerTitle: false,
               titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
               background: Hero(
@@ -491,7 +519,18 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
               else
                 Column(
                   children: _filteredContainers
-                      .map((item) => _buildContainerItem(item))
+                      .map(
+                        (item) => ContainerListItem(
+                          container: item,
+                          onTap: () => _openContainerDetail(item),
+                          onEdit: () => _openEditContainer(item),
+                          onDelete: () {
+                            _handleContainerDismiss(item).then((removed) {
+                              if (removed && mounted) fetchPackages();
+                            });
+                          },
+                        ),
+                      )
                       .toList(),
                 ),
             ],
@@ -531,275 +570,4 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
     );
   }
 
-  Widget _buildContainerItem(Containers item) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Dismissible(
-        key: Key(item.id?.toString() ?? DateTime.now().toString()),
-        direction: DismissDirection.endToStart,
-        background: Container(
-          padding: const EdgeInsets.only(right: 16),
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.centerRight,
-          child: const Icon(Icons.delete, color: Colors.white, size: 30),
-        ),
-        confirmDismiss: (_) => _handleContainerDismiss(item),
-        child: InkWell(
-          onTap: () => _showContainerDetails(item),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12.0),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50]!,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Iconify(
-                    Carbon.container_registry,
-                    size: 24,
-                    color:
-                        item.isAvailable == true ? Colors.green : Colors.grey,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.reference ?? 'Sans référence',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.inventory,
-                            size: 14,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${item.packages?.where((c) => c.status != Status.DELETE && c.status != Status.DELETE_ON_CONTAINER).length ?? 0} colis",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.straighten,
-                            size: 14,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${item.size} pieds",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.person_3,
-                            size: 14,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            item.supplier_id != null
-                                ? '${item.supplierName ?? ""} ${item.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${item.supplierPhone ?? ""}'
-                                : 'BBD Limited',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey[400],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ContainerDetailsModal extends StatelessWidget {
-  final Containers item;
-
-  const _ContainerDetailsModal({required this.item, Key? key})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            _buildHeader(context),
-            _buildInfoSection(),
-            _buildPackagesSection(),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10.0),
-                decoration: BoxDecoration(
-                  color: Colors.green[50]!,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Iconify(
-                  Carbon.container_registry,
-                  color: item.isAvailable == true ? Colors.green : Colors.grey,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                item.reference ?? 'Détails du conteneur',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInfoRow('Dimensions', '${item.size} pieds'),
-          _buildInfoRow(
-            'Statut',
-            item.isAvailable! ? 'Disponible' : 'Indisponible',
-          ),
-          _buildInfoRow('Date création', _formatDate(item.createdAt)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPackagesSection() {
-    final packages = item.packages
-        ?.where(
-          (p) =>
-              p.status != Status.DELETE &&
-              p.status != Status.DELETE_ON_CONTAINER,
-        )
-        .toList();
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text(
-            'Colis (${packages?.length ?? 0})',
-            textAlign: TextAlign.left,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(height: 8),
-          if (packages?.isEmpty ?? true)
-            const Text('Aucun colis dans ce conteneur')
-          else
-            ...packages!.map((p) => _buildPackageItem(p)).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPackageItem(Packages p) {
-    return ListTile(
-      leading: const Icon(Icons.inventory, color: Colors.grey),
-      title: Text(p.ref ?? 'Colis sans référence'),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Client: ${p.clientName}'),
-          if (p.clientPhone != null) Text('Téléphone: ${p.clientPhone}'),
-          Text('Nombre d\'article: ${p.itemQuantity}'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime? date) {
-    return date != null
-        ? DateFormat.yMMMMd().add_Hm().format(date)
-        : 'Non disponible';
-  }
 }
