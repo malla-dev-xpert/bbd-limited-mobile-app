@@ -1,4 +1,5 @@
 import 'package:bbd_limited/core/enums/status.dart';
+import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
@@ -7,7 +8,7 @@ import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_detail_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/edit_container_page.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_container_to_harbor.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/pages/embark_containers_page.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter/material.dart';
@@ -63,26 +64,31 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
     setState(() => _isLoading = true);
 
     try {
-      final selectedContainers = await showAddContainerToHarborDialog(
+      final count = await Navigator.push<int>(
         context,
-        widget.harbor.id,
-        _containerServices,
+        MaterialPageRoute(
+          builder: (context) => EmbarkContainersPage(
+            harborId: widget.harbor.id,
+            harborName: widget.harbor.name,
+          ),
+        ),
       );
 
-      if (selectedContainers != null &&
-          selectedContainers.isNotEmpty &&
-          mounted) {
+      if (count != null && count > 0 && mounted) {
         final updatedHarbor = await _harborServices.getHarborDetails(
           widget.harbor.id,
         );
         setState(() => widget.harbor.containers = updatedHarbor.containers);
-        showSuccessTopSnackBar(context, "Conteneurs ajoutés avec succès");
+        showSuccessTopSnackBar(
+          context,
+          AppLocalizations.of(context)!.translate('harbor_detail_add_success'),
+        );
       }
     } catch (e) {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors de la mise à jour: ${e.toString()}",
+          AppLocalizations.of(context)!.translate('harbor_detail_error_update'),
         );
       }
     } finally {
@@ -93,28 +99,32 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
   }
 
   Future<bool> _handleContainerDismiss(Containers container) async {
-    final bool confirm = await showDialog(
+    final loc = AppLocalizations.of(context)!;
+    final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Confirmer la suppression"),
+          title: Text(loc.translate('harbor_detail_remove_confirm_title')),
           backgroundColor: Colors.white,
           content: Text(
-            "Êtes-vous sûr de vouloir retirer le conteneur ${container.reference ?? 'sans référence'} du port ?",
+            loc
+                .translate('harbor_detail_remove_confirm_message')
+                .replaceAll(
+                    '{reference}', container.reference ?? ''),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(
-                "Annuler",
-                style: TextStyle(color: Colors.grey),
+              child: Text(
+                loc.translate('cancel'),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(
-                "Confirmer",
-                style: TextStyle(color: Colors.red),
+              child: Text(
+                loc.translate('confirm'),
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ],
@@ -127,20 +137,23 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
     try {
       final user = await _authService.getUserInfo();
       if (user == null) {
-        if (mounted)
-          showErrorTopSnackBar(context, "Erreur: Utilisateur non connecté");
+        if (mounted) {
+          showErrorTopSnackBar(
+              context, loc.translate('harbor_detail_error_user'));
+        }
         return false;
       }
 
       if (container.id == null) {
-        showErrorTopSnackBar(context, "Erreur: Le Conteneur n'existe pas");
+        showErrorTopSnackBar(
+            context, loc.translate('harbor_detail_error_container'));
         return false;
       }
 
       if (mounted) setState(() => _isLoading = true);
 
       final result = await _harborServices.retrieveContainerToHarbor(
-        container.id!.toInt(),
+        container.id!,
         user.id.toInt(),
         widget.harbor.id,
       );
@@ -152,22 +165,24 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
         setState(() {
           widget.harbor.containers = updatedHarbor.containers;
         });
-        showSuccessTopSnackBar(context, "Conteneur retiré avec succès");
+        showSuccessTopSnackBar(
+            context, loc.translate('harbor_detail_remove_success'));
         return true;
       } else if (result == "IMPOSSIBLE" && mounted) {
         showErrorTopSnackBar(
           context,
-          "Impossible de retirer le conteneur: il contient encore des colis actifs",
+          loc.translate('harbor_detail_error_remove_impossible'),
         );
       } else if (result == "CONTAINER_ALREADY_RETRIEVED" && mounted) {
-        showErrorTopSnackBar(context, "Le conteneur a déjà été retiré");
+        showErrorTopSnackBar(
+            context, loc.translate('harbor_detail_error_already_retrieved'));
       }
       return false;
     } catch (e) {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors de la suppression: ${e.toString()}",
+          loc.translate('harbor_detail_error_remove'),
         );
       }
       return false;
@@ -204,7 +219,8 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors du chargement du conteneur: ${e.toString()}",
+          AppLocalizations.of(context)!
+              .translate('harbor_detail_error_load_container'),
         );
       }
     } finally {
@@ -238,7 +254,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          "Erreur lors de l'actualisation: ${e.toString()}",
+          AppLocalizations.of(context)!.translate('harbor_detail_error_update'),
         );
       }
     }
@@ -246,9 +262,10 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final formattedDate = widget.harbor.createdAt != null
         ? DateFormat.yMMMMEEEEd().format(widget.harbor.createdAt!)
-        : 'Date non disponible';
+        : loc.translate('harbor_detail_date_unavailable');
 
     return Scaffold(
       body: CustomScrollView(
@@ -267,7 +284,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                           setState(() => _isRefreshing = false);
                         }
                       },
-                tooltip: 'Rafraîchir',
+                tooltip: loc.translate('harbor_detail_refresh_tooltip'),
                 icon: _isRefreshing
                     ? const SizedBox(
                         width: 20,
@@ -298,7 +315,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.harbor.name ?? 'Port sans nom',
+                      widget.harbor.name ?? loc.translate('harbor_detail_no_name'),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -317,7 +334,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            widget.harbor.location ?? 'Adresse non spécifiée',
+                            widget.harbor.location ?? loc.translate('harbor_detail_no_address'),
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.9),
                               fontSize: 12,
@@ -365,7 +382,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  "${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0} conteneurs",
+                                  "${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0} ${loc.translate('harbor_detail_containers_count')}",
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.9),
                                     fontSize: 12,
@@ -435,10 +452,11 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        "Liste des conteneurs",
-                        style: TextStyle(
+                        AppLocalizations.of(context)!
+                            .translate('harbor_detail_container_list'),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -459,7 +477,8 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      label: const Text("Embarquer"),
+                      label: Text(AppLocalizations.of(context)!
+                          .translate('harbor_detail_embark_button')),
                       icon: const Icon(Icons.add, size: 18),
                     ),
                   ],
@@ -471,7 +490,8 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       borderRadius: BorderRadius.circular(12)),
                   child: buildTextField(
                     controller: _searchController,
-                    label: 'Rechercher un conteneur...',
+                    label: AppLocalizations.of(context)!
+                        .translate('harbor_detail_search_placeholder'),
                     icon: Icons.search,
                     onChanged: (value) {
                       setState(() {
@@ -497,7 +517,8 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "Aucun conteneur trouvé",
+                        AppLocalizations.of(context)!
+                            .translate('harbor_detail_no_results'),
                         style: TextStyle(
                           fontSize: 18,
                           color: Colors.grey[600],
@@ -506,7 +527,8 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "Aucun conteneur ne correspond à votre recherche",
+                        AppLocalizations.of(context)!
+                            .translate('harbor_detail_no_results_subtitle'),
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey[500],
@@ -541,6 +563,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
   }
 
   Widget _buildEmptyContainersState() {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -548,14 +571,14 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Pas de conteneurs pour ce port."),
+            Text(loc.translate('harbor_detail_empty_state')),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _handleAddContainers,
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                "Embarquer un conteneur",
-                style: TextStyle(color: Colors.white),
+              label: Text(
+                loc.translate('harbor_detail_embark_one'),
+                style: const TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7F78AF),
