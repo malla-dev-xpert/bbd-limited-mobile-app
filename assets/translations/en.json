@@ -2321,5 +2321,20 @@
   "harbor_detail_error_remove": "Error during removal",
   "harbor_detail_add_success": "Containers added successfully",
   "harbor_detail_error_update": "Error during update",
-  "harbor_detail_error_load_container": "Error loading container"
+  "harbor_detail_error_load_container": "Error loading container",
+  "pdf_destination": "DESTINATION",
+  "pdf_grp_no": "GRP NO.",
+  "pdf_loading_date": "LOADING DATE",
+  "pdf_date_arrival": "DATE ARRIVAL",
+  "pdf_container_number": "CONTAINER NUMBER",
+  "pdf_trans": "TRANS",
+  "pdf_mark": "MARK",
+  "pdf_ctns": "CTNS",
+  "pdf_tcbm": "T.CBM",
+  "pdf_cfa": "CFA",
+  "pdf_telephone": "TELEPHONE",
+  "pdf_kgs": "KGS",
+  "container_pdf_export_title": "Container PDF Export",
+  "container_pdf_preview": "PDF Preview",
+  "container_pdf_options": "PDF Options"
 }

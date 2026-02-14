@@ -2315,5 +2315,20 @@
   "harbor_detail_error_remove": "移除时出错",
   "harbor_detail_add_success": "集装箱添加成功",
   "harbor_detail_error_update": "更新时出错",
-  "harbor_detail_error_load_container": "加载集装箱时出错"
+  "harbor_detail_error_load_container": "加载集装箱时出错",
+  "pdf_destination": "目的地",
+  "pdf_grp_no": "柜推号码",
+  "pdf_loading_date": "装柜日期",
+  "pdf_date_arrival": "到货日期",
+  "pdf_container_number": "柜号",
+  "pdf_trans": "客货",
+  "pdf_mark": "唛头",
+  "pdf_ctns": "件数",
+  "pdf_tcbm": "总立方",
+  "pdf_cfa": "CFA",
+  "pdf_telephone": "电话",
+  "pdf_kgs": "公斤",
+  "container_pdf_export_title": "集装箱PDF导出",
+  "container_pdf_preview": "PDF预览",
+  "container_pdf_options": "PDF选项"
 }

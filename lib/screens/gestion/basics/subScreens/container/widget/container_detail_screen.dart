@@ -2,6 +2,7 @@ import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/core/services/container_pdf_service.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
@@ -13,6 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/amount_format.dart';
+import 'package:bbd_limited/core/print/print_language.dart';
+import 'package:bbd_limited/core/print/print_localizations.dart';
+import 'package:bbd_limited/models/invoice_options.dart';
+import 'package:bbd_limited/components/print/print_config_page.dart';
+import 'package:printing/printing.dart';
 
 class ContainerDetailPage extends StatefulWidget {
   final Containers container;
@@ -473,6 +479,69 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     return list.where((item) {
       return item.description?.toLowerCase().contains(query) == true;
     }).toList();
+  }
+
+  /// Affiche le dialog de configuration avant l'export PDF
+  Future<void> _showPrintOptionsDialog() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrintConfigPage(
+          title: AppLocalizations.of(context)
+              .translate('container_pdf_export_title'),
+          previewButtonLabel:
+              AppLocalizations.of(context).translate('container_pdf_preview'),
+          initialOptions: const InvoiceOptions(),
+          currencySymbol: 'CNY',
+          onOptionsChanged: (options) {},
+          onPreview: (result) => _showPdfPreviewDialog(result.printLanguage),
+          printOptionsTitle:
+              AppLocalizations.of(context).translate('container_pdf_options'),
+          billingOptionsTitle: '',
+          appliedOptionsLabel: '',
+          showDateRange: false,
+          showBillingOptions: false,
+        ),
+      ),
+    );
+  }
+
+  /// Affiche le dialog avec l'aperçu du PDF
+  Future<void> _showPdfPreviewDialog(PrintLanguage printLanguage) async {
+    try {
+      final printLocalizations = await PrintLocalizations.create(printLanguage);
+      if (!context.mounted) return;
+
+      final pdfBytes = await ContainerPdfService.generateContainerSummaryPdf(
+        container,
+        printLocalizations,
+      );
+
+      await showDialog(
+        context: context,
+        builder: (context) {
+          final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+          final heightFactor = isTablet ? 0.8 : 0.6;
+
+          return Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.height * heightFactor,
+              child: PdfPreview(
+                build: (format) => pdfBytes,
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        showErrorTopSnackBar(
+          context,
+          'Erreur lors de la génération du PDF: $e',
+        );
+      }
+    }
   }
 
   @override
@@ -1550,6 +1619,19 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           ),
         ),
       ),
+      // Bouton flottant pour exporter en PDF
+      floatingActionButton:
+          (container.items != null && container.items!.isNotEmpty)
+              ? FloatingActionButton.extended(
+                  onPressed: _showPrintOptionsDialog,
+                  backgroundColor: const Color(0xFF1A1E49),
+                  icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+                  label: const Text(
+                    'Export PDF',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              : null,
     );
   }
 }
