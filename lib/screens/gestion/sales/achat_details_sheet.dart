@@ -21,6 +21,8 @@ import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/models/container.dart';
 
 class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
@@ -779,10 +781,51 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
 
   Future<void> _showAchatPdfPreviewDialog(
       BuildContext context,
-      Achat achat,
+      Achat initialAchat,
       bool includeSupplierInfo,
       bool isProforma,
       PrintLanguage printLanguage) async {
+    // Récupérer les informations complètes de l'achat pour s'assurer d'avoir les containerIds
+    Achat achatToUse = initialAchat;
+    if (initialAchat.id != null) {
+      try {
+        final fullAchat = await AchatServices().getById(initialAchat.id!);
+        if (fullAchat != null) {
+          achatToUse = fullAchat;
+        }
+      } catch (e) {
+        print(
+            'Erreur lors de la récupération des détails complets de l\'achat: $e');
+      }
+    }
+
+    // Récupérer les informations des conteneurs liés
+    List<Containers> containers = [];
+    try {
+      final containerIds = achatToUse.items
+              ?.map((e) => e.containerId)
+              .where((id) => id != null)
+              .toSet() ??
+          {};
+
+      if (containerIds.isNotEmpty) {
+        final service = ContainerServices();
+        for (final id in containerIds) {
+          try {
+            final container = await service.getContainerDetails(id!);
+            containers.add(container);
+          } catch (e) {
+            print('Erreur lors du chargement du conteneur $id: $e');
+          }
+        }
+      } else {
+        print(
+            'Aucun Container ID trouvé dans les items de l\'achat ${achatToUse.id}');
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération des conteneurs: $e');
+    }
+
     final printLocalizations = await PrintLocalizations.create(printLanguage);
     if (!context.mounted) return;
     showDialog(
@@ -793,14 +836,15 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           height: MediaQuery.of(context).size.height * 0.6,
           child: PdfPreview(
             build: (format) => InvoiceService.buildAchatPdfBytes(
-              achat,
+              achatToUse,
               includeSupplierInfo: includeSupplierInfo,
               currencyFormat: currencyFormat,
               printLocalizations: printLocalizations,
               isProforma: isProforma,
               invoiceOptions: _invoiceOptions,
+              containers: containers,
             ),
-            pdfFileName: 'achat_${achat.id ?? "detail"}.pdf',
+            pdfFileName: 'achat_${achatToUse.id ?? "detail"}.pdf',
           ),
         ),
       ),

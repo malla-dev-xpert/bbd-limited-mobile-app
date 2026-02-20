@@ -11,6 +11,7 @@ import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:bbd_limited/core/services/margin_calculation_service.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/models/selective_margin.dart';
+import 'package:bbd_limited/models/container.dart';
 
 class InvoiceService {
   static Future<Uint8List> buildVersementPdfBytes(
@@ -115,6 +116,7 @@ class InvoiceService {
     required PrintLocalizations printLocalizations,
     bool isProforma = false,
     InvoiceOptions? invoiceOptions,
+    List<Containers>? containers,
   }) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('dd/MM/yyyy');
@@ -178,6 +180,11 @@ class InvoiceService {
                 _buildAchatHeader(logoBytes, achat, dateFormat,
                     printLocalizations, isProforma),
                 pw.SizedBox(height: 24),
+                if (containers != null && containers.isNotEmpty) ...[
+                  _buildContainerFeesSection(
+                      containers, printLocalizations, currencyFormat),
+                  pw.SizedBox(height: 24),
+                ],
                 _buildAchatArticlesSection(filteredItems, printLocalizations,
                     includeSupplierInfo, isProforma, currencyFormat, options),
                 pw.SizedBox(height: 12),
@@ -198,6 +205,127 @@ class InvoiceService {
     );
 
     return pdf.save();
+  }
+
+  static pw.Widget _buildContainerFeesSection(
+    List<Containers> containers,
+    PrintLocalizations printLocalizations,
+    NumberFormat currencyFormat,
+  ) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          "Informations Conteneur(s)", // TODO: Add to translations if needed
+          style: pw.TextStyle(
+            fontSize: 14,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColor.fromHex('#1A1E49'),
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        ...containers.map((container) {
+          return pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 8),
+            padding: const pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.grey300),
+              borderRadius: pw.BorderRadius.circular(4),
+              color: PdfColors.grey50,
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  "Conteneur: ${container.reference ?? 'N/A'}",
+                  style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold, fontSize: 10),
+                ),
+                pw.Divider(color: PdfColors.grey300),
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          if (container.locationFee != null)
+                            _buildFeeRow(
+                                "Frais de location",
+                                container.locationFee,
+                                container.locationFeeCurrencyCode,
+                                currencyFormat),
+                          if (container.localCharge != null)
+                            _buildFeeRow(
+                                "Charges locales",
+                                container.localCharge,
+                                container.localChargeCurrencyCode,
+                                currencyFormat),
+                          if (container.loadingFee != null)
+                            _buildFeeRow(
+                                "Frais de chargement",
+                                container.loadingFee,
+                                container.loadingFeeCurrencyCode,
+                                currencyFormat),
+                        ],
+                      ),
+                    ),
+                    pw.SizedBox(width: 16),
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          if (container.overweightFee != null)
+                            _buildFeeRow(
+                                "Surpoids",
+                                container.overweightFee,
+                                container.overweightFeeCurrencyCode,
+                                currencyFormat),
+                          if (container.checkingFee != null)
+                            _buildFeeRow(
+                                "Inspection",
+                                container.checkingFee,
+                                container.checkingFeeCurrencyCode,
+                                currencyFormat),
+                          if (container.telxFee != null)
+                            _buildFeeRow("Frais TELEX", container.telxFee,
+                                container.telxFeeCurrencyCode, currencyFormat),
+                          if (container.otherFees != null)
+                            _buildFeeRow(
+                                "Autres frais",
+                                container.otherFees,
+                                container.otherFeesCurrencyCode,
+                                currencyFormat),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  static pw.Widget _buildFeeRow(
+      String label, double? amount, String? currencyCode, NumberFormat format) {
+    if (amount == null) return pw.SizedBox.shrink();
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label,
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+          pw.Text(
+            "${format.format(amount)} ${currencyCode ?? 'CNY'}",
+            style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
   // Méthodes privées pour la construction des sections

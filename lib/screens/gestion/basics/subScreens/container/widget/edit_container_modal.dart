@@ -135,8 +135,16 @@ class EditContainerModalState extends State<EditContainerModal> {
     marginRateController = TextEditingController(
         text: widget.container.marginRateToCNY?.toString() ?? '');
 
-    // Initialize form values
+    // Initialize form values (ports et dates pour enregistrement / modification)
     isAvailable = widget.container.isAvailable ?? false;
+    savedDepartureHarborId = widget.container.departureHarborId;
+    savedArrivalHarborId = widget.container.arrivalHarborId;
+    savedDepartureDate = widget.container.departureDate;
+    savedArrivalDate = widget.container.arrivalDate;
+    savedDepartureHarborName = widget.container.departureHarborName;
+    savedDepartureHarborLocation = widget.container.departureHarborLocation;
+    savedArrivalHarborName = widget.container.arrivalHarborName;
+    savedArrivalHarborLocation = widget.container.arrivalHarborLocation;
 
     // Load devises and set initial currency values
     _loadDevises();
