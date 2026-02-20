@@ -13,6 +13,8 @@ Widget buildTextField({
   ValueChanged<String>? onFieldSubmitted,
   List<TextInputFormatter>? inputFormatters,
   bool readOnly = false,
+  VoidCallback? onTap,
+  Widget? suffixIcon,
 }) {
   return TextFormField(
     controller: controller,
@@ -21,11 +23,13 @@ Widget buildTextField({
     autocorrect: false,
     inputFormatters: inputFormatters,
     onChanged: onChanged,
+    onTap: onTap,
     onEditingComplete: onEditingComplete,
     onFieldSubmitted: onFieldSubmitted,
     decoration: InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, color: Colors.black),
+      suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

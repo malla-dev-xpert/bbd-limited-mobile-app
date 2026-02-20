@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_info_form.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
@@ -27,6 +28,14 @@ class CreateContainerFormState extends State<CreateContainerForm> {
 
   int get step => currentStep;
   bool get isLoadingState => isLoading;
+
+  /// EMPLOYE_D : une seule étape frais (location + other). Sinon 2 étapes (Main + Extra).
+  bool get _isEmployeD =>
+      AccessControlService().isEmployeD(AuthService.currentUser);
+  bool get isEmployeD => _isEmployeD;
+  int get maxStepIndex => _isEmployeD ? 2 : 3;
+  bool get _isItemsStep =>
+      (_isEmployeD && currentStep == 2) || (!_isEmployeD && currentStep == 3);
   final _formKey = GlobalKey<FormState>();
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
   final _mainFeesFormKey = GlobalKey<FormState>();
@@ -307,11 +316,22 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         });
       }
     } else if (currentStep == 1) {
-      setState(() {
-        currentStep = 2;
-        widget.onStepChanged?.call(currentStep);
-      });
-    } else if (currentStep == 2) {
+      if (_isEmployeD) {
+        final valid = _mainFeesFormKey.currentState?.validate() ?? true;
+        if (valid) {
+          setState(() {
+            currentStep = 2;
+            widget.onStepChanged?.call(currentStep);
+            _loadAvailableItems();
+          });
+        }
+      } else {
+        setState(() {
+          currentStep = 2;
+          widget.onStepChanged?.call(currentStep);
+        });
+      }
+    } else if (currentStep == 2 && !_isEmployeD) {
       setState(() {
         currentStep = 3;
         widget.onStepChanged?.call(currentStep);
@@ -457,6 +477,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       final selectedIds =
           _selectedItemIds.isEmpty ? null : _selectedItemIds.toList();
 
+      final access = AccessControlService();
       final response = await containerService.create(
         reference,
         size,
@@ -469,30 +490,30 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         savedArrivalDate,
         savedLoadingDate,
         selectedIds,
-        locFee,
-        locationFeeCurrency?.code,
-        locRate,
-        locCharge,
-        localChargeCurrency?.code,
-        effectiveRate(localChargeCurrency, localChargeRateController.text),
-        loadFee,
-        loadingFeeCurrency?.code,
-        effectiveRate(loadingFeeCurrency, loadingFeeRateController.text),
-        overFee,
-        overweightFeeCurrency?.code,
-        effectiveRate(overweightFeeCurrency, overweightFeeRateController.text),
-        checkFee,
-        checkingFeeCurrency?.code,
-        effectiveRate(checkingFeeCurrency, checkingFeeRateController.text),
-        telFee,
-        telxFeeCurrency?.code,
-        effectiveRate(telxFeeCurrency, telxFeeRateController.text),
-        otherFee,
-        otherFeesCurrency?.code,
-        effectiveRate(otherFeesCurrency, otherFeesRateController.text),
-        margFee,
-        marginCurrency?.code,
-        effectiveRate(marginCurrency, marginRateController.text),
+        access.canShowContainerFee(user, 'locationFee') ? locFee : null,
+        access.canShowContainerFee(user, 'locationFee') ? locationFeeCurrency?.code : null,
+        access.canShowContainerFee(user, 'locationFee') ? locRate : null,
+        access.canShowContainerFee(user, 'localCharge') ? locCharge : null,
+        access.canShowContainerFee(user, 'localCharge') ? localChargeCurrency?.code : null,
+        access.canShowContainerFee(user, 'localCharge') ? effectiveRate(localChargeCurrency, localChargeRateController.text) : null,
+        access.canShowContainerFee(user, 'loadingFee') ? loadFee : null,
+        access.canShowContainerFee(user, 'loadingFee') ? loadingFeeCurrency?.code : null,
+        access.canShowContainerFee(user, 'loadingFee') ? effectiveRate(loadingFeeCurrency, loadingFeeRateController.text) : null,
+        access.canShowContainerFee(user, 'overweightFee') ? overFee : null,
+        access.canShowContainerFee(user, 'overweightFee') ? overweightFeeCurrency?.code : null,
+        access.canShowContainerFee(user, 'overweightFee') ? effectiveRate(overweightFeeCurrency, overweightFeeRateController.text) : null,
+        access.canShowContainerFee(user, 'checkingFee') ? checkFee : null,
+        access.canShowContainerFee(user, 'checkingFee') ? checkingFeeCurrency?.code : null,
+        access.canShowContainerFee(user, 'checkingFee') ? effectiveRate(checkingFeeCurrency, checkingFeeRateController.text) : null,
+        access.canShowContainerFee(user, 'telxFee') ? telFee : null,
+        access.canShowContainerFee(user, 'telxFee') ? telxFeeCurrency?.code : null,
+        access.canShowContainerFee(user, 'telxFee') ? effectiveRate(telxFeeCurrency, telxFeeRateController.text) : null,
+        access.canShowContainerFee(user, 'otherFees') ? otherFee : null,
+        access.canShowContainerFee(user, 'otherFees') ? otherFeesCurrency?.code : null,
+        access.canShowContainerFee(user, 'otherFees') ? effectiveRate(otherFeesCurrency, otherFeesRateController.text) : null,
+        access.canShowContainerFee(user, 'margin') ? margFee : null,
+        access.canShowContainerFee(user, 'margin') ? marginCurrency?.code : null,
+        access.canShowContainerFee(user, 'margin') ? effectiveRate(marginCurrency, marginRateController.text) : null,
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
@@ -549,6 +570,103 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                 ),
               );
             } else if (currentStep == 1) {
+              final user = AuthService.currentUser;
+              final access = AccessControlService();
+              if (_isEmployeD) {
+                // EMPLOYE_D : une seule étape frais (location + other)
+                return Form(
+                  key: _mainFeesFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 16),
+                      _buildStepCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            MainFeesForm(
+                              showLocationFee: true,
+                              showLocalCharge: false,
+                              showLoadingFee: false,
+                              locationFeeController: locationFeeController,
+                              locationFeeRateController: locationFeeRateController,
+                              localChargeController: localChargeController,
+                              localChargeRateController: localChargeRateController,
+                              loadingFeeController: loadingFeeController,
+                              loadingFeeRateController: loadingFeeRateController,
+                              devises: devises,
+                              isLoadingDevises: isLoadingDevises,
+                              locationFeeCurrency: locationFeeCurrency,
+                              localChargeCurrency: localChargeCurrency,
+                              loadingFeeCurrency: loadingFeeCurrency,
+                              onLocationFeeCurrencyChanged: (currency) {
+                                setState(() {
+                                  locationFeeCurrency = currency;
+                                  if (currency?.code == 'CNY') {
+                                    locationFeeRateController.text = '1';
+                                  } else if (currency?.rate != null) {
+                                    locationFeeRateController.text =
+                                        currency!.rate.toString();
+                                  } else {
+                                    locationFeeRateController.clear();
+                                  }
+                                });
+                              },
+                              onLocalChargeCurrencyChanged: (_) {},
+                              onLoadingFeeCurrencyChanged: (_) {},
+                              getSupplier: () =>
+                                  _containerInfoKey.currentState?.selectedSupplier,
+                            ),
+                            const SizedBox(height: 16),
+                            ExtraFeesForm(
+                              showOverweightFee: false,
+                              showCheckingFee: false,
+                              showTelxFee: false,
+                              showOtherFees: true,
+                              showMargin: false,
+                              overweightFeeController: overweightFeeController,
+                              overweightFeeRateController: overweightFeeRateController,
+                              checkingFeeController: checkingFeeController,
+                              checkingFeeRateController: checkingFeeRateController,
+                              telxFeeController: telxFeeController,
+                              telxFeeRateController: telxFeeRateController,
+                              otherFeesController: otherFeesController,
+                              otherFeesRateController: otherFeesRateController,
+                              marginController: marginController,
+                              marginRateController: marginRateController,
+                              devises: devises,
+                              isLoadingDevises: isLoadingDevises,
+                              overweightFeeCurrency: overweightFeeCurrency,
+                              checkingFeeCurrency: checkingFeeCurrency,
+                              telxFeeCurrency: telxFeeCurrency,
+                              otherFeesCurrency: otherFeesCurrency,
+                              marginCurrency: marginCurrency,
+                              onOverweightFeeCurrencyChanged: (_) {},
+                              onCheckingFeeCurrencyChanged: (_) {},
+                              onTelxFeeCurrencyChanged: (_) {},
+                              onOtherFeesCurrencyChanged: (currency) {
+                                setState(() {
+                                  otherFeesCurrency = currency;
+                                  if (currency?.code == 'CNY') {
+                                    otherFeesRateController.text = '1';
+                                  } else if (currency?.rate != null) {
+                                    otherFeesRateController.text =
+                                        currency!.rate.toString();
+                                  } else {
+                                    otherFeesRateController.clear();
+                                  }
+                                });
+                              },
+                              onMarginCurrencyChanged: (_) {},
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              }
               return Form(
                 key: _mainFeesFormKey,
                 child: Column(
@@ -556,19 +674,24 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   children: [
                     const SizedBox(height: 16),
                     _buildStepCard(
-                      child: MainFeesForm(
-                        locationFeeController: locationFeeController,
-                        locationFeeRateController: locationFeeRateController,
-                        localChargeController: localChargeController,
-                        localChargeRateController: localChargeRateController,
-                        loadingFeeController: loadingFeeController,
-                        loadingFeeRateController: loadingFeeRateController,
-                        devises: devises,
-                        isLoadingDevises: isLoadingDevises,
-                        locationFeeCurrency: locationFeeCurrency,
-                        localChargeCurrency: localChargeCurrency,
-                        loadingFeeCurrency: loadingFeeCurrency,
-                        onLocationFeeCurrencyChanged: (currency) {
+                      child: Builder(
+                        builder: (context) {
+                          return MainFeesForm(
+                            showLocationFee: access.canShowContainerFee(user, 'locationFee'),
+                            showLocalCharge: access.canShowContainerFee(user, 'localCharge'),
+                            showLoadingFee: access.canShowContainerFee(user, 'loadingFee'),
+                            locationFeeController: locationFeeController,
+                            locationFeeRateController: locationFeeRateController,
+                            localChargeController: localChargeController,
+                            localChargeRateController: localChargeRateController,
+                            loadingFeeController: loadingFeeController,
+                            loadingFeeRateController: loadingFeeRateController,
+                            devises: devises,
+                            isLoadingDevises: isLoadingDevises,
+                            locationFeeCurrency: locationFeeCurrency,
+                            localChargeCurrency: localChargeCurrency,
+                            loadingFeeCurrency: loadingFeeCurrency,
+                            onLocationFeeCurrencyChanged: (currency) {
                           setState(() {
                             locationFeeCurrency = currency;
                             if (currency?.code == 'CNY') {
@@ -609,13 +732,17 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                         },
                         getSupplier: () =>
                             _containerInfoKey.currentState?.selectedSupplier,
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 24),
                   ],
                 ),
               );
-            } else if (currentStep == 2) {
+            } else if (currentStep == 2 && !_isEmployeD) {
+              final user = AuthService.currentUser;
+              final access = AccessControlService();
               return Form(
                 key: _extraFeesFormKey,
                 child: Column(
@@ -624,6 +751,11 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                     const SizedBox(height: 16),
                     _buildStepCard(
                       child: ExtraFeesForm(
+                        showOverweightFee: access.canShowContainerFee(user, 'overweightFee'),
+                        showCheckingFee: access.canShowContainerFee(user, 'checkingFee'),
+                        showTelxFee: access.canShowContainerFee(user, 'telxFee'),
+                        showOtherFees: access.canShowContainerFee(user, 'otherFees'),
+                        showMargin: access.canShowContainerFee(user, 'margin'),
                         overweightFeeController: overweightFeeController,
                         overweightFeeRateController:
                             overweightFeeRateController,
@@ -713,8 +845,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   ],
                 ),
               );
-            } else {
-              // Step 3: Items selection (optional) - design inspiré des historiques d'achats
+            } else if (_isItemsStep) {
+              // Items : étape 2 pour EMPLOYE_D, étape 3 pour les autres
               final loc = AppLocalizations.of(context)!;
               if (_isLoadingItems) {
                 return const Center(
@@ -791,6 +923,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   const SizedBox(height: 24),
                 ],
               );
+            } else {
+              return const SizedBox.shrink();
             }
           },
         ),
@@ -838,6 +972,9 @@ class MainFeesForm extends StatefulWidget {
   final Function(Devise?) onLocalChargeCurrencyChanged;
   final Function(Devise?) onLoadingFeeCurrencyChanged;
   final Partner? Function() getSupplier;
+  final bool showLocationFee;
+  final bool showLocalCharge;
+  final bool showLoadingFee;
 
   const MainFeesForm({
     super.key,
@@ -856,6 +993,9 @@ class MainFeesForm extends StatefulWidget {
     required this.onLocalChargeCurrencyChanged,
     required this.onLoadingFeeCurrencyChanged,
     required this.getSupplier,
+    this.showLocationFee = true,
+    this.showLocalCharge = true,
+    this.showLoadingFee = true,
   });
 
   @override
@@ -871,10 +1011,9 @@ class MainFeesFormState extends State<MainFeesForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Location Fee
+    final children = <Widget>[];
+    if (widget.showLocationFee) {
+      children.addAll([
         buildTextField(
           controller: widget.locationFeeController,
           label: AppLocalizations.of(context)!
@@ -923,6 +1062,10 @@ class MainFeesFormState extends State<MainFeesForm> {
           ],
         ),
         const SizedBox(height: 16),
+      ]);
+    }
+    if (widget.showLocalCharge) {
+      children.addAll([
         // Local Charge
         buildTextField(
           controller: widget.localChargeController,
@@ -972,7 +1115,10 @@ class MainFeesFormState extends State<MainFeesForm> {
           ],
         ),
         const SizedBox(height: 16),
-        // Loading Fee
+      ]);
+    }
+    if (widget.showLoadingFee) {
+      children.addAll([
         buildTextField(
           controller: widget.loadingFeeController,
           label: AppLocalizations.of(context)!
@@ -1020,7 +1166,11 @@ class MainFeesFormState extends State<MainFeesForm> {
             ),
           ],
         ),
-      ],
+      ]);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 }
@@ -1048,6 +1198,11 @@ class ExtraFeesForm extends StatefulWidget {
   final Function(Devise?) onTelxFeeCurrencyChanged;
   final Function(Devise?) onOtherFeesCurrencyChanged;
   final Function(Devise?) onMarginCurrencyChanged;
+  final bool showOverweightFee;
+  final bool showCheckingFee;
+  final bool showTelxFee;
+  final bool showOtherFees;
+  final bool showMargin;
 
   const ExtraFeesForm({
     super.key,
@@ -1073,6 +1228,11 @@ class ExtraFeesForm extends StatefulWidget {
     required this.onTelxFeeCurrencyChanged,
     required this.onOtherFeesCurrencyChanged,
     required this.onMarginCurrencyChanged,
+    this.showOverweightFee = true,
+    this.showCheckingFee = true,
+    this.showTelxFee = true,
+    this.showOtherFees = true,
+    this.showMargin = true,
   });
 
   @override
@@ -1081,16 +1241,14 @@ class ExtraFeesForm extends StatefulWidget {
 
 class ExtraFeesFormState extends State<ExtraFeesForm> {
   bool validate() {
-    // Aucun champ obligatoire ici, tous les frais sont optionnels
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Overweight Fee
+    final children = <Widget>[];
+    if (widget.showOverweightFee) {
+      children.addAll([
         buildTextField(
           controller: widget.overweightFeeController,
           label: AppLocalizations.of(context)!
@@ -1139,7 +1297,10 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           ],
         ),
         const SizedBox(height: 16),
-        // Checking Fee
+      ]);
+    }
+    if (widget.showCheckingFee) {
+      children.addAll([
         buildTextField(
           controller: widget.checkingFeeController,
           label: AppLocalizations.of(context)!
@@ -1188,7 +1349,10 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           ],
         ),
         const SizedBox(height: 16),
-        // Telx Fee
+      ]);
+    }
+    if (widget.showTelxFee) {
+      children.addAll([
         buildTextField(
           controller: widget.telxFeeController,
           label: AppLocalizations.of(context)!
@@ -1237,7 +1401,10 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           ],
         ),
         const SizedBox(height: 16),
-        // Other Fees
+      ]);
+    }
+    if (widget.showOtherFees) {
+      children.addAll([
         buildTextField(
           controller: widget.otherFeesController,
           label: AppLocalizations.of(context)!
@@ -1286,7 +1453,10 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
           ],
         ),
         const SizedBox(height: 16),
-        // Margin
+      ]);
+    }
+    if (widget.showMargin) {
+      children.addAll([
         buildTextField(
           controller: widget.marginController,
           label:
@@ -1334,7 +1504,11 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             ),
           ],
         ),
-      ],
+      ]);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 }

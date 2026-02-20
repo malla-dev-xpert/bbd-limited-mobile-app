@@ -1,6 +1,7 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
@@ -1248,49 +1249,61 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
 
   Widget _buildItemCard(Items item, Achat achat) {
     final isConfirmed = confirmedArticles.contains(item.id?.toString());
+    final user = AuthService.currentUser;
+    final access = AccessControlService();
+    final canEdit = access.canEditItem(user);
+    final canDelete = access.canDeleteItem(user);
+
+    final slidableActions = <Widget>[
+      if (canEdit)
+        SlidableAction(
+          onPressed: (_) {
+            if (widget.onEditArticle != null) {
+              widget.onEditArticle!(item);
+            } else {
+              _showEditArticleDialog(item);
+            }
+          },
+          backgroundColor: const Color(0xFF1976D2),
+          foregroundColor: Colors.white,
+          icon: Icons.edit,
+          label: AppLocalizations.of(context).translate('edit'),
+        ),
+      if (canEdit)
+        SlidableAction(
+          onPressed: (item.status == Status.RECEIVED)
+              ? (_) => _confirmReverseArticle(item)
+              : null,
+          backgroundColor: (item.status == Status.RECEIVED)
+              ? Colors.orange
+              : Colors.grey[300]!,
+          foregroundColor: Colors.white,
+          icon: Icons.undo_outlined,
+          label: AppLocalizations.of(context).translate('reverse'),
+        ),
+      if (canDelete)
+        SlidableAction(
+          onPressed: (item.status != Status.RECEIVED)
+              ? (_) => _handleDeleteItem(item)
+              : null,
+          backgroundColor: (item.status != Status.RECEIVED)
+              ? Colors.red
+              : Colors.grey[300]!,
+          foregroundColor: Colors.white,
+          icon: Icons.delete,
+          label: AppLocalizations.of(context).translate('delete'),
+        ),
+    ];
+
     return Slidable(
       key: ValueKey('details_item_${item.id ?? item.hashCode}'),
-      endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        extentRatio: 0.35,
-        children: [
-          SlidableAction(
-            onPressed: (_) {
-              if (widget.onEditArticle != null) {
-                widget.onEditArticle!(item);
-              } else {
-                _showEditArticleDialog(item);
-              }
-            },
-            backgroundColor: const Color(0xFF1976D2),
-            foregroundColor: Colors.white,
-            icon: Icons.edit,
-            label: AppLocalizations.of(context).translate('edit'),
-          ),
-          SlidableAction(
-            onPressed: (item.status == Status.RECEIVED)
-                ? (_) => _confirmReverseArticle(item)
-                : null,
-            backgroundColor: (item.status == Status.RECEIVED)
-                ? Colors.orange
-                : Colors.grey[300]!,
-            foregroundColor: Colors.white,
-            icon: Icons.undo_outlined,
-            label: AppLocalizations.of(context).translate('reverse'),
-          ),
-          SlidableAction(
-            onPressed: (item.status != Status.RECEIVED)
-                ? (_) => _handleDeleteItem(item)
-                : null,
-            backgroundColor: (item.status != Status.RECEIVED)
-                ? Colors.red
-                : Colors.grey[300]!,
-            foregroundColor: Colors.white,
-            icon: Icons.delete,
-            label: AppLocalizations.of(context).translate('delete'),
-          ),
-        ],
-      ),
+      endActionPane: slidableActions.isEmpty
+          ? null
+          : ActionPane(
+              motion: const DrawerMotion(),
+              extentRatio: 0.35,
+              children: slidableActions,
+            ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(

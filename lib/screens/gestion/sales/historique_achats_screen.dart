@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'achat_detail_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/edit_article_screen.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -243,24 +244,28 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               itemCount: _filteredAchats.length,
                               itemBuilder: (context, index) {
                                 final achat = _filteredAchats[index];
+                                final user = AuthService.currentUser;
+                                final canEditAchat = user != null && !AccessControlService().isEmployeD(user);
                                 return Slidable(
                                   key: ValueKey('achat_${achat.id ?? index}'),
-                                  endActionPane: ActionPane(
-                                    motion: const DrawerMotion(),
-                                    extentRatio: 0.25,
-                                    children: [
-                                      SlidableAction(
-                                        onPressed: (_) =>
-                                            _showEditDateDialog(achat),
-                                        backgroundColor:
-                                            const Color(0xFF1976D2),
-                                        foregroundColor: Colors.white,
-                                        icon: Icons.edit_calendar,
-                                        label: AppLocalizations.of(context)
-                                            .translate('edit_date'),
-                                      ),
-                                    ],
-                                  ),
+                                  endActionPane: canEditAchat
+                                      ? ActionPane(
+                                          motion: const DrawerMotion(),
+                                          extentRatio: 0.25,
+                                          children: [
+                                            SlidableAction(
+                                              onPressed: (_) =>
+                                                  _showEditDateDialog(achat),
+                                              backgroundColor:
+                                                  const Color(0xFF1976D2),
+                                              foregroundColor: Colors.white,
+                                              icon: Icons.edit_calendar,
+                                              label: AppLocalizations.of(context)
+                                                  .translate('edit_date'),
+                                            ),
+                                          ],
+                                        )
+                                      : null,
                                   child: Container(
                                     margin: const EdgeInsets.only(bottom: 16),
                                     decoration: BoxDecoration(
@@ -1459,43 +1464,53 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
           final achat = itemData['achat'] as Achat;
 
           final isConfirmed = confirmedArticles.contains(item.id?.toString());
+          final user = AuthService.currentUser;
+          final access = AccessControlService();
+          final canEdit = access.canEditItem(user);
+          final canDelete = access.canDeleteItem(user);
+          final itemSlidableActions = <Widget>[
+            if (canEdit)
+              SlidableAction(
+                onPressed: (_) => _showEditArticleDialog(item, achat),
+                backgroundColor: const Color(0xFF1976D2),
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: AppLocalizations.of(context).translate('edit'),
+              ),
+            if (canEdit)
+              SlidableAction(
+                onPressed: (item.status == Status.RECEIVED)
+                    ? (_) => _confirmReverseArticle(item, achat)
+                    : null,
+                backgroundColor: (item.status == Status.RECEIVED)
+                    ? Colors.orange
+                    : Colors.grey[300]!,
+                foregroundColor: Colors.white,
+                icon: Icons.undo_outlined,
+                label: AppLocalizations.of(context).translate('reverse'),
+              ),
+            if (canDelete)
+              SlidableAction(
+                onPressed: (item.status != Status.RECEIVED)
+                    ? (_) => _handleDeleteItem(item, achat)
+                    : null,
+                backgroundColor: (item.status != Status.RECEIVED)
+                    ? Colors.red
+                    : Colors.grey[300]!,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: AppLocalizations.of(context).translate('delete'),
+              ),
+          ];
           return Slidable(
             key: ValueKey('item_${item.id ?? index}'),
-            endActionPane: ActionPane(
-              motion: const DrawerMotion(),
-              extentRatio: 0.35,
-              children: [
-                SlidableAction(
-                  onPressed: (_) => _showEditArticleDialog(item, achat),
-                  backgroundColor: const Color(0xFF1976D2),
-                  foregroundColor: Colors.white,
-                  icon: Icons.edit,
-                  label: AppLocalizations.of(context).translate('edit'),
-                ),
-                SlidableAction(
-                  onPressed: (item.status == Status.RECEIVED)
-                      ? (_) => _confirmReverseArticle(item, achat)
-                      : null,
-                  backgroundColor: (item.status == Status.RECEIVED)
-                      ? Colors.orange
-                      : Colors.grey[300]!,
-                  foregroundColor: Colors.white,
-                  icon: Icons.undo_outlined,
-                  label: AppLocalizations.of(context).translate('reverse'),
-                ),
-                SlidableAction(
-                  onPressed: (item.status != Status.RECEIVED)
-                      ? (_) => _handleDeleteItem(item, achat)
-                      : null,
-                  backgroundColor: (item.status != Status.RECEIVED)
-                      ? Colors.red
-                      : Colors.grey[300]!,
-                  foregroundColor: Colors.white,
-                  icon: Icons.delete,
-                  label: AppLocalizations.of(context).translate('delete'),
-                ),
-              ],
-            ),
+            endActionPane: itemSlidableActions.isEmpty
+                ? null
+                : ActionPane(
+                    motion: const DrawerMotion(),
+                    extentRatio: 0.35,
+                    children: itemSlidableActions,
+                  ),
             child: Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(

@@ -35,9 +35,47 @@ class MenuCategory {
   });
 }
 
+/// Menu réduit pour le rôle EMPLOYE_D : uniquement Conteneur et Liste des articles.
+List<MenuCategory> _getMenuCategoriesEmployeD(
+    BuildContext context, AppLocalizations localizations) {
+  return [
+    MenuCategory(
+      title: localizations.translate('home_inventory_logistics'),
+      items: [
+        CardData(
+          icon: Icons.view_quilt,
+          title: localizations.translate('home_manage_containers_title'),
+          backgroundColor: Colors.grey[50]!,
+          iconColor: const Color(0xFF13084F),
+          titleColor: const Color(0xFF13084F),
+          onPressed: (context) {
+            Navigator.of(context).pushNamed('/container');
+          },
+          description: localizations.translate('home_manage_containers_desc'),
+        ),
+        CardData(
+          icon: Icons.assessment,
+          title: localizations.translate('home_items_list'),
+          backgroundColor: Colors.grey[50]!,
+          iconColor: const Color(0xFF13084F),
+          titleColor: const Color(0xFF13084F),
+          onPressed: (context) {
+            Navigator.of(context).pushNamed('/items-list');
+          },
+          description: localizations.translate('home_items_list_desc'),
+        ),
+      ],
+    ),
+  ];
+}
+
 List<MenuCategory> getMenuCategories(
     BuildContext context, AppLocalizations localizations,
     {User? user, bool isAdmin = false}) {
+  if (user != null && AccessControlService().isEmployeD(user)) {
+    return _getMenuCategoriesEmployeD(context, localizations);
+  }
+
   final isRestricted =
       user != null && AccessControlService().isRestrictedBranch(user);
 

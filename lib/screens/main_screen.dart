@@ -70,9 +70,11 @@ class MainScreenState extends State<MainScreen> {
           .add(const Icon(Icons.assessment, size: 30, color: Colors.white));
     }
 
-    _screens.add(AccountHomeScreen());
-    _navItems
-        .add(const Icon(Icons.account_balance, size: 30, color: Colors.white));
+    if (_accessService.canShowAccountsTab(user)) {
+      _screens.add(AccountHomeScreen());
+      _navItems
+          .add(const Icon(Icons.account_balance, size: 30, color: Colors.white));
+    }
 
     _screens.add(ProfilePage(user: user));
     _navItems.add(const Icon(Icons.person, size: 30, color: Colors.white));

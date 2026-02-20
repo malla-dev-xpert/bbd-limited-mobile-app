@@ -8,7 +8,9 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/partner_s
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/supplier_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/warehouse_screen.dart';
 import 'package:bbd_limited/screens/gestion/accounts/account_home_screen.dart';
+import 'package:bbd_limited/screens/gestion/sales/sales_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/purchase_page.dart';
+import 'package:bbd_limited/screens/gestion/sales/items_list_screen.dart';
 
 import 'package:bbd_limited/screens/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,8 @@ class Routes {
   static const String suppliers = '/suppliers';
   static const String containers = '/container';
   static const String purchase = '/purchase';
+  static const String sales = '/sales';
+  static const String itemsList = '/items-list';
   static const String accounts = '/accounts';
   static const String activityHistory = '/activity-history';
 
@@ -79,6 +83,10 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const ActivityHistoryScreen());
       case accounts:
         return MaterialPageRoute(builder: (_) => AccountHomeScreen());
+      case sales:
+        return MaterialPageRoute(builder: (_) => const SalesHomeScreen());
+      case Routes.itemsList:
+        return MaterialPageRoute(builder: (_) => const ItemsListScreen());
       case purchase:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(

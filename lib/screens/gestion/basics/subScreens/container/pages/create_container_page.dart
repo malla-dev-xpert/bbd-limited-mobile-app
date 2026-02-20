@@ -16,15 +16,22 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
   int _currentStep = 0;
 
   String _getStepTitle() {
+    final isEmployeD = _formKey.currentState?.isEmployeD ?? false;
     switch (_currentStep) {
       case 0:
         return AppLocalizations.of(context)!.translate('container_create');
       case 1:
-        return AppLocalizations.of(context)!
-            .translate('container_form_location_fee');
+        return isEmployeD
+            ? AppLocalizations.of(context)!
+                .translate('container_form_fees_step')
+            : AppLocalizations.of(context)!
+                .translate('container_form_location_fee');
       case 2:
-        return AppLocalizations.of(context)!
-            .translate('container_form_other_fees');
+        return isEmployeD
+            ? AppLocalizations.of(context)!
+                .translate('container_items_step_title')
+            : AppLocalizations.of(context)!
+                .translate('container_form_other_fees');
       case 3:
         return AppLocalizations.of(context)!
             .translate('container_items_step_title');
@@ -99,24 +106,33 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
               if (_currentStep > 0) const SizedBox(width: 12),
               Expanded(
                 flex: _currentStep == 0 ? 1 : 1,
-                child: confirmationButton(
-                  isLoading: _formKey.currentState?.isLoadingState ?? false,
-                  onPressed: _currentStep < 3
-                      ? () {
-                          _formKey.currentState?.goToNextStep();
-                        }
-                      : () {
-                          _formKey.currentState?.submitForm();
-                        },
-                  label: _currentStep < 3
-                      ? AppLocalizations.of(context)!.translate('next')
-                      : AppLocalizations.of(context)!
-                          .translate('container_form_save'),
-                  icon: _currentStep < 3 ? Icons.arrow_forward : Icons.check,
-                  subLabel: _currentStep < 3
-                      ? ""
-                      : AppLocalizations.of(context)!
-                          .translate('container_form_saving'),
+                child: Builder(
+                  builder: (context) {
+                    final maxStep =
+                        _formKey.currentState?.maxStepIndex ?? 3;
+                    return confirmationButton(
+                      isLoading:
+                          _formKey.currentState?.isLoadingState ?? false,
+                      onPressed: _currentStep < maxStep
+                          ? () {
+                              _formKey.currentState?.goToNextStep();
+                            }
+                          : () {
+                              _formKey.currentState?.submitForm();
+                            },
+                      label: _currentStep < maxStep
+                          ? AppLocalizations.of(context)!.translate('next')
+                          : AppLocalizations.of(context)!
+                              .translate('container_form_save'),
+                      icon: _currentStep < maxStep
+                          ? Icons.arrow_forward
+                          : Icons.check,
+                      subLabel: _currentStep < maxStep
+                          ? ""
+                          : AppLocalizations.of(context)!
+                              .translate('container_form_saving'),
+                    );
+                  },
                 ),
               ),
             ],
