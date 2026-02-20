@@ -716,6 +716,8 @@
   "package_items": "物品",
   "expedite": "运输",
   "confirm_delivery": "确认送达",
+  "confirm_delivery_dialog_title": "确认送达",
+  "confirm_delivery_dialog_subtitle": "您可以修改箱数和每箱数量（可选）。总数量将自动计算。",
   "na": "Na",
   "package_no_reference": "无参考号",
   "package_client_unspecified": "未指定",

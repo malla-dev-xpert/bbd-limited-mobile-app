@@ -534,6 +534,8 @@
   "package_items": "Articles",
   "expedite": "Expédier",
   "confirm_delivery": "Confirmer la livraison",
+  "confirm_delivery_dialog_title": "Confirmer la livraison",
+  "confirm_delivery_dialog_subtitle": "Vous pouvez modifier le nombre de cartons et la quantité par carton (optionnel). La quantité totale est calculée automatiquement.",
   "na": "N/A",
   "package_no_reference": "Sans référence",
   "package_client_unspecified": "Non spécifié",

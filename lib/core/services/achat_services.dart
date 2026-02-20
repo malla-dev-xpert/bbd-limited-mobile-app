@@ -114,9 +114,24 @@ class AchatServices {
     }
   }
 
+  /// Construit un élément pour itemQuantities (format backend ConfirmItemsDelivery).
+  /// Seules les valeurs non null sont envoyées ; le backend n’applique que les champs présents (>= 0).
+  static Map<String, dynamic> itemQuantityUpdate(int itemId,
+      {int? quantity, int? carton, int? quantityPerCarton}) {
+    final m = <String, dynamic>{'itemId': itemId};
+    if (quantity != null) m['quantity'] = quantity;
+    if (carton != null) m['carton'] = carton;
+    if (quantityPerCarton != null) m['quantityPerCarton'] = quantityPerCarton;
+    return m;
+  }
+
+  /// Confirme la livraison des items. Backend: confirmItemDelivery(ConfirmItemsDelivery request, Long userId).
+  /// Body = DTO (itemIds + itemQuantities) ; userId envoyé en header X-User-Id.
   Future<ApiResult<void>> confirmDelivery({
     required List<int> itemIds,
     required int userId,
+    /// Mises à jour optionnelles par item (quantity, carton, quantityPerCarton). Envoyé comme "itemQuantities".
+    List<Map<String, dynamic>>? itemQuantities,
   }) async {
     final url = Uri.parse('$baseUrl/achats/items/confirm-delivery');
     final headers = {
@@ -124,20 +139,30 @@ class AchatServices {
       'X-User-Id': userId.toString(),
     };
 
+    final body = <String, dynamic>{
+      'itemIds': itemIds,
+    };
+    if (itemQuantities != null && itemQuantities.isNotEmpty) {
+      body['itemQuantities'] = itemQuantities;
+    } else {
+      body['itemQuantities'] = itemIds
+          .map((id) => <String, dynamic>{'itemId': id})
+          .toList();
+    }
+
+    final bodyJson = jsonEncode(body);
     try {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'itemIds': itemIds,
-        }),
+        body: bodyJson,
       );
 
       final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       final apiResponse = ApiResponse<void>.fromJson(responseBody);
+      log('confirmDelivery request body: $bodyJson');
       log('Response status: ${response.statusCode}');
       log('Response body: $responseBody');
-      log('Api Response: $apiResponse');
 
       if (response.statusCode == 200) {
         return ApiResult.success(null);

@@ -150,7 +150,131 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     }
   }
 
-  Future<void> confirmArticle(String itemId) async {
+  /// Affiche un dialogue pour confirmer la livraison avec champs optionnels
+  /// (nombre de cartons, quantité par carton, quantité totale).
+  Future<_ConfirmDeliveryData?> _showConfirmDeliveryDialog(Items item) async {
+    final cartonController = TextEditingController(
+        text: item.carton != null ? item.carton.toString() : '');
+    final quantityPerCartonController = TextEditingController(
+        text: item.quantityPerCarton != null
+            ? item.quantityPerCarton.toString()
+            : '');
+    int? quantityTotal;
+    void computeTotal() {
+      final c = int.tryParse(cartonController.text);
+      final qpc = int.tryParse(quantityPerCartonController.text);
+      if (c != null && qpc != null && c > 0) quantityTotal = c * qpc;
+    }
+
+    return showDialog<_ConfirmDeliveryData?>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            computeTotal();
+            return Dialog(
+              backgroundColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)
+                          .translate('confirm_delivery_dialog_title'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    buildTextField(
+                      controller: cartonController,
+                      label: AppLocalizations.of(context).translate('carton'),
+                      icon: Icons.inventory_2,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setDialogState(() {}),
+                    ),
+                    const SizedBox(height: 12),
+                    buildTextField(
+                      controller: quantityPerCartonController,
+                      label: AppLocalizations.of(context)
+                          .translate('quantity_per_carton'),
+                      icon: Icons.numbers,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setDialogState(() {}),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)
+                              .translate('total_quantity'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          quantityTotal != null
+                              ? quantityTotal.toString()
+                              : '—',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(null),
+                          child: Text(
+                              AppLocalizations.of(context).translate('cancel')),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            final c = int.tryParse(cartonController.text);
+                            final qpc =
+                                int.tryParse(quantityPerCartonController.text);
+                            final q = quantityTotal ??
+                                (item.quantity != null ? item.quantity! : null);
+                            Navigator.of(ctx).pop(_ConfirmDeliveryData(
+                              carton: c,
+                              quantityPerCarton: qpc,
+                              quantity: q ??
+                                  (c != null && qpc != null ? c * qpc : null),
+                            ));
+                          },
+                          child: Text(AppLocalizations.of(context)
+                              .translate('confirm_short')),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> confirmArticle(
+    String itemId,
+    Items item, {
+    int? carton,
+    int? quantityPerCarton,
+    int? quantity,
+  }) async {
     if (isLoading) return;
 
     setState(() {
@@ -164,24 +288,41 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             AppLocalizations.of(context).translate('user_not_connected'));
         return;
       }
+      final id = int.parse(itemId);
+      final quantitySent = quantity ?? item.quantity;
+      final cartonSent = carton ?? item.carton;
+      final qpcSent = quantityPerCarton ?? item.quantityPerCarton;
+      final itemQuantities = [
+        AchatServices.itemQuantityUpdate(
+          id,
+          quantity: quantitySent,
+          carton: cartonSent,
+          quantityPerCarton: qpcSent,
+        ),
+      ];
       final result = await achatServices.confirmDelivery(
-        itemIds: [int.parse(itemId)],
+        itemIds: [id],
         userId: user.id,
+        itemQuantities: itemQuantities,
       );
 
       if (result.isSuccess) {
         setState(() {
           confirmedArticles.add(itemId);
-          // Met à jour le statut de l'article dans la liste locale
           final idx = widget.achat.items
                   ?.indexWhere((i) => i.id?.toString() == itemId) ??
               -1;
           if (idx != -1) {
+            final it = widget.achat.items![idx];
+            widget.achat.items![idx] = it.copyWith(
+              carton: cartonSent,
+              quantityPerCarton: qpcSent,
+              quantity: quantitySent,
+            );
             widget.achat.items![idx].status = Status.RECEIVED;
           }
         });
 
-        // Appeler le callback pour notifier le parent
         if (widget.onItemConfirmed != null) {
           widget.onItemConfirmed!();
         }
@@ -1381,8 +1522,18 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton.icon(
-                            onPressed: () =>
-                                confirmArticle(item.id?.toString() ?? ''),
+                            onPressed: () async {
+                              final data =
+                                  await _showConfirmDeliveryDialog(item);
+                              if (data != null && mounted) {
+                                await confirmArticle(
+                                    item.id!.toString(),
+                                    item,
+                                    carton: data.carton,
+                                    quantityPerCarton: data.quantityPerCarton,
+                                    quantity: data.quantity);
+                              }
+                            },
                             icon: const Icon(Icons.check_circle_outline,
                                 size: 18),
                             label: Text(
@@ -1481,4 +1632,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       }
     }
   }
+}
+
+class _ConfirmDeliveryData {
+  final int? carton;
+  final int? quantityPerCarton;
+  final int? quantity;
+  _ConfirmDeliveryData({this.carton, this.quantityPerCarton, this.quantity});
 }
