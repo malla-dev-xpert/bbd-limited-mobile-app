@@ -726,6 +726,8 @@
   "price_per_total_quantity": "Price/Qty T",
   "departure_date": "Departure Date",
   "estimated_arrival_date": "Estimated Arrival Date",
+  "loading_date": "Loading date",
+  "container_number": "Container number",
   "articles_count": "({count}) Articles",
   "add_articles": "Add Articles",
   "no_articles_in_package": "No articles in this package",

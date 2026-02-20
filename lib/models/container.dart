@@ -4,6 +4,7 @@ import 'package:bbd_limited/models/packages.dart';
 
 class Containers {
   final int? id;
+  final String? containerNumber;
   final String? reference;
   final String? size;
   final DateTime? createdAt;
@@ -15,7 +16,6 @@ class Containers {
   final Status? status;
   List<Packages>? packages;
 
-  /// Items in this container (from backend GET container details).
   List<Items>? items;
   final int? userId;
   final String? userName;
@@ -67,9 +67,11 @@ class Containers {
   final int? arrivalHarborId;
   final String? arrivalHarborName;
   final String? arrivalHarborLocation;
+  final DateTime? loadingDate;
 
   Containers copyWith({
     int? id,
+    String? containerNumber,
     String? reference,
     String? size,
     DateTime? createdAt,
@@ -127,9 +129,11 @@ class Containers {
     int? arrivalHarborId,
     String? arrivalHarborName,
     String? arrivalHarborLocation,
+    DateTime? loadingDate,
   }) {
     return Containers(
       id: id ?? this.id,
+      containerNumber: containerNumber ?? this.containerNumber,
       reference: reference ?? this.reference,
       size: size ?? this.size,
       createdAt: createdAt ?? this.createdAt,
@@ -196,12 +200,14 @@ class Containers {
       arrivalHarborName: arrivalHarborName ?? this.arrivalHarborName,
       arrivalHarborLocation:
           arrivalHarborLocation ?? this.arrivalHarborLocation,
+      loadingDate: loadingDate ?? this.loadingDate,
     );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> json = {
       'id': id,
+      'containerNumber': containerNumber,
       'reference': reference,
       'size': size,
       'createdAt': createdAt?.toIso8601String(),
@@ -277,12 +283,15 @@ class Containers {
       json['arrivalHarborName'] = arrivalHarborName;
     if (arrivalHarborLocation != null)
       json['arrivalHarborLocation'] = arrivalHarborLocation;
+    if (loadingDate != null)
+      json['loadingDate'] = loadingDate!.toIso8601String();
 
     return json;
   }
 
   Containers({
     this.id,
+    this.containerNumber,
     this.reference,
     this.size,
     this.createdAt,
@@ -340,6 +349,7 @@ class Containers {
     this.arrivalHarborId,
     this.arrivalHarborName,
     this.arrivalHarborLocation,
+    this.loadingDate,
   });
 
   factory Containers.fromJson(Map<String, dynamic> json) {
@@ -369,6 +379,7 @@ class Containers {
 
     return Containers(
       id: json['id'] as int?,
+      containerNumber: json['containerNumber'] as String?,
       reference: json['reference'] as String?,
       size: json['size'] as String?,
       createdAt:
@@ -437,6 +448,9 @@ class Containers {
       arrivalHarborId: json['arrivalHarborId'] as int?,
       arrivalHarborName: json['arrivalHarborName'] as String?,
       arrivalHarborLocation: json['arrivalHarborLocation'] as String?,
+      loadingDate: json['loadingDate'] != null
+          ? DateTime.parse(json['loadingDate'])
+          : null,
     );
   }
 }

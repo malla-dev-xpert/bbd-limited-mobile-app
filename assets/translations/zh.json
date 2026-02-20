@@ -689,6 +689,8 @@
   "price_per_total_quantity": "按总数量价格",
   "departure_date": "出发日期",
   "estimated_arrival_date": "预计到达日期",
+  "loading_date": "装货日期",
+  "container_number": "集装箱号",
   "articles_count": "文章数量",
   "add_articles": "添加物品",
   "no_articles_in_package": "此包裹中没有物品",

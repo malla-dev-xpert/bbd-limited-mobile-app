@@ -20,6 +20,17 @@ import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:printing/printing.dart';
 
+/// Titre affiché : N° conteneur en 1ère position, puis référence.
+String _containerDisplayTitle(Containers c) {
+  final num = c.containerNumber?.trim();
+  final ref = c.reference?.trim();
+  if (num != null && num.isNotEmpty && ref != null && ref.isNotEmpty) {
+    return '$num · $ref';
+  }
+  if (num != null && num.isNotEmpty) return num;
+  return ref ?? 'N/A';
+}
+
 class ContainerDetailPage extends StatefulWidget {
   final Containers container;
   final Function(Containers)? onContainerUpdated;
@@ -655,7 +666,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                container.reference ?? 'N/A',
+                                _containerDisplayTitle(container),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 20),
                               ),
@@ -703,7 +714,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                container.reference ?? 'N/A',
+                                _containerDisplayTitle(container),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 20),
                               ),
@@ -788,6 +799,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               .translate('estimated_arrival_date'),
                           DateFormat.yMMMMEEEEd()
                               .format(container.arrivalDate!),
+                          icon: Icons.calendar_today),
+                    if (container.loadingDate != null)
+                      _infoRow(
+                          AppLocalizations.of(context)
+                              .translate('loading_date'),
+                          DateFormat.yMMMMEEEEd()
+                              .format(container.loadingDate!),
                           icon: Icons.calendar_today),
                     if (container.startDeliveryDate != null)
                       _infoRow(

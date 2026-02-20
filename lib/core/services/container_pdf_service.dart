@@ -8,6 +8,17 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+/// Titre PDF : N° conteneur en 1ère position, puis référence.
+String _pdfContainerTitle(Containers c) {
+  final num = c.containerNumber?.trim();
+  final ref = c.reference?.trim();
+  if (num != null && num.isNotEmpty && ref != null && ref.isNotEmpty) {
+    return '$num · $ref';
+  }
+  if (num != null && num.isNotEmpty) return num;
+  return ref ?? '';
+}
+
 /// Service pour générer un PDF du résumé du conteneur
 /// au format facture BBD LIMITED avec support multi-langue
 class ContainerPdfService {
@@ -189,7 +200,7 @@ class ContainerPdfService {
                 ),
                 child: pw.Center(
                   child: pw.Text(
-                    container.reference ?? '',
+                    _pdfContainerTitle(container),
                     style: pw.TextStyle(
                       fontSize: 9,
                       fontWeight: pw.FontWeight.bold,
@@ -224,9 +235,11 @@ class ContainerPdfService {
                       ),
                     ),
                     pw.Text(
-                      container.departureDate != null
-                          ? dateFormat.format(container.departureDate!)
-                          : '',
+                      container.loadingDate != null
+                          ? dateFormat.format(container.loadingDate!)
+                          : (container.departureDate != null
+                              ? dateFormat.format(container.departureDate!)
+                              : ''),
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                   ],
@@ -289,7 +302,7 @@ class ContainerPdfService {
                       ),
                     ),
                     pw.Text(
-                      container.reference ?? '',
+                      container.containerNumber ?? container.reference ?? '',
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                   ],

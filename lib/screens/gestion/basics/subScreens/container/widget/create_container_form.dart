@@ -39,6 +39,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   int? savedArrivalHarborId;
   DateTime? savedDepartureDate;
   DateTime? savedArrivalDate;
+  DateTime? savedLoadingDate;
 
   final TextEditingController refController = TextEditingController();
   final TextEditingController sizeController = TextEditingController();
@@ -299,6 +300,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
               _containerInfoKey.currentState?.departureDate;
           savedArrivalDate =
               _containerInfoKey.currentState?.arrivalDate;
+          savedLoadingDate =
+              _containerInfoKey.currentState?.loadingDate;
           currentStep = 1;
           widget.onStepChanged?.call(currentStep);
         });
@@ -464,6 +467,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         savedArrivalHarborId,
         savedDepartureDate,
         savedArrivalDate,
+        savedLoadingDate,
         selectedIds,
         locFee,
         locationFeeCurrency?.code,

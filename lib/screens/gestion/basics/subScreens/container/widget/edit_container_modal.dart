@@ -68,6 +68,7 @@ class EditContainerModalState extends State<EditContainerModal> {
   int? savedArrivalHarborId;
   DateTime? savedDepartureDate;
   DateTime? savedArrivalDate;
+  DateTime? savedLoadingDate;
   String? savedDepartureHarborName;
   String? savedDepartureHarborLocation;
   String? savedArrivalHarborName;
@@ -141,6 +142,7 @@ class EditContainerModalState extends State<EditContainerModal> {
     savedArrivalHarborId = widget.container.arrivalHarborId;
     savedDepartureDate = widget.container.departureDate;
     savedArrivalDate = widget.container.arrivalDate;
+    savedLoadingDate = widget.container.loadingDate;
     savedDepartureHarborName = widget.container.departureHarborName;
     savedDepartureHarborLocation = widget.container.departureHarborLocation;
     savedArrivalHarborName = widget.container.arrivalHarborName;
@@ -260,6 +262,7 @@ class EditContainerModalState extends State<EditContainerModal> {
           savedArrivalHarborId = info?.arrivalHarborId;
           savedDepartureDate = info?.departureDate;
           savedArrivalDate = info?.arrivalDate;
+          savedLoadingDate = info?.loadingDate;
           savedDepartureHarborName = info?.selectedDepartureHarbor?.name;
           savedDepartureHarborLocation =
               info?.selectedDepartureHarbor?.location;
@@ -419,6 +422,7 @@ class EditContainerModalState extends State<EditContainerModal> {
         supplier_id: selectedSupplier?.id,
         departureDate: savedDepartureDate,
         arrivalDate: savedArrivalDate,
+        loadingDate: savedLoadingDate,
         departureHarborId: savedDepartureHarborId,
         departureHarborName: savedDepartureHarborName,
         departureHarborLocation: savedDepartureHarborLocation,
@@ -521,6 +525,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                       initialArrivalHarborId: widget.container.arrivalHarborId,
                       initialDepartureDate: widget.container.departureDate,
                       initialArrivalDate: widget.container.arrivalDate,
+                      initialLoadingDate: widget.container.loadingDate,
                       onAvailabilityChanged: (value) {
                         setState(() {
                           isAvailable = value;

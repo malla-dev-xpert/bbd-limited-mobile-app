@@ -19,6 +19,8 @@ class ContainerInfoForm extends StatefulWidget {
   final int? initialArrivalHarborId;
   final DateTime? initialDepartureDate;
   final DateTime? initialArrivalDate;
+  /// Date de chargement (optionnelle).
+  final DateTime? initialLoadingDate;
   final Function(bool)? onAvailabilityChanged;
   final Function(Partner?)? onSupplierChanged;
 
@@ -32,6 +34,7 @@ class ContainerInfoForm extends StatefulWidget {
     this.initialArrivalHarborId,
     this.initialDepartureDate,
     this.initialArrivalDate,
+    this.initialLoadingDate,
     this.onAvailabilityChanged,
     this.onSupplierChanged,
   }) : super(key: key);
@@ -52,8 +55,10 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
   int? get arrivalHarborId => selectedArrivalHarbor?.id;
   DateTime? _departureDate;
   DateTime? _arrivalDate;
+  DateTime? _loadingDate;
   DateTime? get departureDate => _departureDate;
   DateTime? get arrivalDate => _arrivalDate;
+  DateTime? get loadingDate => _loadingDate;
   final PartnerServices _partnerServices = PartnerServices();
   final HarborServices _harborServices = HarborServices();
   String? _selectedSize;
@@ -64,6 +69,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     _isAvailable = widget.initialAvailability;
     _departureDate = widget.initialDepartureDate;
     _arrivalDate = widget.initialArrivalDate;
+    _loadingDate = widget.initialLoadingDate;
     _loadSuppliers();
     _loadHarbors();
     if (widget.size.text.isNotEmpty) {
@@ -357,7 +363,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
             icon: Icons.event,
           ),
           const SizedBox(height: 10),
-          _buildDateTile(
+            _buildDateTile(
             label: AppLocalizations.of(context)!
                 .translate('estimated_arrival_date'),
             date: _arrivalDate,
@@ -370,6 +376,24 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
               );
               if (picked != null) {
                 setState(() => _arrivalDate = picked);
+              }
+            },
+            icon: Icons.event,
+          ),
+          const SizedBox(height: 10),
+          _buildDateTile(
+            label: AppLocalizations.of(context)!
+                .translate('loading_date'),
+            date: _loadingDate,
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _loadingDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) {
+                setState(() => _loadingDate = picked);
               }
             },
             icon: Icons.event,

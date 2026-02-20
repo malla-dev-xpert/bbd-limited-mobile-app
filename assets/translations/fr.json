@@ -507,6 +507,8 @@
   "invalid_quantity_calculation": "Calcul de quantité invalide",
   "departure_date": "Date de départ",
   "estimated_arrival_date": "Date d'arrivée estimée",
+  "loading_date": "Date de chargement",
+  "container_number": "N° conteneur",
   "articles_count": "({count}) Articles",
   "add_articles": "Ajouter des articles",
   "no_articles_in_package": "Aucun article dans ce colis",

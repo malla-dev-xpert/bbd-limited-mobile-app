@@ -44,6 +44,17 @@ class ContainerListItem extends StatelessWidget {
     }
   }
 
+  /// Titre affiché : N° conteneur en 1ère position, puis référence.
+  String _displayTitle() {
+    final num = container.containerNumber?.trim();
+    final ref = container.reference?.trim();
+    if (num != null && num.isNotEmpty && ref != null && ref.isNotEmpty) {
+      return '$num · $ref';
+    }
+    if (num != null && num.isNotEmpty) return num;
+    return ref ?? '';
+  }
+
   bool _allItemsSameClient() {
     final items = container.items;
     if (items != null && items.isNotEmpty) {
@@ -164,7 +175,7 @@ class ContainerListItem extends StatelessWidget {
                                   SizedBox(width: isTablet ? 8 : 4),
                                   Expanded(
                                     child: Text(
-                                      container.reference!,
+                                      _displayTitle(),
                                       style: TextStyle(
                                         fontSize: isTablet ? 22 : 16,
                                         fontWeight: FontWeight.bold,
@@ -245,7 +256,7 @@ class ContainerListItem extends StatelessWidget {
                                     ),
                                     SizedBox(width: isTablet ? 8 : 4),
                                     Text(
-                                      container.reference!,
+                                      _displayTitle(),
                                       style: TextStyle(
                                         fontSize: isTablet ? 22 : 16,
                                         fontWeight: FontWeight.bold,

@@ -51,8 +51,9 @@ class _ContainerScreen extends State<ContainerScreen> {
 
     setState(() {
       _filteredContainers = _allContainers.where((container) {
-        final reference = container.reference!.toLowerCase();
-        final matchesSearch = reference.contains(query);
+        final ref = (container.reference ?? '').toLowerCase();
+        final num = (container.containerNumber ?? '').toLowerCase();
+        final matchesSearch = ref.contains(query) || num.contains(query);
         final matchesStatus = _selectedStatus == null ||
             (container.status != null && container.status == _selectedStatus);
         return matchesSearch && matchesStatus;
@@ -139,7 +140,12 @@ class _ContainerScreen extends State<ContainerScreen> {
         content: Text(
           AppLocalizations.of(context)!
               .translate('container_delete_message')
-              .replaceAll('{reference}', container.reference ?? ''),
+              .replaceAll(
+                  '{reference}',
+                  (container.containerNumber?.trim().isNotEmpty == true
+                          ? '${container.containerNumber} · ${container.reference ?? ''}'
+                          : container.reference) ??
+                      ''),
         ),
         backgroundColor: Colors.white,
         actions: [
