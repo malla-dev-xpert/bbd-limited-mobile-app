@@ -87,10 +87,9 @@ class AccessControlService {
 
   /// Vérifie si l'utilisateur peut voir l'onglet Statistiques (Sales) / Liste des items
   bool canShowSalesTab(User user) {
-    if (isRestrictedBranch(user)) {
-      return false;
-    }
-    return true; // EMPLOYE_D peut voir l’onglet Items (Sales)
+    if (isEmployeD(user)) return false; // EMPLOYE_D utilise uniquement /items-list depuis l'accueil
+    if (isRestrictedBranch(user)) return false;
+    return true;
   }
 
   /// Vérifie si l'utilisateur peut voir l'onglet Admin
