@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:flutter/material.dart';
@@ -81,10 +82,10 @@ class ContainerListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
+    final isTablet = DeviceBreakpoints.isTablet(context);
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: isTablet ? 12.0 : 8.0),
+      padding: EdgeInsets.symmetric(
+          vertical: isTablet ? AppSpacing.md : AppSpacing.sm),
       child: Slidable(
         enabled: container.status != Status.INPROGRESS,
         endActionPane: ActionPane(
@@ -134,12 +135,13 @@ class ContainerListItem extends StatelessWidget {
             ],
           ),
           child: Material(
-            color: Colors.transparent,
+            color: Colors.white,
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
               child: Padding(
-                padding: EdgeInsets.all(isTablet ? 24.0 : 12.0),
+                padding:
+                    EdgeInsets.all(isTablet ? AppSpacing.xl : AppSpacing.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -154,7 +156,9 @@ class ContainerListItem extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(isTablet ? 8 : 4),
+                                    padding: EdgeInsets.all(isTablet
+                                        ? AppSpacing.sm
+                                        : AppSpacing.xs),
                                     decoration: BoxDecoration(
                                       color: _allItemsSameClient() ||
                                               container.isTeam == true
@@ -168,19 +172,20 @@ class ContainerListItem extends StatelessWidget {
                                               container.isTeam == true
                                           ? Icons.person
                                           : Icons.group_work,
-                                      size: isTablet ? 24 : 16,
+                                      size: isTablet
+                                          ? AppTextSize.title(context)
+                                          : AppTextSize.body(context),
                                       color: Colors.deepPurple[800],
                                     ),
                                   ),
-                                  SizedBox(width: isTablet ? 8 : 4),
+                                  SizedBox(width: AppSpacing.xs),
                                   Expanded(
                                     child: Text(
                                       _displayTitle(),
-                                      style: TextStyle(
-                                        fontSize: isTablet ? 22 : 16,
-                                        fontWeight: FontWeight.bold,
+                                      style: AppTextSize.titleStyle(
+                                        context,
                                         color: const Color(0xFF1A1E49),
-                                        letterSpacing: 0.2,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
@@ -189,8 +194,10 @@ class ContainerListItem extends StatelessWidget {
                               SizedBox(height: 8),
                               Container(
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isTablet ? 20 : 12,
-                                  vertical: isTablet ? 12 : 5,
+                                  horizontal:
+                                      isTablet ? AppSpacing.lg : AppSpacing.md,
+                                  vertical:
+                                      isTablet ? AppSpacing.md : AppSpacing.xs,
                                 ),
                                 decoration: BoxDecoration(
                                   color: _getStatusColor().withOpacity(0.1),
@@ -212,14 +219,15 @@ class ContainerListItem extends StatelessWidget {
                                         shape: BoxShape.circle,
                                       ),
                                     ),
-                                    SizedBox(width: isTablet ? 10 : 6),
+                                    SizedBox(
+                                        width: isTablet
+                                            ? AppSpacing.sm
+                                            : AppSpacing.xs),
                                     Text(
                                       _getStatusText(context),
-                                      style: TextStyle(
-                                        color: _getStatusColor(),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: isTablet ? 18 : 16,
-                                      ),
+                                      style: AppTextSize.bodyStyle(context,
+                                          color: _getStatusColor(),
+                                          fontWeight: FontWeight.w600),
                                     ),
                                   ],
                                 ),
@@ -236,7 +244,9 @@ class ContainerListItem extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(isTablet ? 8 : 4),
+                                      padding: EdgeInsets.all(isTablet
+                                          ? AppSpacing.sm
+                                          : AppSpacing.xs),
                                       decoration: BoxDecoration(
                                         color: _allItemsSameClient() ||
                                                 container.isTeam == true
@@ -250,86 +260,86 @@ class ContainerListItem extends StatelessWidget {
                                                 container.isTeam == true
                                             ? Icons.person
                                             : Icons.group_work,
-                                        size: isTablet ? 24 : 16,
+                                        size: isTablet
+                                            ? AppTextSize.title(context)
+                                            : AppTextSize.body(context),
                                         color: Colors.deepPurple[800],
                                       ),
                                     ),
-                                    SizedBox(width: isTablet ? 8 : 4),
+                                    SizedBox(width: AppSpacing.xs),
                                     Text(
                                       _displayTitle(),
-                                      style: TextStyle(
-                                        fontSize: isTablet ? 22 : 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF1A1E49),
-                                        letterSpacing: 0.2,
-                                      ),
+                                      style: AppTextSize.subtitleStyle(context,
+                                          color: const Color(0xFF1A1E49),
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
                               ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isTablet ? 20 : 12,
-                                  vertical: isTablet ? 12 : 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor().withOpacity(0.1),
-                                  borderRadius:
-                                      BorderRadius.circular(isTablet ? 28 : 20),
-                                  border: Border.all(
-                                    color: _getStatusColor().withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: isTablet ? 12 : 8,
-                                      height: isTablet ? 12 : 8,
-                                      decoration: BoxDecoration(
-                                        color: _getStatusColor(),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    SizedBox(width: isTablet ? 10 : 6),
-                                    Text(
-                                      _getStatusText(context),
-                                      style: TextStyle(
-                                        color: _getStatusColor(),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: isTablet ? 18 : 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // Container(
+                              //   padding: EdgeInsets.symmetric(
+                              //     horizontal:
+                              //         isTablet ? AppSpacing.lg : AppSpacing.md,
+                              //     vertical:
+                              //         isTablet ? AppSpacing.md : AppSpacing.xs,
+                              //   ),
+                              //   decoration: BoxDecoration(
+                              //     color: _getStatusColor().withOpacity(0.1),
+                              //     borderRadius:
+                              //         BorderRadius.circular(isTablet ? 28 : 20),
+                              //     border: Border.all(
+                              //       color: _getStatusColor().withOpacity(0.3),
+                              //       width: 1,
+                              //     ),
+                              //   ),
+                              //   child: Row(
+                              //     mainAxisSize: MainAxisSize.min,
+                              //     children: [
+                              //       Container(
+                              //         width: isTablet ? 12 : 8,
+                              //         height: isTablet ? 12 : 8,
+                              //         decoration: BoxDecoration(
+                              //           color: _getStatusColor(),
+                              //           shape: BoxShape.circle,
+                              //         ),
+                              //       ),
+                              //       SizedBox(
+                              //           width: isTablet
+                              //               ? AppSpacing.sm
+                              //               : AppSpacing.xs),
+                              //       Text(
+                              //         _getStatusText(context),
+                              //         style: AppTextSize.bodyStyle(context,
+                              //             color: _getStatusColor(),
+                              //             fontWeight: FontWeight.w600),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           );
                         }
                       },
                     ),
-                    SizedBox(height: isTablet ? 12 : 6),
+                    SizedBox(height: isTablet ? AppSpacing.md : AppSpacing.xs),
                     Wrap(
-                      spacing: isTablet ? 32 : 16,
-                      runSpacing: isTablet ? 12 : 6,
+                      spacing: isTablet ? AppSpacing.xxl : AppSpacing.lg,
+                      runSpacing: isTablet ? AppSpacing.md : AppSpacing.xs,
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.inventory_2_outlined,
-                              size: isTablet ? 24 : 16,
-                              color: Colors.grey[600],
+                              size: AppTextSize.title(context),
+                              color: Colors.grey[800],
                             ),
-                            SizedBox(width: isTablet ? 8 : 4),
+                            SizedBox(width: AppSpacing.xs),
                             Text(
                               "${container.items?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} ${AppLocalizations.of(context)!.translate('container_packages_count')}",
-                              style: TextStyle(
-                                fontSize: isTablet ? 18 : 16,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextSize.titleStyle(context,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -338,17 +348,15 @@ class ContainerListItem extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.straighten,
-                              size: isTablet ? 24 : 16,
-                              color: Colors.grey[600],
+                              size: AppTextSize.title(context),
+                              color: Colors.grey[800],
                             ),
-                            SizedBox(width: isTablet ? 8 : 4),
+                            SizedBox(width: AppSpacing.xs),
                             Text(
                               "${container.size}",
-                              style: TextStyle(
-                                fontSize: isTablet ? 18 : 16,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextSize.titleStyle(context,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -358,49 +366,46 @@ class ContainerListItem extends StatelessWidget {
                         container.departureHarborId != null ||
                         container.arrivalHarborName != null ||
                         container.arrivalHarborId != null) ...[
-                      SizedBox(height: isTablet ? 10 : 6),
+                      SizedBox(
+                          height: isTablet ? AppSpacing.sm : AppSpacing.xs),
                       Row(
                         children: [
                           Icon(
                             Icons.sailing,
-                            size: isTablet ? 20 : 14,
-                            color: Colors.grey[600],
+                            size: AppTextSize.title(context),
+                            color: Colors.grey[800],
                           ),
-                          SizedBox(width: isTablet ? 6 : 4),
+                          SizedBox(width: AppSpacing.xs),
                           Expanded(
                             child: Text(
                               _formatHarbor(container.departureHarborName),
-                              style: TextStyle(
-                                fontSize: isTablet ? 16 : 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextSize.titleStyle(context,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: isTablet ? 8 : 4),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                             child: Icon(
                               Icons.arrow_forward,
-                              size: isTablet ? 18 : 14,
+                              size: AppTextSize.caption(context) + 2,
                               color: Colors.grey[500],
                             ),
                           ),
                           Icon(
                             Icons.pin_drop,
-                            size: isTablet ? 20 : 14,
-                            color: Colors.grey[600],
+                            size: AppTextSize.title(context),
+                            color: Colors.grey[800],
                           ),
-                          SizedBox(width: isTablet ? 6 : 4),
+                          SizedBox(width: AppSpacing.xs),
                           Expanded(
                             child: Text(
                               _formatHarbor(container.arrivalHarborName),
-                              style: TextStyle(
-                                fontSize: isTablet ? 16 : 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextSize.titleStyle(context,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500),
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.end,
                             ),
@@ -408,26 +413,24 @@ class ContainerListItem extends StatelessWidget {
                         ],
                       ),
                     ],
-                    SizedBox(height: isTablet ? 8 : 4),
+                    SizedBox(height: AppSpacing.xs),
                     Row(
                       children: [
                         Icon(
                           Icons.person_3,
-                          size: isTablet ? 24 : 16,
-                          color: Colors.grey[600],
+                          size: AppTextSize.title(context),
+                          color: Colors.grey[800],
                         ),
-                        SizedBox(width: isTablet ? 8 : 4),
+                        SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Text(
                             container.supplier_id != null
                                 ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
                                 : AppLocalizations.of(context)!
                                     .translate('container_bbd_limited'),
-                            style: TextStyle(
-                              fontSize: isTablet ? 18 : 16,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextSize.titleStyle(context,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

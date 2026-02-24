@@ -1,11 +1,8 @@
 import 'package:bbd_limited/components/basic/card_list.dart';
-// import 'package:bbd_limited/components/basic/report/report_card.dart';
-// import 'package:bbd_limited/components/basic/report/report_card_list.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import '../../../models/user.dart';
-// import 'package:bbd_limited/core/services/container_services.dart';
-// import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -92,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(15.0),
+          padding: AppSpacing.screen(context),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -101,11 +98,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      spacing: 10,
+                      spacing: AppSpacing.sm,
                       children: [
-                        //display user profile picture
                         CircleAvatar(
-                          radius: 30,
+                          radius: DeviceBreakpoints.isTablet(context) ? 36 : 30,
                           backgroundColor: Colors.grey[200],
                           backgroundImage: const AssetImage(
                             'assets/images/profile-picture.avif',
@@ -125,18 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               localizations.translate('home_welcome'),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -1,
-                              ),
+                              style: AppTextSize.headlineStyle(context),
                             ),
                             Text(
                               _user?.firstName ??
                                   _user?.username ??
                                   localizations.translate('home_user'),
-                              style: const TextStyle(
-                                  letterSpacing: 0, fontSize: 18),
+                              style: AppTextSize.subtitleStyle(context),
                             ),
                           ],
                         ),
@@ -176,7 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.xl)),
               // Liste des catégories de menu
               ...getMenuCategories(
                 context,
@@ -189,20 +181,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Titre de la catégorie
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: 20.0,
-                          bottom: 10.0,
-                          left: 0,
-                          right: 0,
+                        padding: EdgeInsets.only(
+                          top: AppSpacing.xl,
+                          bottom: AppSpacing.sm,
                         ),
                         child: Text(
                           category.title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -1,
-                            color: Colors.grey[700],
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                              color: Colors.grey[700]),
                         ),
                       ),
                     ),
@@ -231,44 +217,43 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMenuItem(BuildContext context, CardData item, bool isEven) {
+    final isTablet = DeviceBreakpoints.isTablet(context);
     return InkWell(
       onTap: () => item.onPressed(context),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         color: isEven ? Colors.grey[50] : Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        padding: EdgeInsets.symmetric(
+          vertical: AppSpacing.lg,
+          horizontal: AppSpacing.lg,
+        ),
         child: Row(
           children: [
-            // Icône
             Container(
-              width: 40,
-              height: 40,
+              width: isTablet ? 48 : 40,
+              height: isTablet ? 48 : 40,
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: Icon(
                 item.icon,
                 color: const Color(0xFF1A1E49),
-                size: 24,
+                size: AppTextSize.title(context),
               ),
             ),
-            const SizedBox(width: 16),
-            // Titre
+            SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Text(
                 item.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1E49),
-                ),
+                style: AppTextSize.subtitleStyle(context,
+                    color: const Color(0xFF1A1E49)),
               ),
             ),
-            // Flèche de navigation
             Icon(
               Icons.chevron_right,
               color: Colors.grey[400],
-              size: 24,
+              size: AppTextSize.title(context),
             ),
           ],
         ),

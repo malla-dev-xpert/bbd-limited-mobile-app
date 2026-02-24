@@ -87,7 +87,8 @@ class AccessControlService {
 
   /// Vérifie si l'utilisateur peut voir l'onglet Statistiques (Sales) / Liste des items
   bool canShowSalesTab(User user) {
-    if (isEmployeD(user)) return false; // EMPLOYE_D utilise uniquement /items-list depuis l'accueil
+    if (isEmployeD(user))
+      return false; // EMPLOYE_D utilise uniquement /items-list depuis l'accueil
     if (isRestrictedBranch(user)) return false;
     return true;
   }
@@ -117,7 +118,10 @@ class AccessControlService {
 
   // ——— Conteneurs : frais visibles pour EMPLOYE_D ———
   /// Types de frais autorisés pour EMPLOYE_D : uniquement locationFee et otherFees (otherwiseFees).
-  static const Set<String> allowedFeeTypesForEmployeD = {'locationFee', 'otherFees'};
+  static const Set<String> allowedFeeTypesForEmployeD = {
+    'locationFee',
+    'otherFees'
+  };
 
   bool canShowContainerFee(User? user, String feeType) {
     if (user == null) return true;
@@ -127,10 +131,10 @@ class AccessControlService {
     return true;
   }
 
-  // ——— Items : EMPLOYE_D peut confirmer réception, pas modifier/supprimer ———
+  // ——— Items : EMPLOYE_D peut modifier et supprimer comme les autres utilisateurs ———
   bool canEditItem(User? user) {
     if (user == null) return false;
-    return !isEmployeD(user);
+    return true;
   }
 
   bool canDeleteItem(User? user) {
