@@ -4,7 +4,7 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/screens/gestion/sales/widgets/customer_purchases_dialog.dart';
+import 'package:bbd_limited/screens/gestion/sales/customer_purchases_page.dart';
 import 'package:intl/intl.dart';
 
 /// Page pleine : liste des clients avec achats (remplace le bottom sheet).
@@ -106,15 +106,12 @@ class _CustomersWithPurchasesScreenState
     return total;
   }
 
-  void _showCustomerPurchasesDialog(Partner customer) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomerPurchasesDialog(
-          customer: customer,
-          onCustomerSelected: null,
-        );
-      },
+  void _openCustomerPurchasesPage(Partner customer) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => CustomerPurchasesPage(customer: customer),
+      ),
     );
   }
 
@@ -223,7 +220,7 @@ class _CustomersWithPurchasesScreenState
                                 totalPurchases: totalPurchases,
                                 totalAmount: totalAmount,
                                 onTap: () =>
-                                    _showCustomerPurchasesDialog(customer),
+                                    _openCustomerPurchasesPage(customer),
                               ),
                             );
                           },
