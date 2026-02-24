@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'historique_achats_screen.dart';
-import 'widgets/customers_with_purchases_bottom_sheet.dart';
+import 'customers_with_purchases_screen.dart';
 import 'widgets/sales_header.dart';
 import 'widgets/sales_stats_card.dart';
 import 'widgets/sales_quick_actions.dart';
-import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/constants/design_system.dart';
@@ -87,7 +86,12 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
         label: loc.translate('sales_customers'),
         icon: Icons.people,
         iconColor: const Color(0xFF66BB6A),
-        onTap: () => _showCustomersWithPurchases(context),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CustomersWithPurchasesScreen(),
+          ),
+        ),
       ),
       SalesQuickActionItem(
         label: loc.translate('sales_reports'),
@@ -146,20 +150,4 @@ class _SalesHomeScreenState extends State<SalesHomeScreen> {
     );
   }
 
-  void _showCustomersWithPurchases(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) =>
-            CustomersWithPurchasesBottomSheet(
-          onCustomerSelected: (Partner customer) {},
-        ),
-      ),
-    );
-  }
 }
