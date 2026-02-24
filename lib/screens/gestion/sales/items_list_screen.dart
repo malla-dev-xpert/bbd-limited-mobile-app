@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
@@ -10,6 +11,9 @@ import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/components/item_detail_chip.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/widgets/filters/filter_button.dart';
+import 'package:bbd_limited/widgets/filters/filter_sheet.dart';
+import 'package:bbd_limited/widgets/filters/date_range_selector.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/screens/gestion/sales/edit_article_screen.dart';
 
@@ -25,13 +29,15 @@ class ItemsListScreen extends StatefulWidget {
 class _ItemsListScreenState extends State<ItemsListScreen> {
   final AchatServices _achatsService = AchatServices();
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _dateFilterController = TextEditingController();
   List<Achat> _achats = [];
   List<Map<String, dynamic>> _allItems = [];
   bool _isLoading = true;
   bool _actionLoading = false;
   final Set<String> _confirmedArticles = {};
-  DateTime? _selectedDate;
+  DateTime? _filterDateStart;
+  DateTime? _filterDateEnd;
+  String? _selectedSupplierName;
+  String? _selectedClientName;
 
   List<Map<String, dynamic>> get _filteredItems {
     final query = _searchController.text.trim().toLowerCase();
@@ -43,12 +49,138 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           (item.invoiceNumber?.toLowerCase().contains(query) ?? false) ||
           (item.supplierName?.toLowerCase().contains(query) ?? false);
       if (!matchesSearch) return false;
-      if (_selectedDate == null) return true;
-      final achatDate = achat.createdAt ?? DateTime.now();
-      return achatDate.year == _selectedDate!.year &&
-          achatDate.month == _selectedDate!.month &&
-          achatDate.day == _selectedDate!.day;
+      final matchesDate = _filterDateStart == null && _filterDateEnd == null ||
+          _matchDate(achat.createdAt);
+      if (!matchesDate) return false;
+      final matchesSupplier = _selectedSupplierName == null ||
+          (item.supplierName == _selectedSupplierName);
+      if (!matchesSupplier) return false;
+      final matchesClient = _selectedClientName == null ||
+          (achat.client == _selectedClientName);
+      return matchesClient;
     }).toList();
+  }
+
+  bool _matchDate(DateTime? d) {
+    if (d == null) return false;
+    if (_filterDateStart != null && d.isBefore(_filterDateStart!)) return false;
+    if (_filterDateEnd != null) {
+      final endOfDay = DateTime(
+        _filterDateEnd!.year,
+        _filterDateEnd!.month,
+        _filterDateEnd!.day,
+        23,
+        59,
+        59,
+      );
+      if (d.isAfter(endOfDay)) return false;
+    }
+    return true;
+  }
+
+  List<String> _getUniqueSupplierNames() {
+    final set = <String>{};
+    for (var entry in _allItems) {
+      final item = entry['item'] as Items;
+      if (item.supplierName != null && item.supplierName!.isNotEmpty) {
+        set.add(item.supplierName!);
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  List<String> _getUniqueClientNames() {
+    final set = <String>{};
+    for (var entry in _allItems) {
+      final achat = entry['achat'] as Achat;
+      if (achat.client != null && achat.client!.isNotEmpty) {
+        set.add(achat.client!);
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  Future<void> _openDateFilter() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            child: DateRangeSelector(
+              initialValue: _filterDateStart != null || _filterDateEnd != null
+                  ? DateRangeResult(
+                      start: _filterDateStart,
+                      end: _filterDateEnd,
+                      preset: DateRangePreset.custom,
+                    )
+                  : null,
+              onChanged: (r) {
+                setState(() {
+                  _filterDateStart = r.start;
+                  _filterDateEnd = r.end;
+                });
+              },
+              onApply: () => Navigator.pop(ctx),
+              onReset: () {
+                setState(() {
+                  _filterDateStart = null;
+                  _filterDateEnd = null;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSupplierFilter() async {
+    final names = _getUniqueSupplierNames();
+    final options =
+        names.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('filter_by_supplier'),
+      searchHint: loc.translate('search_supplier_placeholder'),
+      options: options,
+      initialValue: _selectedSupplierName,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() => _selectedSupplierName = selected);
+  }
+
+  Future<void> _openClientFilter() async {
+    final names = _getUniqueClientNames();
+    final options =
+        names.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('filter_by_client'),
+      searchHint: loc.translate('search_client_placeholder'),
+      options: options,
+      initialValue: _selectedClientName,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() => _selectedClientName = selected);
+  }
+
+  String _formatDate(DateTime? d) {
+    if (d == null) return '—';
+    return DateFormat('dd/MM/yyyy').format(d);
   }
 
   @override
@@ -58,17 +190,9 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     _searchController.addListener(() => setState(() {}));
   }
 
-  void _clearDateFilter() {
-    setState(() {
-      _selectedDate = null;
-      _dateFilterController.clear();
-    });
-  }
-
   @override
   void dispose() {
     _searchController.dispose();
-    _dateFilterController.dispose();
     super.dispose();
   }
 
@@ -824,23 +948,10 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     );
   }
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (picked != null && mounted) {
-      setState(() {
-        _selectedDate = picked;
-        _dateFilterController.text = DateFormat('dd/MM/yyyy').format(picked);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final isTablet = DeviceBreakpoints.isTablet(context);
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -860,17 +971,22 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Recherche et filtre par date — style moderne
+                // Recherche + filtres date / fournisseur (même ligne sur tablette)
                 Container(
-                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  padding: const EdgeInsets.all(20),
+                  margin: EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  padding: EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppSpacing.lg),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF1A1E49).withOpacity(0.06),
-                        blurRadius: 16,
+                        blurRadius: AppSpacing.lg,
                         offset: const Offset(0, 4),
                       ),
                       BoxShadow(
@@ -880,39 +996,90 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      buildTextField(
-                        controller: _searchController,
-                        label: AppLocalizations.of(context)
-                            .translate('items_list_search_hint'),
-                        icon: Icons.search_rounded,
-                        onChanged: (_) => setState(() {}),
-                      ),
-                      const SizedBox(height: 16),
-                      buildTextField(
-                        controller: _dateFilterController,
-                        label: AppLocalizations.of(context)
-                            .translate('filter_by_date'),
-                        icon: Icons.calendar_month_rounded,
-                        readOnly: true,
-                        onTap: _pickDate,
-                        suffixIcon: _selectedDate != null
-                            ? IconButton(
-                                onPressed: _clearDateFilter,
-                                icon: Icon(
-                                  Icons.close_rounded,
-                                  size: 20,
-                                  color: Colors.grey[600],
-                                ),
-                                tooltip: AppLocalizations.of(context)
-                                    .translate('clear_filter'),
-                              )
-                            : null,
-                      ),
-                    ],
-                  ),
+                  child: isTablet
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: buildTextField(
+                                controller: _searchController,
+                                label: loc.translate('items_list_search_hint'),
+                                icon: Icons.search_rounded,
+                                onChanged: (_) => setState(() {}),
+                              ),
+                            ),
+                            SizedBox(width: AppSpacing.md),
+                            FilterButton(
+                              label: _filterDateStart != null ||
+                                      _filterDateEnd != null
+                                  ? '${_formatDate(_filterDateStart)} - ${_formatDate(_filterDateEnd)}'
+                                  : loc.translate('filter_by_date'),
+                              isActive: _filterDateStart != null ||
+                                  _filterDateEnd != null,
+                              icon: Icons.calendar_month,
+                              onTap: _openDateFilter,
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            FilterButton(
+                              label:
+                                  '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
+                              isActive: _selectedSupplierName != null,
+                              icon: Icons.business,
+                              onTap: _openSupplierFilter,
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            FilterButton(
+                              label:
+                                  '${loc.translate('filter_label_client')} · ${_selectedClientName ?? loc.translate('container_all')}',
+                              isActive: _selectedClientName != null,
+                              icon: Icons.person_outline,
+                              onTap: _openClientFilter,
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            buildTextField(
+                              controller: _searchController,
+                              label: loc.translate('items_list_search_hint'),
+                              icon: Icons.search_rounded,
+                              onChanged: (_) => setState(() {}),
+                            ),
+                            SizedBox(height: AppSpacing.md),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  FilterButton(
+                                    label: _filterDateStart != null ||
+                                            _filterDateEnd != null
+                                        ? '${_formatDate(_filterDateStart)} - ${_formatDate(_filterDateEnd)}'
+                                        : loc.translate('filter_by_date'),
+                                    isActive: _filterDateStart != null ||
+                                        _filterDateEnd != null,
+                                    icon: Icons.calendar_month,
+                                    onTap: _openDateFilter,
+                                  ),
+                                  FilterButton(
+                                    label:
+                                        '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
+                                    isActive: _selectedSupplierName != null,
+                                    icon: Icons.business,
+                                    onTap: _openSupplierFilter,
+                                  ),
+                                  FilterButton(
+                                    label:
+                                        '${loc.translate('filter_label_client')} · ${_selectedClientName ?? loc.translate('container_all')}',
+                                    isActive: _selectedClientName != null,
+                                    icon: Icons.person_outline,
+                                    onTap: _openClientFilter,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
                 // Liste
                 Expanded(

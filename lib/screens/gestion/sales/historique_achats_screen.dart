@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/achats/update_achat_dto.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/widgets/filters/filter_button.dart';
+import 'package:bbd_limited/widgets/filters/filter_sheet.dart';
+import 'package:bbd_limited/widgets/filters/date_range_selector.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'achat_detail_screen.dart';
@@ -32,6 +36,10 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   bool isLoading = false;
   final TextEditingController _searchController = TextEditingController();
   Status? _selectedStatus;
+  DateTime? _filterDateStart;
+  DateTime? _filterDateEnd;
+  String? _selectedSupplierName;
+  String? _selectedClientName;
   bool _showItemsDirectly =
       false; // Mode d'affichage: false = achats, true = items
   final Set<String> confirmedArticles = {};
@@ -57,6 +65,136 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     });
   }
 
+  bool _matchDate(DateTime? d) {
+    if (d == null) return false;
+    if (_filterDateStart != null && d.isBefore(_filterDateStart!)) return false;
+    if (_filterDateEnd != null) {
+      final endOfDay = DateTime(
+        _filterDateEnd!.year,
+        _filterDateEnd!.month,
+        _filterDateEnd!.day,
+        23,
+        59,
+        59,
+      );
+      if (d.isAfter(endOfDay)) return false;
+    }
+    return true;
+  }
+
+  List<String> _getUniqueSupplierNames() {
+    final set = <String>{};
+    for (var a in _achats) {
+      for (var item in a.items ?? []) {
+        if (item.supplierName != null && item.supplierName!.isNotEmpty) {
+          set.add(item.supplierName!);
+        }
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  List<String> _getUniqueClientNames() {
+    final set = <String>{};
+    for (var a in _achats) {
+      if (a.client != null && a.client!.isNotEmpty) {
+        set.add(a.client!);
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  Future<void> _openDateFilter() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            child: DateRangeSelector(
+              initialValue: _filterDateStart != null || _filterDateEnd != null
+                  ? DateRangeResult(
+                      start: _filterDateStart,
+                      end: _filterDateEnd,
+                      preset: DateRangePreset.custom,
+                    )
+                  : null,
+              onChanged: (r) {
+                setState(() {
+                  _filterDateStart = r.start;
+                  _filterDateEnd = r.end;
+                  _filterAchats();
+                });
+              },
+              onApply: () => Navigator.pop(ctx),
+              onReset: () {
+                setState(() {
+                  _filterDateStart = null;
+                  _filterDateEnd = null;
+                  _filterAchats();
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSupplierFilter() async {
+    final names = _getUniqueSupplierNames();
+    final options =
+        names.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('filter_by_supplier'),
+      searchHint: loc.translate('search_supplier_placeholder'),
+      options: options,
+      initialValue: _selectedSupplierName,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() {
+      _selectedSupplierName = selected;
+      _filterAchats();
+    });
+  }
+
+  Future<void> _openClientFilter() async {
+    final names = _getUniqueClientNames();
+    final options =
+        names.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('filter_by_client'),
+      searchHint: loc.translate('search_client_placeholder'),
+      options: options,
+      initialValue: _selectedClientName,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() {
+      _selectedClientName = selected;
+      _filterAchats();
+    });
+  }
+
+  String _formatDate(DateTime? d) {
+    if (d == null) return '—';
+    return DateFormat('dd/MM/yyyy').format(d);
+  }
+
   void _filterAchats() {
     final searchQuery = _searchController.text.toLowerCase();
     setState(() {
@@ -65,7 +203,6 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         if (searchQuery.isEmpty) {
           matchesSearch = true;
         } else {
-          // Recherche par référence, client, ou id client si achat en dette
           final refMatch =
               (achat.referenceVersement?.toLowerCase().contains(searchQuery) ??
                   false);
@@ -79,18 +216,33 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
 
         final matchesStatus =
             _selectedStatus == null || achat.status == _selectedStatus;
-        return matchesSearch && matchesStatus;
+        final matchesDate = _filterDateStart == null && _filterDateEnd == null ||
+            _matchDate(achat.createdAt);
+        final matchesSupplier = _selectedSupplierName == null ||
+            (achat.items?.any((item) =>
+                    item.supplierName == _selectedSupplierName) ??
+                false);
+        final matchesClient = _selectedClientName == null ||
+            (achat.client == _selectedClientName);
+        return matchesSearch &&
+            matchesStatus &&
+            matchesDate &&
+            matchesSupplier &&
+            matchesClient;
       }).toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final isTablet = DeviceBreakpoints.isTablet(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
-          AppLocalizations.of(context).translate('purchase_history_title'),
+          loc.translate('purchase_history_title'),
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -104,9 +256,9 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       ),
       body: Column(
         children: [
-          // Header fixe avec recherche et filtres
+          // Header fixe : recherche + filtres date/fournisseur (même ligne sur tablette)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -120,24 +272,102 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildTextField(
-                  controller: _searchController,
-                  label: AppLocalizations.of(context)
-                      .translate('purchase_history_search_hint'),
-                  icon: Icons.search,
-                  onChanged: (_) => _filterAchats(),
-                ),
-                const SizedBox(height: 16),
+                isTablet
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: buildTextField(
+                              controller: _searchController,
+                              label: loc.translate(
+                                  'purchase_history_search_hint'),
+                              icon: Icons.search,
+                              onChanged: (_) => _filterAchats(),
+                            ),
+                          ),
+                          SizedBox(width: AppSpacing.md),
+                          FilterButton(
+                            label: _filterDateStart != null ||
+                                    _filterDateEnd != null
+                                ? '${_formatDate(_filterDateStart)} - ${_formatDate(_filterDateEnd)}'
+                                : loc.translate('filter_by_date'),
+                            isActive: _filterDateStart != null ||
+                                _filterDateEnd != null,
+                            icon: Icons.calendar_month,
+                            onTap: _openDateFilter,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          FilterButton(
+                            label:
+                                '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
+                            isActive: _selectedSupplierName != null,
+                            icon: Icons.business,
+                            onTap: _openSupplierFilter,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          FilterButton(
+                            label:
+                                '${loc.translate('filter_label_client')} · ${_selectedClientName ?? loc.translate('container_all')}',
+                            isActive: _selectedClientName != null,
+                            icon: Icons.person_outline,
+                            onTap: _openClientFilter,
+                          ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          buildTextField(
+                            controller: _searchController,
+                            label: loc.translate(
+                                'purchase_history_search_hint'),
+                            icon: Icons.search,
+                            onChanged: (_) => _filterAchats(),
+                          ),
+                          SizedBox(height: AppSpacing.md),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                FilterButton(
+                                  label: _filterDateStart != null ||
+                                          _filterDateEnd != null
+                                      ? '${_formatDate(_filterDateStart)} - ${_formatDate(_filterDateEnd)}'
+                                      : loc.translate('filter_by_date'),
+                                  isActive: _filterDateStart != null ||
+                                      _filterDateEnd != null,
+                                  icon: Icons.calendar_month,
+                                  onTap: _openDateFilter,
+                                ),
+                                FilterButton(
+                                  label:
+                                      '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
+                                  isActive: _selectedSupplierName != null,
+                                  icon: Icons.business,
+                                  onTap: _openSupplierFilter,
+                                ),
+                                FilterButton(
+                                  label:
+                                      '${loc.translate('filter_label_client')} · ${_selectedClientName ?? loc.translate('container_all')}',
+                                  isActive: _selectedClientName != null,
+                                  icon: Icons.person_outline,
+                                  onTap: _openClientFilter,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                SizedBox(height: AppSpacing.lg),
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
+                        padding: EdgeInsets.only(bottom: AppSpacing.sm),
                         child: Text(
-                          AppLocalizations.of(context)
-                              .translate('purchase_history_filter_status'),
+                          loc.translate('purchase_history_filter_status'),
                           style: TextStyle(
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w600,
@@ -151,20 +381,19 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                           children: [
                             _buildStatusFilterChip(
                                 null,
-                                AppLocalizations.of(context)
-                                    .translate('purchase_history_filter_all')),
+                                loc.translate('purchase_history_filter_all')),
                             _buildStatusFilterChip(
                                 Status.COMPLETED,
-                                AppLocalizations.of(context).translate(
+                                loc.translate(
                                     'purchase_history_filter_completed')),
                             _buildStatusFilterChip(
                                 Status.PENDING,
-                                AppLocalizations.of(context).translate(
+                                loc.translate(
                                     'purchase_history_filter_pending')),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: AppSpacing.lg),
                       // Toggle pour afficher les achats ou les items
                       Container(
                         decoration: BoxDecoration(
@@ -175,7 +404,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                           children: [
                             Expanded(
                               child: _buildViewModeButton(
-                                label: AppLocalizations.of(context).translate(
+                                label: loc.translate(
                                     'purchase_history_view_purchases'),
                                 icon: Icons.receipt_long,
                                 isSelected: !_showItemsDirectly,
@@ -188,8 +417,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                             ),
                             Expanded(
                               child: _buildViewModeButton(
-                                label: AppLocalizations.of(context)
-                                    .translate('purchase_history_view_items'),
+                                label: loc.translate(
+                                    'purchase_history_view_items'),
                                 icon: Icons.inventory_2,
                                 isSelected: _showItemsDirectly,
                                 onTap: () {

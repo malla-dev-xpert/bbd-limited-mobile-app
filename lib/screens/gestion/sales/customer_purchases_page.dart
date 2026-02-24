@@ -250,9 +250,10 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                       ),
                       SizedBox(width: AppSpacing.sm),
                       FilterButton(
-                        label: _selectedSupplierName ?? loc.translate('container_all'),
+                        label:
+                            '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
                         isActive: _selectedSupplierName != null,
-                        icon: Icons.person_3_outlined,
+                        icon: Icons.business,
                         onTap: _openSupplierFilter,
                       ),
                     ],
@@ -292,9 +293,10 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                               onTap: _openDateFilter,
                             ),
                             FilterButton(
-                              label: _selectedSupplierName ?? loc.translate('container_all'),
+                              label:
+                                  '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
                               isActive: _selectedSupplierName != null,
-                              icon: Icons.person_3_outlined,
+                              icon: Icons.business,
                               onTap: _openSupplierFilter,
                             ),
                           ],
