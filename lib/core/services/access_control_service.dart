@@ -26,7 +26,7 @@ class AccessControlService {
     return name.toUpperCase() == roleEmployeD;
   }
 
-  /// Routes autorisées pour EMPLOYE_D : uniquement Profil, Conteneur, Liste items (items-list). Pas SalesHomeScreen (/sales).
+  /// Routes autorisées pour EMPLOYE_D : Profil, Conteneur, Liste items, Sales (New purchase + History uniquement).
   static const Set<String> _allowedRoutesForEmployeD = {
     Routes.login,
     Routes.forgotPassword,
@@ -34,6 +34,8 @@ class AccessControlService {
     Routes.home,
     Routes.containers,
     Routes.itemsList,
+    Routes.sales,
+    Routes.purchase,
   };
 
   /// Vérifie si l'utilisateur appartient à la branche Chine
@@ -85,10 +87,9 @@ class AccessControlService {
     return true;
   }
 
-  /// Vérifie si l'utilisateur peut voir l'onglet Statistiques (Sales) / Liste des items
+  /// Vérifie si l'utilisateur peut voir l'onglet Sales (EMPLOYE_D : accès limité à New purchase + History).
   bool canShowSalesTab(User user) {
-    if (isEmployeD(user))
-      return false; // EMPLOYE_D utilise uniquement /items-list depuis l'accueil
+    if (isEmployeD(user)) return true;
     if (isRestrictedBranch(user)) return false;
     return true;
   }
@@ -116,22 +117,13 @@ class AccessControlService {
     return user.role?.permissions.contains('IS_ADMIN') ?? false;
   }
 
-  // ——— Conteneurs : frais visibles pour EMPLOYE_D ———
-  /// Types de frais autorisés pour EMPLOYE_D : uniquement locationFee et otherFees (otherwiseFees).
-  static const Set<String> allowedFeeTypesForEmployeD = {
-    'locationFee',
-    'otherFees'
-  };
-
+  // ——— Conteneurs : EMPLOYE_D a les mêmes permissions que l'admin (tous les frais, même UX/UI) ———
   bool canShowContainerFee(User? user, String feeType) {
     if (user == null) return true;
-    if (isEmployeD(user)) {
-      return allowedFeeTypesForEmployeD.contains(feeType);
-    }
-    return true;
+    return true; // EMPLOYE_D comme admin : tous les types de frais
   }
 
-  // ——— Items : EMPLOYE_D peut modifier et supprimer comme les autres utilisateurs ———
+  // ——— Items : EMPLOYE_D peut modifier et supprimer comme l'admin ———
   bool canEditItem(User? user) {
     if (user == null) return false;
     return true;
@@ -139,7 +131,7 @@ class AccessControlService {
 
   bool canDeleteItem(User? user) {
     if (user == null) return false;
-    return !isEmployeD(user);
+    return true; // EMPLOYE_D comme admin : peut supprimer
   }
 
   bool canConfirmItemDelivery(User? user) {

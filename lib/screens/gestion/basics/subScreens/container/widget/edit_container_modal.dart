@@ -36,12 +36,11 @@ class EditContainerModalState extends State<EditContainerModal> {
   int get step => currentStep;
   bool get isLoadingState => isLoading;
 
-  bool get _isEmployeD =>
-      AccessControlService().isEmployeD(AuthService.currentUser);
+  /// EMPLOYE_D : même UX/UI que l'admin dans le conteneur (formulaire complet, 3 étapes).
+  bool get _isEmployeD => false;
   bool get isEmployeD => _isEmployeD;
-  int get maxStepIndex => _isEmployeD ? 2 : 3;
-  bool get _isItemsStep =>
-      (_isEmployeD && currentStep == 2) || (!_isEmployeD && currentStep == 3);
+  int get maxStepIndex => 3;
+  bool get _isItemsStep => currentStep == 3;
 
   final _formKey = GlobalKey<FormState>();
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
