@@ -589,25 +589,35 @@ class _PurchasePageState extends State<PurchasePage> {
 
   // Méthode pour construire la page 1 (liste des articles)
   Widget _buildItemsListPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Informations du client/versement (si déjà défini)
-          if (widget.clientId != null) _buildClientInfoCard(),
+    return Column(
+      children: [
+        // Informations du client/versement (si déjà défini)
+        if (widget.clientId != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+            child: _buildClientInfoCard(),
+          ),
 
-          const SizedBox(height: 16),
-
-          // Liste des articles ou état vide
-          if (localItems.isEmpty) ...[
-            _buildEmptyState(),
-          ] else ...[
-            _buildItemsList(),
-            // Ajouter un espace en bas pour les boutons fixes
-            const SizedBox(height: 80),
-          ],
-        ],
-      ),
+        Expanded(
+          child: localItems.isEmpty
+              ? Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: _buildEmptyState(),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildItemsList(),
+                      // Ajouter un espace en bas pour les boutons fixes
+                      const SizedBox(height: 80),
+                    ],
+                  ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -896,8 +906,6 @@ class _PurchasePageState extends State<PurchasePage> {
             ),
             textAlign: TextAlign.center,
           ),
-          // Ajouter un espace en bas pour le bouton fixe
-          const SizedBox(height: 80),
         ],
       ),
     );
