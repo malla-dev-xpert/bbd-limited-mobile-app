@@ -18,6 +18,7 @@ class ReusableItemCard extends StatelessWidget {
 
   final bool showAdminInfo;
   final bool showPaymentStatus;
+  final bool showReceptionInfo;
   final Widget? extraDetails;
 
   const ReusableItemCard({
@@ -30,6 +31,7 @@ class ReusableItemCard extends StatelessWidget {
     this.isLoading = false,
     this.showAdminInfo = false,
     this.showPaymentStatus = false,
+    this.showReceptionInfo = false,
     this.onConfirm,
     this.onTap,
     this.extraDetails,
@@ -242,6 +244,22 @@ class ReusableItemCard extends StatelessWidget {
                       text:
                           '${loc.translate('paid_date')}: ${item.paiementDate != null ? DateFormat('dd/MM/yyyy').format(item.paiementDate!) : 'N/A'}',
                       icon: Icons.date_range,
+                      fullWidth: true,
+                    ),
+                  ],
+                  if (showReceptionInfo && item.status == Status.RECEIVED) ...[
+                    const SizedBox(height: 8),
+                    ItemDetailChip(
+                      text:
+                          '${loc.translate('received_by')}: ${item.receivedByUserName ?? 'N/A'}',
+                      icon: Icons.person,
+                      fullWidth: true,
+                    ),
+                    const SizedBox(height: 8),
+                    ItemDetailChip(
+                      text:
+                          '${loc.translate('received_at')}: ${item.receivedAt != null ? DateFormat('dd/MM/yyyy HH:mm').format(item.receivedAt!) : 'N/A'}',
+                      icon: Icons.event_available,
                       fullWidth: true,
                     ),
                   ],

@@ -180,6 +180,10 @@ class Items {
   final double? cartonHeight;
   final double? cbn;
   final double? cbnTotal;
+  final int? receivedByUserId;
+  final String? receivedByUserName;
+  final DateTime? receivedAt;
+
   Items({
     this.id,
     this.description,
@@ -214,6 +218,9 @@ class Items {
     this.cbn,
     this.cbnTotal,
     this.shippingPrice,
+    this.receivedByUserId,
+    this.receivedByUserName,
+    this.receivedAt,
   });
 
   Items copyWith({
@@ -250,6 +257,9 @@ class Items {
     double? totalWeight,
     double? cbnTotal,
     double? shippingPrice,
+    int? receivedByUserId,
+    String? receivedByUserName,
+    DateTime? receivedAt,
   }) {
     return Items(
       id: id ?? this.id,
@@ -285,6 +295,9 @@ class Items {
       totalWeight: totalWeight ?? this.totalWeight,
       cbnTotal: cbnTotal ?? this.cbnTotal,
       shippingPrice: shippingPrice ?? this.shippingPrice,
+      receivedByUserId: receivedByUserId ?? this.receivedByUserId,
+      receivedByUserName: receivedByUserName ?? this.receivedByUserName,
+      receivedAt: receivedAt ?? this.receivedAt,
     );
   }
 
@@ -323,6 +336,9 @@ class Items {
       'totalWeight': totalWeight,
       'cbnTotal': cbnTotal,
       'shippingPrice': shippingPrice,
+      'receivedByUserId': receivedByUserId,
+      'receivedByUserName': receivedByUserName,
+      'receivedAt': receivedAt?.toIso8601String(),
     };
   }
 
@@ -399,6 +415,11 @@ class Items {
           : null,
       shippingPrice: json['shippingPrice'] != null
           ? (json['shippingPrice'] as num).toDouble()
+          : null,
+      receivedByUserId: json['receivedByUserId'] as int?,
+      receivedByUserName: json['receivedByUserName'] as String?,
+      receivedAt: json['receivedAt'] != null
+          ? DateTime.parse(json['receivedAt'])
           : null,
     );
   }

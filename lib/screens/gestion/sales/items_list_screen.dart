@@ -636,6 +636,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
       actions: slidableActions,
       showSupplierInfo: true,
       showPurchaseInfo: true,
+      showReceptionInfo: true, // Verification
       isLoading: _actionLoading,
       onConfirm: (item, achat) async {
         final data = await _showConfirmDeliveryDialog(item);
