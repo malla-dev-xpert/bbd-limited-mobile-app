@@ -21,7 +21,7 @@ import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/components/print/print_config_page.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
 
@@ -509,7 +509,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                 controller: unitPriceController,
                                 label: AppLocalizations.of(context).translate(
                                     'purchase_history_edit_unit_price'),
-                                icon: Icons.attach_money,
+                                icon: Icons.currency_yen,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
@@ -1248,7 +1248,6 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
   }
 
   Widget _buildItemCard(Items item, Achat achat) {
-    final isConfirmed = confirmedArticles.contains(item.id?.toString());
     final user = AuthService.currentUser;
     final access = AccessControlService();
     final canEdit = access.canEditItem(user);
@@ -1286,322 +1285,29 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
           onPressed: (item.status != Status.RECEIVED)
               ? (_) => _handleDeleteItem(item)
               : null,
-          backgroundColor: (item.status != Status.RECEIVED)
-              ? Colors.red
-              : Colors.grey[300]!,
+          backgroundColor:
+              (item.status != Status.RECEIVED) ? Colors.red : Colors.grey[300]!,
           foregroundColor: Colors.white,
           icon: Icons.delete,
           label: AppLocalizations.of(context).translate('delete'),
         ),
     ];
 
-    return Slidable(
-      key: ValueKey('details_item_${item.id ?? item.hashCode}'),
-      endActionPane: slidableActions.isEmpty
-          ? null
-          : ActionPane(
-              motion: const DrawerMotion(),
-              extentRatio: 0.35,
-              children: slidableActions,
-            ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // En-tête de l'item avec actions
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // En-tête avec icône et actions
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1E49).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.inventory_2,
-                          color: Color(0xFF1A1E49),
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.description ??
-                                  AppLocalizations.of(context)
-                                      .translate('unnamed_item'),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            RichText(
-                              text: TextSpan(
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text:
-                                        '${AppLocalizations.of(context).translate('invoice_number')}: ',
-                                  ),
-                                  TextSpan(
-                                    text: item.invoiceNumber ?? 'N/A',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Image de statut (remplace les boutons inline)
-                      Image.asset(
-                        item.status == Status.RECEIVED
-                            ? 'assets/images/delivery.png'
-                            : 'assets/images/no-delivery.png',
-                        width: 44,
-                        height: 44,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Divider
-                  Divider(color: Colors.grey[200], height: 1),
-                  const SizedBox(height: 12),
-                  // Détails de l'item
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
-                        icon: Icons.inventory,
-                      ),
-                      const SizedBox(width: 16),
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
-                        icon: Icons.format_list_numbered,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
-                        icon: Icons.numbers,
-                      ),
-                      const SizedBox(width: 8),
-                      ItemDetailChip(
-                        text: '${_formatAmount(item.unitPrice ?? 0)} ¥',
-                        icon: Icons.attach_money,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('weight')}: ${item.totalWeight ?? item.weight ?? 0}',
-                        icon: Icons.scale,
-                      ),
-                      const SizedBox(width: 8),
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('cbn')}: ${item.cbnTotal ?? item.cbn ?? 0}',
-                        icon: Icons.inventory_2,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // Taux d'achat et total en colonne pour une meilleure lisibilité
-                  Column(
-                    children: [
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
-                        icon: Icons.trending_up,
-                        fullWidth: true,
-                      ),
-                      const SizedBox(height: 8),
-                      ItemDetailChip(
-                        text:
-                            '${AppLocalizations.of(context).translate('total')}: ${_formatAmount(item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
-                        icon: Icons.calculate,
-                        fullWidth: true,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Information sur le fournisseur
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.purple[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.purple[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.business,
-                            size: 16, color: Colors.purple[700]),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName ?? AppLocalizations.of(context).translate('not_available')}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.purple[900],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              if (item.supplierPhone != null &&
-                                  (item.supplierPhone as String).isNotEmpty)
-                                Text(
-                                  '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.purple[700],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Statut et bouton de confirmation
-                  if (!isConfirmed && item.status != Status.RECEIVED) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.orange[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.pending_actions,
-                              size: 20, color: Colors.orange[700]),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(context)
-                                  .translate('purchase_history_item_pending'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.orange[900],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              final data =
-                                  await _showConfirmDeliveryDialog(item);
-                              if (data != null && mounted) {
-                                await confirmArticle(
-                                    item.id!.toString(),
-                                    item,
-                                    carton: data.carton,
-                                    quantityPerCarton: data.quantityPerCarton,
-                                    quantity: data.quantity);
-                              }
-                            },
-                            icon: const Icon(Icons.check_circle_outline,
-                                size: 18),
-                            label: Text(
-                              isLoading
-                                  ? AppLocalizations.of(context)
-                                      .translate('loading_short')
-                                  : AppLocalizations.of(context)
-                                      .translate('confirm_short'),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A1E49),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  if (item.status == Status.RECEIVED) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle,
-                              size: 20, color: Colors.green[700]),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(context)
-                                  .translate('purchase_history_item_received'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.green[900],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ReusableItemCard(
+      item: item,
+      achat: achat,
+      actions: slidableActions,
+      showSupplierInfo: true,
+      isLoading: isLoading,
+      onConfirm: (item, achat) async {
+        final data = await _showConfirmDeliveryDialog(item);
+        if (data != null && mounted) {
+          await confirmArticle(item.id!.toString(), item,
+              carton: data.carton,
+              quantityPerCarton: data.quantityPerCarton,
+              quantity: data.quantity);
+        }
+      },
     );
   }
 

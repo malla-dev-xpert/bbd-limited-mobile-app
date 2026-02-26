@@ -9,7 +9,7 @@ import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
-import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/widgets/filters/filter_button.dart';
 import 'package:bbd_limited/widgets/filters/filter_sheet.dart';
@@ -55,8 +55,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
       final matchesSupplier = _selectedSupplierName == null ||
           (item.supplierName == _selectedSupplierName);
       if (!matchesSupplier) return false;
-      final matchesClient = _selectedClientName == null ||
-          (achat.client == _selectedClientName);
+      final matchesClient =
+          _selectedClientName == null || (achat.client == _selectedClientName);
       return matchesClient;
     }).toList();
   }
@@ -216,18 +216,10 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        showErrorTopSnackBar(
-            context,
+        showErrorTopSnackBar(context,
             AppLocalizations.of(context).translate('error_loading_purchases'));
       }
     }
-  }
-
-  String _formatAmount(double? amount) {
-    if (amount == null) return '0,00';
-    return NumberFormat.currency(locale: 'fr_FR', symbol: '')
-        .format(amount)
-        .trim();
   }
 
   Future<_ConfirmDeliveryData?> _showConfirmDeliveryDialog(Items item) async {
@@ -308,8 +300,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.of(ctx).pop(null),
-                          child: Text(AppLocalizations.of(context)
-                              .translate('cancel')),
+                          child: Text(
+                              AppLocalizations.of(context).translate('cancel')),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
@@ -396,8 +388,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
               a.items![idx].status = Status.RECEIVED;
             }
           }
-          final idx = _allItems.indexWhere(
-              (e) => (e['item'] as Items).id?.toString() == itemId);
+          final idx = _allItems
+              .indexWhere((e) => (e['item'] as Items).id?.toString() == itemId);
           if (idx != -1) {
             _allItems[idx] = {
               'item': updated.copyWith(status: Status.RECEIVED),
@@ -437,8 +429,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
             break;
           }
         }
-        final idx = _allItems.indexWhere(
-            (e) => (e['item'] as Items).id == updated.id);
+        final idx =
+            _allItems.indexWhere((e) => (e['item'] as Items).id == updated.id);
         if (idx != -1) {
           _allItems[idx] = {'item': updated, 'achat': _allItems[idx]['achat']};
         }
@@ -458,15 +450,16 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                 color: Colors.orange[50],
                 borderRadius: BorderRadius.circular(32),
               ),
-              child: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              child:
+                  const Icon(Icons.warning_amber_rounded, color: Colors.orange),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 AppLocalizations.of(context)
                     .translate('purchase_history_reverse_confirm_title'),
-                style: const TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -514,14 +507,13 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
       if (result == "DELETED_AND_REVERTED") {
         setState(() {
           for (var a in _achats) {
-            final itemIndex =
-                a.items?.indexWhere((i) => i.id == item.id) ?? -1;
+            final itemIndex = a.items?.indexWhere((i) => i.id == item.id) ?? -1;
             if (itemIndex != -1) {
               a.items![itemIndex].status = Status.PENDING;
             }
           }
-          final idx = _allItems
-              .indexWhere((e) => (e['item'] as Items).id == item.id);
+          final idx =
+              _allItems.indexWhere((e) => (e['item'] as Items).id == item.id);
           if (idx != -1) {
             _allItems[idx] = {
               'item': (_allItems[idx]['item'] as Items)
@@ -550,8 +542,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)
-            .translate('delete_item_confirmation')),
+        title: Text(
+            AppLocalizations.of(context).translate('delete_item_confirmation')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -578,8 +570,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           achat.items?.removeWhere((i) => i.id == item.id);
           _allItems.removeWhere((e) => (e['item'] as Items).id == item.id);
         });
-        showSuccessTopSnackBar(
-            context,
+        showSuccessTopSnackBar(context,
             AppLocalizations.of(context).translate('delete_item_success'));
       } else if (mounted) {
         showErrorTopSnackBar(
@@ -589,8 +580,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
       }
     } catch (e) {
       if (mounted) {
-        showErrorTopSnackBar(
-            context,
+        showErrorTopSnackBar(context,
             AppLocalizations.of(context).translate('delete_item_error'));
       }
     } finally {
@@ -598,11 +588,9 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     }
   }
 
-  Widget _buildItemCard(
-      Map<String, dynamic> itemData, int index) {
+  Widget _buildItemCard(Map<String, dynamic> itemData, int index) {
     final item = itemData['item'] as Items;
     final achat = itemData['achat'] as Achat;
-    final isConfirmed = _confirmedArticles.contains(item.id?.toString());
     final user = AuthService.currentUser;
     final access = AccessControlService();
     final canEdit = access.canEditItem(user);
@@ -634,333 +622,45 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           onPressed: (item.status != Status.RECEIVED)
               ? (_) => _handleDeleteItem(item, achat)
               : null,
-          backgroundColor: (item.status != Status.RECEIVED)
-              ? Colors.red
-              : Colors.grey[300]!,
+          backgroundColor:
+              (item.status != Status.RECEIVED) ? Colors.red : Colors.grey[300]!,
           foregroundColor: Colors.white,
           icon: Icons.delete,
           label: AppLocalizations.of(context).translate('delete'),
         ),
     ];
 
-    return Slidable(
-      key: ValueKey('item_${item.id ?? index}'),
-      endActionPane: slidableActions.isEmpty
-          ? null
-          : ActionPane(
-              motion: const DrawerMotion(),
-              extentRatio: 0.35,
-              children: slidableActions,
-            ),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1E49).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.inventory_2,
-                      color: Color(0xFF1A1E49),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.description ?? 'N/A',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
-                            children: [
-                              TextSpan(
-                                text:
-                                    '${AppLocalizations.of(context).translate('invoice_number')}: ',
-                              ),
-                              TextSpan(
-                                text: item.invoiceNumber ?? 'N/A',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Image.asset(
-                    item.status == Status.RECEIVED
-                        ? 'assets/images/delivery.png'
-                        : 'assets/images/no-delivery.png',
-                    width: 44,
-                    height: 44,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Divider(color: Colors.grey[200], height: 1),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
-                    icon: Icons.inventory,
-                  ),
-                  const SizedBox(width: 16),
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
-                    icon: Icons.format_list_numbered,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
-                    icon: Icons.numbers,
-                  ),
-                  ItemDetailChip(
-                    text: '${_formatAmount(item.unitPrice)} ¥',
-                    icon: Icons.attach_money,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('weight')}: ${item.totalWeight ?? 0}',
-                    icon: Icons.scale,
-                  ),
-                  const SizedBox(width: 16),
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('cbn')}: ${item.cbnTotal ?? 0}',
-                    icon: Icons.straighten,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Column(
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
-                    icon: Icons.trending_up,
-                    fullWidth: true,
-                  ),
-                  const SizedBox(height: 8),
-                  ItemDetailChip(
-                    text:
-                        '${AppLocalizations.of(context).translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
-                    icon: Icons.calculate,
-                    fullWidth: true,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.purple[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.purple[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.business,
-                        size: 16, color: Colors.purple[700]),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName ?? AppLocalizations.of(context).translate('not_available')}',
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.purple[900],
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.receipt, size: 16, color: Colors.blue[700]),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${AppLocalizations.of(context).translate('client')}: ${achat.client ?? 'N/A'}',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.blue[900],
-                                fontWeight: FontWeight.w500),
-                          ),
-                          Text(
-                            '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy').format(achat.createdAt ?? DateTime.now())}',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.blue[700]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (!isConfirmed && item.status != Status.RECEIVED) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.pending_actions,
-                          size: 20, color: Colors.orange[700]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context)
-                              .translate('purchase_history_item_pending'),
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.orange[900],
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          final data =
-                              await _showConfirmDeliveryDialog(item);
-                          if (data != null && mounted) {
-                            await _confirmArticle(
-                                item.id!.toString(),
-                                item,
-                                achat,
-                                carton: data.carton,
-                                quantityPerCarton: data.quantityPerCarton,
-                                quantity: data.quantity);
-                          }
-                        },
-                        icon: const Icon(Icons.check_circle_outline, size: 18),
-                        label: Text(
-                          _actionLoading
-                              ? AppLocalizations.of(context)
-                                  .translate('loading_short')
-                              : AppLocalizations.of(context)
-                                  .translate('confirm_short'),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A1E49),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              if (item.status == Status.RECEIVED) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle,
-                          size: 20, color: Colors.green[700]),
-                      const SizedBox(width: 8),
-                      Text(
-                        AppLocalizations.of(context)
-                            .translate('purchase_history_item_received'),
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.green[900],
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+    return ReusableItemCard(
+      item: item,
+      achat: achat,
+      actions: slidableActions,
+      showSupplierInfo: true,
+      showPurchaseInfo: true,
+      isLoading: _actionLoading,
+      onConfirm: (item, achat) async {
+        final data = await _showConfirmDeliveryDialog(item);
+        if (data != null && mounted) {
+          await _confirmArticle(item.id!.toString(), item, achat!,
+              carton: data.carton,
+              quantityPerCarton: data.quantityPerCarton,
+              quantity: data.quantity);
+        }
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final isTablet = DeviceBreakpoints.isTablet(context);
+    final isTablet = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF5F6F9),
       appBar: AppBar(
         title: Text(
-          AppLocalizations.of(context).translate('home_items_list'),
+          loc.translate('items_list_title'),
           style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.white),
+              color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -1095,8 +795,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                                 _allItems.isEmpty
                                     ? AppLocalizations.of(context)
                                         .translate('purchase_history_no_items')
-                                    : AppLocalizations.of(context).translate(
-                                        'items_list_no_results'),
+                                    : AppLocalizations.of(context)
+                                        .translate('items_list_no_results'),
                                 style: TextStyle(
                                     fontSize: 20, color: Colors.grey[600]),
                                 textAlign: TextAlign.center,
@@ -1125,6 +825,5 @@ class _ConfirmDeliveryData {
   final int? carton;
   final int? quantityPerCarton;
   final int? quantity;
-  _ConfirmDeliveryData(
-      {this.carton, this.quantityPerCarton, this.quantity});
+  _ConfirmDeliveryData({this.carton, this.quantityPerCarton, this.quantity});
 }

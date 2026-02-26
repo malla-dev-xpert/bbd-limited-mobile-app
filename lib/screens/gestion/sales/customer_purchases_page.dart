@@ -3,11 +3,10 @@ import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
-import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/widgets/filters/filter_button.dart';
 import 'package:bbd_limited/widgets/filters/filter_sheet.dart';
 import 'package:bbd_limited/widgets/filters/date_range_selector.dart';
-import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:intl/intl.dart';
 import 'achat_detail_screen.dart';
 
@@ -184,17 +183,6 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
     });
   }
 
-  String _formatAmount(double? amount) {
-    if (amount == null) return "0,00";
-    return amount
-        .toStringAsFixed(2)
-        .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]} ',
-        )
-        .replaceAll('.', ',');
-  }
-
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -224,10 +212,13 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                           controller: _searchController,
                           onChanged: (_) => _applyFilters(),
                           decoration: InputDecoration(
-                            hintText: loc.translate('purchase_history_search_hint'),
-                            prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                            hintText:
+                                loc.translate('purchase_history_search_hint'),
+                            prefixIcon:
+                                Icon(Icons.search, color: Colors.grey[600]),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppSpacing.md),
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.md),
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -241,10 +232,12 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                       ),
                       SizedBox(width: AppSpacing.md),
                       FilterButton(
-                        label: _filterDateStart != null || _filterDateEnd != null
+                        label: _filterDateStart != null ||
+                                _filterDateEnd != null
                             ? '${_formatDate(_filterDateStart)} - ${_formatDate(_filterDateEnd)}'
                             : loc.translate('filter_by_date'),
-                        isActive: _filterDateStart != null || _filterDateEnd != null,
+                        isActive:
+                            _filterDateStart != null || _filterDateEnd != null,
                         icon: Icons.calendar_month,
                         onTap: _openDateFilter,
                       ),
@@ -265,8 +258,10 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                         controller: _searchController,
                         onChanged: (_) => _applyFilters(),
                         decoration: InputDecoration(
-                          hintText: loc.translate('purchase_history_search_hint'),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                          hintText:
+                              loc.translate('purchase_history_search_hint'),
+                          prefixIcon:
+                              Icon(Icons.search, color: Colors.grey[600]),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppSpacing.md),
                           ),
@@ -285,10 +280,12 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                         child: Row(
                           children: [
                             FilterButton(
-                              label: _filterDateStart != null || _filterDateEnd != null
+                              label: _filterDateStart != null ||
+                                      _filterDateEnd != null
                                   ? '${_formatDate(_filterDateStart)} - ${_formatDate(_filterDateEnd)}'
                                   : loc.translate('filter_by_date'),
-                              isActive: _filterDateStart != null || _filterDateEnd != null,
+                              isActive: _filterDateStart != null ||
+                                  _filterDateEnd != null,
                               icon: Icons.calendar_month,
                               onTap: _openDateFilter,
                             ),
@@ -340,10 +337,11 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                       final e = _filteredItems[index];
                       return Padding(
                         padding: EdgeInsets.only(bottom: AppSpacing.md),
-                        child: _ItemCard(
+                        child: ReusableItemCard(
                           item: e.item,
                           achat: e.achat,
-                          formatAmount: _formatAmount,
+                          showSupplierInfo: true,
+                          showPurchaseInfo: true,
                           onTap: () {
                             Navigator.push<void>(
                               context,
@@ -367,292 +365,5 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
   String _formatDate(DateTime? d) {
     if (d == null) return '—';
     return DateFormat('dd/MM/yyyy').format(d);
-  }
-}
-
-/// Carte item : même design que items_list_screen, Design System pour espacements/tailles.
-class _ItemCard extends StatelessWidget {
-  final Items item;
-  final Achat achat;
-  final String Function(double?) formatAmount;
-  final VoidCallback onTap;
-
-  const _ItemCard({
-    required this.item,
-    required this.achat,
-    required this.formatAmount,
-    required this.onTap,
-  });
-
-  static const Color _primary = Color(0xFF1A1E49);
-
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.lg),
-        child: Container(
-          padding: EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.lg),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: AppSpacing.sm,
-                offset: Offset(0, AppSpacing.xs),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: _primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    ),
-                    child: Icon(
-                      Icons.inventory_2,
-                      color: _primary,
-                      size: AppTextSize.subtitle(context),
-                    ),
-                  ),
-                  SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.description ?? 'N/A',
-                          style: AppTextSize.titleStyle(context,
-                              fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: AppSpacing.xs),
-                        RichText(
-                          text: TextSpan(
-                            style: AppTextSize.bodyStyle(context,
-                                color: Colors.grey[600]),
-                            children: [
-                              TextSpan(
-                                text: '${loc.translate('invoice_number')}: ',
-                              ),
-                              TextSpan(
-                                text: item.invoiceNumber ?? 'N/A',
-                                style: AppTextSize.bodyStyle(context,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: AppSpacing.md),
-                  Image.asset(
-                    item.status == Status.RECEIVED
-                        ? 'assets/images/delivery.png'
-                        : 'assets/images/no-delivery.png',
-                    width: AppSpacing.xxl + AppSpacing.xs,
-                    height: AppSpacing.xxl + AppSpacing.xs,
-                  ),
-                ],
-              ),
-              SizedBox(height: AppSpacing.md),
-              Divider(color: Colors.grey[200], height: 1),
-              SizedBox(height: AppSpacing.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ItemDetailChip(
-                    text: '${loc.translate('carton')}: ${item.carton ?? 0}',
-                    icon: Icons.inventory,
-                  ),
-                  SizedBox(width: AppSpacing.lg),
-                  ItemDetailChip(
-                    text:
-                        '${loc.translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
-                    icon: Icons.format_list_numbered,
-                  ),
-                ],
-              ),
-              SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${loc.translate('total_quantity')}: ${item.quantity ?? 0}',
-                    icon: Icons.numbers,
-                  ),
-                  ItemDetailChip(
-                    text: '${formatAmount(item.unitPrice)} ¥',
-                    icon: Icons.attach_money,
-                  ),
-                ],
-              ),
-              SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${loc.translate('weight')}: ${item.totalWeight ?? 0}',
-                    icon: Icons.scale,
-                  ),
-                  SizedBox(width: AppSpacing.lg),
-                  ItemDetailChip(
-                    text:
-                        '${loc.translate('cbn')}: ${item.cbnTotal ?? 0}',
-                    icon: Icons.straighten,
-                  ),
-                ],
-              ),
-              SizedBox(height: AppSpacing.sm),
-              Column(
-                children: [
-                  ItemDetailChip(
-                    text:
-                        '${loc.translate('sales_rate')}: ${item.salesRate ?? 0}',
-                    icon: Icons.trending_up,
-                    fullWidth: true,
-                  ),
-                  SizedBox(height: AppSpacing.sm),
-                  ItemDetailChip(
-                    text:
-                        '${loc.translate('total')}: ${formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
-                    icon: Icons.calculate,
-                    fullWidth: true,
-                  ),
-                ],
-              ),
-              SizedBox(height: AppSpacing.md),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: Colors.purple[50],
-                  borderRadius: BorderRadius.circular(AppSpacing.sm),
-                  border: Border.all(color: Colors.purple[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.business,
-                        size: AppTextSize.body(context),
-                        color: Colors.purple[700]),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        '${loc.translate('supplier')}: ${item.supplierName ?? loc.translate('not_available')}',
-                        style: AppTextSize.bodyStyle(context,
-                            color: Colors.purple[900],
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppSpacing.md),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(AppSpacing.sm),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.receipt,
-                        size: AppTextSize.body(context),
-                        color: Colors.blue[700]),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${loc.translate('client')}: ${achat.client ?? 'N/A'}',
-                            style: AppTextSize.bodyStyle(context,
-                                color: Colors.blue[900],
-                                fontWeight: FontWeight.w500),
-                          ),
-                          Text(
-                            '${loc.translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy').format(achat.createdAt ?? DateTime.now())}',
-                            style: AppTextSize.bodyStyle(context,
-                                color: Colors.blue[700]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (item.status == Status.RECEIVED) ...[
-                SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    border: Border.all(color: Colors.green[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle,
-                          size: AppTextSize.subtitle(context),
-                          color: Colors.green[700]),
-                      SizedBox(width: AppSpacing.sm),
-                      Text(
-                        loc.translate('purchase_history_item_received'),
-                        style: AppTextSize.bodyStyle(context,
-                            color: Colors.green[900],
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              if (item.status != Status.RECEIVED) ...[
-                SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[50],
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    border: Border.all(color: Colors.orange[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.pending_actions,
-                          size: AppTextSize.subtitle(context),
-                          color: Colors.orange[700]),
-                      SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          loc.translate('purchase_history_item_pending'),
-                          style: AppTextSize.bodyStyle(context,
-                              color: Colors.orange[900],
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

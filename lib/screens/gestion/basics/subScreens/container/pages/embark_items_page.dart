@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
@@ -123,132 +123,32 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final weight = item.totalWeight ?? 0;
-    final cbn = item.cbnTotal ?? 0;
-    final clientDisplay = item.clientName?.isNotEmpty == true
-        ? item.clientName!
-        : (item.clientId != null ? '#${item.clientId}' : '—');
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: isSelected,
-                      onChanged: (_) => onTap(),
-                      activeColor: const Color(0xFF1A1E49),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A1E49).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.inventory_2,
-                        color: Color(0xFF1A1E49),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.description ?? 'N/A',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${item.quantity ?? 0} ${loc.translate('total_quantity')}${item.carton != null ? ' · ${item.carton} ${loc.translate('carton')}' : ''}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Divider(color: Colors.grey[200], height: 1),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ItemDetailChip(
-                      text: '${loc.translate('weight')}: $weight',
-                      icon: Icons.scale,
-                    ),
-                    const SizedBox(width: 8),
-                    ItemDetailChip(
-                      text: '${loc.translate('cbn')}: $cbn',
-                      icon: Icons.straighten,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.person_outline,
-                          size: 16, color: Colors.blue[700]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '${loc.translate('package_client')}: $clientDisplay',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue[900],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+    return ReusableItemCard(
+      item: item,
+      onTap: onTap,
+      showPurchaseInfo: true,
+      extraDetails: Row(
+        children: [
+          Checkbox(
+            value: isSelected,
+            onChanged: (_) => onTap(),
+            activeColor: const Color(0xFF1A1E49),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
-        ),
+          const SizedBox(width: 8),
+          Text(
+            isSelected
+                ? loc.translate('container_item_selected')
+                : loc.translate('container_item_select'),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? const Color(0xFF1A1E49) : Colors.grey[600],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -19,7 +19,7 @@ import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
-import 'package:bbd_limited/components/item_detail_chip.dart';
+import 'package:bbd_limited/components/reusable_item_card.dart';
 
 class HistoriqueAchatsScreen extends StatefulWidget {
   const HistoriqueAchatsScreen({super.key});
@@ -216,11 +216,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
 
         final matchesStatus =
             _selectedStatus == null || achat.status == _selectedStatus;
-        final matchesDate = _filterDateStart == null && _filterDateEnd == null ||
-            _matchDate(achat.createdAt);
+        final matchesDate =
+            _filterDateStart == null && _filterDateEnd == null ||
+                _matchDate(achat.createdAt);
         final matchesSupplier = _selectedSupplierName == null ||
-            (achat.items?.any((item) =>
-                    item.supplierName == _selectedSupplierName) ??
+            (achat.items?.any(
+                    (item) => item.supplierName == _selectedSupplierName) ??
                 false);
         final matchesClient = _selectedClientName == null ||
             (achat.client == _selectedClientName);
@@ -279,8 +280,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                           Expanded(
                             child: buildTextField(
                               controller: _searchController,
-                              label: loc.translate(
-                                  'purchase_history_search_hint'),
+                              label:
+                                  loc.translate('purchase_history_search_hint'),
                               icon: Icons.search,
                               onChanged: (_) => _filterAchats(),
                             ),
@@ -319,8 +320,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                         children: [
                           buildTextField(
                             controller: _searchController,
-                            label: loc.translate(
-                                'purchase_history_search_hint'),
+                            label:
+                                loc.translate('purchase_history_search_hint'),
                             icon: Icons.search,
                             onChanged: (_) => _filterAchats(),
                           ),
@@ -379,8 +380,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            _buildStatusFilterChip(
-                                null,
+                            _buildStatusFilterChip(null,
                                 loc.translate('purchase_history_filter_all')),
                             _buildStatusFilterChip(
                                 Status.COMPLETED,
@@ -417,8 +417,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                             ),
                             Expanded(
                               child: _buildViewModeButton(
-                                label: loc.translate(
-                                    'purchase_history_view_items'),
+                                label: loc
+                                    .translate('purchase_history_view_items'),
                                 icon: Icons.inventory_2,
                                 isSelected: _showItemsDirectly,
                                 onTap: () {
@@ -474,7 +474,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               itemBuilder: (context, index) {
                                 final achat = _filteredAchats[index];
                                 final user = AuthService.currentUser;
-                                final canEditAchat = user != null && !AccessControlService().isEmployeD(user);
+                                final canEditAchat = user != null &&
+                                    !AccessControlService().isEmployeD(user);
                                 return Slidable(
                                   key: ValueKey('achat_${achat.id ?? index}'),
                                   endActionPane: canEditAchat
@@ -489,8 +490,9 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                   const Color(0xFF1976D2),
                                               foregroundColor: Colors.white,
                                               icon: Icons.edit_calendar,
-                                              label: AppLocalizations.of(context)
-                                                  .translate('edit_date'),
+                                              label:
+                                                  AppLocalizations.of(context)
+                                                      .translate('edit_date'),
                                             ),
                                           ],
                                         )
@@ -1692,7 +1694,6 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
           final item = itemData['item'];
           final achat = itemData['achat'] as Achat;
 
-          final isConfirmed = confirmedArticles.contains(item.id?.toString());
           final user = AuthService.currentUser;
           final access = AccessControlService();
           final canEdit = access.canEditItem(user);
@@ -1731,337 +1732,22 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                 label: AppLocalizations.of(context).translate('delete'),
               ),
           ];
-          return Slidable(
-            key: ValueKey('item_${item.id ?? index}'),
-            endActionPane: itemSlidableActions.isEmpty
-                ? null
-                : ActionPane(
-                    motion: const DrawerMotion(),
-                    extentRatio: 0.35,
-                    children: itemSlidableActions,
-                  ),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // En-tête de l'item avec image de statut
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1E49).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.inventory_2,
-                            color: Color(0xFF1A1E49),
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.description ?? 'N/A',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              RichText(
-                                text: TextSpan(
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text:
-                                          '${AppLocalizations.of(context).translate('invoice_number')}: ',
-                                    ),
-                                    TextSpan(
-                                      text: item.invoiceNumber ?? 'N/A',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Image.asset(
-                          item.status == Status.RECEIVED
-                              ? 'assets/images/delivery.png'
-                              : 'assets/images/no-delivery.png',
-                          width: 44,
-                          height: 44,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Divider
-                    Divider(color: Colors.grey[200], height: 1),
-                    const SizedBox(height: 12),
-                    // Détails de l'item
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('carton')}: ${item.carton ?? 0}',
-                          icon: Icons.inventory,
-                        ),
-                        const SizedBox(width: 16),
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('quantity_per_carton_2')}: ${item.quantityPerCarton ?? 0}',
-                          icon: Icons.format_list_numbered,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('total_quantity')}: ${item.quantity ?? 0}',
-                          icon: Icons.numbers,
-                        ),
-                        const SizedBox(width: 8),
-                        ItemDetailChip(
-                          text: '${_formatAmount(item.unitPrice)} ¥',
-                          icon: Icons.attach_money,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Poids et CBN (0 si null)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('weight')}: ${item.totalWeight ?? 0}',
-                          icon: Icons.scale,
-                        ),
-                        const SizedBox(width: 16),
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('cbn')}: ${item.cbnTotal ?? 0}',
-                          icon: Icons.straighten,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Taux d'achat et total en colonne pour une meilleure lisibilité
-                    Column(
-                      children: [
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('sales_rate')}: ${item.salesRate ?? 0}',
-                          icon: Icons.trending_up,
-                          fullWidth: true,
-                        ),
-                        const SizedBox(height: 8),
-                        ItemDetailChip(
-                          text:
-                              '${AppLocalizations.of(context).translate('total')}: ${_formatAmount((item.quantity ?? 0) * (item.unitPrice ?? 0))} ¥',
-                          icon: Icons.calculate,
-                          fullWidth: true,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Information sur le fournisseur
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.purple[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.purple[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.business,
-                              size: 16, color: Colors.purple[700]),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${AppLocalizations.of(context).translate('supplier')}: ${item.supplierName ?? AppLocalizations.of(context).translate('not_available')}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.purple[900],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (item.supplierPhone != null &&
-                                    (item.supplierPhone as String).isNotEmpty)
-                                  Text(
-                                    '${AppLocalizations.of(context).translate('purchase_history_phone')}: ${item.supplierPhone}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.purple[700],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Information sur l'achat parent
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.receipt,
-                              size: 16, color: Colors.blue[700]),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${AppLocalizations.of(context).translate('client')}: ${achat.client ?? 'N/A'}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.blue[900],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  '${AppLocalizations.of(context).translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy').format(achat.createdAt ?? DateTime.now())}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.blue[700],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (achat.isDebt == true)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF7F78AF).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                AppLocalizations.of(context)
-                                    .translate('purchase_history_debt'),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF7F78AF),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    // Statut et bouton de confirmation
-                    if (!isConfirmed && item.status != Status.RECEIVED) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange[200]!),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.pending_actions,
-                                size: 20, color: Colors.orange[700]),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                AppLocalizations.of(context)
-                                    .translate('purchase_history_item_pending'),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.orange[900],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                final data =
-                                    await _showConfirmDeliveryDialog(item);
-                                if (data != null && mounted) {
-                                  await confirmArticle(
-                                      item.id!.toString(),
-                                      item,
-                                      achat,
-                                      carton: data.carton,
-                                      quantityPerCarton: data.quantityPerCarton,
-                                      quantity: data.quantity);
-                                }
-                              },
-                              icon: const Icon(Icons.check_circle_outline,
-                                  size: 18),
-                              label: Text(
-                                isLoading
-                                    ? AppLocalizations.of(context)
-                                        .translate('loading_short')
-                                    : AppLocalizations.of(context)
-                                        .translate('confirm_short'),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1A1E49),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
+          return ReusableItemCard(
+            item: item,
+            achat: achat,
+            actions: itemSlidableActions,
+            showSupplierInfo: true,
+            showPurchaseInfo: true,
+            isLoading: isLoading,
+            onConfirm: (item, achat) async {
+              final data = await _showConfirmDeliveryDialog(item);
+              if (data != null && mounted) {
+                await confirmArticle(item.id!.toString(), item, achat!,
+                    carton: data.carton,
+                    quantityPerCarton: data.quantityPerCarton,
+                    quantity: data.quantity);
+              }
+            },
           );
         },
       ),
