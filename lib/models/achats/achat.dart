@@ -149,6 +149,7 @@ class Items {
   final int? supplierId;
   final String? supplierName;
   final int? packageId;
+  final double? shippingPrice;
 
   /// When set, item is assigned to this container (for filtering available items).
   final int? containerId;
@@ -212,6 +213,7 @@ class Items {
     this.cartonHeight,
     this.cbn,
     this.cbnTotal,
+    this.shippingPrice,
   });
 
   Items copyWith({
@@ -247,6 +249,7 @@ class Items {
     double? cbn,
     double? totalWeight,
     double? cbnTotal,
+    double? shippingPrice,
   }) {
     return Items(
       id: id ?? this.id,
@@ -281,6 +284,7 @@ class Items {
       cbn: cbn ?? this.cbn,
       totalWeight: totalWeight ?? this.totalWeight,
       cbnTotal: cbnTotal ?? this.cbnTotal,
+      shippingPrice: shippingPrice ?? this.shippingPrice,
     );
   }
 
@@ -318,6 +322,7 @@ class Items {
       'cbn': cbn,
       'totalWeight': totalWeight,
       'cbnTotal': cbnTotal,
+      'shippingPrice': shippingPrice,
     };
   }
 
@@ -391,6 +396,9 @@ class Items {
           : null,
       cbnTotal: json['cbnTotal'] != null
           ? (json['cbnTotal'] as num).toDouble()
+          : null,
+      shippingPrice: json['shippingPrice'] != null
+          ? (json['shippingPrice'] as num).toDouble()
           : null,
     );
   }
