@@ -160,6 +160,21 @@ List<MenuCategory> getMenuCategories(
     ),
   );
 
+  // 6. CBM Pricing (Accessible à tous)
+  basicInfoItems.add(
+    CardData(
+      icon: Icons.square_foot,
+      title: localizations.translate('home_manage_cbm_pricing_title'),
+      backgroundColor: Colors.grey[50]!,
+      iconColor: const Color(0xFF13084F),
+      titleColor: const Color(0xFF13084F),
+      onPressed: (context) {
+        Navigator.of(context).pushNamed('/cbm-pricing');
+      },
+      description: localizations.translate('home_manage_cbm_pricing_desc'),
+    ),
+  );
+
   List<MenuCategory> categories = [
     MenuCategory(
       title: localizations.translate('home_basic_info'),
