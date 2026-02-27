@@ -126,30 +126,9 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
     return ReusableItemCard(
       item: item,
       onTap: onTap,
+      isSelected: isSelected,
       showPurchaseInfo: true,
-      extraDetails: Row(
-        children: [
-          Checkbox(
-            value: isSelected,
-            onChanged: (_) => onTap(),
-            activeColor: const Color(0xFF1A1E49),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            isSelected
-                ? loc.translate('container_item_selected')
-                : loc.translate('container_item_select'),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? const Color(0xFF1A1E49) : Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
+      extraDetails: null,
     );
   }
 

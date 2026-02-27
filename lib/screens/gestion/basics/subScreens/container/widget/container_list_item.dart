@@ -10,6 +10,8 @@ class ContainerListItem extends StatelessWidget {
   final Function() onEdit;
   final Function() onDelete;
   final Function() onTap;
+  final bool isSelected;
+  final bool isSelectionMode;
 
   const ContainerListItem({
     super.key,
@@ -17,6 +19,8 @@ class ContainerListItem extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onTap,
+    this.isSelected = false,
+    this.isSelectionMode = false,
   });
 
   Color _getStatusColor() {
@@ -83,359 +87,232 @@ class ContainerListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTablet = DeviceBreakpoints.isTablet(context);
+    final loc = AppLocalizations.of(context)!;
+    final statusColor = _getStatusColor();
+    final statusText = _getStatusText(context);
+    final isTeam = _allItemsSameClient() || container.isTeam == true;
+
     return Padding(
       padding: EdgeInsets.symmetric(
-          vertical: isTablet ? AppSpacing.md : AppSpacing.sm),
+        vertical: isTablet ? AppSpacing.md : AppSpacing.sm,
+      ),
       child: Slidable(
-        enabled: container.status != Status.INPROGRESS,
+        enabled: !isSelectionMode && container.status != Status.INPROGRESS,
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
+          extentRatio: isTablet ? 0.25 : 0.4,
           children: [
             SlidableAction(
               onPressed: (container.status != Status.INPROGRESS &&
                       container.status != Status.RECEIVED)
                   ? (context) => onEdit()
                   : null,
-              backgroundColor: (container.status != Status.INPROGRESS &&
-                      container.status != Status.RECEIVED)
-                  ? const Color(0xFF42A5F5)
-                  : Colors.grey[300]!,
+              backgroundColor: const Color(0xFF42A5F5),
               foregroundColor: Colors.white,
-              icon: Icons.edit,
-              label: AppLocalizations.of(context)!.translate('container_edit'),
-              borderRadius:
-                  const BorderRadius.horizontal(left: Radius.circular(12)),
+              icon: Icons.edit_outlined,
+              label: loc.translate('container_edit'),
+              borderRadius: BorderRadius.circular(12),
             ),
             SlidableAction(
               onPressed: (container.status != Status.INPROGRESS)
                   ? (context) => onDelete()
                   : null,
-              backgroundColor: (container.status != Status.INPROGRESS)
-                  ? const Color(0xFFEF5350)
-                  : Colors.grey[300]!,
+              backgroundColor: const Color(0xFFEF5350),
               foregroundColor: Colors.white,
-              icon: Icons.delete,
-              label:
-                  AppLocalizations.of(context)!.translate('container_delete'),
-              borderRadius:
-                  const BorderRadius.horizontal(right: Radius.circular(12)),
+              icon: Icons.delete_outline,
+              label: loc.translate('container_delete'),
+              borderRadius: BorderRadius.circular(12),
             ),
           ],
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
+            color: isSelected
+                ? const Color(0xFF1A1E49).withOpacity(0.05)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: isSelected
+                ? Border.all(color: const Color(0xFF1A1E49), width: 2)
+                : null,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: isTablet ? 16 : 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Material(
-            color: Colors.white,
+            color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(isTablet ? 24 : 16),
+              borderRadius: BorderRadius.circular(20),
               child: Padding(
                 padding:
-                    EdgeInsets.all(isTablet ? AppSpacing.xl : AppSpacing.md),
+                    EdgeInsets.all(isTablet ? AppSpacing.xl : AppSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.maxWidth < 600) {
-                          // Layout vertical sur mobile
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(isTablet
-                                        ? AppSpacing.sm
-                                        : AppSpacing.xs),
-                                    decoration: BoxDecoration(
-                                      color: _allItemsSameClient() ||
-                                              container.isTeam == true
-                                          ? Colors.blue[50]
-                                          : Colors.deepPurple[50],
-                                      borderRadius: BorderRadius.circular(
-                                          isTablet ? 16 : 10),
-                                    ),
-                                    child: Icon(
-                                      _allItemsSameClient() ||
-                                              container.isTeam == true
-                                          ? Icons.person
-                                          : Icons.group_work,
-                                      size: isTablet
-                                          ? AppTextSize.title(context)
-                                          : AppTextSize.body(context),
-                                      color: Colors.deepPurple[800],
-                                    ),
-                                  ),
-                                  SizedBox(width: AppSpacing.xs),
-                                  Expanded(
-                                    child: Text(
-                                      _displayTitle(),
-                                      style: AppTextSize.titleStyle(
-                                        context,
-                                        color: const Color(0xFF1A1E49),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal:
-                                      isTablet ? AppSpacing.lg : AppSpacing.md,
-                                  vertical:
-                                      isTablet ? AppSpacing.md : AppSpacing.xs,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor().withOpacity(0.1),
-                                  borderRadius:
-                                      BorderRadius.circular(isTablet ? 28 : 20),
-                                  border: Border.all(
-                                    color: _getStatusColor().withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: isTablet ? 12 : 8,
-                                      height: isTablet ? 12 : 8,
-                                      decoration: BoxDecoration(
-                                        color: _getStatusColor(),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                        width: isTablet
-                                            ? AppSpacing.sm
-                                            : AppSpacing.xs),
-                                    Text(
-                                      _getStatusText(context),
-                                      style: AppTextSize.bodyStyle(context,
-                                          color: _getStatusColor(),
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          // Layout horizontal pour tablettes
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.all(isTablet
-                                          ? AppSpacing.sm
-                                          : AppSpacing.xs),
-                                      decoration: BoxDecoration(
-                                        color: _allItemsSameClient() ||
-                                                container.isTeam == true
-                                            ? Colors.blue[50]
-                                            : Colors.deepPurple[50],
-                                        borderRadius: BorderRadius.circular(
-                                            isTablet ? 16 : 10),
-                                      ),
-                                      child: Icon(
-                                        _allItemsSameClient() ||
-                                                container.isTeam == true
-                                            ? Icons.person
-                                            : Icons.group_work,
-                                        size: isTablet
-                                            ? AppTextSize.title(context)
-                                            : AppTextSize.body(context),
-                                        color: Colors.deepPurple[800],
-                                      ),
-                                    ),
-                                    SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      _displayTitle(),
-                                      style: AppTextSize.subtitleStyle(context,
-                                          color: const Color(0xFF1A1E49),
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Container(
-                              //   padding: EdgeInsets.symmetric(
-                              //     horizontal:
-                              //         isTablet ? AppSpacing.lg : AppSpacing.md,
-                              //     vertical:
-                              //         isTablet ? AppSpacing.md : AppSpacing.xs,
-                              //   ),
-                              //   decoration: BoxDecoration(
-                              //     color: _getStatusColor().withOpacity(0.1),
-                              //     borderRadius:
-                              //         BorderRadius.circular(isTablet ? 28 : 20),
-                              //     border: Border.all(
-                              //       color: _getStatusColor().withOpacity(0.3),
-                              //       width: 1,
-                              //     ),
-                              //   ),
-                              //   child: Row(
-                              //     mainAxisSize: MainAxisSize.min,
-                              //     children: [
-                              //       Container(
-                              //         width: isTablet ? 12 : 8,
-                              //         height: isTablet ? 12 : 8,
-                              //         decoration: BoxDecoration(
-                              //           color: _getStatusColor(),
-                              //           shape: BoxShape.circle,
-                              //         ),
-                              //       ),
-                              //       SizedBox(
-                              //           width: isTablet
-                              //               ? AppSpacing.sm
-                              //               : AppSpacing.xs),
-                              //       Text(
-                              //         _getStatusText(context),
-                              //         style: AppTextSize.bodyStyle(context,
-                              //             color: _getStatusColor(),
-                              //             fontWeight: FontWeight.w600),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
-                            ],
-                          );
-                        }
-                      },
-                    ),
-                    SizedBox(height: isTablet ? AppSpacing.md : AppSpacing.xs),
-                    Wrap(
-                      spacing: isTablet ? AppSpacing.xxl : AppSpacing.lg,
-                      runSpacing: isTablet ? AppSpacing.md : AppSpacing.xs,
+                    // Header: Icon + Title + Status
+                    Row(
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.inventory_2_outlined,
-                              size: AppTextSize.title(context),
-                              color: Colors.grey[800],
-                            ),
-                            SizedBox(width: AppSpacing.xs),
-                            Text(
-                              "${container.items?.where((c) => c.status != Status.DELETE || c.status != Status.DELETE_ON_CONTAINER).length} ${AppLocalizations.of(context)!.translate('container_packages_count')}",
-                              style: AppTextSize.titleStyle(context,
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ],
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isTeam
+                                ? Colors.blue[50]
+                                : Colors.deepPurple[50],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            isTeam
+                                ? Icons.person_outline
+                                : Icons.group_work_outlined,
+                            size: 20,
+                            color: isTeam
+                                ? Colors.blue[700]
+                                : Colors.deepPurple[700],
+                          ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.straighten,
-                              size: AppTextSize.title(context),
-                              color: Colors.grey[800],
-                            ),
-                            SizedBox(width: AppSpacing.xs),
-                            Text(
-                              "${container.size}",
-                              style: AppTextSize.titleStyle(context,
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _displayTitle(),
+                            style: AppTextSize.titleStyle(context,
+                                color: const Color(0xFF1A1E49),
+                                fontWeight: FontWeight.w800),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: 8),
+                        _buildStatusChip(statusColor, statusText),
                       ],
                     ),
-                    if (container.departureHarborName != null ||
-                        container.departureHarborId != null ||
-                        container.arrivalHarborName != null ||
-                        container.arrivalHarborId != null) ...[
-                      SizedBox(
-                          height: isTablet ? AppSpacing.sm : AppSpacing.xs),
-                      Row(
+                    const SizedBox(height: 20),
+
+                    // Shipping Path: Source --- [Icon] ---> Destination
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
                         children: [
-                          Icon(
-                            Icons.sailing,
-                            size: AppTextSize.title(context),
-                            color: Colors.grey[800],
-                          ),
-                          SizedBox(width: AppSpacing.xs),
                           Expanded(
-                            child: Text(
-                              _formatHarbor(container.departureHarborName),
-                              style: AppTextSize.titleStyle(context,
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.w500),
-                              overflow: TextOverflow.ellipsis,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loc
+                                      .translate('departure_harbor')
+                                      .toUpperCase(),
+                                  style: AppTextSize.captionStyle(context,
+                                          color: Colors.grey[500])
+                                      .copyWith(
+                                          letterSpacing: 1.1,
+                                          fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _formatHarbor(container.departureHarborName),
+                                  style: AppTextSize.bodyStyle(context,
+                                      fontWeight: FontWeight.w600),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ),
                           Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                            child: Icon(
-                              Icons.arrow_forward,
-                              size: AppTextSize.caption(context) + 2,
-                              color: Colors.grey[500],
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Column(
+                              children: [
+                                Icon(Icons.directions_boat_filled,
+                                    color: const Color(0xFF1A1E49)
+                                        .withOpacity(0.7),
+                                    size: 20),
+                                const SizedBox(height: 4),
+                                Icon(Icons.arrow_forward,
+                                    color: Colors.grey[300], size: 14),
+                              ],
                             ),
                           ),
-                          Icon(
-                            Icons.pin_drop,
-                            size: AppTextSize.title(context),
-                            color: Colors.grey[800],
-                          ),
-                          SizedBox(width: AppSpacing.xs),
                           Expanded(
-                            child: Text(
-                              _formatHarbor(container.arrivalHarborName),
-                              style: AppTextSize.titleStyle(context,
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.w500),
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.end,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  loc.translate('arrival_harbor').toUpperCase(),
+                                  style: AppTextSize.captionStyle(context,
+                                          color: Colors.grey[500])
+                                      .copyWith(
+                                          letterSpacing: 1.1,
+                                          fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _formatHarbor(container.arrivalHarborName),
+                                  style: AppTextSize.bodyStyle(context,
+                                      fontWeight: FontWeight.w600),
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.end,
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                    SizedBox(height: AppSpacing.xs),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Info Grid: Items Count + Size
                     Row(
                       children: [
-                        Icon(
-                          Icons.person_3,
-                          size: AppTextSize.title(context),
-                          color: Colors.grey[800],
+                        _buildInfoItem(
+                          context,
+                          icon: Icons.inventory_2_outlined,
+                          label:
+                              "${container.items?.where((c) => c.status != Status.DELETE && c.status != Status.DELETE_ON_CONTAINER).length ?? 0}",
+                          sublabel: loc.translate('container_packages_count'),
                         ),
-                        SizedBox(width: AppSpacing.xs),
+                        Container(
+                          height: 30,
+                          width: 1,
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          color: Colors.grey[200],
+                        ),
+                        _buildInfoItem(
+                          context,
+                          icon: Icons.straighten_outlined,
+                          label: "${container.size ?? '—'}",
+                          sublabel: "FEET", // Ou une clé de traduction si dispo
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 16),
+
+                    // Footer: Responsible Party
+                    Row(
+                      children: [
+                        Icon(Icons.assignment_ind_outlined,
+                            size: 16, color: Colors.grey[600]),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             container.supplier_id != null
-                                ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '|' : ''} ${container.supplierPhone ?? ""}'
-                                : AppLocalizations.of(context)!
-                                    .translate('container_bbd_limited'),
-                            style: AppTextSize.titleStyle(context,
-                                color: Colors.grey[800],
-                                fontWeight: FontWeight.w500),
+                                ? '${container.supplierName ?? ""} ${container.supplierPhone?.isNotEmpty ?? false ? '| ' + container.supplierPhone! : ''}'
+                                : loc.translate('container_bbd_limited'),
+                            style: AppTextSize.bodyStyle(context,
+                                color: Colors.grey[700]),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -443,6 +320,51 @@ class ContainerListItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStatusChip(Color color, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required String sublabel}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF1A1E49).withOpacity(0.6)),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: AppTextSize.bodyStyle(context,
+                  fontWeight: FontWeight.w800, color: const Color(0xFF1A1E49)),
+            ),
+            Text(
+              sublabel,
+              style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

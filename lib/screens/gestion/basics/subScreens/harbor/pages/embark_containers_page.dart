@@ -1,10 +1,10 @@
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
-import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
 import 'package:flutter/material.dart';
 
 class EmbarkContainersPage extends StatefulWidget {
@@ -271,112 +271,14 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
 
   Widget _buildContainerCard(Containers c, AppLocalizations loc) {
     final isSelected = c.id != null && _selectedIds.contains(c.id);
-    final itemsCount = c.items
-            ?.where((i) =>
-                i.status != Status.DELETE &&
-                i.status != Status.DELETE_ON_CONTAINER)
-            .length ??
-        c.packages?.length ??
-        0;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.06),
-        child: InkWell(
-          onTap: () => _toggleSelection(c),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => _toggleSelection(c),
-                  activeColor: const Color(0xFF1A1E49),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        c.reference ?? '—',
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1E49),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.inventory_2_outlined,
-                              size: 16, color: Colors.grey[600]),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$itemsCount ${loc.translate('harbor_embark_items_count')}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Icon(Icons.straighten,
-                              size: 16, color: Colors.grey[600]),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${c.size ?? '—'}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (c.departureHarborName != null ||
-                          c.arrivalHarborName != null) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.sailing,
-                                size: 14, color: Colors.grey[500]),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                '${c.departureHarborName ?? '—'} → ${c.arrivalHarborName ?? '—'}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[500],
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Icon(
-                  isSelected
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  color:
-                      isSelected ? const Color(0xFF1A1E49) : Colors.grey[400],
-                  size: 24,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return ContainerListItem(
+      container: c,
+      isSelected: isSelected,
+      isSelectionMode: true,
+      onTap: () => _toggleSelection(c),
+      onEdit: () {}, // Not used in selection mode
+      onDelete: () {}, // Not used in selection mode
     );
   }
 }
