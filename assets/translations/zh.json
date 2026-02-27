@@ -2380,5 +2380,8 @@
   "carrier_delete_confirm": "您确定要删除此承运人吗？",
   "carrier_delete_success": "承运人删除成功",
   "carrier_delete_error_linked": "无法删除：已关联到集装箱",
-  "carrier_delete_error_generic": "删除承运人时出错，请重试"
+  "carrier_delete_error_generic": "删除承运人时出错，请重试",
+  "edit_carrier": "编辑承运人",
+  "carrier_updated_success": "承运人修改成功",
+  "carrier_update_error": "修改承运人时出错，请重试"
 }

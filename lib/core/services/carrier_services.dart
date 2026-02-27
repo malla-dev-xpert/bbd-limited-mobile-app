@@ -28,6 +28,26 @@ class CarrierServices {
     }
   }
 
+  Future<String?> updateCarrier(int id, CarrierDto dto, int userId) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/carriers/update/$id?userId=$userId'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(dto.toJson()),
+      );
+
+      if (response.statusCode == 201) {
+        return "UPDATED";
+      } else if (response.statusCode == 409) {
+        return "CONTACT_EXIST";
+      } else {
+        throw Exception("carrier_update_error");
+      }
+    } catch (e) {
+      throw Exception("network_error");
+    }
+  }
+
   Future<String?> createCarrier(CarrierDto dto, int userId) async {
     try {
       final response = await http.post(

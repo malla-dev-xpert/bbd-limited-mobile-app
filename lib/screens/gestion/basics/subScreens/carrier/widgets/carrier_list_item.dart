@@ -6,26 +6,36 @@ import 'package:bbd_limited/core/localization/app_localizations.dart';
 class CarrierListItem extends StatelessWidget {
   final Carrier carrier;
   final Function(Carrier) onDelete;
+  final Function(Carrier) onEdit;
 
   const CarrierListItem({
     Key? key,
     required this.carrier,
     required this.onDelete,
+    required this.onEdit,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Slidable(
       key: ValueKey(carrier.id),
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
         children: [
           SlidableAction(
+            onPressed: (_) => onEdit(carrier),
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: loc.translate('edit'),
+          ),
+          SlidableAction(
             onPressed: (_) => onDelete(carrier),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
-            label: AppLocalizations.of(context).translate('delete'),
+            label: loc.translate('delete'),
           ),
         ],
       ),
@@ -35,7 +45,7 @@ class CarrierListItem extends StatelessWidget {
           child: Icon(Icons.local_shipping, color: Colors.white),
         ),
         title: Text(
-          carrier.name ?? AppLocalizations.of(context).translate('na'),
+          carrier.name ?? loc.translate('na'),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(carrier.contact ?? ''),

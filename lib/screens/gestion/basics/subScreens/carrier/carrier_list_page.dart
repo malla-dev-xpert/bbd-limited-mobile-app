@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/carrier_services.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/carrier.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/widgets/create_carrier_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/widgets/edit_carrier_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/widgets/carrier_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -93,6 +94,17 @@ class _CarrierListPageState extends State<CarrierListPage> {
         }).toList();
       }
     });
+  }
+
+  Future<void> _editCarrier(Carrier carrier) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => EditCarrierBottomSheet(carrier: carrier),
+    );
+    if (result == true) {
+      _loadCarriers(reset: true);
+    }
   }
 
   Future<void> _deleteCarrier(Carrier carrier) async {
@@ -221,6 +233,7 @@ class _CarrierListPageState extends State<CarrierListPage> {
                             return CarrierListItem(
                               carrier: _filteredCarriers[index],
                               onDelete: _deleteCarrier,
+                              onEdit: _editCarrier,
                             );
                           },
                         ),

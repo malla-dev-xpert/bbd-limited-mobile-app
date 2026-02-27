@@ -2386,5 +2386,8 @@
   "carrier_delete_confirm": "Voulez-vous vraiment supprimer ce transporteur ?",
   "carrier_delete_success": "Transporteur supprimé avec succès",
   "carrier_delete_error_linked": "Suppression impossible : lié à des conteneurs",
-  "carrier_delete_error_generic": "Erreur lors de la suppression du transporteur"
+  "carrier_delete_error_generic": "Erreur lors de la suppression du transporteur",
+  "edit_carrier": "Modifier le transporteur",
+  "carrier_updated_success": "Transporteur modifié avec succès",
+  "carrier_update_error": "Erreur lors de la modification du transporteur"
 }

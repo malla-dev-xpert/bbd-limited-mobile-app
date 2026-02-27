@@ -2385,5 +2385,8 @@
   "carrier_delete_confirm": "Are you sure you want to delete this carrier?",
   "carrier_delete_success": "Carrier deleted successfully",
   "carrier_delete_error_linked": "Cannot delete carrier: linked to containers",
-  "carrier_delete_error_generic": "Error deleting carrier, please try again"
+  "carrier_delete_error_generic": "Error deleting carrier, please try again",
+  "edit_carrier": "Edit Carrier",
+  "carrier_updated_success": "Carrier updated successfully",
+  "carrier_update_error": "Error updating carrier, please try again"
 }
