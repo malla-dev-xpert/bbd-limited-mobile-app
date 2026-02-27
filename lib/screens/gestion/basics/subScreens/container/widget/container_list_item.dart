@@ -39,11 +39,11 @@ class ContainerListItem extends StatelessWidget {
   String _getStatusText(BuildContext context) {
     switch (container.status) {
       case Status.INPROGRESS:
-        return AppLocalizations.of(context)!.translate('container_in_progress');
+        return AppLocalizations.of(context).translate('container_in_progress');
       case Status.RECEIVED:
-        return AppLocalizations.of(context)!.translate('container_arrived');
+        return AppLocalizations.of(context).translate('container_arrived');
       case Status.PENDING:
-        return AppLocalizations.of(context)!.translate('container_waiting');
+        return AppLocalizations.of(context).translate('container_waiting');
       default:
         return container.status.toString();
     }
@@ -87,7 +87,7 @@ class ContainerListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTablet = DeviceBreakpoints.isTablet(context);
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     final statusColor = _getStatusColor();
     final statusText = _getStatusText(context);
     final isTeam = _allItemsSameClient() || container.isTeam == true;
@@ -286,7 +286,7 @@ class ContainerListItem extends StatelessWidget {
                           context,
                           icon: Icons.straighten_outlined,
                           label: "${container.size ?? '—'}",
-                          sublabel: "FEET", // Ou une clé de traduction si dispo
+                          sublabel: loc.translate('container_size_feet'),
                         ),
                       ],
                     ),

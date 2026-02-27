@@ -1173,7 +1173,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(false),
-                                      child: const Text("Annuler"),
+                                      child: Text(AppLocalizations.of(context)
+                                          .translate('cancel')),
                                     ),
                                     TextButton(
                                       onPressed: () =>
@@ -1342,7 +1343,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(false),
-                                      child: const Text("Annuler"),
+                                      child: Text(AppLocalizations.of(context)
+                                          .translate('cancel')),
                                     ),
                                     TextButton(
                                       onPressed: () =>

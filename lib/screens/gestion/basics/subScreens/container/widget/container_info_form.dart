@@ -282,11 +282,11 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
         children: [
           buildTextField(
             controller: widget.refController,
-            label: AppLocalizations.of(context)!
+            label: AppLocalizations.of(context)
                 .translate('container_form_reference'),
             icon: Icons.description,
             validator: (v) => v == null || v.isEmpty
-                ? AppLocalizations.of(context)!
+                ? AppLocalizations.of(context)
                     .translate('container_form_validation_reference')
                 : null,
           ),
@@ -303,7 +303,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0, top: 8.0),
                   child: Text(
-                      AppLocalizations.of(context)!
+                      AppLocalizations.of(context)
                           .translate('container_form_size'),
                       style: const TextStyle(fontSize: 18)),
                 ),
@@ -311,11 +311,11 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildSizeButton(
-                        "20 ${AppLocalizations.of(context)!.translate('container_size_feet')}"),
+                        "20 ${AppLocalizations.of(context).translate('container_size_feet')}"),
                     _buildSizeButton(
-                        "40 ${AppLocalizations.of(context)!.translate('container_size_feet')}"),
+                        "40 ${AppLocalizations.of(context).translate('container_size_feet')}"),
                     _buildSizeButton(
-                        "45 ${AppLocalizations.of(context)!.translate('container_size_feet')}"),
+                        "45 ${AppLocalizations.of(context).translate('container_size_feet')}"),
                   ],
                 ),
               ],
@@ -336,7 +336,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   },
                   itemToString: (h) =>
                       '${h.name ?? ''}${(h.location ?? '').isNotEmpty ? ' - ${h.location}' : ''}',
-                  hintText: AppLocalizations.of(context)!
+                  hintText: AppLocalizations.of(context)
                       .translate('choose_departure_port'),
                   prefixIcon: Icons.sailing,
                 ),
@@ -346,7 +346,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 child: IconButton(
                   onPressed: _showAddHarborModal,
                   icon: const Icon(Icons.add),
-                  tooltip: AppLocalizations.of(context)!
+                  tooltip: AppLocalizations.of(context)
                       .translate('container_form_add_port'),
                 ),
               ),
@@ -367,7 +367,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   },
                   itemToString: (h) =>
                       '${h.name ?? ''}${(h.location ?? '').isNotEmpty ? ' - ${h.location}' : ''}',
-                  hintText: AppLocalizations.of(context)!
+                  hintText: AppLocalizations.of(context)
                       .translate('choose_arrival_port'),
                   prefixIcon: Icons.pin_drop,
                 ),
@@ -377,7 +377,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 child: IconButton(
                   onPressed: _showAddHarborModal,
                   icon: const Icon(Icons.add),
-                  tooltip: AppLocalizations.of(context)!
+                  tooltip: AppLocalizations.of(context)
                       .translate('container_form_add_port'),
                 ),
               ),
@@ -385,7 +385,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
           ),
           const SizedBox(height: 10),
           _buildDateTile(
-            label: AppLocalizations.of(context)!.translate('departure_date'),
+            label: AppLocalizations.of(context).translate('departure_date'),
             date: _departureDate,
             onTap: () async {
               final picked = await showDatePicker(
@@ -402,7 +402,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
           ),
           const SizedBox(height: 10),
           _buildDateTile(
-            label: AppLocalizations.of(context)!
+            label: AppLocalizations.of(context)
                 .translate('estimated_arrival_date'),
             date: _arrivalDate,
             onTap: () async {
@@ -420,7 +420,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
           ),
           const SizedBox(height: 10),
           _buildDateTile(
-            label: AppLocalizations.of(context)!.translate('loading_date'),
+            label: AppLocalizations.of(context).translate('loading_date'),
             date: _loadingDate,
             onTap: () async {
               final picked = await showDatePicker(
@@ -453,7 +453,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   },
                   itemToString: (client) =>
                       '${client.firstName} ${client.lastName} ${client.lastName.isNotEmpty ? '|' : ''} ${client.phoneNumber}',
-                  hintText: AppLocalizations.of(context)!
+                  hintText: AppLocalizations.of(context)
                       .translate('container_form_supplier'),
                   prefixIcon: Icons.person,
                 ),
@@ -479,7 +479,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
               children: [
                 Expanded(
                   child: Text(
-                      AppLocalizations.of(context)!
+                      AppLocalizations.of(context)
                           .translate('container_form_availability'),
                       style: const TextStyle(fontSize: 18)),
                 ),
@@ -515,7 +515,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   },
                   itemToString: (c) => '${c.name ?? ''} | ${c.contact ?? ''}',
                   hintText:
-                      AppLocalizations.of(context)!.translate('choose_carrier'),
+                      AppLocalizations.of(context).translate('choose_carrier'),
                   prefixIcon: Icons.local_shipping,
                 ),
               ),

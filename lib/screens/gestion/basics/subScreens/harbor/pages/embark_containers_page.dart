@@ -51,7 +51,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
         setState(() => _isLoading = false);
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context)!
+          AppLocalizations.of(context)
               .translate('harbor_embark_error_loading'),
         );
       }
@@ -78,7 +78,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
       if (user == null) {
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context)!.translate('user_not_connected'),
+          AppLocalizations.of(context).translate('user_not_connected'),
         );
         setState(() => _isSubmitting = false);
         return;
@@ -96,22 +96,22 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
       if (result == "SUCCESS" && mounted) {
         showSuccessTopSnackBar(
           context,
-          AppLocalizations.of(context)!.translate('harbor_embark_success'),
+          AppLocalizations.of(context).translate('harbor_embark_success'),
         );
         Navigator.of(context).pop(_selectedIds.length);
       } else if (mounted) {
         String message;
         switch (result) {
           case "CONTAINER_ALREADY_IN_ANOTHER_HARBOR":
-            message = AppLocalizations.of(context)!
+            message = AppLocalizations.of(context)
                 .translate('harbor_embark_error_already_in_harbor');
             break;
           case "HARBOR_NOT_AVAILABLE":
-            message = AppLocalizations.of(context)!
+            message = AppLocalizations.of(context)
                 .translate('harbor_embark_error_harbor_not_available');
             break;
           default:
-            message = AppLocalizations.of(context)!
+            message = AppLocalizations.of(context)
                 .translate('harbor_embark_error_generic');
         }
         showErrorTopSnackBar(context, message);
@@ -120,7 +120,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context)!
+          AppLocalizations.of(context)
               .translate('harbor_embark_error_generic'),
         );
       }
@@ -131,7 +131,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],

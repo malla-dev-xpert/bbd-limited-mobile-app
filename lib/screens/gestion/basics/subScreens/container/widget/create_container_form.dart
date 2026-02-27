@@ -240,7 +240,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       final user = await authService.getUserInfo();
       if (user == null) {
         showErrorTopSnackBar(context,
-            AppLocalizations.of(context)!.translate('user_not_connected'));
+            AppLocalizations.of(context).translate('user_not_connected'));
         return;
       }
       final reference = refController.text.trim();
@@ -276,7 +276,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       if (!validateFeeRate(locFee, locationFeeCurrency, locRate)) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -286,7 +286,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           effectiveRate(localChargeCurrency, localChargeRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -296,7 +296,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           effectiveRate(loadingFeeCurrency, loadingFeeRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -309,7 +309,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
               overweightFeeCurrency, overweightFeeRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -319,7 +319,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           effectiveRate(checkingFeeCurrency, checkingFeeRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -329,7 +329,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           effectiveRate(telxFeeCurrency, telxFeeRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -339,7 +339,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           effectiveRate(otherFeesCurrency, otherFeesRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -349,7 +349,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           effectiveRate(marginCurrency, marginRateController.text))) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -361,7 +361,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       if (!validateFeeRate(transFee, transportFeeCurrency, transRate)) {
         showErrorTopSnackBar(
             context,
-            AppLocalizations.of(context)!
+            AppLocalizations.of(context)
                 .translate('rate_required_if_not_cny'));
         setState(() => isLoading = false);
         return;
@@ -448,14 +448,14 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       if (response == "CREATED") {
         Navigator.pop(context, true);
         showSuccessTopSnackBar(context,
-            AppLocalizations.of(context)!.translate('container_form_saved'));
+            AppLocalizations.of(context).translate('container_form_saved'));
       } else if (response == "NAME_EXIST") {
         showErrorTopSnackBar(context,
-            AppLocalizations.of(context)!.translate('container_form_error'));
+            AppLocalizations.of(context).translate('container_form_error'));
       }
     } catch (e) {
       showErrorTopSnackBar(context,
-          AppLocalizations.of(context)!.translate('container_form_error'));
+          AppLocalizations.of(context).translate('container_form_error'));
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -862,7 +862,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
               );
             } else if (_isItemsStep) {
               // Items : étape 2 pour EMPLOYE_D, étape 3 pour les autres
-              final loc = AppLocalizations.of(context)!;
+              final loc = AppLocalizations.of(context);
               if (_isLoadingItems) {
                 return const Center(
                   child: Padding(
@@ -1041,16 +1041,16 @@ class MainFeesFormState extends State<MainFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.locationFeeController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_location_fee') +
-              " (optionnel)",
+              " ${AppLocalizations.of(context).translate('optional')}",
           icon: Icons.business,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (value) {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1066,7 +1066,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 onChanged: widget.onLocationFeeCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1074,9 +1074,8 @@ class MainFeesFormState extends State<MainFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.locationFeeRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1094,16 +1093,16 @@ class MainFeesFormState extends State<MainFeesForm> {
         // Local Charge
         buildTextField(
           controller: widget.localChargeController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_local_charge') +
-              " (optionnel)",
+              " ${AppLocalizations.of(context).translate('optional')}",
           icon: Icons.location_city,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (value) {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1119,7 +1118,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 onChanged: widget.onLocalChargeCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1127,9 +1126,8 @@ class MainFeesFormState extends State<MainFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.localChargeRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1146,16 +1144,16 @@ class MainFeesFormState extends State<MainFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.loadingFeeController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_loading_fee') +
-              " (optionnel)",
+              " ${AppLocalizations.of(context).translate('optional')}",
           icon: Icons.local_shipping,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (value) {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1171,7 +1169,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 onChanged: widget.onLoadingFeeCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1179,9 +1177,8 @@ class MainFeesFormState extends State<MainFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.loadingFeeRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1198,7 +1195,7 @@ class MainFeesFormState extends State<MainFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.transportFeeController!,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_transport_fee') +
               " (optionnel)",
           icon: Icons.directions_boat,
@@ -1214,7 +1211,7 @@ class MainFeesFormState extends State<MainFeesForm> {
                 onChanged: widget.onTransportFeeCurrencyChanged ?? (_) {},
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1223,9 +1220,8 @@ class MainFeesFormState extends State<MainFeesForm> {
               child: buildTextField(
                 controller: widget.transportFeeRateController ??
                     TextEditingController(),
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1329,7 +1325,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.overweightFeeController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_overweight_fee') +
               " (optionnel)",
           icon: Icons.scale,
@@ -1338,7 +1334,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1354,7 +1350,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 onChanged: widget.onOverweightFeeCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1362,9 +1358,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.overweightFeeRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1381,7 +1376,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.checkingFeeController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_checking_fee') +
               " (optionnel)",
           icon: Icons.verified,
@@ -1390,7 +1385,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1406,7 +1401,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 onChanged: widget.onCheckingFeeCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1414,9 +1409,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.checkingFeeRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1433,7 +1427,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.telxFeeController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_telx_fee') +
               " (optionnel)",
           icon: Icons.phone_android,
@@ -1442,7 +1436,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1458,7 +1452,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 onChanged: widget.onTelxFeeCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1466,9 +1460,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.telxFeeRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1485,7 +1478,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.otherFeesController,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_other_fees') +
               " (optionnel)",
           icon: Icons.more_horiz,
@@ -1494,7 +1487,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1510,7 +1503,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 onChanged: widget.onOtherFeesCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1518,9 +1511,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.otherFeesRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1538,7 +1530,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
         buildTextField(
           controller: widget.marginController,
           label:
-              AppLocalizations.of(context)!.translate('container_form_margin') +
+              AppLocalizations.of(context).translate('container_form_margin') +
                   " (optionnel)",
           icon: Icons.add,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1546,7 +1538,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             if (value != null &&
                 value.isNotEmpty &&
                 double.tryParse(value) == null) {
-              return AppLocalizations.of(context)!
+              return AppLocalizations.of(context)
                   .translate('container_form_validation_fees');
             }
             return null;
@@ -1562,7 +1554,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 onChanged: widget.onMarginCurrencyChanged,
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1570,9 +1562,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             Expanded(
               child: buildTextField(
                 controller: widget.marginRateController,
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1589,7 +1580,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
       children.addAll([
         buildTextField(
           controller: widget.transportFeeController!,
-          label: AppLocalizations.of(context)!
+          label: AppLocalizations.of(context)
                   .translate('container_form_transport_fee') +
               " (optionnel)",
           icon: Icons.directions_boat,
@@ -1605,7 +1596,7 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
                 onChanged: widget.onTransportFeeCurrencyChanged ?? (_) {},
                 itemToString: (currency) => currency.code,
                 hintText:
-                    AppLocalizations.of(context)!.translate('choose_currency'),
+                    AppLocalizations.of(context).translate('choose_currency'),
                 prefixIcon: Icons.currency_exchange,
               ),
             ),
@@ -1614,9 +1605,8 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
               child: buildTextField(
                 controller: widget.transportFeeRateController ??
                     TextEditingController(),
-                label:
-                    AppLocalizations.of(context)!.translate('exchange_rate') +
-                        " (CNY)",
+                label: AppLocalizations.of(context).translate('exchange_rate') +
+                    " (CNY)",
                 icon: Icons.trending_up,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
