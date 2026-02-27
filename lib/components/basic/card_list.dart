@@ -210,6 +210,17 @@ List<MenuCategory> getMenuCategories(
             },
             description: localizations.translate('home_manage_containers_desc'),
           ),
+          CardData(
+            icon: Icons.local_shipping,
+            title: localizations.translate('home_manage_carriers_title'),
+            backgroundColor: Colors.grey[50]!,
+            iconColor: const Color(0xFF13084F),
+            titleColor: const Color(0xFF13084F),
+            onPressed: (context) {
+              Navigator.of(context).pushNamed('/carriers');
+            },
+            description: localizations.translate('home_manage_carriers_desc'),
+          ),
         ],
       ),
     );

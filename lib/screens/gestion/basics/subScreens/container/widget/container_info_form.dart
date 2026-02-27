@@ -5,7 +5,7 @@ import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/carrier.dart';
 import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/models/partner.dart';
-import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_carrier_bottom_sheet.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/widgets/create_carrier_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
 import 'package:flutter/material.dart';

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:bbd_limited/models/carrier.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -9,18 +10,21 @@ class CarrierServices {
 
   Future<List<Carrier>> getAllCarriers({int page = 0}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/carriers?page=$page'),
+      Uri.parse(
+        '$baseUrl/carriers?page=$page',
+      ),
     );
 
+    log(response.body);
+    log(response.statusCode.toString());
+
     if (response.statusCode == 200) {
-      final Map<String, dynamic> jsonBody = json.decode(
+      final List<dynamic> jsonBody = json.decode(
         utf8.decode(response.bodyBytes),
       );
-      // Le backend retourne une Page<Carriers>, on récupère la liste dans 'content'
-      final List<dynamic> content = jsonBody['content'] ?? [];
-      return content.map((e) => Carrier.fromJson(e)).toList();
+      return jsonBody.map((e) => Carrier.fromJson(e)).toList();
     } else {
-      throw Exception("carrier_loading_error");
+      throw Exception("partner_loading_error");
     }
   }
 
@@ -39,6 +43,24 @@ class CarrierServices {
         return "CONTACT_EXIST";
       } else {
         throw Exception("carrier_creation_error");
+      }
+    } catch (e) {
+      throw Exception("network_error");
+    }
+  }
+
+  Future<String> deleteCarrier(int id, int userId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/carriers/delete/$id?userId=$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        return "SUCCESS";
+      } else if (response.statusCode == 409) {
+        return "CARRIER_LINKED_TO_CONTAINER";
+      } else {
+        throw Exception("carrier_delete_error");
       }
     } catch (e) {
       throw Exception("network_error");

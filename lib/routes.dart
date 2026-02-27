@@ -12,6 +12,7 @@ import 'package:bbd_limited/screens/gestion/sales/sales_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/purchase_page.dart';
 import 'package:bbd_limited/screens/gestion/sales/items_list_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/cbm_pricing/cbm_pricing_screen.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/carrier_list_page.dart';
 
 import 'package:bbd_limited/screens/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class Routes {
   static const String accounts = '/accounts';
   static const String activityHistory = '/activity-history';
   static const String cbmPricing = '/cbm-pricing';
+  static const String carriers = '/carriers';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     // Liste des routes publiques accessibles sans authentification ou gérant leur propre auth
@@ -85,6 +87,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const ActivityHistoryScreen());
       case cbmPricing:
         return MaterialPageRoute(builder: (_) => const CbmPricingScreen());
+      case carriers:
+        return MaterialPageRoute(builder: (_) => const CarrierListPage());
       case accounts:
         return MaterialPageRoute(builder: (_) => AccountHomeScreen());
       case sales:

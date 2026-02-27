@@ -2380,5 +2380,11 @@
   "pdf_kgs": "KGS",
   "container_pdf_export_title": "Export PDF du conteneur",
   "container_pdf_preview": "Aperçu du PDF",
-  "container_pdf_options": "Options du PDF"
+  "container_pdf_options": "Options du PDF",
+  "home_manage_carriers_title": "Gestion des transporteurs",
+  "home_manage_carriers_desc": "Gérer les transporteurs maritimes globaux",
+  "carrier_delete_confirm": "Voulez-vous vraiment supprimer ce transporteur ?",
+  "carrier_delete_success": "Transporteur supprimé avec succès",
+  "carrier_delete_error_linked": "Suppression impossible : lié à des conteneurs",
+  "carrier_delete_error_generic": "Erreur lors de la suppression du transporteur"
 }

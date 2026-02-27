@@ -2374,5 +2374,11 @@
   "pdf_kgs": "公斤",
   "container_pdf_export_title": "集装箱PDF导出",
   "container_pdf_preview": "PDF预览",
-  "container_pdf_options": "PDF选项"
+  "container_pdf_options": "PDF选项",
+  "home_manage_carriers_title": "承运人管理",
+  "home_manage_carriers_desc": "管理全球海运承运人",
+  "carrier_delete_confirm": "您确定要删除此承运人吗？",
+  "carrier_delete_success": "承运人删除成功",
+  "carrier_delete_error_linked": "无法删除：已关联到集装箱",
+  "carrier_delete_error_generic": "删除承运人时出错，请重试"
 }

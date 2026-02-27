@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 class Carrier {
   final int? id;
   final String? name;
@@ -16,18 +18,36 @@ class Carrier {
   });
 
   factory Carrier.fromJson(Map<String, dynamic> json) {
-    return Carrier(
-      id: json['id'] as int?,
-      name: json['name'] as String?,
-      contact: json['contact'] as String?,
-      services: (json['services'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      createdAt:
-          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      editedAt:
-          json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null,
-    );
+    try {
+      // Le backend peut renvoyer 'carrierService' ou 'services'
+      final rawServices = (json['carrierService'] as List<dynamic>?) ??
+          (json['services'] as List<dynamic>?) ??
+          [];
+
+      // Chaque élément peut être un objet {id, name, ...} ou une simple String
+      final List<String> parsedServices = rawServices.map((e) {
+        if (e is Map<String, dynamic>) {
+          return (e['name'] as String?) ?? e.toString();
+        }
+        return e.toString();
+      }).toList();
+
+      return Carrier(
+        id: json['id'] is num ? (json['id'] as num).toInt() : null,
+        name: json['name'] as String?,
+        contact: json['contact'] as String?,
+        services: parsedServices,
+        createdAt: json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'].toString())
+            : null,
+        editedAt: json['editedAt'] != null
+            ? DateTime.tryParse(json['editedAt'].toString())
+            : null,
+      );
+    } catch (e, stack) {
+      log('Carrier.fromJson error: $e\n$stack');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -35,7 +55,7 @@ class Carrier {
       'id': id,
       'name': name,
       'contact': contact,
-      'services': services,
+      'carrierService': services,
       'createdAt': createdAt?.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
     };
@@ -57,7 +77,7 @@ class CarrierDto {
     return {
       'name': name,
       'contact': contact,
-      'services': services,
+      'carrierService': services,
     };
   }
 }
