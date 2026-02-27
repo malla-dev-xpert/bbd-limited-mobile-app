@@ -129,14 +129,20 @@ class _CreateCarrierBottomSheetState extends State<CreateCarrierBottomSheet> {
 
       final success = await _carrierServices.createCarrier(dto, user.id);
 
-      if (success == "CONTACT_EXIST") {
+      if (success == "CONTACT_REQUIRED") {
+        showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context).translate('required_field'),
+        );
+        return;
+      } else if (success == "CONTACT_EXIST") {
         showErrorTopSnackBar(
           context,
           AppLocalizations.of(context)
               .translate('carrier_contact_already_used'),
         );
         return;
-      } else if (success == "CREATED") {
+      } else if (success == "SUCCESS") {
         Navigator.of(context).pop(true);
         showSuccessTopSnackBar(
           context,

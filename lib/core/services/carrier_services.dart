@@ -56,15 +56,15 @@ class CarrierServices {
         body: jsonEncode(dto.toJson()),
       );
 
-      if (response.statusCode == 201) {
-        return "CREATED";
-      } else if (response.statusCode == 409 &&
-          response.body == 'Contact déjà utilisé !') {
-        return "CONTACT_EXIST";
-      } else {
-        throw Exception("carrier_creation_error");
-      }
+      final body = response.body.trim();
+
+      if (body == 'CONTACT_REQUIRED') return "CONTACT_REQUIRED";
+      if (body == 'CONTACT_EXIST') return "CONTACT_EXIST";
+      if (response.statusCode == 201 || body == 'SUCCESS') return "SUCCESS";
+
+      throw Exception("carrier_creation_error");
     } catch (e) {
+      if (e.toString().contains('carrier_creation_error')) rethrow;
       throw Exception("network_error");
     }
   }

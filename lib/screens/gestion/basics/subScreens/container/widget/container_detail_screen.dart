@@ -883,8 +883,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(AppLocalizations.of(context)
-                                  .translate('container_no_items')),
+                              Text(
+                                AppLocalizations.of(context)
+                                    .translate('container_no_items'),
+                                style: const TextStyle(fontSize: 20),
+                              ),
                               if (container.status == Status.PENDING) ...[
                                 const SizedBox(height: 16),
                                 TextButton.icon(
@@ -907,8 +910,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                       });
                                     }
                                   },
-                                  label: Text(AppLocalizations.of(context)
-                                      .translate('container_add_items')),
+                                  label: Text(
+                                    AppLocalizations.of(context)
+                                        .translate('container_add_items'),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
                                   icon: const Icon(Icons.add),
                                 ),
                               ],
