@@ -81,14 +81,14 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
         setState(() => widget.harbor.containers = updatedHarbor.containers);
         showSuccessTopSnackBar(
           context,
-          AppLocalizations.of(context)!.translate('harbor_detail_add_success'),
+          AppLocalizations.of(context).translate('harbor_detail_add_success'),
         );
       }
     } catch (e) {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context)!.translate('harbor_detail_error_update'),
+          AppLocalizations.of(context).translate('harbor_detail_error_update'),
         );
       }
     } finally {
@@ -99,7 +99,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
   }
 
   Future<bool> _handleContainerDismiss(Containers container) async {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -109,8 +109,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
           content: Text(
             loc
                 .translate('harbor_detail_remove_confirm_message')
-                .replaceAll(
-                    '{reference}', container.reference ?? ''),
+                .replaceAll('{reference}', container.reference ?? ''),
           ),
           actions: [
             TextButton(
@@ -219,7 +218,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context)!
+          AppLocalizations.of(context)
               .translate('harbor_detail_error_load_container'),
         );
       }
@@ -254,7 +253,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
       if (mounted) {
         showErrorTopSnackBar(
           context,
-          AppLocalizations.of(context)!.translate('harbor_detail_error_update'),
+          AppLocalizations.of(context).translate('harbor_detail_error_update'),
         );
       }
     }
@@ -262,7 +261,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     final formattedDate = widget.harbor.createdAt != null
         ? DateFormat.yMMMMEEEEd().format(widget.harbor.createdAt!)
         : loc.translate('harbor_detail_date_unavailable');
@@ -311,92 +310,94 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.harbor.name ?? loc.translate('harbor_detail_no_name'),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.harbor.name ??
+                        loc.translate('harbor_detail_no_name'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: Colors.white.withOpacity(0.9),
                       ),
-                      maxLines: 1,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 16,
-                          color: Colors.white.withOpacity(0.9),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          widget.harbor.location ??
+                              loc.translate('harbor_detail_no_address'),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            widget.harbor.location ?? loc.translate('harbor_detail_no_address'),
-                            style: TextStyle(
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
                               color: Colors.white.withOpacity(0.9),
-                              fontSize: 12,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today,
-                                size: 16,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  formattedDate,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: 12,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                formattedDate,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.inventory,
-                                size: 16,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  "${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0} ${loc.translate('harbor_detail_containers_count')}",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: 12,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.inventory,
+                              size: 16,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                "${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0} ${loc.translate('harbor_detail_containers_count')}",
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
               centerTitle: false,
               titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
               background: Hero(
@@ -454,7 +455,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('harbor_detail_container_list'),
                         style: const TextStyle(
                           fontSize: 20,
@@ -477,7 +478,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      label: Text(AppLocalizations.of(context)!
+                      label: Text(AppLocalizations.of(context)
                           .translate('harbor_detail_embark_button')),
                       icon: const Icon(Icons.add, size: 18),
                     ),
@@ -490,7 +491,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       borderRadius: BorderRadius.circular(12)),
                   child: buildTextField(
                     controller: _searchController,
-                    label: AppLocalizations.of(context)!
+                    label: AppLocalizations.of(context)
                         .translate('harbor_detail_search_placeholder'),
                     icon: Icons.search,
                     onChanged: (value) {
@@ -517,7 +518,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('harbor_detail_no_results'),
                         style: TextStyle(
                           fontSize: 18,
@@ -527,7 +528,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        AppLocalizations.of(context)!
+                        AppLocalizations.of(context)
                             .translate('harbor_detail_no_results_subtitle'),
                         style: TextStyle(
                           fontSize: 16,
@@ -563,7 +564,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
   }
 
   Widget _buildEmptyContainersState() {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -592,5 +593,4 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
       ),
     );
   }
-
 }

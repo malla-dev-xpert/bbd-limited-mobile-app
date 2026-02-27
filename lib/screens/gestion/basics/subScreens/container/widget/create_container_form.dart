@@ -13,6 +13,7 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
+import 'package:bbd_limited/models/carrier.dart';
 
 class CreateContainerForm extends StatefulWidget {
   final Function(int)? onStepChanged;
@@ -50,6 +51,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
 
   final TextEditingController refController = TextEditingController();
   final TextEditingController sizeController = TextEditingController();
+  Carrier? selectedCarrier;
 
   // Fees controllers
   final TextEditingController locationFeeController = TextEditingController();
@@ -60,6 +62,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   final TextEditingController telxFeeController = TextEditingController();
   final TextEditingController otherFeesController = TextEditingController();
   final TextEditingController marginController = TextEditingController();
+  final TextEditingController transportFeeController = TextEditingController();
 
   // Rate controllers
   final TextEditingController locationFeeRateController =
@@ -75,6 +78,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   final TextEditingController telxFeeRateController = TextEditingController();
   final TextEditingController otherFeesRateController = TextEditingController();
   final TextEditingController marginRateController = TextEditingController();
+  final TextEditingController transportFeeRateController =
+      TextEditingController();
 
   // Currency selections
   Devise? locationFeeCurrency;
@@ -85,6 +90,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   Devise? telxFeeCurrency;
   Devise? otherFeesCurrency;
   Devise? marginCurrency;
+  Devise? transportFeeCurrency;
 
   // Devises list
   List<Devise> devises = [];
@@ -153,30 +159,9 @@ class CreateContainerFormState extends State<CreateContainerForm> {
     return ReusableItemCard(
       item: item,
       onTap: onTap,
+      isSelected: isSelected,
       showPurchaseInfo: true,
-      extraDetails: Row(
-        children: [
-          Checkbox(
-            value: isSelected,
-            onChanged: (_) => onTap(),
-            activeColor: const Color(0xFF1A1E49),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            isSelected
-                ? loc.translate('container_item_selected')
-                : loc.translate('container_item_select'),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? const Color(0xFF1A1E49) : Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
+      extraDetails: null,
     );
   }
 
@@ -206,6 +191,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
           savedDepartureDate = _containerInfoKey.currentState?.departureDate;
           savedArrivalDate = _containerInfoKey.currentState?.arrivalDate;
           savedLoadingDate = _containerInfoKey.currentState?.loadingDate;
+          selectedCarrier = _containerInfoKey.currentState?.selectedCarrier;
           currentStep = 1;
           widget.onStepChanged?.call(currentStep);
         });
@@ -369,6 +355,18 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         return;
       }
 
+      final transFee = parseFee(transportFeeController.text);
+      final transRate =
+          effectiveRate(transportFeeCurrency, transportFeeRateController.text);
+      if (!validateFeeRate(transFee, transportFeeCurrency, transRate)) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)!
+                .translate('rate_required_if_not_cny'));
+        setState(() => isLoading = false);
+        return;
+      }
+
       final selectedIds =
           _selectedItemIds.isEmpty ? null : _selectedItemIds.toList();
 
@@ -440,6 +438,12 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         access.canShowContainerFee(user, 'margin')
             ? effectiveRate(marginCurrency, marginRateController.text)
             : null,
+        selectedCarrier?.id,
+        selectedCarrier?.name,
+        selectedCarrier?.contact,
+        transFee,
+        transportFeeCurrency?.code,
+        transRate,
       );
       if (response == "CREATED") {
         Navigator.pop(context, true);
@@ -453,7 +457,9 @@ class CreateContainerFormState extends State<CreateContainerForm> {
       showErrorTopSnackBar(context,
           AppLocalizations.of(context)!.translate('container_form_error'));
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -487,6 +493,12 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                         onSupplierChanged: (value) {
                           setState(() {
                             selectedSupplier = value;
+                          });
+                        },
+                        initialCarrierId: selectedCarrier?.id,
+                        onCarrierChanged: (value) {
+                          setState(() {
+                            selectedCarrier = value;
                           });
                         },
                       ),
@@ -543,6 +555,19 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                               },
                               onLocalChargeCurrencyChanged: (_) {},
                               onLoadingFeeCurrencyChanged: (_) {},
+                              onTransportFeeCurrencyChanged: (currency) {
+                                setState(() {
+                                  transportFeeCurrency = currency;
+                                  if (currency?.code == 'CNY') {
+                                    transportFeeRateController.text = '1';
+                                  } else if (currency?.rate != null) {
+                                    transportFeeRateController.text =
+                                        currency!.rate.toString();
+                                  } else {
+                                    transportFeeRateController.clear();
+                                  }
+                                });
+                              },
                               getSupplier: () => _containerInfoKey
                                   .currentState?.selectedSupplier,
                             ),
@@ -589,6 +614,23 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                                 });
                               },
                               onMarginCurrencyChanged: (_) {},
+                              transportFeeController: transportFeeController,
+                              transportFeeRateController:
+                                  transportFeeRateController,
+                              transportFeeCurrency: transportFeeCurrency,
+                              onTransportFeeCurrencyChanged: (currency) {
+                                setState(() {
+                                  transportFeeCurrency = currency;
+                                  if (currency?.code == 'CNY') {
+                                    transportFeeRateController.text = '1';
+                                  } else if (currency?.rate != null) {
+                                    transportFeeRateController.text =
+                                        currency!.rate.toString();
+                                  } else {
+                                    transportFeeRateController.clear();
+                                  }
+                                });
+                              },
                             ),
                           ],
                         ),
@@ -668,6 +710,23 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                             },
                             getSupplier: () => _containerInfoKey
                                 .currentState?.selectedSupplier,
+                            transportFeeController: transportFeeController,
+                            transportFeeRateController:
+                                transportFeeRateController,
+                            transportFeeCurrency: transportFeeCurrency,
+                            onTransportFeeCurrencyChanged: (currency) {
+                              setState(() {
+                                transportFeeCurrency = currency;
+                                if (currency?.code == 'CNY') {
+                                  transportFeeRateController.text = '1';
+                                } else if (currency?.rate != null) {
+                                  transportFeeRateController.text =
+                                      currency!.rate.toString();
+                                } else {
+                                  transportFeeRateController.clear();
+                                }
+                              });
+                            },
                           );
                         },
                       ),
@@ -776,6 +835,22 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                                   currency!.rate.toString();
                             } else {
                               marginRateController.clear();
+                            }
+                          });
+                        },
+                        transportFeeController: transportFeeController,
+                        transportFeeRateController: transportFeeRateController,
+                        transportFeeCurrency: transportFeeCurrency,
+                        onTransportFeeCurrencyChanged: (currency) {
+                          setState(() {
+                            transportFeeCurrency = currency;
+                            if (currency?.code == 'CNY') {
+                              transportFeeRateController.text = '1';
+                            } else if (currency?.rate != null) {
+                              transportFeeRateController.text =
+                                  currency!.rate.toString();
+                            } else {
+                              transportFeeRateController.clear();
                             }
                           });
                         },
@@ -892,6 +967,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
     otherFeesRateController.dispose();
     marginController.dispose();
     marginRateController.dispose();
+    transportFeeController.dispose();
+    transportFeeRateController.dispose();
     super.dispose();
   }
 }
@@ -911,6 +988,10 @@ class MainFeesForm extends StatefulWidget {
   final Function(Devise?) onLocationFeeCurrencyChanged;
   final Function(Devise?) onLocalChargeCurrencyChanged;
   final Function(Devise?) onLoadingFeeCurrencyChanged;
+  final TextEditingController? transportFeeController;
+  final TextEditingController? transportFeeRateController;
+  final Devise? transportFeeCurrency;
+  final Function(Devise?)? onTransportFeeCurrencyChanged;
   final Partner? Function() getSupplier;
   final bool showLocationFee;
   final bool showLocalCharge;
@@ -936,6 +1017,10 @@ class MainFeesForm extends StatefulWidget {
     this.showLocationFee = true,
     this.showLocalCharge = true,
     this.showLoadingFee = true,
+    this.transportFeeController,
+    this.transportFeeRateController,
+    this.transportFeeCurrency,
+    this.onTransportFeeCurrencyChanged,
   });
 
   @override
@@ -1108,6 +1193,51 @@ class MainFeesFormState extends State<MainFeesForm> {
         ),
       ]);
     }
+    if (widget.transportFeeController != null) {
+      children.add(const SizedBox(height: 16));
+      children.addAll([
+        buildTextField(
+          controller: widget.transportFeeController!,
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_transport_fee') +
+              " (optionnel)",
+          icon: Icons.directions_boat,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.transportFeeCurrency,
+                onChanged: widget.onTransportFeeCurrencyChanged ?? (_) {},
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.transportFeeRateController ??
+                    TextEditingController(),
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+                readOnly: widget.transportFeeCurrency?.code == 'CNY',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ]);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
@@ -1138,6 +1268,10 @@ class ExtraFeesForm extends StatefulWidget {
   final Function(Devise?) onTelxFeeCurrencyChanged;
   final Function(Devise?) onOtherFeesCurrencyChanged;
   final Function(Devise?) onMarginCurrencyChanged;
+  final TextEditingController? transportFeeController;
+  final TextEditingController? transportFeeRateController;
+  final Devise? transportFeeCurrency;
+  final Function(Devise?)? onTransportFeeCurrencyChanged;
   final bool showOverweightFee;
   final bool showCheckingFee;
   final bool showTelxFee;
@@ -1173,6 +1307,10 @@ class ExtraFeesForm extends StatefulWidget {
     this.showTelxFee = true,
     this.showOtherFees = true,
     this.showMargin = true,
+    this.transportFeeController,
+    this.transportFeeRateController,
+    this.transportFeeCurrency,
+    this.onTransportFeeCurrencyChanged,
   });
 
   @override
@@ -1444,6 +1582,51 @@ class ExtraFeesFormState extends State<ExtraFeesForm> {
             ),
           ],
         ),
+      ]);
+    }
+    if (widget.transportFeeController != null) {
+      children.add(const SizedBox(height: 16));
+      children.addAll([
+        buildTextField(
+          controller: widget.transportFeeController!,
+          label: AppLocalizations.of(context)!
+                  .translate('container_form_transport_fee') +
+              " (optionnel)",
+          icon: Icons.directions_boat,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: DropDownCustom<Devise>(
+                items: widget.devises,
+                selectedItem: widget.transportFeeCurrency,
+                onChanged: widget.onTransportFeeCurrencyChanged ?? (_) {},
+                itemToString: (currency) => currency.code,
+                hintText:
+                    AppLocalizations.of(context)!.translate('choose_currency'),
+                prefixIcon: Icons.currency_exchange,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: widget.transportFeeRateController ??
+                    TextEditingController(),
+                label:
+                    AppLocalizations.of(context)!.translate('exchange_rate') +
+                        " (CNY)",
+                icon: Icons.trending_up,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: null,
+                readOnly: widget.transportFeeCurrency?.code == 'CNY',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
       ]);
     }
     return Column(

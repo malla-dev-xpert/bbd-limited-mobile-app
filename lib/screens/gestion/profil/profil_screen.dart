@@ -83,9 +83,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
               if (success) {
                 // Mettre à jour l'utilisateur local
-                setState(() {
-                  _currentUser = updatedUser;
-                });
+                if (mounted) {
+                  setState(() {
+                    _currentUser = updatedUser;
+                  });
+                }
 
                 // Afficher message de succès
                 showSuccessTopSnackBar(
@@ -110,9 +112,11 @@ class _ProfilePageState extends State<ProfilePage> {
               );
               return false;
             } finally {
-              setState(() {
-                isLoading = false;
-              });
+              if (mounted) {
+                setState(() {
+                  isLoading = false;
+                });
+              }
             }
           },
         );
@@ -393,9 +397,11 @@ class _ProfilePageState extends State<ProfilePage> {
               } catch (e) {
                 log('Erreur lors de la déconnexion: $e');
               } finally {
-                setState(() {
-                  isLoading = false;
-                });
+                if (mounted) {
+                  setState(() {
+                    isLoading = false;
+                  });
+                }
               }
             },
             child: Text(

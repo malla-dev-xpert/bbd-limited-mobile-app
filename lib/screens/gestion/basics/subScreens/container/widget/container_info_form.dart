@@ -1,8 +1,11 @@
 import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/core/services/carrier_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
+import 'package:bbd_limited/models/carrier.dart';
 import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/models/partner.dart';
+import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_carrier_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -19,10 +22,13 @@ class ContainerInfoForm extends StatefulWidget {
   final int? initialArrivalHarborId;
   final DateTime? initialDepartureDate;
   final DateTime? initialArrivalDate;
+
   /// Date de chargement (optionnelle).
   final DateTime? initialLoadingDate;
+  final int? initialCarrierId;
   final Function(bool)? onAvailabilityChanged;
   final Function(Partner?)? onSupplierChanged;
+  final Function(Carrier?)? onCarrierChanged;
 
   const ContainerInfoForm({
     Key? key,
@@ -35,8 +41,10 @@ class ContainerInfoForm extends StatefulWidget {
     this.initialDepartureDate,
     this.initialArrivalDate,
     this.initialLoadingDate,
+    this.initialCarrierId,
     this.onAvailabilityChanged,
     this.onSupplierChanged,
+    this.onCarrierChanged,
   }) : super(key: key);
 
   @override
@@ -45,6 +53,8 @@ class ContainerInfoForm extends StatefulWidget {
 
 class ContainerInfoFormState extends State<ContainerInfoForm> {
   late bool _isAvailable;
+  List<Carrier> carriers = [];
+  Carrier? selectedCarrier;
   List<Partner> suppliers = [];
   Partner? selectedSupplier;
   List<Harbor> harbors = [];
@@ -61,6 +71,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
   DateTime? get loadingDate => _loadingDate;
   final PartnerServices _partnerServices = PartnerServices();
   final HarborServices _harborServices = HarborServices();
+  final CarrierServices _carrierServices = CarrierServices();
   String? _selectedSize;
 
   @override
@@ -72,6 +83,8 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     _loadingDate = widget.initialLoadingDate;
     _loadSuppliers();
     _loadHarbors();
+    _loadCarriers();
+    selectedSupplier = widget.selectedSupplier;
     if (widget.size.text.isNotEmpty) {
       _selectedSize = widget.size.text;
     }
@@ -115,6 +128,33 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
     if (added == true) {
       await _loadHarbors();
     }
+  }
+
+  Future<void> _loadCarriers() async {
+    try {
+      final data = await _carrierServices.getAllCarriers(page: 0);
+      setState(() {
+        carriers = data;
+        if (widget.initialCarrierId != null) {
+          final found =
+              data.where((c) => c.id == widget.initialCarrierId).toList();
+          selectedCarrier = found.isEmpty ? null : found.first;
+        }
+      });
+    } catch (_) {
+      setState(() => carriers = []);
+    }
+  }
+
+  void _showCreateCarrierBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreateCarrierBottomSheet(),
+    ).then((_) {
+      _loadCarriers();
+    });
   }
 
   void _showCreateSupplierBottomSheet() {
@@ -175,8 +215,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                     ],
                   ),
                 ),
-                Icon(Icons.calendar_today,
-                    size: 20, color: Colors.grey[600]),
+                Icon(Icons.calendar_today, size: 20, color: Colors.grey[600]),
               ],
             ),
           ),
@@ -346,8 +385,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
           ),
           const SizedBox(height: 10),
           _buildDateTile(
-            label: AppLocalizations.of(context)!
-                .translate('departure_date'),
+            label: AppLocalizations.of(context)!.translate('departure_date'),
             date: _departureDate,
             onTap: () async {
               final picked = await showDatePicker(
@@ -363,7 +401,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
             icon: Icons.event,
           ),
           const SizedBox(height: 10),
-            _buildDateTile(
+          _buildDateTile(
             label: AppLocalizations.of(context)!
                 .translate('estimated_arrival_date'),
             date: _arrivalDate,
@@ -382,8 +420,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
           ),
           const SizedBox(height: 10),
           _buildDateTile(
-            label: AppLocalizations.of(context)!
-                .translate('loading_date'),
+            label: AppLocalizations.of(context)!.translate('loading_date'),
             date: _loadingDate,
             onTap: () async {
               final picked = await showDatePicker(
@@ -459,6 +496,37 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                flex: 3,
+                child: DropDownCustom<Carrier>(
+                  items: carriers,
+                  selectedItem: selectedCarrier,
+                  onChanged: (c) {
+                    setState(() {
+                      selectedCarrier = c;
+                    });
+                    widget.onCarrierChanged?.call(c);
+                  },
+                  itemToString: (c) => '${c.name ?? ''} | ${c.contact ?? ''}',
+                  hintText:
+                      AppLocalizations.of(context)!.translate('choose_carrier'),
+                  prefixIcon: Icons.local_shipping,
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: _showCreateCarrierBottomSheet,
+                  icon: const Icon(Icons.add),
+                ),
+              ),
+            ],
           ),
         ],
       ),

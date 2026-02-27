@@ -69,6 +69,17 @@ class Containers {
   final String? arrivalHarborLocation;
   final DateTime? loadingDate;
 
+  // Carrier fields
+  final int? carrierId;
+  final String? carrierName;
+  final String? carrierContact;
+
+  // Transport fee fields
+  final double? transportFee;
+  final String? transportFeeCurrencyCode;
+  final double? transportFeeRateToCNY;
+  final double? transportFeeCNY;
+
   Containers copyWith({
     int? id,
     String? containerNumber,
@@ -130,6 +141,13 @@ class Containers {
     String? arrivalHarborName,
     String? arrivalHarborLocation,
     DateTime? loadingDate,
+    int? carrierId,
+    String? carrierName,
+    String? carrierContact,
+    double? transportFee,
+    String? transportFeeCurrencyCode,
+    double? transportFeeRateToCNY,
+    double? transportFeeCNY,
   }) {
     return Containers(
       id: id ?? this.id,
@@ -201,6 +219,15 @@ class Containers {
       arrivalHarborLocation:
           arrivalHarborLocation ?? this.arrivalHarborLocation,
       loadingDate: loadingDate ?? this.loadingDate,
+      carrierId: carrierId ?? this.carrierId,
+      carrierName: carrierName ?? this.carrierName,
+      carrierContact: carrierContact ?? this.carrierContact,
+      transportFee: transportFee ?? this.transportFee,
+      transportFeeCurrencyCode:
+          transportFeeCurrencyCode ?? this.transportFeeCurrencyCode,
+      transportFeeRateToCNY:
+          transportFeeRateToCNY ?? this.transportFeeRateToCNY,
+      transportFeeCNY: transportFeeCNY ?? this.transportFeeCNY,
     );
   }
 
@@ -233,6 +260,10 @@ class Containers {
       'otherFees': otherFees,
       'margin': margin,
       'amount': amount,
+      'carrierId': carrierId,
+      'carrierName': carrierName,
+      'carrierContact': carrierContact,
+      'transportFee': transportFee,
       // 'harborId': harborId,
       // 'harborName': harborName,
     };
@@ -268,6 +299,10 @@ class Containers {
     if (marginCurrencyCode != null)
       json['marginCurrencyCode'] = marginCurrencyCode;
     if (marginRateToCNY != null) json['marginRateToCNY'] = marginRateToCNY;
+    if (transportFeeCurrencyCode != null)
+      json['transportFeeCurrencyCode'] = transportFeeCurrencyCode;
+    if (transportFeeRateToCNY != null)
+      json['transportFeeRateToCNY'] = transportFeeRateToCNY;
     if (departureDate != null)
       json['departureDate'] = departureDate!.toIso8601String();
     if (arrivalDate != null)
@@ -350,6 +385,13 @@ class Containers {
     this.arrivalHarborName,
     this.arrivalHarborLocation,
     this.loadingDate,
+    this.carrierId,
+    this.carrierName,
+    this.carrierContact,
+    this.transportFee,
+    this.transportFeeCurrencyCode,
+    this.transportFeeRateToCNY,
+    this.transportFeeCNY,
   });
 
   factory Containers.fromJson(Map<String, dynamic> json) {
@@ -451,6 +493,14 @@ class Containers {
       loadingDate: json['loadingDate'] != null
           ? DateTime.parse(json['loadingDate'])
           : null,
+      carrierId: json['carrierId'] as int?,
+      carrierName: json['carrierName'] as String?,
+      carrierContact: json['carrierContact'] as String?,
+      transportFee: (json['transportFee'] as num?)?.toDouble(),
+      transportFeeCurrencyCode: json['transportFeeCurrencyCode'] as String?,
+      transportFeeRateToCNY:
+          (json['transportFeeRateToCNY'] as num?)?.toDouble(),
+      transportFeeCNY: (json['transportFeeCNY'] as num?)?.toDouble(),
     );
   }
 }

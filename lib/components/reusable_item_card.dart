@@ -19,6 +19,7 @@ class ReusableItemCard extends StatelessWidget {
   final bool showAdminInfo;
   final bool showPaymentStatus;
   final bool showReceptionInfo;
+  final bool isSelected;
   final Widget? extraDetails;
 
   const ReusableItemCard({
@@ -32,6 +33,7 @@ class ReusableItemCard extends StatelessWidget {
     this.showAdminInfo = false,
     this.showPaymentStatus = false,
     this.showReceptionInfo = false,
+    this.isSelected = false,
     this.onConfirm,
     this.onTap,
     this.extraDetails,
@@ -56,8 +58,13 @@ class ReusableItemCard extends StatelessWidget {
     Widget cardContent = Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isSelected
+            ? const Color(0xFF1A1E49).withOpacity(0.05)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isSelected
+            ? Border.all(color: const Color(0xFF1A1E49), width: 2)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),

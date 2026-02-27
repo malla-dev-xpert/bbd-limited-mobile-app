@@ -41,10 +41,12 @@ class MainScreenState extends State<MainScreen> {
       return;
     }
 
-    setState(() {
-      _user = user;
-      _buildNavigation(user);
-    });
+    if (mounted) {
+      setState(() {
+        _user = user;
+        _buildNavigation(user);
+      });
+    }
   }
 
   void _buildNavigation(User user) {
@@ -72,8 +74,8 @@ class MainScreenState extends State<MainScreen> {
 
     if (_accessService.canShowAccountsTab(user)) {
       _screens.add(AccountHomeScreen());
-      _navItems
-          .add(const Icon(Icons.account_balance, size: 30, color: Colors.white));
+      _navItems.add(
+          const Icon(Icons.account_balance, size: 30, color: Colors.white));
     }
 
     _screens.add(ProfilePage(user: user));

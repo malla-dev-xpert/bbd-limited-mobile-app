@@ -88,6 +88,12 @@ class ContainerServices {
     double? margin,
     String? marginCurrencyCode,
     double? marginRateToCNY,
+    int? carrierId,
+    String? carrierName,
+    String? carrierContact,
+    double? transportFee,
+    String? transportFeeCurrencyCode,
+    double? transportFeeRateToCNY,
   ) async {
     try {
       String url = '$baseUrl/containers/create?userId=$userId';
@@ -185,16 +191,24 @@ class ContainerServices {
           body["marginRateToCNY"] = marginRateToCNY;
         }
       }
+      if (carrierId != null) body["carrierId"] = carrierId;
+      if (carrierName != null) body["carrierName"] = carrierName;
+      if (carrierContact != null) body["carrierContact"] = carrierContact;
+      if (transportFee != null) {
+        body["transportFee"] = transportFee;
+        if (transportFeeCurrencyCode != null) {
+          body["transportFeeCurrencyCode"] = transportFeeCurrencyCode;
+        }
+        if (transportFeeRateToCNY != null) {
+          body["transportFeeRateToCNY"] = transportFeeRateToCNY;
+        }
+      }
 
       final response = await http.post(
         Uri.parse(url),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
-
-      print("-------------------------------------------");
-      print("Response=================" + response.body);
-      print("-------------------------------------------");
 
       if (response.statusCode == 201) {
         return "CREATED";

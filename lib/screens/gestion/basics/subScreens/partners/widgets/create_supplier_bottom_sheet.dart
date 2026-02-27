@@ -270,7 +270,9 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
           AppLocalizations.of(context)
               .translate('supplier_registration_error'));
     } finally {
-      setState(() => isFormLoading = false);
+      if (mounted) {
+        setState(() => isFormLoading = false);
+      }
     }
   }
 }

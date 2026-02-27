@@ -12,6 +12,7 @@ import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart'
     show MainFeesForm, ExtraFeesForm;
+import 'package:bbd_limited/models/carrier.dart';
 import 'package:bbd_limited/models/partner.dart';
 
 class EditContainerModal extends StatefulWidget {
@@ -65,6 +66,10 @@ class EditContainerModalState extends State<EditContainerModal> {
   late final TextEditingController otherFeesRateController;
   late final TextEditingController marginController;
   late final TextEditingController marginRateController;
+  late final TextEditingController transportFeeController;
+  late final TextEditingController transportFeeRateController;
+
+  Carrier? selectedCarrier;
 
   bool isLoading = false;
   bool isLoadingDevises = false;
@@ -91,6 +96,7 @@ class EditContainerModalState extends State<EditContainerModal> {
   Devise? telxFeeCurrency;
   Devise? otherFeesCurrency;
   Devise? marginCurrency;
+  Devise? transportFeeCurrency;
 
   // Devises list
   List<Devise> devises = [];
@@ -143,6 +149,19 @@ class EditContainerModalState extends State<EditContainerModal> {
         TextEditingController(text: widget.container.margin?.toString() ?? '');
     marginRateController = TextEditingController(
         text: widget.container.marginRateToCNY?.toString() ?? '');
+    transportFeeController = TextEditingController(
+        text: widget.container.transportFee?.toString() ?? '');
+    transportFeeRateController = TextEditingController(
+        text: widget.container.transportFeeRateToCNY?.toString() ?? '');
+
+    // Initialize carrier
+    if (widget.container.carrierId != null) {
+      selectedCarrier = Carrier(
+        id: widget.container.carrierId!,
+        name: widget.container.carrierName ?? '',
+        contact: widget.container.carrierContact ?? '',
+      );
+    }
 
     // Initialize form values (ports et dates pour enregistrement / modification)
     isAvailable = widget.container.isAvailable ?? false;
@@ -249,9 +268,15 @@ class EditContainerModalState extends State<EditContainerModal> {
             marginCurrency = devises.firstWhere(
               (d) => d.code == widget.container.marginCurrencyCode,
             );
-          } catch (e) {
-            // Currency not found, leave as null
-          }
+          } catch (e) {}
+        }
+        if (widget.container.transportFeeCurrencyCode != null &&
+            devises.isNotEmpty) {
+          try {
+            transportFeeCurrency = devises.firstWhere(
+              (d) => d.code == widget.container.transportFeeCurrencyCode,
+            );
+          } catch (e) {}
         }
       });
     } catch (e) {
@@ -271,11 +296,9 @@ class EditContainerModalState extends State<EditContainerModal> {
           savedDepartureDate = info?.departureDate;
           savedArrivalDate = info?.arrivalDate;
           savedLoadingDate = info?.loadingDate;
-          savedDepartureHarborName = info?.selectedDepartureHarbor?.name;
-          savedDepartureHarborLocation =
-              info?.selectedDepartureHarbor?.location;
           savedArrivalHarborName = info?.selectedArrivalHarbor?.name;
           savedArrivalHarborLocation = info?.selectedArrivalHarbor?.location;
+          selectedCarrier = info?.selectedCarrier;
           currentStep = 1;
           widget.onStepChanged?.call(currentStep);
         });
@@ -449,30 +472,85 @@ class EditContainerModalState extends State<EditContainerModal> {
         arrivalHarborId: savedArrivalHarborId,
         arrivalHarborName: savedArrivalHarborName,
         arrivalHarborLocation: savedArrivalHarborLocation,
-        locationFee: access.canShowContainerFee(user, 'locationFee') ? locFee : widget.container.locationFee,
-        locationFeeCurrencyCode: access.canShowContainerFee(user, 'locationFee') ? locationFeeCurrency?.code : widget.container.locationFeeCurrencyCode,
-        locationFeeRateToCNY: access.canShowContainerFee(user, 'locationFee') ? effectiveRate(locationFeeCurrency, locationFeeRateController.text) : widget.container.locationFeeRateToCNY,
-        localCharge: access.canShowContainerFee(user, 'localCharge') ? locCharge : widget.container.localCharge,
-        localChargeCurrencyCode: access.canShowContainerFee(user, 'localCharge') ? localChargeCurrency?.code : widget.container.localChargeCurrencyCode,
-        localChargeRateToCNY: access.canShowContainerFee(user, 'localCharge') ? effectiveRate(localChargeCurrency, localChargeRateController.text) : widget.container.localChargeRateToCNY,
-        loadingFee: access.canShowContainerFee(user, 'loadingFee') ? loadFee : widget.container.loadingFee,
-        loadingFeeCurrencyCode: access.canShowContainerFee(user, 'loadingFee') ? loadingFeeCurrency?.code : widget.container.loadingFeeCurrencyCode,
-        loadingFeeRateToCNY: access.canShowContainerFee(user, 'loadingFee') ? effectiveRate(loadingFeeCurrency, loadingFeeRateController.text) : widget.container.loadingFeeRateToCNY,
-        overweightFee: access.canShowContainerFee(user, 'overweightFee') ? overFee : widget.container.overweightFee,
-        overweightFeeCurrencyCode: access.canShowContainerFee(user, 'overweightFee') ? overweightFeeCurrency?.code : widget.container.overweightFeeCurrencyCode,
-        overweightFeeRateToCNY: access.canShowContainerFee(user, 'overweightFee') ? effectiveRate(overweightFeeCurrency, overweightFeeRateController.text) : widget.container.overweightFeeRateToCNY,
-        checkingFee: access.canShowContainerFee(user, 'checkingFee') ? checkFee : widget.container.checkingFee,
-        checkingFeeCurrencyCode: access.canShowContainerFee(user, 'checkingFee') ? checkingFeeCurrency?.code : widget.container.checkingFeeCurrencyCode,
-        checkingFeeRateToCNY: access.canShowContainerFee(user, 'checkingFee') ? effectiveRate(checkingFeeCurrency, checkingFeeRateController.text) : widget.container.checkingFeeRateToCNY,
-        telxFee: access.canShowContainerFee(user, 'telxFee') ? telFee : widget.container.telxFee,
-        telxFeeCurrencyCode: access.canShowContainerFee(user, 'telxFee') ? telxFeeCurrency?.code : widget.container.telxFeeCurrencyCode,
-        telxFeeRateToCNY: access.canShowContainerFee(user, 'telxFee') ? effectiveRate(telxFeeCurrency, telxFeeRateController.text) : widget.container.telxFeeRateToCNY,
-        otherFees: access.canShowContainerFee(user, 'otherFees') ? otherFee : widget.container.otherFees,
-        otherFeesCurrencyCode: access.canShowContainerFee(user, 'otherFees') ? otherFeesCurrency?.code : widget.container.otherFeesCurrencyCode,
-        otherFeesRateToCNY: access.canShowContainerFee(user, 'otherFees') ? effectiveRate(otherFeesCurrency, otherFeesRateController.text) : widget.container.otherFeesRateToCNY,
-        margin: access.canShowContainerFee(user, 'margin') ? margFee : widget.container.margin,
-        marginCurrencyCode: access.canShowContainerFee(user, 'margin') ? marginCurrency?.code : widget.container.marginCurrencyCode,
-        marginRateToCNY: access.canShowContainerFee(user, 'margin') ? effectiveRate(marginCurrency, marginRateController.text) : widget.container.marginRateToCNY,
+        locationFee: access.canShowContainerFee(user, 'locationFee')
+            ? locFee
+            : widget.container.locationFee,
+        locationFeeCurrencyCode: access.canShowContainerFee(user, 'locationFee')
+            ? locationFeeCurrency?.code
+            : widget.container.locationFeeCurrencyCode,
+        locationFeeRateToCNY: access.canShowContainerFee(user, 'locationFee')
+            ? effectiveRate(locationFeeCurrency, locationFeeRateController.text)
+            : widget.container.locationFeeRateToCNY,
+        localCharge: access.canShowContainerFee(user, 'localCharge')
+            ? locCharge
+            : widget.container.localCharge,
+        localChargeCurrencyCode: access.canShowContainerFee(user, 'localCharge')
+            ? localChargeCurrency?.code
+            : widget.container.localChargeCurrencyCode,
+        localChargeRateToCNY: access.canShowContainerFee(user, 'localCharge')
+            ? effectiveRate(localChargeCurrency, localChargeRateController.text)
+            : widget.container.localChargeRateToCNY,
+        loadingFee: access.canShowContainerFee(user, 'loadingFee')
+            ? loadFee
+            : widget.container.loadingFee,
+        loadingFeeCurrencyCode: access.canShowContainerFee(user, 'loadingFee')
+            ? loadingFeeCurrency?.code
+            : widget.container.loadingFeeCurrencyCode,
+        loadingFeeRateToCNY: access.canShowContainerFee(user, 'loadingFee')
+            ? effectiveRate(loadingFeeCurrency, loadingFeeRateController.text)
+            : widget.container.loadingFeeRateToCNY,
+        overweightFee: access.canShowContainerFee(user, 'overweightFee')
+            ? overFee
+            : widget.container.overweightFee,
+        overweightFeeCurrencyCode:
+            access.canShowContainerFee(user, 'overweightFee')
+                ? overweightFeeCurrency?.code
+                : widget.container.overweightFeeCurrencyCode,
+        overweightFeeRateToCNY:
+            access.canShowContainerFee(user, 'overweightFee')
+                ? effectiveRate(
+                    overweightFeeCurrency, overweightFeeRateController.text)
+                : widget.container.overweightFeeRateToCNY,
+        checkingFee: access.canShowContainerFee(user, 'checkingFee')
+            ? checkFee
+            : widget.container.checkingFee,
+        checkingFeeCurrencyCode: access.canShowContainerFee(user, 'checkingFee')
+            ? checkingFeeCurrency?.code
+            : widget.container.checkingFeeCurrencyCode,
+        checkingFeeRateToCNY: access.canShowContainerFee(user, 'checkingFee')
+            ? effectiveRate(checkingFeeCurrency, checkingFeeRateController.text)
+            : widget.container.checkingFeeRateToCNY,
+        telxFee: access.canShowContainerFee(user, 'telxFee')
+            ? telFee
+            : widget.container.telxFee,
+        telxFeeCurrencyCode: access.canShowContainerFee(user, 'telxFee')
+            ? telxFeeCurrency?.code
+            : widget.container.telxFeeCurrencyCode,
+        telxFeeRateToCNY: access.canShowContainerFee(user, 'telxFee')
+            ? effectiveRate(telxFeeCurrency, telxFeeRateController.text)
+            : widget.container.telxFeeRateToCNY,
+        otherFees: access.canShowContainerFee(user, 'otherFees')
+            ? otherFee
+            : widget.container.otherFees,
+        otherFeesCurrencyCode: access.canShowContainerFee(user, 'otherFees')
+            ? otherFeesCurrency?.code
+            : widget.container.otherFeesCurrencyCode,
+        otherFeesRateToCNY: access.canShowContainerFee(user, 'otherFees')
+            ? effectiveRate(otherFeesCurrency, otherFeesRateController.text)
+            : widget.container.otherFeesRateToCNY,
+        marginCurrencyCode: access.canShowContainerFee(user, 'margin')
+            ? marginCurrency?.code
+            : widget.container.marginCurrencyCode,
+        marginRateToCNY: access.canShowContainerFee(user, 'margin')
+            ? effectiveRate(marginCurrency, marginRateController.text)
+            : widget.container.marginRateToCNY,
+        carrierId: selectedCarrier?.id,
+        carrierName: selectedCarrier?.name,
+        carrierContact: selectedCarrier?.contact,
+        transportFee: parseFee(transportFeeController.text),
+        transportFeeCurrencyCode: transportFeeCurrency?.code,
+        transportFeeRateToCNY: effectiveRate(
+            transportFeeCurrency, transportFeeRateController.text),
       );
       final itemIdsToAdd =
           _selectedItemIdsToAdd.isEmpty ? null : _selectedItemIdsToAdd.toList();
@@ -548,6 +626,12 @@ class EditContainerModalState extends State<EditContainerModal> {
                           selectedSupplier = value;
                         });
                       },
+                      initialCarrierId: selectedCarrier?.id,
+                      onCarrierChanged: (value) {
+                        setState(() {
+                          selectedCarrier = value;
+                        });
+                      },
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -571,9 +655,11 @@ class EditContainerModalState extends State<EditContainerModal> {
                             showLocalCharge: false,
                             showLoadingFee: false,
                             locationFeeController: locationFeeController,
-                            locationFeeRateController: locationFeeRateController,
+                            locationFeeRateController:
+                                locationFeeRateController,
                             localChargeController: localChargeController,
-                            localChargeRateController: localChargeRateController,
+                            localChargeRateController:
+                                localChargeRateController,
                             loadingFeeController: loadingFeeController,
                             loadingFeeRateController: loadingFeeRateController,
                             devises: devises,
@@ -596,8 +682,8 @@ class EditContainerModalState extends State<EditContainerModal> {
                             },
                             onLocalChargeCurrencyChanged: (_) {},
                             onLoadingFeeCurrencyChanged: (_) {},
-                            getSupplier: () =>
-                                _containerInfoKey.currentState?.selectedSupplier,
+                            getSupplier: () => _containerInfoKey
+                                .currentState?.selectedSupplier,
                           ),
                           const SizedBox(height: 16),
                           ExtraFeesForm(
@@ -607,9 +693,11 @@ class EditContainerModalState extends State<EditContainerModal> {
                             showOtherFees: true,
                             showMargin: false,
                             overweightFeeController: overweightFeeController,
-                            overweightFeeRateController: overweightFeeRateController,
+                            overweightFeeRateController:
+                                overweightFeeRateController,
                             checkingFeeController: checkingFeeController,
-                            checkingFeeRateController: checkingFeeRateController,
+                            checkingFeeRateController:
+                                checkingFeeRateController,
                             telxFeeController: telxFeeController,
                             telxFeeRateController: telxFeeRateController,
                             otherFeesController: otherFeesController,
@@ -657,9 +745,12 @@ class EditContainerModalState extends State<EditContainerModal> {
                     Builder(
                       builder: (context) {
                         return MainFeesForm(
-                          showLocationFee: access.canShowContainerFee(user, 'locationFee'),
-                          showLocalCharge: access.canShowContainerFee(user, 'localCharge'),
-                          showLoadingFee: access.canShowContainerFee(user, 'loadingFee'),
+                          showLocationFee:
+                              access.canShowContainerFee(user, 'locationFee'),
+                          showLocalCharge:
+                              access.canShowContainerFee(user, 'localCharge'),
+                          showLoadingFee:
+                              access.canShowContainerFee(user, 'loadingFee'),
                           locationFeeController: locationFeeController,
                           locationFeeRateController: locationFeeRateController,
                           localChargeController: localChargeController,
@@ -672,46 +763,46 @@ class EditContainerModalState extends State<EditContainerModal> {
                           localChargeCurrency: localChargeCurrency,
                           loadingFeeCurrency: loadingFeeCurrency,
                           onLocationFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          locationFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            locationFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            locationFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            locationFeeRateController.clear();
-                          }
-                        });
-                      },
-                      onLocalChargeCurrencyChanged: (currency) {
-                        setState(() {
-                          localChargeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            localChargeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            localChargeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            localChargeRateController.clear();
-                          }
-                        });
-                      },
-                      onLoadingFeeCurrencyChanged: (currency) {
-                        setState(() {
-                          loadingFeeCurrency = currency;
-                          if (currency?.code == 'CNY') {
-                            loadingFeeRateController.text = '1';
-                          } else if (currency?.rate != null) {
-                            loadingFeeRateController.text =
-                                currency!.rate.toString();
-                          } else {
-                            loadingFeeRateController.clear();
-                          }
-                        });
-                      },
-                      getSupplier: () =>
-                          _containerInfoKey.currentState?.selectedSupplier,
+                            setState(() {
+                              locationFeeCurrency = currency;
+                              if (currency?.code == 'CNY') {
+                                locationFeeRateController.text = '1';
+                              } else if (currency?.rate != null) {
+                                locationFeeRateController.text =
+                                    currency!.rate.toString();
+                              } else {
+                                locationFeeRateController.clear();
+                              }
+                            });
+                          },
+                          onLocalChargeCurrencyChanged: (currency) {
+                            setState(() {
+                              localChargeCurrency = currency;
+                              if (currency?.code == 'CNY') {
+                                localChargeRateController.text = '1';
+                              } else if (currency?.rate != null) {
+                                localChargeRateController.text =
+                                    currency!.rate.toString();
+                              } else {
+                                localChargeRateController.clear();
+                              }
+                            });
+                          },
+                          onLoadingFeeCurrencyChanged: (currency) {
+                            setState(() {
+                              loadingFeeCurrency = currency;
+                              if (currency?.code == 'CNY') {
+                                loadingFeeRateController.text = '1';
+                              } else if (currency?.rate != null) {
+                                loadingFeeRateController.text =
+                                    currency!.rate.toString();
+                              } else {
+                                loadingFeeRateController.clear();
+                              }
+                            });
+                          },
+                          getSupplier: () =>
+                              _containerInfoKey.currentState?.selectedSupplier,
                         );
                       },
                     ),
@@ -729,10 +820,13 @@ class EditContainerModalState extends State<EditContainerModal> {
                   children: [
                     const SizedBox(height: 16),
                     ExtraFeesForm(
-                      showOverweightFee: access.canShowContainerFee(user, 'overweightFee'),
-                      showCheckingFee: access.canShowContainerFee(user, 'checkingFee'),
+                      showOverweightFee:
+                          access.canShowContainerFee(user, 'overweightFee'),
+                      showCheckingFee:
+                          access.canShowContainerFee(user, 'checkingFee'),
                       showTelxFee: access.canShowContainerFee(user, 'telxFee'),
-                      showOtherFees: access.canShowContainerFee(user, 'otherFees'),
+                      showOtherFees:
+                          access.canShowContainerFee(user, 'otherFees'),
                       showMargin: access.canShowContainerFee(user, 'margin'),
                       overweightFeeController: overweightFeeController,
                       overweightFeeRateController: overweightFeeRateController,
@@ -989,8 +1083,9 @@ class EditContainerModalState extends State<EditContainerModal> {
     telxFeeRateController.dispose();
     otherFeesController.dispose();
     otherFeesRateController.dispose();
-    marginController.dispose();
     marginRateController.dispose();
+    transportFeeController.dispose();
+    transportFeeRateController.dispose();
     super.dispose();
   }
 }
