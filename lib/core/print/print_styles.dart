@@ -51,11 +51,13 @@ class PrintStyles {
   /// Couleur fond lignes alternées (optionnel, léger gris).
   static final PdfColor tableRowAltBackground = PdfColors.grey100;
 
-  /// Couleur de la ligne Sous-total (en bas du tableau).
-  static final PdfColor subtotalRowBackground = PdfColors.grey200;
+  /// Couleur de la ligne Sous-total (jaune léger avec opacité réduite).
+  static final PdfColor subtotalRowBackground =
+      PdfColor(1.0, 1.0, 0.85, 0.85);
 
-  /// Couleur de la ligne Total (en bas du tableau, distincte du sous-total).
-  static final PdfColor totalRowBackground = PdfColors.grey400;
+  /// Couleur de la ligne Total (vert).
+  static final PdfColor totalRowBackground =
+      PdfColor(0.65, 0.84, 0.65); // vert clair type #A5D6A7
 
   /// Couleur accent (titres, montants importants) - reste lisible en N&B.
   static final PdfColor accentColor = PdfColors.grey900;

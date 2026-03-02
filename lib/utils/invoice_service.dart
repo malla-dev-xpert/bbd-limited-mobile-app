@@ -192,6 +192,10 @@ class InvoiceService {
                     includeSupplierInfo, isProforma, currencyFormat, options,
                     achat, versement,
                     sousTotal: sousTotal, montantTotal: montantTotal),
+                if (versement != null) ...[
+                  _buildVersementInfoSection(versement, currencyFormat,
+                      dateFormat, printLocalizations)!,
+                ],
                 pw.SizedBox(height: 12),
                 _buildAchatPricingSummary(
                     sousTotal,
@@ -677,6 +681,15 @@ class InvoiceService {
               vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
           child: pw.Row(
             children: [
+              pw.Container(
+                  width: 28,
+                  child: pw.Text(printLocalizations.translate('pdf_table_number'),
+                      style: pw.TextStyle(
+                          color: PrintStyles.accentColor,
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 4),
               pw.Expanded(
                   flex: 3,
                   child: pw.Text(printLocalizations.translate('pdf_product_name'),
@@ -760,57 +773,70 @@ class InvoiceService {
           ),
         ),
         // Corps du tableau (padding uniforme, texte avec retours à la ligne)
-        for (final achat in achats)
-          for (final item in (achat.items ?? []))
-            () {
-              // Si marges sélectives activées, ne montrer que les articles sélectionnés
+        ...() {
+          final rows = <(Achat, Items)>[];
+          for (final achat in achats) {
+            for (final item in (achat.items ?? [])) {
               if (options.enableSelectiveItemMargins &&
                   options.selectiveItemMargins.isNotEmpty) {
                 if (item.id == null ||
                     !options.selectiveItemMargins.containsKey(item.id)) {
-                  return pw.SizedBox.shrink();
+                  continue;
                 }
               }
+              rows.add((achat, item));
+            }
+          }
+          return [
+            for (var idx = 0; idx < rows.length; idx++)
+              () {
+                final (achat, item) = rows[idx];
+                final rowNumber = idx + 1;
+                // Recalcul du prix de l'article : marge puis remise sur le prix après marge
+                final margin = item.id != null &&
+                        options.selectiveItemMargins.containsKey(item.id)
+                    ? options.selectiveItemMargins[item.id]
+                    : null;
+                final discount = item.id != null &&
+                        options.selectiveLineDiscounts.containsKey(item.id)
+                    ? options.selectiveLineDiscounts[item.id]
+                    : null;
+                final priceResult = MarginCalculationService.getItemFinalPrice(
+                  item: item,
+                  margin: margin,
+                  discount: discount,
+                );
+                final adjustedUnitPrice = priceResult.unitPrice;
+                final adjustedTotalPrice = priceResult.totalPrice;
+                final currentMargin = margin;
 
-              // Recalcul du prix de l'article : marge puis remise sur le prix après marge
-              final margin = item.id != null &&
-                      options.selectiveItemMargins.containsKey(item.id)
-                  ? options.selectiveItemMargins[item.id]
-                  : null;
-              final discount = item.id != null &&
-                      options.selectiveLineDiscounts.containsKey(item.id)
-                  ? options.selectiveLineDiscounts[item.id]
-                  : null;
-              final priceResult = MarginCalculationService.getItemFinalPrice(
-                item: item,
-                margin: margin,
-                discount: discount,
-              );
-              final adjustedUnitPrice = priceResult.unitPrice;
-              final adjustedTotalPrice = priceResult.totalPrice;
-              final currentMargin = margin;
+                // Calculer les valeurs pour les colonnes
+                final carton = item.carton ?? 0;
+                final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
+                final totalQuantity = (item.quantity ?? 0).toDouble();
+                // Déterminer si le prix final a été modifié (Option A)
+                final isPriceModified = currentMargin != null &&
+                    currentMargin.displayMode ==
+                        MarginDisplayMode.modifyFinalPrice &&
+                    currentMargin.finalPrice != null;
 
-              // Calculer les valeurs pour les colonnes
-              final carton = item.carton ?? 0;
-              final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
-              final totalQuantity = (item.quantity ?? 0).toDouble();
-              // Déterminer si le prix final a été modifié (Option A)
-              final isPriceModified = currentMargin != null &&
-                  currentMargin.displayMode ==
-                      MarginDisplayMode.modifyFinalPrice &&
-                  currentMargin.finalPrice != null;
-
-              return pw.Container(
-                color: PdfColors.white,
-                padding: pw.EdgeInsets.symmetric(
-                    vertical: PrintStyles.cellPaddingV,
-                    horizontal: PrintStyles.cellPaddingH),
-                child: pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Expanded(
-                        flex: 3,
-                        child: pw.Text(item.description ?? '',
+                return pw.Container(
+                  color: PdfColors.white,
+                  padding: pw.EdgeInsets.symmetric(
+                      vertical: PrintStyles.cellPaddingV,
+                      horizontal: PrintStyles.cellPaddingH),
+                  child: pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Container(
+                          width: 28,
+                          child: pw.Text(rowNumber.toString(),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 4),
+                      pw.Expanded(
+                          flex: 3,
+                          child: pw.Text(item.description ?? '',
                             style: PrintStyles.cellTextStyle(),
                             maxLines: PrintStyles.maxLinesLongText)),
                     pw.SizedBox(width: 4),
@@ -872,6 +898,8 @@ class InvoiceService {
                 ),
               );
             }(),
+          ];
+        }(),
         // Ligne Sous-total (en bas du tableau, couleur distincte)
         pw.Container(
           width: double.infinity,
@@ -1434,23 +1462,67 @@ class InvoiceService {
             fontFallback: [pw.Font.times(), pw.Font.courier()],
           ),
         ),
-        pw.SizedBox(height: 16),
+        pw.SizedBox(height: 12),
 
-        // Informations de la facture
+        // Tableau Référence et Date (juste en bas de Market Finance Invoice)
         pw.Container(
-          padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
-            color: PdfColors.grey100,
-            borderRadius: pw.BorderRadius.circular(4),
-            border: pw.Border.all(color: PdfColors.grey300),
+            border: pw.Border.all(color: PrintStyles.tableBorderColor),
           ),
           child: pw.Column(
             children: [
-              _buildInfoRowPDF(
-                  printLocalizations.translate('pdf_reference_label'),
-                  'ACH-${achat.id}'),
-              _buildInfoRowPDF(printLocalizations.translate('pdf_date_label'),
-                  dateFormat.format(achat.createdAt ?? DateTime.now())),
+              pw.Container(
+                color: PrintStyles.tableHeaderBackground,
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: pw.Text(
+                        printLocalizations.translate('pdf_reference_label'),
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize,
+                          color: PrintStyles.accentColor,
+                        ),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        printLocalizations.translate('pdf_date_label'),
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize,
+                          color: PrintStyles.accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.Container(
+                color: PdfColors.white,
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: pw.Text(
+                        'ACH-${achat.id}',
+                        style: PrintStyles.cellTextStyle(),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        dateFormat.format(achat.createdAt ?? DateTime.now()),
+                        style: PrintStyles.cellTextStyle(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1474,7 +1546,7 @@ class InvoiceService {
     return '-';
   }
 
-  /// Section "Informations du versement" (uniquement si un versement est lié).
+  /// Section "Informations du versement" en tableau (après le tableau des items).
   static pw.Widget? _buildVersementInfoSection(
     Versement? versement,
     NumberFormat currencyFormat,
@@ -1482,45 +1554,101 @@ class InvoiceService {
     PrintLocalizations printLocalizations,
   ) {
     if (versement == null) return null;
-    return pw.Container(
-      margin: const pw.EdgeInsets.only(bottom: 12),
-      padding: pw.EdgeInsets.symmetric(
-        horizontal: PrintStyles.cellPaddingH * 2,
-        vertical: PrintStyles.cellPaddingV * 2,
-      ),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PrintStyles.tableBorderColor, width: 0.5),
-        color: PrintStyles.tableRowAltBackground,
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        mainAxisSize: pw.MainAxisSize.min,
-        children: [
-          pw.Text(
-            printLocalizations.translate('pdf_versement_info_section'),
-            style: pw.TextStyle(
-              fontSize: PrintStyles.sectionTitleFontSize,
-              fontWeight: pw.FontWeight.bold,
-              color: PrintStyles.accentColor,
-            ),
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      mainAxisSize: pw.MainAxisSize.min,
+      children: [
+        pw.SizedBox(height: 12),
+        pw.Text(
+          printLocalizations.translate('pdf_versement_info_section'),
+          style: pw.TextStyle(
+            fontSize: PrintStyles.sectionTitleFontSize,
+            fontWeight: pw.FontWeight.bold,
+            color: PrintStyles.accentColor,
           ),
-          pw.SizedBox(height: 8),
-          _buildInfoRowPDF(
-            printLocalizations.translate('pdf_amount_paid_label'),
-            currencyFormat.format(versement.montantVerser ?? 0),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Container(
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PrintStyles.tableBorderColor),
           ),
-          _buildInfoRowPDF(
-            printLocalizations.translate('pdf_remaining_amount_label'),
-            currencyFormat.format(versement.montantRestant ?? 0),
+          child: pw.Column(
+            children: [
+              pw.Container(
+                color: PrintStyles.tableHeaderBackground,
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: pw.Text(
+                        printLocalizations.translate('pdf_amount_paid_label'),
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize,
+                          color: PrintStyles.accentColor,
+                        ),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        printLocalizations.translate(
+                            'pdf_remaining_amount_label'),
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize,
+                          color: PrintStyles.accentColor,
+                        ),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        printLocalizations.translate('pdf_versement_date'),
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize,
+                          color: PrintStyles.accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.Container(
+                color: PdfColors.white,
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: pw.Text(
+                        currencyFormat.format(versement.montantVerser ?? 0),
+                        style: PrintStyles.cellTextStyle(),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        currencyFormat.format(versement.montantRestant ?? 0),
+                        style: PrintStyles.cellTextStyle(),
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        versement.createdAt != null
+                            ? dateFormat.format(versement.createdAt!)
+                            : '-',
+                        style: PrintStyles.cellTextStyle(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          _buildInfoRowPDF(
-            printLocalizations.translate('pdf_versement_date'),
-            versement.createdAt != null
-                ? dateFormat.format(versement.createdAt!)
-                : '-',
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1535,7 +1663,6 @@ class InvoiceService {
       Versement? versement,
       {required double sousTotal,
       required double montantTotal}) {
-    final dateFormat = DateFormat('dd/MM/yyyy');
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -1550,11 +1677,6 @@ class InvoiceService {
               fontFallback: [pw.Font.times(), pw.Font.courier()],
             )),
         pw.SizedBox(height: 8),
-        if (versement != null) ...[
-          _buildVersementInfoSection(
-              versement, currencyFormat, dateFormat, printLocalizations)!,
-          pw.SizedBox(height: 8),
-        ],
         // En-tête du tableau (sans référence ni montant restant)
         pw.Container(
           color: PrintStyles.tableHeaderBackground,
@@ -1562,6 +1684,15 @@ class InvoiceService {
               vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
           child: pw.Row(
             children: [
+              pw.Container(
+                  width: 28,
+                  child: pw.Text(printLocalizations.translate('pdf_table_number'),
+                      style: pw.TextStyle(
+                          color: PrintStyles.accentColor,
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: PrintStyles.tableFontSize),
+                      textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 4),
               pw.Expanded(
                   flex: 3,
                   child: pw.Text(printLocalizations.translate('pdf_product_name'),
@@ -1656,19 +1787,24 @@ class InvoiceService {
             ],
           ),
         ),
-        for (final item in (filteredItems ?? []))
-          () {
-            // Si marges sélectives activées, ne montrer que les articles sélectionnés
+        ...() {
+          final itemsToShow = (filteredItems ?? []).where((item) {
             if (options.enableSelectiveItemMargins &&
                 options.selectiveItemMargins.isNotEmpty) {
               if (item.id == null ||
                   !options.selectiveItemMargins.containsKey(item.id)) {
-                return pw.SizedBox.shrink();
+                return false;
               }
             }
-
-            // Recalcul du prix de l'article : marge puis remise sur le prix après marge
-            final margin = item.id != null &&
+            return true;
+          }).toList();
+          return [
+            for (var idx = 0; idx < itemsToShow.length; idx++)
+              () {
+                final item = itemsToShow[idx];
+                final rowNumber = idx + 1;
+                // Recalcul du prix de l'article : marge puis remise sur le prix après marge
+                final margin = item.id != null &&
                     options.selectiveItemMargins.containsKey(item.id)
                 ? options.selectiveItemMargins[item.id]
                 : null;
@@ -1708,6 +1844,12 @@ class InvoiceService {
                   child: pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
+                      pw.Container(
+                          width: 28,
+                          child: pw.Text(rowNumber.toString(),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 4),
                       pw.Expanded(
                           flex: 3,
                           child: pw.Text(item.description ?? '',
@@ -1784,6 +1926,8 @@ class InvoiceService {
               ],
             );
           }(),
+      ];
+    }(),
         // Ligne Sous-total (en bas du tableau, couleur distincte)
         pw.Container(
           width: double.infinity,
