@@ -188,10 +188,17 @@ class InvoiceService {
                       containers, printLocalizations, currencyFormat),
                   pw.SizedBox(height: 24),
                 ],
-                _buildAchatArticlesSection(filteredItems, printLocalizations,
-                    includeSupplierInfo, isProforma, currencyFormat, options,
-                    achat, versement,
-                    sousTotal: sousTotal, montantTotal: montantTotal),
+                _buildAchatArticlesSection(
+                    filteredItems,
+                    printLocalizations,
+                    includeSupplierInfo,
+                    isProforma,
+                    currencyFormat,
+                    options,
+                    achat,
+                    versement,
+                    sousTotal: sousTotal,
+                    montantTotal: montantTotal),
                 if (versement != null) ...[
                   _buildVersementInfoSection(versement, currencyFormat,
                       dateFormat, printLocalizations)!,
@@ -226,11 +233,7 @@ class InvoiceService {
       children: [
         pw.Text(
           "Informations Conteneur(s)", // TODO: Add to translations if needed
-          style: pw.TextStyle(
-            fontSize: 14,
-            fontWeight: pw.FontWeight.bold,
-            color: PdfColor.fromHex('#1A1E49'),
-          ),
+          style: PrintStyles.sectionTitleStyle(),
         ),
         pw.SizedBox(height: 8),
         ...containers.map((container) {
@@ -238,19 +241,18 @@ class InvoiceService {
             margin: const pw.EdgeInsets.only(bottom: 8),
             padding: const pw.EdgeInsets.all(8),
             decoration: pw.BoxDecoration(
-              border: pw.Border.all(color: PdfColors.grey300),
+              border: PrintStyles.tableBorder,
               borderRadius: pw.BorderRadius.circular(4),
-              color: PdfColors.grey50,
+              color: PrintStyles.headerGreen,
             ),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
                   "Conteneur: ${container.reference ?? 'N/A'}",
-                  style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold, fontSize: 10),
+                  style: PrintStyles.labelStyle(),
                 ),
-                pw.Divider(color: PdfColors.grey300),
+                pw.Divider(color: PrintStyles.tableBorderColor),
                 pw.Row(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
@@ -327,10 +329,10 @@ class InvoiceService {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text(label,
-              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+              style: PrintStyles.smallStyle()),
           pw.Text(
             "${format.format(amount)} ${currencyCode ?? 'CNY'}",
-            style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+            style: pw.TextStyle(fontSize: PrintStyles.smallFontSize, fontWeight: pw.FontWeight.bold),
           ),
         ],
       ),
@@ -351,8 +353,7 @@ class InvoiceService {
         // En-tête avec design de carte de visite
         pw.Container(
           decoration: pw.BoxDecoration(
-            border:
-                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
+            border: PrintStyles.tableBorder,
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Row(
@@ -385,7 +386,7 @@ class InvoiceService {
                         style: pw.TextStyle(
                           fontSize: 28,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColor.fromHex('#1A1E49'),
+                          color: PrintStyles.accentColor,
                           letterSpacing: 1.2,
                           fontStyle: pw.FontStyle.italic,
                         ),
@@ -410,11 +411,11 @@ class InvoiceService {
                         ),
                       ),
 
-                      // Ligne séparatrice bleu foncé
+                      // Ligne séparatrice (couleur unifiée)
                       pw.SizedBox(height: 10),
                       pw.Container(
-                        height: 1.5,
-                        color: PdfColor.fromHex('#1A1E49'),
+                        height: PrintStyles.tableBorderWidth,
+                        color: PrintStyles.tableBorderColor,
                       ),
                       pw.SizedBox(height: 10),
 
@@ -480,10 +481,10 @@ class InvoiceService {
                 ),
               ),
 
-              // Ligne verticale séparatrice
+              // Ligne verticale séparatrice (couleur unifiée)
               pw.Container(
-                width: 1.5,
-                color: PdfColor.fromHex('#1A1E49'),
+                width: PrintStyles.tableBorderWidth,
+                color: PrintStyles.tableBorderColor,
               ),
 
               // Section droite avec logo sur fond blanc
@@ -500,38 +501,37 @@ class InvoiceService {
         ),
         pw.SizedBox(height: 20),
 
-        // Titre de la facture (Payment Invoice pour les versements)
-        pw.Text(
-          'Payment Invoice',
-          style: pw.TextStyle(
-            fontSize: 24,
-            fontWeight: pw.FontWeight.bold,
-            color: PdfColor.fromHex('#1A1E49'),
-            letterSpacing: 1.2,
+        // Titre de la facture (style Market Finance - barre verte)
+        pw.Container(
+          width: double.infinity,
+          padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.headerGreen,
+          ),
+          child: pw.Text(
+            'Payment Invoice',
+            style: PrintStyles.mainTitleStyle(),
           ),
         ),
-        pw.SizedBox(height: 16),
+        pw.SizedBox(height: 0),
 
-        // Informations de la facture dans un tableau
+        // Informations de la facture (grille style Market Finance : libellé vert, valeur blanc, bordures)
         pw.Container(
-          padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
-            color: PdfColors.grey100,
-            borderRadius: pw.BorderRadius.circular(4),
-            border: pw.Border.all(color: PdfColors.grey300),
+            border: PrintStyles.tableBorder,
           ),
           child: pw.Column(
             children: [
-              _buildInfoRowPDF('Invoice No.', versement.reference ?? ''),
-              _buildInfoRowPDF('Invoice Date',
+              _buildInfoRowPDFGrid('Invoice No.', versement.reference ?? ''),
+              _buildInfoRowPDFGrid('Invoice Date',
                   dateFormat.format(versement.createdAt ?? DateTime.now())),
-              _buildInfoRowPDF('Currency', versement.deviseCode ?? 'CNY'),
-              _buildInfoRowPDF('Exchange Rate', '1.00'),
+              _buildInfoRowPDFGrid('Currency', versement.deviseCode ?? 'CNY'),
+              _buildInfoRowPDFGrid('Exchange Rate', '1.00'),
               if (versement.montantVerser != null)
-                _buildInfoRowPDF('Amount Paid',
+                _buildInfoRowPDFGrid('Amount Paid',
                     currencyFormat.format(versement.montantVerser!)),
               if (versement.montantRestant != null)
-                _buildInfoRowPDF('Remaining Amount',
+                _buildInfoRowPDFGrid('Remaining Amount',
                     currencyFormat.format(versement.montantRestant!)),
             ],
           ),
@@ -549,11 +549,7 @@ class InvoiceService {
                 children: [
                   pw.Text(
                     'Client',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColor.fromHex('#1A1E49'),
-                    ),
+                    style: PrintStyles.sectionTitleStyle(),
                   ),
                   pw.SizedBox(height: 10),
                   if (versement.partnerName != null)
@@ -574,11 +570,7 @@ class InvoiceService {
                 children: [
                   pw.Text(
                     'COMISSIONNAIRE',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColor.fromHex('#1A1E49'),
-                    ),
+                    style: PrintStyles.sectionTitleStyle(),
                   ),
                   pw.SizedBox(height: 10),
                   if (versement.commissionnaireName != null)
@@ -596,26 +588,42 @@ class InvoiceService {
     );
   }
 
-  static pw.Widget _buildInfoRowPDF(String label, String value) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+  /// Ligne info style Market Finance : cellule libellé (fond vert) | cellule valeur (fond blanc), bordures.
+  static pw.Widget _buildInfoRowPDFGrid(String label, String value) {
+    return pw.Container(
+      decoration: pw.BoxDecoration(
+        border: pw.Border(
+          bottom: PrintStyles.tableBorderSide,
+        ),
+      ),
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.SizedBox(
+          pw.Container(
             width: 140,
+            padding: pw.EdgeInsets.symmetric(vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
+            decoration: pw.BoxDecoration(
+              color: PrintStyles.headerGreen,
+            ),
             child: pw.Text(
-              '$label:',
-              style: pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
+              label,
+              style: PrintStyles.labelStyle(),
             ),
           ),
           pw.Expanded(
-            child: pw.Text(
-              value,
-              style: const pw.TextStyle(fontSize: 10),
+            child: pw.Container(
+              padding: pw.EdgeInsets.symmetric(vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
+              color: PdfColors.white,
+              decoration: pw.BoxDecoration(
+                border: pw.Border(
+                  left: PrintStyles.tableBorderSide,
+                ),
+              ),
+              alignment: pw.Alignment.centerLeft,
+              child: pw.Text(
+                value,
+                style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
+              ),
             ),
           ),
         ],
@@ -633,16 +641,13 @@ class InvoiceService {
             width: 80,
             child: pw.Text(
               '$label :',
-              style: pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.normal,
-              ),
+              style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
             ),
           ),
           pw.Expanded(
             child: pw.Text(
               value,
-              style: const pw.TextStyle(fontSize: 10),
+              style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
             ),
           ),
         ],
@@ -664,110 +669,86 @@ class InvoiceService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(printLocalizations.translate("pdf_articles_list_label"),
-            style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColor.fromHex('#1A1E49'),
-              font: printLocalizations.language.code == 'zh'
-                  ? pw.Font.courier()
-                  : pw.Font.helvetica(),
-              fontFallback: [pw.Font.times(), pw.Font.courier()],
-            )),
-        pw.SizedBox(height: 8),
-        // En-tête du tableau (styles centralisés, contraste N&B)
+            style: PrintStyles.sectionTitleStyle()),
+        pw.SizedBox(height: 6),
+        // Tableau avec bordures style Market Finance (grille)
         pw.Container(
-          color: PrintStyles.tableHeaderBackground,
-          padding: pw.EdgeInsets.symmetric(
-              vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
-          child: pw.Row(
+          decoration: pw.BoxDecoration(
+            border: PrintStyles.tableBorder,
+          ),
+          child: pw.Column(
+            children: [
+              // En-tête du tableau (vert menthe)
+              pw.Container(
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.tableHeaderBackground,
+                ),
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
             children: [
               pw.Container(
                   width: 28,
-                  child: pw.Text(printLocalizations.translate('pdf_table_number'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_table_number'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 4),
               pw.Expanded(
                   flex: 3,
-                  child: pw.Text(printLocalizations.translate('pdf_product_name'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_product_name'),
+                      style: PrintStyles.tableHeaderStyle(),
                       maxLines: PrintStyles.maxLinesLongText)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 80,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_reference'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                  child: pw.Text(printLocalizations.translate('pdf_reference'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center,
                       maxLines: PrintStyles.maxLinesLongText)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 70,
                   child: pw.Text(
-                      printLocalizations.translate('pdf_remaining_amount_label'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                      printLocalizations
+                          .translate('pdf_remaining_amount_label'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center,
                       maxLines: PrintStyles.maxLinesLongText)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 30,
                   child: pw.Text(printLocalizations.translate('pdf_carton'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 50,
                   child: pw.Text(
                       printLocalizations.translate('pdf_quantity_per_carton'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 50,
                   child: pw.Text(
                       printLocalizations.translate('pdf_total_quantity'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 40,
                   child: pw.Text(
                       printLocalizations.translate('pdf_unit_price_label'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 4),
               pw.Container(
                   width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_amount'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                  child: pw.Text(printLocalizations.translate('pdf_amount'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
             ],
           ),
@@ -821,7 +802,12 @@ class InvoiceService {
                     currentMargin.finalPrice != null;
 
                 return pw.Container(
-                  color: PdfColors.white,
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.white,
+                    border: pw.Border(
+                      bottom: PrintStyles.tableBorderSide,
+                    ),
+                  ),
                   padding: pw.EdgeInsets.symmetric(
                       vertical: PrintStyles.cellPaddingV,
                       horizontal: PrintStyles.cellPaddingH),
@@ -837,73 +823,74 @@ class InvoiceService {
                       pw.Expanded(
                           flex: 3,
                           child: pw.Text(item.description ?? '',
-                            style: PrintStyles.cellTextStyle(),
-                            maxLines: PrintStyles.maxLinesLongText)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 80,
-                        child: pw.Text(
-                            _achatReferenceDisplay(achat),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center,
-                            maxLines: PrintStyles.maxLinesLongText)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 70,
-                        child: pw.Text(montantRestantDisplay,
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center,
-                            maxLines: PrintStyles.maxLinesLongText)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 30,
-                        child: pw.Text(carton.toString(),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(totalQuantity.toStringAsFixed(2),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 40,
-                        child: pw.Text(
-                            currencyFormat.format(adjustedUnitPrice),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 50,
-                        child: pw.Text(
-                            currencyFormat.format(adjustedTotalPrice),
-                            style: pw.TextStyle(
-                              fontSize: PrintStyles.tableFontSize,
-                              fontWeight: isPriceModified
-                                  ? pw.FontWeight.bold
-                                  : pw.FontWeight.normal,
-                              color: isPriceModified
-                                  ? PrintStyles.accentColor
-                                  : PrintStyles.textColor,
-                            ),
-                            textAlign: pw.TextAlign.center)),
-                  ],
-                ),
-              );
-            }(),
+                              style: PrintStyles.cellTextStyle(),
+                              maxLines: PrintStyles.maxLinesLongText)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 80,
+                          child: pw.Text(_achatReferenceDisplay(achat),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center,
+                              maxLines: PrintStyles.maxLinesLongText)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 70,
+                          child: pw.Text(montantRestantDisplay,
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center,
+                              maxLines: PrintStyles.maxLinesLongText)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 30,
+                          child: pw.Text(carton.toString(),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 50,
+                          child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 50,
+                          child: pw.Text(totalQuantity.toStringAsFixed(2),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 40,
+                          child: pw.Text(
+                              currencyFormat.format(adjustedUnitPrice),
+                              style: PrintStyles.cellTextStyle(),
+                              textAlign: pw.TextAlign.center)),
+                      pw.SizedBox(width: 4),
+                      pw.Container(
+                          width: 50,
+                          child:
+                              pw.Text(currencyFormat.format(adjustedTotalPrice),
+                                  style: pw.TextStyle(
+                                    fontSize: PrintStyles.tableFontSize,
+                                    fontWeight: isPriceModified
+                                        ? pw.FontWeight.bold
+                                        : pw.FontWeight.normal,
+                                    color: isPriceModified
+                                        ? PrintStyles.accentColor
+                                        : PrintStyles.textColor,
+                                  ),
+                                  textAlign: pw.TextAlign.center)),
+                    ],
+                  ),
+                );
+              }(),
           ];
         }(),
-        // Ligne Sous-total (en bas du tableau, couleur distincte)
+        // Ligne Sous-total (vert menthe, style Market Finance)
         pw.Container(
           width: double.infinity,
-          color: PrintStyles.subtotalRowBackground,
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.subtotalRowBackground,
+          ),
           padding: pw.EdgeInsets.symmetric(
               vertical: PrintStyles.cellPaddingV,
               horizontal: PrintStyles.cellPaddingH),
@@ -912,27 +899,21 @@ class InvoiceService {
             children: [
               pw.Text(
                 printLocalizations.translate('pdf_subtotal_label'),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 1,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.textColor,
-                ),
+                style: PrintStyles.labelStyle(),
               ),
               pw.Text(
                 currencyFormat.format(sousTotal),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 1,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.textColor,
-                ),
+                style: PrintStyles.labelStyle(),
               ),
             ],
           ),
         ),
-        // Ligne Total (en bas du tableau, deuxième couleur)
+        // Ligne Total (vert menthe, style Market Finance)
         pw.Container(
           width: double.infinity,
-          color: PrintStyles.totalRowBackground,
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.totalRowBackground,
+          ),
           padding: pw.EdgeInsets.symmetric(
               vertical: PrintStyles.cellPaddingV,
               horizontal: PrintStyles.cellPaddingH),
@@ -942,7 +923,7 @@ class InvoiceService {
               pw.Text(
                 printLocalizations.translate('pdf_total_final'),
                 style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 2,
+                  fontSize: PrintStyles.labelFontSize,
                   fontWeight: pw.FontWeight.bold,
                   color: PrintStyles.accentColor,
                 ),
@@ -950,7 +931,7 @@ class InvoiceService {
               pw.Text(
                 currencyFormat.format(montantTotal),
                 style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 2,
+                  fontSize: PrintStyles.labelFontSize,
                   fontWeight: pw.FontWeight.bold,
                   color: PrintStyles.accentColor,
                 ),
@@ -959,7 +940,10 @@ class InvoiceService {
           ),
         ),
       ],
-    );
+    ),
+    ),
+  ],
+  );
   }
 
   static pw.Widget _buildPricingSummary(
@@ -988,19 +972,16 @@ class InvoiceService {
                     mainAxisAlignment: pw.MainAxisAlignment.end,
                     children: [
                       pw.Text(
-                        printLocalizations.translate('pdf_line_discounts_selective'),
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
+                        printLocalizations
+                            .translate('pdf_line_discounts_selective'),
+                        style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
                       ),
                       pw.SizedBox(width: 10),
                       pw.Text(
                         '-${currencyFormat.format(options.selectiveLineDiscounts.values.fold<double>(0.0, (sum, d) => sum + d.discountAmount))}',
                         style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
+                          fontSize: PrintStyles.labelFontSize,
+                          color: PrintStyles.textColor,
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
@@ -1026,18 +1007,14 @@ class InvoiceService {
                       children: [
                         pw.Text(
                           '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                            fontWeight: pw.FontWeight.normal,
-                          ),
+                          style: PrintStyles.cellTextStyle(fontSize: PrintStyles.tableFontSize),
                         ),
                         pw.SizedBox(width: 10),
                         pw.Text(
                           '-${currencyFormat.format(discount.discountAmount)}',
                           style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
+                            fontSize: PrintStyles.tableFontSize,
+                            color: PrintStyles.textColor,
                             fontWeight: pw.FontWeight.bold,
                           ),
                         ),
@@ -1064,8 +1041,8 @@ class InvoiceService {
                             .replaceAll('{value}', '${options.discountValue}')
                         : printLocalizations.translate('pdf_discount_fixed'),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
@@ -1073,8 +1050,8 @@ class InvoiceService {
                   pw.Text(
                     '-${currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -1101,8 +1078,8 @@ class InvoiceService {
                         : printLocalizations
                             .translate('pdf_storage_fees_fixed'),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
@@ -1113,8 +1090,8 @@ class InvoiceService {
                             ? (sousTotal * options.storageFeeAmount! / 100)
                             : options.storageFeeAmount!),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -1143,8 +1120,8 @@ class InvoiceService {
                             .replaceAll(
                                 '{value}', '${options.globalMarginValue}'),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
@@ -1155,8 +1132,8 @@ class InvoiceService {
                             ? (montantTotal * options.globalMarginValue! / 100)
                             : options.globalMarginValue!),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -1178,19 +1155,13 @@ class InvoiceService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(printLocalizations.translate("pdf_cash_withdrawals_list"),
-            style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColor.fromHex('#1A1E49'),
-              font: printLocalizations.language.code == 'zh'
-                  ? pw.Font.courier()
-                  : pw.Font.helvetica(),
-              fontFallback: [pw.Font.times(), pw.Font.courier()],
-            )),
+            style: PrintStyles.sectionTitleStyle()),
         pw.SizedBox(height: 8),
-        // En-tête du tableau avec le même style que les produits
+        // En-tête du tableau (style Market Finance - vert menthe)
         pw.Container(
-          color: PdfColor.fromHex('#E3F2FD'), // Bleu clair comme dans l'image
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.headerGreen,
+          ),
           padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: pw.Row(
             children: [
@@ -1198,29 +1169,20 @@ class InvoiceService {
                   width: 100,
                   child: pw.Text(
                       printLocalizations.translate('pdf_withdrawal_date'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 100,
                   child: pw.Text(
                       printLocalizations.translate('pdf_withdrawal_amount'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 3),
               pw.Expanded(
                   child: pw.Text(
                       printLocalizations.translate('pdf_withdrawal_reason'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.left)),
             ],
           ),
@@ -1238,7 +1200,7 @@ class InvoiceService {
                         r.dateRetrait != null
                             ? dateFormat.format(r.dateRetrait!)
                             : printLocalizations.translate('pdf_unknown_date'),
-                        style: const pw.TextStyle(fontSize: 8),
+                        style: PrintStyles.smallStyle(),
                         textAlign: pw.TextAlign.center,
                       )),
                   pw.SizedBox(width: 3),
@@ -1246,14 +1208,14 @@ class InvoiceService {
                       width: 100,
                       child: pw.Text(
                         currencyFormat.format(r.montant),
-                        style: const pw.TextStyle(fontSize: 8),
+                        style: PrintStyles.smallStyle(),
                         textAlign: pw.TextAlign.center,
                       )),
                   pw.SizedBox(width: 3),
                   pw.Expanded(
                       child: pw.Text(
                     r.note ?? '',
-                    style: const pw.TextStyle(fontSize: 8),
+                    style: PrintStyles.smallStyle(),
                     maxLines: 2,
                     textAlign: pw.TextAlign.left,
                   )),
@@ -1271,15 +1233,7 @@ class InvoiceService {
       children: [
         pw.Text(
             '${printLocalizations.translate('pdf_total_withdrawals')} : ${currencyFormat.format(totalRetraits)}',
-            style: pw.TextStyle(
-              fontSize: 16,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColor.fromHex('#1A1E49'),
-              font: printLocalizations.language.code == 'zh'
-                  ? pw.Font.courier()
-                  : pw.Font.helvetica(),
-              fontFallback: [pw.Font.times(), pw.Font.courier()],
-            )),
+            style: PrintStyles.labelStyle()),
       ],
     );
   }
@@ -1296,8 +1250,7 @@ class InvoiceService {
         // En-tête avec design de carte de visite
         pw.Container(
           decoration: pw.BoxDecoration(
-            border:
-                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
+            border: PrintStyles.tableBorder,
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Row(
@@ -1330,7 +1283,7 @@ class InvoiceService {
                         style: pw.TextStyle(
                           fontSize: 28,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColor.fromHex('#1A1E49'),
+                          color: PrintStyles.accentColor,
                           letterSpacing: 1.2,
                           fontStyle: pw.FontStyle.italic,
                         ),
@@ -1355,11 +1308,11 @@ class InvoiceService {
                         ),
                       ),
 
-                      // Ligne séparatrice bleu foncé
+                      // Ligne séparatrice (couleur unifiée)
                       pw.SizedBox(height: 10),
                       pw.Container(
-                        height: 1.5,
-                        color: PdfColor.fromHex('#1A1E49'),
+                        height: PrintStyles.tableBorderWidth,
+                        color: PrintStyles.tableBorderColor,
                       ),
                       pw.SizedBox(height: 10),
 
@@ -1425,10 +1378,10 @@ class InvoiceService {
                 ),
               ),
 
-              // Ligne verticale séparatrice
+              // Ligne verticale séparatrice (couleur unifiée)
               pw.Container(
-                width: 1.5,
-                color: PdfColor.fromHex('#1A1E49'),
+                width: PrintStyles.tableBorderWidth,
+                color: PrintStyles.tableBorderColor,
               ),
 
               // Section droite avec logo sur fond blanc
@@ -1446,33 +1399,33 @@ class InvoiceService {
 
         pw.SizedBox(height: 20),
 
-        // Titre de la facture (Market Finance Invoice pour les achats)
-        pw.Text(
-          isProforma
-              ? printLocalizations.translate('pdf_proforma')
-              : 'Market Finance Invoice',
-          style: pw.TextStyle(
-            fontSize: 24,
-            fontWeight: pw.FontWeight.bold,
-            color: PdfColor.fromHex('#1A1E49'),
-            letterSpacing: 1.2,
-            font: printLocalizations.language.code == 'zh'
-                ? pw.Font.courier()
-                : pw.Font.helvetica(),
-            fontFallback: [pw.Font.times(), pw.Font.courier()],
+        // Titre de la facture (style Market Finance - barre verte)
+        pw.Container(
+          width: double.infinity,
+          padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.headerGreen,
+          ),
+          child: pw.Text(
+            isProforma
+                ? printLocalizations.translate('pdf_proforma')
+                : 'Market Finance Invoice',
+            style: PrintStyles.mainTitleStyle(),
           ),
         ),
-        pw.SizedBox(height: 12),
+        pw.SizedBox(height: 0),
 
-        // Tableau Référence et Date (juste en bas de Market Finance Invoice)
+        // Tableau Référence et Date (style Market Finance, en-tête vert)
         pw.Container(
           decoration: pw.BoxDecoration(
-            border: pw.Border.all(color: PrintStyles.tableBorderColor),
+            border: PrintStyles.tableBorder,
           ),
           child: pw.Column(
             children: [
               pw.Container(
-                color: PrintStyles.tableHeaderBackground,
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.tableHeaderBackground,
+                ),
                 padding: pw.EdgeInsets.symmetric(
                     vertical: PrintStyles.cellPaddingV,
                     horizontal: PrintStyles.cellPaddingH),
@@ -1561,21 +1514,19 @@ class InvoiceService {
         pw.SizedBox(height: 12),
         pw.Text(
           printLocalizations.translate('pdf_versement_info_section'),
-          style: pw.TextStyle(
-            fontSize: PrintStyles.sectionTitleFontSize,
-            fontWeight: pw.FontWeight.bold,
-            color: PrintStyles.accentColor,
-          ),
+          style: PrintStyles.sectionTitleStyle(),
         ),
         pw.SizedBox(height: 8),
         pw.Container(
           decoration: pw.BoxDecoration(
-            border: pw.Border.all(color: PrintStyles.tableBorderColor),
+            border: PrintStyles.tableBorder,
           ),
           child: pw.Column(
             children: [
               pw.Container(
-                color: PrintStyles.tableHeaderBackground,
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.tableHeaderBackground,
+                ),
                 padding: pw.EdgeInsets.symmetric(
                     vertical: PrintStyles.cellPaddingV,
                     horizontal: PrintStyles.cellPaddingH),
@@ -1593,8 +1544,8 @@ class InvoiceService {
                     ),
                     pw.Expanded(
                       child: pw.Text(
-                        printLocalizations.translate(
-                            'pdf_remaining_amount_label'),
+                        printLocalizations
+                            .translate('pdf_remaining_amount_label'),
                         style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: PrintStyles.tableFontSize,
@@ -1667,121 +1618,95 @@ class InvoiceService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(printLocalizations.translate("pdf_articles_list_label"),
-            style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
-              color: PrintStyles.accentColor,
-              font: printLocalizations.language.code == 'zh'
-                  ? pw.Font.courier()
-                  : pw.Font.helvetica(),
-              fontFallback: [pw.Font.times(), pw.Font.courier()],
-            )),
-        pw.SizedBox(height: 8),
-        // En-tête du tableau (sans référence ni montant restant)
+            style: PrintStyles.sectionTitleStyle()),
+        pw.SizedBox(height: 6),
+        // Tableau avec bordures style Market Finance (grille)
         pw.Container(
-          color: PrintStyles.tableHeaderBackground,
-          padding: pw.EdgeInsets.symmetric(
-              vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
-          child: pw.Row(
+          decoration: pw.BoxDecoration(
+            border: PrintStyles.tableBorder,
+          ),
+          child: pw.Column(
+            children: [
+              // En-tête du tableau (vert menthe)
+              pw.Container(
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.tableHeaderBackground,
+                ),
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
             children: [
               pw.Container(
                   width: 28,
-                  child: pw.Text(printLocalizations.translate('pdf_table_number'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_table_number'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 4),
               pw.Expanded(
                   flex: 3,
-                  child: pw.Text(printLocalizations.translate('pdf_product_name'),
-                      style: pw.TextStyle(
-                          color: PrintStyles.accentColor,
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: PrintStyles.tableFontSize),
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_product_name'),
+                      style: PrintStyles.tableHeaderStyle(),
                       maxLines: PrintStyles.maxLinesLongText)),
               pw.SizedBox(width: 4),
               if (includeSupplierInfo) ...[
                 pw.Container(
                     width: 60,
-                    child: pw.Text(printLocalizations.translate('pdf_supplier_name'),
-                        style: pw.TextStyle(
-                            color: PdfColor.fromHex('#1A1E49'),
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 8),
+                    child: pw.Text(
+                        printLocalizations.translate('pdf_supplier_name'),
+                        style: PrintStyles.tableHeaderStyle(),
                         textAlign: pw.TextAlign.center,
                         maxLines: 2)),
                 pw.SizedBox(width: 3),
                 pw.Container(
                     width: 50,
-                    child: pw.Text(printLocalizations.translate('pdf_supplier_phone'),
-                        style: pw.TextStyle(
-                            color: PdfColor.fromHex('#1A1E49'),
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 8),
+                    child: pw.Text(
+                        printLocalizations.translate('pdf_supplier_phone'),
+                        style: PrintStyles.tableHeaderStyle(),
                         textAlign: pw.TextAlign.center,
                         maxLines: 2)),
                 pw.SizedBox(width: 3),
               ],
               pw.Container(
                   width: 30,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_carton'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                    child: pw.Text(printLocalizations.translate('pdf_carton'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
                   child: pw.Text(
                       printLocalizations.translate('pdf_quantity_per_carton'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
                   child: pw.Text(
                       printLocalizations.translate('pdf_total_quantity'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 40,
                   child: pw.Text(
                       printLocalizations.translate('pdf_unit_price_label'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_amount'),
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
+                  child: pw.Text(printLocalizations.translate('pdf_amount'),
+                      style: PrintStyles.tableHeaderStyle(),
                       textAlign: pw.TextAlign.center)),
               if (isProforma) ...[
                 pw.SizedBox(width: 3),
                 pw.Container(
                     width: 60,
                     child: pw.Text(printLocalizations.translate('pdf_status'),
-                        style: pw.TextStyle(
-                            color: PdfColor.fromHex('#1A1E49'),
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 8),
+                        style: PrintStyles.tableHeaderStyle(),
                         textAlign: pw.TextAlign.center)),
               ],
             ],
@@ -1805,102 +1730,107 @@ class InvoiceService {
                 final rowNumber = idx + 1;
                 // Recalcul du prix de l'article : marge puis remise sur le prix après marge
                 final margin = item.id != null &&
-                    options.selectiveItemMargins.containsKey(item.id)
-                ? options.selectiveItemMargins[item.id]
-                : null;
-            final discount = item.id != null &&
-                    options.selectiveLineDiscounts.containsKey(item.id)
-                ? options.selectiveLineDiscounts[item.id]
-                : null;
-            final priceResult = MarginCalculationService.getItemFinalPrice(
-              item: item,
-              margin: margin,
-              discount: discount,
-            );
-            final adjustedUnitPrice = priceResult.unitPrice;
-            final adjustedTotalPrice = priceResult.totalPrice;
-            final currentMargin = margin;
+                        options.selectiveItemMargins.containsKey(item.id)
+                    ? options.selectiveItemMargins[item.id]
+                    : null;
+                final discount = item.id != null &&
+                        options.selectiveLineDiscounts.containsKey(item.id)
+                    ? options.selectiveLineDiscounts[item.id]
+                    : null;
+                final priceResult = MarginCalculationService.getItemFinalPrice(
+                  item: item,
+                  margin: margin,
+                  discount: discount,
+                );
+                final adjustedUnitPrice = priceResult.unitPrice;
+                final adjustedTotalPrice = priceResult.totalPrice;
+                final currentMargin = margin;
 
-            // Calculer les valeurs pour les colonnes
-            final carton = item.carton ?? 0;
-            final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
-            final totalQuantity = (item.quantity ?? 0).toDouble();
+                // Calculer les valeurs pour les colonnes
+                final carton = item.carton ?? 0;
+                final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
+                final totalQuantity = (item.quantity ?? 0).toDouble();
 
-            // Déterminer si le prix final a été modifié (Option A)
-            final isPriceModified = currentMargin != null &&
-                currentMargin.displayMode ==
-                    MarginDisplayMode.modifyFinalPrice &&
-                currentMargin.finalPrice != null;
+                // Déterminer si le prix final a été modifié (Option A)
+                final isPriceModified = currentMargin != null &&
+                    currentMargin.displayMode ==
+                        MarginDisplayMode.modifyFinalPrice &&
+                    currentMargin.finalPrice != null;
 
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                // Ligne principale de l'article (padding uniforme, texte avec retours à la ligne)
-                pw.Container(
-                  color: PdfColors.white,
-                  padding: pw.EdgeInsets.symmetric(
-                      vertical: PrintStyles.cellPaddingV,
-                      horizontal: PrintStyles.cellPaddingH),
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Container(
-                          width: 28,
-                          child: pw.Text(rowNumber.toString(),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Expanded(
-                          flex: 3,
-                          child: pw.Text(item.description ?? '',
-                              style: PrintStyles.cellTextStyle(),
-                              maxLines: PrintStyles.maxLinesLongText)),
-                      pw.SizedBox(width: 4),
-                      if (includeSupplierInfo) ...[
-                        pw.Container(
-                            width: 60,
-                            child: pw.Text(item.supplierName ?? '-',
-                                style: PrintStyles.cellTextStyle(),
-                                textAlign: pw.TextAlign.center,
-                                maxLines: PrintStyles.maxLinesLongText)),
-                        pw.SizedBox(width: 4),
-                        pw.Container(
-                            width: 50,
-                            child: pw.Text(item.supplierPhone ?? '-',
-                                style: PrintStyles.cellTextStyle(),
-                                textAlign: pw.TextAlign.center,
-                                maxLines: PrintStyles.maxLinesLongText)),
-                        pw.SizedBox(width: 4),
-                      ],
-                      pw.Container(
-                          width: 30,
-                          child: pw.Text(carton.toString(),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 50,
-                          child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 50,
-                          child: pw.Text(totalQuantity.toStringAsFixed(2),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 40,
-                          child: pw.Text(
-                              currencyFormat.format(adjustedUnitPrice),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 50,
-                          child:
-                              pw.Text(currencyFormat.format(adjustedTotalPrice),
+                return pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Ligne principale de l'article (style Market Finance, bordure bas)
+                    pw.Container(
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.white,
+                        border: pw.Border(
+                          bottom: PrintStyles.tableBorderSide,
+                        ),
+                      ),
+                      padding: pw.EdgeInsets.symmetric(
+                          vertical: PrintStyles.cellPaddingV,
+                          horizontal: PrintStyles.cellPaddingH),
+                      child: pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Container(
+                              width: 28,
+                              child: pw.Text(rowNumber.toString(),
+                                  style: PrintStyles.cellTextStyle(),
+                                  textAlign: pw.TextAlign.center)),
+                          pw.SizedBox(width: 4),
+                          pw.Expanded(
+                              flex: 3,
+                              child: pw.Text(item.description ?? '',
+                                  style: PrintStyles.cellTextStyle(),
+                                  maxLines: PrintStyles.maxLinesLongText)),
+                          pw.SizedBox(width: 4),
+                          if (includeSupplierInfo) ...[
+                            pw.Container(
+                                width: 60,
+                                child: pw.Text(item.supplierName ?? '-',
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: PrintStyles.maxLinesLongText)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 50,
+                                child: pw.Text(item.supplierPhone ?? '-',
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: PrintStyles.maxLinesLongText)),
+                            pw.SizedBox(width: 4),
+                          ],
+                          pw.Container(
+                              width: 30,
+                              child: pw.Text(carton.toString(),
+                                  style: PrintStyles.cellTextStyle(),
+                                  textAlign: pw.TextAlign.center)),
+                          pw.SizedBox(width: 4),
+                          pw.Container(
+                              width: 50,
+                              child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                                  style: PrintStyles.cellTextStyle(),
+                                  textAlign: pw.TextAlign.center)),
+                          pw.SizedBox(width: 4),
+                          pw.Container(
+                              width: 50,
+                              child: pw.Text(totalQuantity.toStringAsFixed(2),
+                                  style: PrintStyles.cellTextStyle(),
+                                  textAlign: pw.TextAlign.center)),
+                          pw.SizedBox(width: 4),
+                          pw.Container(
+                              width: 40,
+                              child: pw.Text(
+                                  currencyFormat.format(adjustedUnitPrice),
+                                  style: PrintStyles.cellTextStyle(),
+                                  textAlign: pw.TextAlign.center)),
+                          pw.SizedBox(width: 4),
+                          pw.Container(
+                              width: 50,
+                              child: pw.Text(
+                                  currencyFormat.format(adjustedTotalPrice),
                                   style: pw.TextStyle(
                                     fontSize: PrintStyles.tableFontSize,
                                     fontWeight: isPriceModified
@@ -1911,27 +1841,30 @@ class InvoiceService {
                                         : PrintStyles.textColor,
                                   ),
                                   textAlign: pw.TextAlign.center)),
-                      if (isProforma) ...[
-                        pw.SizedBox(width: 4),
-                        pw.Container(
-                            width: 60,
-                            child: pw.Text(
-                                printLocalizations.translateStatus(item.status),
-                                style: PrintStyles.cellTextStyle(),
-                                textAlign: pw.TextAlign.center)),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }(),
-      ];
-    }(),
-        // Ligne Sous-total (en bas du tableau, couleur distincte)
+                          if (isProforma) ...[
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 60,
+                                child: pw.Text(
+                                    printLocalizations
+                                        .translateStatus(item.status),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }(),
+          ];
+        }(),
+        // Ligne Sous-total (vert menthe, style Market Finance)
         pw.Container(
           width: double.infinity,
-          color: PrintStyles.subtotalRowBackground,
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.subtotalRowBackground,
+          ),
           padding: pw.EdgeInsets.symmetric(
               vertical: PrintStyles.cellPaddingV,
               horizontal: PrintStyles.cellPaddingH),
@@ -1940,27 +1873,21 @@ class InvoiceService {
             children: [
               pw.Text(
                 printLocalizations.translate('pdf_subtotal_label'),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 1,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.textColor,
-                ),
+                style: PrintStyles.labelStyle(),
               ),
               pw.Text(
                 currencyFormat.format(sousTotal),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 1,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.textColor,
-                ),
+                style: PrintStyles.labelStyle(),
               ),
             ],
           ),
         ),
-        // Ligne Total (en bas du tableau, deuxième couleur)
+        // Ligne Total (vert menthe, style Market Finance)
         pw.Container(
           width: double.infinity,
-          color: PrintStyles.totalRowBackground,
+          decoration: pw.BoxDecoration(
+            color: PrintStyles.totalRowBackground,
+          ),
           padding: pw.EdgeInsets.symmetric(
               vertical: PrintStyles.cellPaddingV,
               horizontal: PrintStyles.cellPaddingH),
@@ -1970,7 +1897,7 @@ class InvoiceService {
               pw.Text(
                 printLocalizations.translate('pdf_total_final'),
                 style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 2,
+                  fontSize: PrintStyles.labelFontSize,
                   fontWeight: pw.FontWeight.bold,
                   color: PrintStyles.accentColor,
                 ),
@@ -1978,7 +1905,7 @@ class InvoiceService {
               pw.Text(
                 currencyFormat.format(montantTotal),
                 style: pw.TextStyle(
-                  fontSize: PrintStyles.tableFontSize + 2,
+                  fontSize: PrintStyles.labelFontSize,
                   fontWeight: pw.FontWeight.bold,
                   color: PrintStyles.accentColor,
                 ),
@@ -1987,7 +1914,10 @@ class InvoiceService {
           ),
         ),
       ],
-    );
+    ),
+    ),
+  ],
+  );
   }
 
   static pw.Widget _buildAchatPricingSummary(
@@ -2018,19 +1948,16 @@ class InvoiceService {
                     mainAxisAlignment: pw.MainAxisAlignment.end,
                     children: [
                       pw.Text(
-                        printLocalizations.translate('pdf_line_discounts_selective'),
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
+                        printLocalizations
+                            .translate('pdf_line_discounts_selective'),
+                        style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
                       ),
                       pw.SizedBox(width: 10),
                       pw.Text(
                         '-${currencyFormat.format(options.selectiveLineDiscounts.values.fold<double>(0.0, (sum, d) => sum + d.discountAmount))}',
                         style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
+                          fontSize: PrintStyles.labelFontSize,
+                          color: PrintStyles.textColor,
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
@@ -2065,18 +1992,14 @@ class InvoiceService {
                       children: [
                         pw.Text(
                           '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                            fontWeight: pw.FontWeight.normal,
-                          ),
+                          style: PrintStyles.cellTextStyle(fontSize: PrintStyles.tableFontSize),
                         ),
                         pw.SizedBox(width: 10),
                         pw.Text(
                           '-${currencyFormat.format(discount.discountAmount)}',
                           style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
+                            fontSize: PrintStyles.tableFontSize,
+                            color: PrintStyles.textColor,
                             fontWeight: pw.FontWeight.bold,
                           ),
                         ),
@@ -2103,8 +2026,8 @@ class InvoiceService {
                             .replaceAll('{value}', '${options.discountValue}')
                         : printLocalizations.translate('pdf_discount_fixed'),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
@@ -2112,8 +2035,8 @@ class InvoiceService {
                   pw.Text(
                     '-${currencyFormat.format(options.discountType == DiscountType.percentage ? (sousTotal * options.discountValue! / 100) : options.discountValue!)}',
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -2140,8 +2063,8 @@ class InvoiceService {
                         : printLocalizations
                             .translate('pdf_storage_fees_fixed'),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
@@ -2152,8 +2075,8 @@ class InvoiceService {
                             ? (sousTotal * options.storageFeeAmount! / 100)
                             : options.storageFeeAmount!),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -2182,8 +2105,8 @@ class InvoiceService {
                             .replaceAll(
                                 '{value}', '${options.globalMarginValue}'),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.normal,
                     ),
                   ),
@@ -2194,8 +2117,8 @@ class InvoiceService {
                             ? (montantTotal * options.globalMarginValue! / 100)
                             : options.globalMarginValue!),
                     style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
+                      fontSize: PrintStyles.labelFontSize,
+                      color: PrintStyles.textColor,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -2209,8 +2132,8 @@ class InvoiceService {
             pw.Text(
               printLocalizations.translate('pdf_estimated_amount'),
               style: pw.TextStyle(
-                fontSize: 10,
-                color: PdfColors.grey600,
+                fontSize: PrintStyles.labelFontSize,
+                color: PrintStyles.textColor,
                 fontStyle: pw.FontStyle.italic,
               ),
             ),

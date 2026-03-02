@@ -19,60 +19,116 @@ class PrintStyles {
   static const double sectionSpacing = 16.0;
 
   /// Espacement entre lignes de tableau.
-  static const double tableRowSpacing = 2.0;
+  static const double tableRowSpacing = 1.5;
+
+  // --- Bordures et lignes (couleur et épaisseur uniques) ---
+  /// Épaisseur des bordures de tableaux et lignes (identique partout).
+  static const double tableBorderWidth = 0.8;
+
+  /// Bordure complète pour tableaux (couleur + épaisseur unifiées).
+  static pw.Border get tableBorder => pw.Border.all(
+        color: tableBorderColor,
+        width: tableBorderWidth,
+      );
+
+  /// Ligne horizontale (séparation entre lignes).
+  static pw.BorderSide get tableBorderSide => pw.BorderSide(
+        color: tableBorderColor,
+        width: tableBorderWidth,
+      );
 
   // --- Tableaux ---
-  /// Padding interne des cellules (évite chevauchement, améliore lisibilité).
-  static const double cellPaddingH = 6.0;
-  static const double cellPaddingV = 5.0;
+  /// Padding interne des cellules (compact, bonne lisibilité).
+  static const double cellPaddingH = 5.0;
+  static const double cellPaddingV = 4.0;
 
-  /// Hauteur minimale d'une ligne de tableau (pour texte multi-lignes).
-  static const double tableRowMinHeight = 20.0;
+  /// Hauteur minimale d'une ligne de tableau.
+  static const double tableRowMinHeight = 18.0;
 
   /// Nombre max de lignes pour les textes longs (descriptions, commentaires).
   static const int maxLinesLongText = 5;
 
-  /// Taille de police tableau (lisible N&B).
-  static const double tableFontSize = 9.0;
+  /// Taille de police tableau (corps des cellules).
+  static const double tableFontSize = 8.0;
 
-  /// Taille de police en-tête de section.
-  static const double sectionTitleFontSize = 12.0;
+  /// Taille de police en-tête de colonnes (légèrement plus grand que le corps).
+  static const double tableHeaderFontSize = 8.5;
 
-  // --- Contraste noir & blanc ---
+  /// Taille de police titres de section (ex: "Liste des articles").
+  static const double sectionTitleFontSize = 14.0;
+
+  /// Taille de police titre principal (ex: "Market Finance Invoice").
+  static const double mainTitleFontSize = 18.0;
+
+  /// Taille de police libellés (grille infos, sous-total/total).
+  static const double labelFontSize = 9.0;
+
+  /// Taille de police secondaire (frais, détails).
+  static const double smallFontSize = 7.5;
+
+  // --- Style Market Finance Invoice (vert menthe / teal) ---
   /// Couleur texte principale (noir pour contraste).
   static final PdfColor textColor = PdfColors.grey900;
 
-  /// Couleur en-têtes de tableau (fond gris moyen pour contraste).
-  static final PdfColor tableHeaderBackground = PdfColors.grey300;
+  /// Vert menthe / teal clair pour en-têtes et libellés (#D9F2E7) - RGB explicite pour rendu PDF fiable et identique partout.
+  static final PdfColor headerGreen = PdfColor(217 / 255, 242 / 255, 231 / 255);
 
-  /// Couleur bordure tableau (noir pour netteté).
+  /// Couleur en-têtes de tableau (style Market Finance).
+  static final PdfColor tableHeaderBackground = headerGreen;
+
+  /// Couleur bordure tableau (lignes fines sombres).
   static final PdfColor tableBorderColor = PdfColors.grey800;
 
-  /// Couleur fond lignes alternées (optionnel, léger gris).
-  static final PdfColor tableRowAltBackground = PdfColors.grey100;
+  /// Couleur fond lignes de données (blanc).
+  static final PdfColor tableRowAltBackground = PdfColors.white;
 
-  /// Couleur de la ligne Sous-total (jaune léger avec opacité réduite).
-  static final PdfColor subtotalRowBackground =
-      PdfColor(1.0, 1.0, 0.85, 0.85);
+  /// Couleur de la ligne Sous-total (vert menthe léger, cohérent avec en-têtes).
+  static final PdfColor subtotalRowBackground = headerGreen;
 
-  /// Couleur de la ligne Total (vert).
-  static final PdfColor totalRowBackground =
-      PdfColor(0.65, 0.84, 0.65); // vert clair type #A5D6A7
+  /// Couleur de la ligne Total (vert menthe léger, cohérent avec en-têtes).
+  static final PdfColor totalRowBackground = headerGreen;
 
-  /// Couleur accent (titres, montants importants) - reste lisible en N&B.
-  static final PdfColor accentColor = PdfColors.grey900;
+  /// Couleur accent (titres, montants importants) - bleu/teal foncé (#1A1E49), RGB explicite.
+  static final PdfColor accentColor = PdfColor(26 / 255, 30 / 255, 73 / 255);
 
-  /// Style texte cellule avec retour à la ligne implicite (pas de débordement).
-  static pw.TextStyle cellTextStyle({double fontSize = tableFontSize}) =>
+  /// Style texte cellule (tableau).
+  static pw.TextStyle cellTextStyle({double? fontSize}) =>
       pw.TextStyle(
-        fontSize: fontSize,
+        fontSize: fontSize ?? tableFontSize,
         color: textColor,
       );
 
-  /// Style en-tête de section.
+  /// Style en-tête de colonne de tableau.
+  static pw.TextStyle tableHeaderStyle() => pw.TextStyle(
+        fontSize: tableHeaderFontSize,
+        fontWeight: pw.FontWeight.bold,
+        color: accentColor,
+      );
+
+  /// Style titre de section (ex: "Liste des articles").
   static pw.TextStyle sectionTitleStyle() => pw.TextStyle(
         fontSize: sectionTitleFontSize,
         fontWeight: pw.FontWeight.bold,
         color: accentColor,
+      );
+
+  /// Style titre principal (ex: "Market Finance Invoice").
+  static pw.TextStyle mainTitleStyle() => pw.TextStyle(
+        fontSize: mainTitleFontSize,
+        fontWeight: pw.FontWeight.bold,
+        color: accentColor,
+      );
+
+  /// Style libellé (grille infos, sous-total).
+  static pw.TextStyle labelStyle() => pw.TextStyle(
+        fontSize: labelFontSize,
+        fontWeight: pw.FontWeight.bold,
+        color: textColor,
+      );
+
+  /// Style petit texte (frais, détails).
+  static pw.TextStyle smallStyle() => pw.TextStyle(
+        fontSize: smallFontSize,
+        color: textColor,
       );
 }
