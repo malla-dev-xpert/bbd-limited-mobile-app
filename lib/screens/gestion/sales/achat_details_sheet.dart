@@ -975,7 +975,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       builder: (context) => Dialog(
         child: SizedBox(
           width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.6,
+          height: MediaQuery.of(context).size.height * 0.9,
           child: PdfPreview(
             build: (format) => InvoiceService.buildAchatPdfBytes(
               achatToUse,

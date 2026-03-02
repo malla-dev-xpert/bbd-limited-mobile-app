@@ -497,13 +497,10 @@ class _PartnerScreenState extends State<PartnerScreen> {
       await showDialog(
         context: context,
         builder: (context) {
-          final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-          final heightFactor = isTablet ? 0.8 : 0.6;
-
           return Dialog(
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.9,
-              height: MediaQuery.of(context).size.height * heightFactor,
+              height: MediaQuery.of(context).size.height * 0.9,
               child: PdfPreview(
                 build: (format) => pdfBytes,
                 pdfFileName: 'customers_balance.pdf',
