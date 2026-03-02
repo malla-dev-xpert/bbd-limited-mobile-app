@@ -88,7 +88,7 @@ class InvoiceService {
                     printLocalizations, currencyFormat),
                 pw.SizedBox(height: 24),
                 _buildArticlesSection(
-                    achats, printLocalizations, currencyFormat, options),
+                    achats, versement, printLocalizations, currencyFormat, options),
                 pw.SizedBox(height: 12),
                 _buildPricingSummary(sousTotal, montantTotal, options,
                     currencyFormat, printLocalizations, achats),
@@ -117,6 +117,7 @@ class InvoiceService {
     bool isProforma = false,
     InvoiceOptions? invoiceOptions,
     List<Containers>? containers,
+    Versement? versement,
   }) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('dd/MM/yyyy');
@@ -186,7 +187,8 @@ class InvoiceService {
                   pw.SizedBox(height: 24),
                 ],
                 _buildAchatArticlesSection(filteredItems, printLocalizations,
-                    includeSupplierInfo, isProforma, currencyFormat, options),
+                    includeSupplierInfo, isProforma, currencyFormat, options,
+                    achat, versement),
                 pw.SizedBox(height: 12),
                 _buildAchatPricingSummary(
                     sousTotal,
@@ -643,9 +645,12 @@ class InvoiceService {
 
   static pw.Widget _buildArticlesSection(
       List<Achat> achats,
+      Versement? versement,
       PrintLocalizations printLocalizations,
       NumberFormat currencyFormat,
       InvoiceOptions options) {
+    final montantRestantDisplay =
+        _montantRestantDisplay(versement, currencyFormat);
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -673,6 +678,28 @@ class InvoiceService {
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8),
+                      maxLines: 2)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 80,
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_reference'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                      maxLines: 2)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_remaining_amount_label'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center,
                       maxLines: 2)),
               pw.SizedBox(width: 3),
               pw.Container(
@@ -809,6 +836,21 @@ class InvoiceService {
                             flex: 3,
                             child: pw.Text(item.description ?? '',
                                 style: const pw.TextStyle(fontSize: 8),
+                                maxLines: 2)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 80,
+                            child: pw.Text(
+                                _achatReferenceDisplay(achat),
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
+                                maxLines: 2)),
+                        pw.SizedBox(width: 3),
+                        pw.Container(
+                            width: 70,
+                            child: pw.Text(montantRestantDisplay,
+                                style: const pw.TextStyle(fontSize: 8),
+                                textAlign: pw.TextAlign.center,
                                 maxLines: 2)),
                         pw.SizedBox(width: 3),
                         pw.Container(
@@ -1646,13 +1688,34 @@ class InvoiceService {
     );
   }
 
+  static String _achatReferenceDisplay(Achat achat) {
+    if (achat.referenceVersement != null &&
+        achat.referenceVersement!.isNotEmpty) {
+      return achat.referenceVersement!;
+    }
+    return achat.isDebt == true ? 'Dette' : '-';
+  }
+
+  static String _montantRestantDisplay(
+      Versement? versement, NumberFormat currencyFormat) {
+    if (versement != null && versement.montantRestant != null) {
+      return currencyFormat.format(versement.montantRestant!);
+    }
+    return '-';
+  }
+
   static pw.Widget _buildAchatArticlesSection(
       List<Items>? filteredItems,
       PrintLocalizations printLocalizations,
       bool includeSupplierInfo,
       bool isProforma,
       NumberFormat currencyFormat,
-      InvoiceOptions options) {
+      InvoiceOptions options,
+      Achat achat,
+      Versement? versement) {
+    final refDisplay = _achatReferenceDisplay(achat);
+    final montantRestantDisplay =
+        _montantRestantDisplay(versement, currencyFormat);
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -1680,6 +1743,28 @@ class InvoiceService {
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8),
+                      maxLines: 2)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 80,
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_reference'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                      maxLines: 2)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_remaining_amount_label'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center,
                       maxLines: 2)),
               pw.SizedBox(width: 3),
               if (includeSupplierInfo) ...[
@@ -1846,6 +1931,20 @@ class InvoiceService {
                           flex: 3,
                           child: pw.Text(item.description ?? '',
                               style: const pw.TextStyle(fontSize: 8),
+                              maxLines: 2)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 80,
+                          child: pw.Text(refDisplay,
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center,
+                              maxLines: 2)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 70,
+                          child: pw.Text(montantRestantDisplay,
+                              style: const pw.TextStyle(fontSize: 8),
+                              textAlign: pw.TextAlign.center,
                               maxLines: 2)),
                       pw.SizedBox(width: 3),
                       if (includeSupplierInfo) ...[

@@ -1081,6 +1081,7 @@
   "pdf_invoice": "发票",
   "pdf_versement_reference": "付款参考号",
   "pdf_versement_date": "付款日期",
+  "pdf_versement_info_footer": "付款及剩余金额",
   "pdf_commissionnaire": "专员",
   "pdf_commissionnaire_name": "专员姓名",
   "pdf_commissionnaire_phone": "专员电话",

@@ -23,7 +23,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
+import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/models/container.dart';
+import 'package:bbd_limited/models/versement.dart';
 
 class AchatDetailsSheet extends StatefulWidget {
   final Achat achat;
@@ -968,6 +970,19 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       print('Erreur lors de la récupération des conteneurs: $e');
     }
 
+    // Charger le versement pour afficher la référence et le montant restant à l'impression
+    Versement? versement;
+    if (achatToUse.referenceVersement != null &&
+        achatToUse.referenceVersement!.isNotEmpty &&
+        achatToUse.isDebt != true) {
+      try {
+        versement =
+            await VersementServices().getByReference(achatToUse.referenceVersement!);
+      } catch (e) {
+        print('Erreur lors de la récupération du versement: $e');
+      }
+    }
+
     final printLocalizations = await PrintLocalizations.create(printLanguage);
     if (!context.mounted) return;
     showDialog(
@@ -985,6 +1000,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               isProforma: isProforma,
               invoiceOptions: _invoiceOptions,
               containers: containers,
+              versement: versement,
             ),
             pdfFileName: 'achat_${achatToUse.id ?? "detail"}.pdf',
           ),

@@ -877,9 +877,12 @@ class PartnerPrintService {
         : pw.Font.helvetica();
     final fallbackFonts = [pw.Font.times(), pw.Font.courier()];
 
-    // Collecter tous les articles de tous les achats
-    final List<({Items item, String versementRef})> allItems = [];
+    // Collecter tous les articles de tous les achats (avec référence et montant restant du versement)
+    final List<({Items item, String versementRef, String montantRestantDisplay})> allItems = [];
     for (final versement in versements) {
+      final montantRestantDisplay = versement.montantRestant != null
+          ? _currencyFormat.format(versement.montantRestant!)
+          : '-';
       for (final achat in (versement.achats ?? [])) {
         for (final item in (achat.items ?? [])) {
           // Déterminer la référence du versement ou "Dette"
@@ -888,7 +891,7 @@ class PartnerPrintService {
                   achat.referenceVersement!.isEmpty)
               ? 'Dette'
               : achat.referenceVersement!;
-          allItems.add((item: item, versementRef: versementRef));
+          allItems.add((item: item, versementRef: versementRef, montantRestantDisplay: montantRestantDisplay));
         }
       }
     }
@@ -959,6 +962,17 @@ class PartnerPrintService {
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 8),
                       textAlign: pw.TextAlign.center)),
+              pw.SizedBox(width: 3),
+              pw.Container(
+                  width: 70,
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_remaining_amount_label'),
+                      style: pw.TextStyle(
+                          color: PdfColor.fromHex('#1A1E49'),
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                      maxLines: 2)),
             ],
           ),
         ),
@@ -970,7 +984,7 @@ class PartnerPrintService {
   }
 
   static pw.Widget _buildPurchasedItemsTable(
-      List<({Items item, String versementRef})> allItems,
+      List<({Items item, String versementRef, String montantRestantDisplay})> allItems,
       pw.Font font,
       List<pw.Font> fallbackFonts,
       PrintLocalizations printLocalizations) {
@@ -1043,6 +1057,19 @@ class PartnerPrintService {
                           fontFallback: fallbackFonts,
                         ),
                         textAlign: pw.TextAlign.center,
+                      )),
+                  pw.SizedBox(width: 3),
+                  pw.Container(
+                      width: 70,
+                      child: pw.Text(
+                        entry.montantRestantDisplay,
+                        style: pw.TextStyle(
+                          fontSize: 8,
+                          font: font,
+                          fontFallback: fallbackFonts,
+                        ),
+                        textAlign: pw.TextAlign.center,
+                        maxLines: 2,
                       )),
                 ],
               ),

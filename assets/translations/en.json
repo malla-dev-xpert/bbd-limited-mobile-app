@@ -1131,6 +1131,7 @@
   "pdf_invoice": "INVOICE",
   "pdf_versement_reference": "PAYMENT REF",
   "pdf_versement_date": "PAYMENT DATE",
+  "pdf_versement_info_footer": "Payment & remaining amount",
   "pdf_amount_paid_label": "AMOUNT PAID",
   "pdf_remaining_amount_label": "REMAINING AMOUNT",
   "pdf_commissionnaire": "COMMISSIONER",

@@ -1164,6 +1164,7 @@
   "pdf_invoice": "FACTURE",
   "pdf_versement_reference": "RÉF DU VERSEMENT",
   "pdf_versement_date": "DATE DU VERSEMENT",
+  "pdf_versement_info_footer": "Versement et montant restant",
   "pdf_amount_paid_label": "MONTANT VERSÉ",
   "pdf_remaining_amount_label": "MONTANT RESTANT",
   "pdf_commissionnaire": "COMISSIONNAIRE",
