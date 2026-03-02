@@ -673,7 +673,7 @@ class InvoiceService {
             children: [
               pw.Expanded(
                   flex: 3,
-                  child: pw.Text('Product Name',
+                  child: pw.Text(printLocalizations.translate('pdf_product_name'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -703,26 +703,8 @@ class InvoiceService {
                       maxLines: 2)),
               pw.SizedBox(width: 3),
               pw.Container(
-                  width: 40,
-                  child: pw.Text('Total CBM',
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
-                  width: 40,
-                  child: pw.Text('Total Weight',
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
                   width: 30,
-                  child: pw.Text('Carton',
+                  child: pw.Text(printLocalizations.translate('pdf_carton'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -731,7 +713,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text('Unit / Carton',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_quantity_per_carton'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -740,7 +723,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text('Total Quantity',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_total_quantity'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -749,7 +733,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 40,
-                  child: pw.Text('Price',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_unit_price_label'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -758,7 +743,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text('Amount',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_amount'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -802,11 +788,6 @@ class InvoiceService {
               final carton = item.carton ?? 0;
               final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
               final totalQuantity = (item.quantity ?? 0).toDouble();
-              final totalCBM =
-                  0.0; // Par défaut, peut être calculé si disponible
-              final totalWeight =
-                  0.0; // Par défaut, peut être calculé si disponible
-
               // Déterminer si le prix final a été modifié (Option A)
               final isPriceModified = currentMargin != null &&
                   currentMargin.displayMode ==
@@ -843,18 +824,6 @@ class InvoiceService {
                                 style: const pw.TextStyle(fontSize: 8),
                                 textAlign: pw.TextAlign.center,
                                 maxLines: 2)),
-                        pw.SizedBox(width: 3),
-                        pw.Container(
-                            width: 40,
-                            child: pw.Text(totalCBM.toStringAsFixed(2),
-                                style: const pw.TextStyle(fontSize: 8),
-                                textAlign: pw.TextAlign.center)),
-                        pw.SizedBox(width: 3),
-                        pw.Container(
-                            width: 40,
-                            child: pw.Text(totalWeight.toStringAsFixed(2),
-                                style: const pw.TextStyle(fontSize: 8),
-                                textAlign: pw.TextAlign.center)),
                         pw.SizedBox(width: 3),
                         pw.Container(
                             width: 30,
@@ -956,7 +925,7 @@ class InvoiceService {
                     mainAxisAlignment: pw.MainAxisAlignment.end,
                     children: [
                       pw.Text(
-                        'Remises par ligne (sélectives)',
+                        printLocalizations.translate('pdf_line_discounts_selective'),
                         style: pw.TextStyle(
                           fontSize: 16,
                           color: PdfColors.grey700,
@@ -1137,7 +1106,7 @@ class InvoiceService {
 
           // Total final
           pw.Text(
-            'TOTAL FINAL : ${currencyFormat.format(montantTotal)}',
+            '${printLocalizations.translate('pdf_total_final')} : ${currencyFormat.format(montantTotal)}',
             style: pw.TextStyle(
               fontSize: 18,
               fontWeight: pw.FontWeight.bold,
@@ -1516,7 +1485,7 @@ class InvoiceService {
             children: [
               pw.Expanded(
                   flex: 3,
-                  child: pw.Text('Product Name',
+                  child: pw.Text(printLocalizations.translate('pdf_product_name'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -1548,7 +1517,7 @@ class InvoiceService {
               if (includeSupplierInfo) ...[
                 pw.Container(
                     width: 60,
-                    child: pw.Text('Supplier Name',
+                    child: pw.Text(printLocalizations.translate('pdf_supplier_name'),
                         style: pw.TextStyle(
                             color: PdfColor.fromHex('#1A1E49'),
                             fontWeight: pw.FontWeight.bold,
@@ -1558,7 +1527,7 @@ class InvoiceService {
                 pw.SizedBox(width: 3),
                 pw.Container(
                     width: 50,
-                    child: pw.Text('Supplier Phone',
+                    child: pw.Text(printLocalizations.translate('pdf_supplier_phone'),
                         style: pw.TextStyle(
                             color: PdfColor.fromHex('#1A1E49'),
                             fontWeight: pw.FontWeight.bold,
@@ -1568,26 +1537,9 @@ class InvoiceService {
                 pw.SizedBox(width: 3),
               ],
               pw.Container(
-                  width: 40,
-                  child: pw.Text('Total CBM',
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
-                  width: 40,
-                  child: pw.Text('Total Weight',
-                      style: pw.TextStyle(
-                          color: PdfColor.fromHex('#1A1E49'),
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 8),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
                   width: 30,
-                  child: pw.Text('Carton',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_carton'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -1596,7 +1548,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text('Unit / Carton',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_quantity_per_carton'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -1605,7 +1558,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text('Total Quantity',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_total_quantity'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -1614,7 +1568,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 40,
-                  child: pw.Text('Price',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_unit_price_label'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -1623,7 +1578,8 @@ class InvoiceService {
               pw.SizedBox(width: 3),
               pw.Container(
                   width: 50,
-                  child: pw.Text('Amount',
+                  child: pw.Text(
+                      printLocalizations.translate('pdf_amount'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -1676,9 +1632,6 @@ class InvoiceService {
             final carton = item.carton ?? 0;
             final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
             final totalQuantity = (item.quantity ?? 0).toDouble();
-            final totalCBM = 0.0; // Par défaut, peut être calculé si disponible
-            final totalWeight =
-                0.0; // Par défaut, peut être calculé si disponible
 
             // Déterminer si le prix final a été modifié (Option A)
             final isPriceModified = currentMargin != null &&
@@ -1732,18 +1685,6 @@ class InvoiceService {
                                 maxLines: 2)),
                         pw.SizedBox(width: 3),
                       ],
-                      pw.Container(
-                          width: 40,
-                          child: pw.Text(totalCBM.toStringAsFixed(2),
-                              style: const pw.TextStyle(fontSize: 8),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 3),
-                      pw.Container(
-                          width: 40,
-                          child: pw.Text(totalWeight.toStringAsFixed(2),
-                              style: const pw.TextStyle(fontSize: 8),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 3),
                       pw.Container(
                           width: 30,
                           child: pw.Text(carton.toString(),
@@ -1855,7 +1796,7 @@ class InvoiceService {
                     mainAxisAlignment: pw.MainAxisAlignment.end,
                     children: [
                       pw.Text(
-                        'Remises par ligne (sélectives)',
+                        printLocalizations.translate('pdf_line_discounts_selective'),
                         style: pw.TextStyle(
                           fontSize: 16,
                           color: PdfColors.grey700,
