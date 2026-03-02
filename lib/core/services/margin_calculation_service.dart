@@ -20,20 +20,23 @@ class MarginCalculationService {
     Map<String, SelectiveFeeMargin> selectiveFeeMargins = const {},
     Map<int, SelectiveLineDiscount> selectiveLineDiscounts = const {},
   }) {
-    // Calculer le sous-total avec les marges sur articles sélectionnés
-    double subtotalAfterItemMargins = subtotal;
+    // Recalculer le sous-total par article : marge appliquée puis remise sur le prix après marge
+    double subtotalAfterItemMargins = 0.0;
     double totalItemMargins = 0.0;
 
     for (final item in items) {
-      if (item.id != null && selectiveItemMargins.containsKey(item.id)) {
-        final margin = selectiveItemMargins[item.id]!;
+      final margin = item.id != null ? selectiveItemMargins[item.id] : null;
+      final discount = item.id != null ? selectiveLineDiscounts[item.id] : null;
+      final result = getItemFinalPrice(
+        item: item,
+        margin: margin,
+        discount: discount,
+      );
+      subtotalAfterItemMargins += result.totalPrice;
+      if (margin != null) {
         totalItemMargins += margin.marginAmount;
-        subtotalAfterItemMargins += margin.marginAmount;
       }
     }
-
-    // IMPORTANT: Si des marges sélectives sont activées, ne pas appliquer la marge par ligne globale
-    // La marge par ligne globale est remplacée par les marges sélectives
 
     // Marge par ligne globale (seulement si aucune marge sélective n'est activée)
     double totalAfterLineMargin = subtotalAfterItemMargins;
@@ -48,17 +51,7 @@ class MarginCalculationService {
       }
     }
 
-    // Calculer le sous-total avec les remises sélectives sur articles sélectionnés
     double subtotalAfterItemDiscounts = totalAfterLineMargin;
-    double totalItemDiscounts = 0.0;
-
-    for (final item in items) {
-      if (item.id != null && selectiveLineDiscounts.containsKey(item.id)) {
-        final discount = selectiveLineDiscounts[item.id]!;
-        totalItemDiscounts += discount.discountAmount;
-        subtotalAfterItemDiscounts -= discount.discountAmount;
-      }
-    }
 
     // IMPORTANT: Si des remises sélectives sont activées, ne pas appliquer la remise par ligne globale
     // La remise par ligne globale est remplacée par les remises sélectives
@@ -152,6 +145,31 @@ class MarginCalculationService {
   /// Calcule le sous-total original à partir des articles (sans marges)
   static double calculateOriginalSubtotal(List<Items> items) {
     return items.fold(0.0, (sum, item) => sum + (item.totalPrice ?? 0.0));
+  }
+
+  /// Recalcule le prix final d'un article : marge appliquée d'abord, puis remise
+  /// appliquée sur le prix après marge. Utilisé pour l'impression et les totaux.
+  static ({double unitPrice, double totalPrice}) getItemFinalPrice({
+    required Items item,
+    SelectiveItemMargin? margin,
+    SelectiveLineDiscount? discount,
+  }) {
+    double total = item.totalPrice ?? 0.0;
+    double unit = item.unitPrice ?? 0.0;
+    if (margin != null) {
+      total = margin.adjustedTotalPrice;
+      unit = margin.adjustedUnitPrice;
+    }
+    if (discount != null) {
+      if (discount.type == DiscountType.percentage) {
+        total = total * (1 - discount.value / 100);
+      } else {
+        total = (total - discount.value).clamp(0.0, double.infinity);
+      }
+      final quantity = (item.quantity ?? 0).toDouble();
+      unit = quantity > 0 ? total / quantity : total;
+    }
+    return (unitPrice: unit, totalPrice: total);
   }
 
   /// Calcule le prix ajusté d'un article avec sa marge sélective

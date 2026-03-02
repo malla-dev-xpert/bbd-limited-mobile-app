@@ -780,32 +780,23 @@ class InvoiceService {
                 }
               }
 
-              // Calculer le prix ajusté si marge sélective activée
-              double adjustedUnitPrice = item.unitPrice ?? 0;
-              double adjustedTotalPrice = item.totalPrice ?? 0;
-              SelectiveItemMargin? currentMargin;
-
-              if (options.enableSelectiveItemMargins &&
-                  item.id != null &&
-                  options.selectiveItemMargins.containsKey(item.id)) {
-                currentMargin = options.selectiveItemMargins[item.id]!;
-                adjustedUnitPrice = currentMargin.adjustedUnitPrice;
-                adjustedTotalPrice = currentMargin.adjustedTotalPrice;
-              }
-
-              // Appliquer la remise sélective par ligne si présente
-              if (options.enableSelectiveLineDiscounts &&
-                  item.id != null &&
-                  options.selectiveLineDiscounts.containsKey(item.id)) {
-                final discount = options.selectiveLineDiscounts[item.id]!;
-                final discountedTotal =
-                    (adjustedTotalPrice - discount.discountAmount)
-                        .clamp(0.0, double.infinity);
-                final quantity = (item.quantity ?? 0).toDouble();
-                adjustedUnitPrice =
-                    quantity > 0 ? discountedTotal / quantity : discountedTotal;
-                adjustedTotalPrice = discountedTotal;
-              }
+              // Recalcul du prix de l'article : marge puis remise sur le prix après marge
+              final margin = item.id != null &&
+                      options.selectiveItemMargins.containsKey(item.id)
+                  ? options.selectiveItemMargins[item.id]
+                  : null;
+              final discount = item.id != null &&
+                      options.selectiveLineDiscounts.containsKey(item.id)
+                  ? options.selectiveLineDiscounts[item.id]
+                  : null;
+              final priceResult = MarginCalculationService.getItemFinalPrice(
+                item: item,
+                margin: margin,
+                discount: discount,
+              );
+              final adjustedUnitPrice = priceResult.unitPrice;
+              final adjustedTotalPrice = priceResult.totalPrice;
+              final currentMargin = margin;
 
               // Calculer les valeurs pour les colonnes
               final carton = item.carton ?? 0;
@@ -907,119 +898,6 @@ class InvoiceService {
                       ],
                     ),
                   ),
-                  // Affichage de la marge (Option B) ou information sur le prix modifié (Option A)
-                  if (currentMargin != null) ...[
-                    pw.Padding(
-                      padding:
-                          const pw.EdgeInsets.only(left: 8, top: 2, bottom: 4),
-                      child: pw.Row(
-                        children: [
-                          if (currentMargin.displayMode ==
-                              MarginDisplayMode.displayMarginOnly) ...[
-                            // Option B : Afficher la marge
-                            pw.Text(
-                              'Marge: ',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColors.grey700,
-                                fontStyle: pw.FontStyle.italic,
-                              ),
-                            ),
-                            pw.Text(
-                              '+${currencyFormat.format(currentMargin.marginAmount)}',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColor.fromHex('#1A1E49'),
-                                fontStyle: pw.FontStyle.italic,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            ),
-                            pw.SizedBox(width: 8),
-                            pw.Text(
-                              '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColors.grey700,
-                                fontStyle: pw.FontStyle.italic,
-                              ),
-                            ),
-                          ] else if (currentMargin.displayMode ==
-                                  MarginDisplayMode.modifyFinalPrice &&
-                              currentMargin.finalPrice != null) ...[
-                            // Option A : Afficher le prix original et la marge réelle
-                            pw.Text(
-                              'Prix original: ',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColors.grey700,
-                                fontStyle: pw.FontStyle.italic,
-                              ),
-                            ),
-                            pw.Text(
-                              currencyFormat
-                                  .format(currentMargin.originalTotalPrice),
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColors.grey700,
-                                fontStyle: pw.FontStyle.italic,
-                              ),
-                            ),
-                            pw.SizedBox(width: 8),
-                            pw.Text(
-                              'Marge réelle: ',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColors.grey700,
-                                fontStyle: pw.FontStyle.italic,
-                              ),
-                            ),
-                            pw.Text(
-                              '+${currencyFormat.format(currentMargin.marginAmount)}',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColor.fromHex('#1A1E49'),
-                                fontStyle: pw.FontStyle.italic,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            ),
-                            pw.SizedBox(width: 8),
-                            pw.Text(
-                              '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
-                              style: pw.TextStyle(
-                                fontSize: 7,
-                                color: PdfColors.grey700,
-                                fontStyle: pw.FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    // Affichage de l'observation si présente
-                    if (currentMargin.observation != null &&
-                        currentMargin.observation!.trim().isNotEmpty) ...[
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(
-                            left: 8, top: 2, bottom: 4),
-                        child: pw.Container(
-                          padding: const pw.EdgeInsets.all(4),
-                          decoration: pw.BoxDecoration(
-                            color: PdfColors.grey100,
-                            borderRadius: pw.BorderRadius.circular(4),
-                          ),
-                          child: pw.Text(
-                            'Observation: ${currentMargin.observation}',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey800,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                            maxLines: 3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
                 ],
               );
             }(),
@@ -1063,181 +941,6 @@ class InvoiceService {
               ],
             ),
           ),
-
-          // Détail des options appliquées
-          // Marge par ligne globale (seulement si aucune marge sélective n'est activée)
-          if (options.enableLineMargin &&
-              options.lineMarginValue != null &&
-              !options.enableSelectiveItemMargins) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    options.lineMarginType == MarginType.percentage
-                        ? printLocalizations
-                            .translate('pdf_line_margin_percentage')
-                            .replaceAll('{value}', '${options.lineMarginValue}')
-                        : printLocalizations
-                            .translate('pdf_line_margin_fixed')
-                            .replaceAll(
-                                '{value}', '${options.lineMarginValue}'),
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.normal,
-                    ),
-                  ),
-                  pw.SizedBox(width: 10),
-                  pw.Text(
-                    currencyFormat.format(
-                        options.lineMarginType == MarginType.percentage
-                            ? (sousTotal * options.lineMarginValue! / 100)
-                            : options.lineMarginValue!),
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Remise par ligne
-          if (options.enableLineDiscount &&
-              options.lineDiscountValue != null &&
-              !options.enableSelectiveLineDiscounts) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    options.lineDiscountType == DiscountType.percentage
-                        ? 'Remise par ligne ({value}%)'.replaceAll(
-                            '{value}', '${options.lineDiscountValue}')
-                        : 'Remise par ligne (${options.lineDiscountValue} ${currencyFormat.currencySymbol})',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.normal,
-                    ),
-                  ),
-                  pw.SizedBox(width: 10),
-                  pw.Text(
-                    '-${currencyFormat.format(options.lineDiscountType == DiscountType.percentage ? (() {
-                        // Calculer le total après la marge par ligne
-                        double totalAfterLineMargin = sousTotal;
-                        if (options.enableLineMargin &&
-                            options.lineMarginValue != null &&
-                            !options.enableSelectiveItemMargins) {
-                          if (options.lineMarginType == MarginType.percentage) {
-                            totalAfterLineMargin +=
-                                (sousTotal * options.lineMarginValue! / 100);
-                          } else {
-                            totalAfterLineMargin += options.lineMarginValue!;
-                          }
-                        }
-                        return totalAfterLineMargin *
-                            options.lineDiscountValue! /
-                            100;
-                      })() : options.lineDiscountValue!)}',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Remises sélectives par ligne
-          if (options.enableSelectiveLineDiscounts &&
-              options.selectiveLineDiscounts.isNotEmpty) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        'Remises par ligne (sélectives)',
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
-                      ),
-                      pw.SizedBox(width: 10),
-                      pw.Text(
-                        '-${currencyFormat.format(options.selectiveLineDiscounts.values.fold<double>(0.0, (sum, d) => sum + d.discountAmount))}',
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 6),
-                  ...options.selectiveLineDiscounts.values.map((discount) {
-                    Items? foundItem;
-                    for (final achat in achats) {
-                      final items = achat.items;
-                      if (items == null) continue;
-                      try {
-                        foundItem = items.firstWhere(
-                          (item) => item.id == discount.itemId,
-                        );
-                        break;
-                      } catch (_) {
-                        // Continuer la recherche
-                      }
-                    }
-
-                    final itemLabel =
-                        foundItem?.description ?? 'Article ${discount.itemId}';
-
-                    return pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.end,
-                      children: [
-                        pw.Text(
-                          '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                            fontWeight: pw.FontWeight.normal,
-                          ),
-                        ),
-                        pw.SizedBox(width: 10),
-                        pw.Text(
-                          currencyFormat.format(discount.discountAmount),
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ],
-              ),
-            ),
-          ],
 
           if (options.enableDiscount && options.discountValue != null) ...[
             pw.SizedBox(height: 8),
@@ -1876,32 +1579,23 @@ class InvoiceService {
               }
             }
 
-            // Calculer le prix ajusté si marge sélective activée
-            double adjustedUnitPrice = item.unitPrice ?? 0;
-            double adjustedTotalPrice = item.totalPrice ?? 0;
-            SelectiveItemMargin? currentMargin;
-
-            if (options.enableSelectiveItemMargins &&
-                item.id != null &&
-                options.selectiveItemMargins.containsKey(item.id)) {
-              currentMargin = options.selectiveItemMargins[item.id]!;
-              adjustedUnitPrice = currentMargin.adjustedUnitPrice;
-              adjustedTotalPrice = currentMargin.adjustedTotalPrice;
-            }
-
-            // Appliquer la remise sélective par ligne si présente
-            if (options.enableSelectiveLineDiscounts &&
-                item.id != null &&
-                options.selectiveLineDiscounts.containsKey(item.id)) {
-              final discount = options.selectiveLineDiscounts[item.id]!;
-              final discountedTotal =
-                  (adjustedTotalPrice - discount.discountAmount)
-                      .clamp(0.0, double.infinity);
-              final quantity = (item.quantity ?? 0).toDouble();
-              adjustedUnitPrice =
-                  quantity > 0 ? discountedTotal / quantity : discountedTotal;
-              adjustedTotalPrice = discountedTotal;
-            }
+            // Recalcul du prix de l'article : marge puis remise sur le prix après marge
+            final margin = item.id != null &&
+                    options.selectiveItemMargins.containsKey(item.id)
+                ? options.selectiveItemMargins[item.id]
+                : null;
+            final discount = item.id != null &&
+                    options.selectiveLineDiscounts.containsKey(item.id)
+                ? options.selectiveLineDiscounts[item.id]
+                : null;
+            final priceResult = MarginCalculationService.getItemFinalPrice(
+              item: item,
+              margin: margin,
+              discount: discount,
+            );
+            final adjustedUnitPrice = priceResult.unitPrice;
+            final adjustedTotalPrice = priceResult.totalPrice;
+            final currentMargin = margin;
 
             // Calculer les valeurs pour les colonnes
             final carton = item.carton ?? 0;
@@ -2026,119 +1720,6 @@ class InvoiceService {
                     ],
                   ),
                 ),
-                // Affichage de la marge (Option B) ou information sur le prix modifié (Option A)
-                if (currentMargin != null) ...[
-                  pw.Padding(
-                    padding:
-                        const pw.EdgeInsets.only(left: 8, top: 2, bottom: 4),
-                    child: pw.Row(
-                      children: [
-                        if (currentMargin.displayMode ==
-                            MarginDisplayMode.displayMarginOnly) ...[
-                          // Option B : Afficher la marge
-                          pw.Text(
-                            'Marge: ',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey700,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                          ),
-                          pw.Text(
-                            '+${currencyFormat.format(currentMargin.marginAmount)}',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColor.fromHex('#1A1E49'),
-                              fontStyle: pw.FontStyle.italic,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                          pw.SizedBox(width: 8),
-                          pw.Text(
-                            '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey700,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                          ),
-                        ] else if (currentMargin.displayMode ==
-                                MarginDisplayMode.modifyFinalPrice &&
-                            currentMargin.finalPrice != null) ...[
-                          // Option A : Afficher le prix original et la marge réelle
-                          pw.Text(
-                            'Prix original: ',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey700,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                          ),
-                          pw.Text(
-                            currencyFormat
-                                .format(currentMargin.originalTotalPrice),
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey700,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                          ),
-                          pw.SizedBox(width: 8),
-                          pw.Text(
-                            'Marge réelle: ',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey700,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                          ),
-                          pw.Text(
-                            '+${currencyFormat.format(currentMargin.marginAmount)}',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColor.fromHex('#1A1E49'),
-                              fontStyle: pw.FontStyle.italic,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                          pw.SizedBox(width: 8),
-                          pw.Text(
-                            '(${currentMargin.realMarginPercentage.toStringAsFixed(1)}%)',
-                            style: pw.TextStyle(
-                              fontSize: 7,
-                              color: PdfColors.grey700,
-                              fontStyle: pw.FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // Affichage de l'observation si présente
-                  if (currentMargin.observation != null &&
-                      currentMargin.observation!.trim().isNotEmpty) ...[
-                    pw.Padding(
-                      padding:
-                          const pw.EdgeInsets.only(left: 8, top: 2, bottom: 4),
-                      child: pw.Container(
-                        padding: const pw.EdgeInsets.all(4),
-                        decoration: pw.BoxDecoration(
-                          color: PdfColors.grey100,
-                          borderRadius: pw.BorderRadius.circular(4),
-                        ),
-                        child: pw.Text(
-                          'Observation: ${currentMargin.observation}',
-                          style: pw.TextStyle(
-                            fontSize: 7,
-                            color: PdfColors.grey800,
-                            fontStyle: pw.FontStyle.italic,
-                          ),
-                          maxLines: 3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
               ],
             );
           }(),
@@ -2184,195 +1765,6 @@ class InvoiceService {
               ],
             ),
           ),
-
-          // Détail des options appliquées
-          // Marge par ligne globale (seulement si aucune marge sélective n'est activée)
-          if (options.enableLineMargin &&
-              options.lineMarginValue != null &&
-              !options.enableSelectiveItemMargins) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    options.lineMarginType == MarginType.percentage
-                        ? printLocalizations
-                            .translate('pdf_line_margin_percentage')
-                            .replaceAll('{value}', '${options.lineMarginValue}')
-                        : printLocalizations
-                            .translate('pdf_line_margin_fixed')
-                            .replaceAll(
-                                '{value}', '${options.lineMarginValue}'),
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.normal,
-                    ),
-                  ),
-                  pw.SizedBox(width: 10),
-                  pw.Text(
-                    currencyFormat.format(
-                        options.lineMarginType == MarginType.percentage
-                            ? (sousTotal * options.lineMarginValue! / 100)
-                            : options.lineMarginValue!),
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Remise par ligne
-          if (options.enableLineDiscount &&
-              options.lineDiscountValue != null &&
-              !options.enableSelectiveLineDiscounts) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    options.lineDiscountType == DiscountType.percentage
-                        ? 'Remise par ligne ({value}%)'.replaceAll(
-                            '{value}', '${options.lineDiscountValue}')
-                        : 'Remise par ligne (${options.lineDiscountValue} ${currencyFormat.currencySymbol})',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.normal,
-                    ),
-                  ),
-                  pw.SizedBox(width: 10),
-                  pw.Text(
-                    '-${currencyFormat.format(options.lineDiscountType == DiscountType.percentage ? (() {
-                        // Calculer le total après la marge par ligne
-                        double totalAfterLineMargin = sousTotal;
-                        if (options.enableLineMargin &&
-                            options.lineMarginValue != null &&
-                            !options.enableSelectiveItemMargins) {
-                          if (options.lineMarginType == MarginType.percentage) {
-                            totalAfterLineMargin +=
-                                (sousTotal * options.lineMarginValue! / 100);
-                          } else {
-                            totalAfterLineMargin += options.lineMarginValue!;
-                          }
-                        }
-                        return totalAfterLineMargin *
-                            options.lineDiscountValue! /
-                            100;
-                      })() : options.lineDiscountValue!)}',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      color: PdfColors.grey700,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Remises sélectives par ligne
-          if (options.enableSelectiveLineDiscounts &&
-              options.selectiveLineDiscounts.isNotEmpty) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        'Remises par ligne (sélectives)',
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
-                      ),
-                      pw.SizedBox(width: 10),
-                      pw.Text(
-                        '-${currencyFormat.format(options.selectiveLineDiscounts.values.fold<double>(0.0, (sum, d) => sum + d.discountAmount))}',
-                        style: pw.TextStyle(
-                          fontSize: 16,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 6),
-                  ...options.selectiveLineDiscounts.values.map((discount) {
-                    Items? foundItem;
-
-                    // Rechercher d'abord dans filteredItems, sinon dans achats
-                    if (filteredItems != null && filteredItems.isNotEmpty) {
-                      try {
-                        foundItem = filteredItems.firstWhere(
-                          (item) => item.id == discount.itemId,
-                        );
-                      } catch (_) {
-                        // Pas trouvé, on continue
-                      }
-                    }
-
-                    if (foundItem == null) {
-                      for (final achat in achats) {
-                        final items = achat.items;
-                        if (items == null) continue;
-                        try {
-                          foundItem = items.firstWhere(
-                            (item) => item.id == discount.itemId,
-                          );
-                          break;
-                        } catch (_) {
-                          // Continuer la recherche
-                        }
-                      }
-                    }
-
-                    final itemLabel =
-                        foundItem?.description ?? 'Article ${discount.itemId}';
-
-                    return pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.end,
-                      children: [
-                        pw.Text(
-                          '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                            fontWeight: pw.FontWeight.normal,
-                          ),
-                        ),
-                        pw.SizedBox(width: 10),
-                        pw.Text(
-                          currencyFormat.format(discount.discountAmount),
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ],
-              ),
-            ),
-          ],
 
           if (options.enableDiscount && options.discountValue != null) ...[
             pw.SizedBox(height: 8),
@@ -2486,107 +1878,6 @@ class InvoiceService {
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-
-          // Afficher les marges sélectives sur articles si activées
-          if (options.enableSelectiveItemMargins &&
-              options.selectiveItemMargins.isNotEmpty) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: options.selectiveItemMargins.values.map((margin) {
-                  // Chercher l'item dans filteredItems d'abord, sinon dans achats
-                  Items? foundItem;
-                  if (filteredItems != null && filteredItems.isNotEmpty) {
-                    try {
-                      foundItem = filteredItems.firstWhere(
-                        (item) => item.id == margin.itemId,
-                      );
-                    } catch (e) {
-                      // Item not found in filteredItems, try achats
-                    }
-                  }
-                  if (foundItem == null) {
-                    for (final achat in achats) {
-                      final items = achat.items;
-                      if (items != null && items.isNotEmpty) {
-                        try {
-                          foundItem = items.firstWhere(
-                            (item) => item.id == margin.itemId,
-                          );
-                          break;
-                        } catch (e) {
-                          // Item not found, continue
-                        }
-                      }
-                    }
-                  }
-                  final item = foundItem;
-                  return pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        '${item?.description ?? ''} - ${margin.type == MarginType.percentage ? '${margin.value}%' : currencyFormat.format(margin.value)} :',
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
-                      ),
-                      pw.SizedBox(width: 10),
-                      pw.Text(
-                        currencyFormat.format(margin.marginAmount),
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-
-          // Afficher les marges sélectives sur frais si activées
-          if (options.enableSelectiveFeeMargins &&
-              options.selectiveFeeMargins.isNotEmpty) ...[
-            pw.SizedBox(height: 8),
-            pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: options.selectiveFeeMargins.values.map((margin) {
-                  return pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        '${margin.feeName} - ${margin.type == MarginType.percentage ? '${margin.value}%' : currencyFormat.format(margin.value)} :',
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
-                      ),
-                      pw.SizedBox(width: 10),
-                      pw.Text(
-                        currencyFormat.format(margin.marginAmount),
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          color: PdfColors.grey700,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
               ),
             ),
           ],
