@@ -32,10 +32,50 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
   bool _isLoadingItems = true;
   bool _isSubmitting = false;
 
+  /// Filtres pour la sélection des articles
+  final TextEditingController _filterClientController = TextEditingController();
+  final TextEditingController _filterSupplierController = TextEditingController();
+  final TextEditingController _filterInvoiceNumberController = TextEditingController();
+
+  List<Items> get _filteredItems {
+    final client = _filterClientController.text.trim();
+    final supplier = _filterSupplierController.text.trim();
+    final invoice = _filterInvoiceNumberController.text.trim();
+    if (client.isEmpty && supplier.isEmpty && invoice.isEmpty) {
+      return _availableItems;
+    }
+    return _availableItems.where((item) {
+      final clientMatch = client.isEmpty ||
+          (item.clientName ?? '')
+              .toLowerCase()
+              .contains(client.toLowerCase());
+      final supplierMatch = supplier.isEmpty ||
+          (item.supplierName ?? '')
+              .toLowerCase()
+              .contains(supplier.toLowerCase());
+      final invoiceMatch = invoice.isEmpty ||
+          (item.invoiceNumber ?? '')
+              .toLowerCase()
+              .contains(invoice.toLowerCase());
+      return clientMatch && supplierMatch && invoiceMatch;
+    }).toList();
+  }
+
   @override
   void initState() {
     super.initState();
     _loadAvailableItems();
+    _filterClientController.addListener(() => setState(() {}));
+    _filterSupplierController.addListener(() => setState(() {}));
+    _filterInvoiceNumberController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _filterClientController.dispose();
+    _filterSupplierController.dispose();
+    _filterInvoiceNumberController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAvailableItems() async {
@@ -95,6 +135,67 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  Widget _buildFilterCard(AppLocalizations loc) {
+    return _buildStepCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.filter_list, color: const Color(0xFF1A1E49), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                loc.translate('filter'),
+                style: AppTextSize.subtitleStyle(context,
+                    color: const Color(0xFF1A1E49),
+                    fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _filterClientController,
+            decoration: InputDecoration(
+              labelText: loc.translate('package_client'),
+              hintText: '...',
+              prefixIcon: const Icon(Icons.person_outline, size: 20),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              isDense: true,
+            ),
+            style: AppTextSize.bodyStyle(context),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _filterSupplierController,
+            decoration: InputDecoration(
+              labelText: loc.translate('supplier'),
+              hintText: '...',
+              prefixIcon: const Icon(Icons.business_outlined, size: 20),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              isDense: true,
+            ),
+            style: AppTextSize.bodyStyle(context),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _filterInvoiceNumberController,
+            decoration: InputDecoration(
+              labelText: loc.translate('invoice_number'),
+              hintText: '...',
+              prefixIcon: const Icon(Icons.receipt_long_outlined, size: 20),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              isDense: true,
+            ),
+            style: AppTextSize.bodyStyle(context),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildStepCard({required Widget child}) {
@@ -167,6 +268,9 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                     style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 16),
+                  // Filtres : client, fournisseur, numéro de facture
+                  _buildFilterCard(loc),
+                  const SizedBox(height: 16),
                   if (_isLoadingItems)
                     const Center(
                       child: Padding(
@@ -174,7 +278,7 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                         child: CircularProgressIndicator(),
                       ),
                     )
-                  else if (_availableItems.isEmpty)
+                  else if (_filteredItems.isEmpty)
                     _buildStepCard(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -189,7 +293,9 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                loc.translate('container_no_items_available'),
+                                _availableItems.isEmpty
+                                    ? loc.translate('container_no_items_available')
+                                    : loc.translate('sales_no_items_found'),
                                 style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                                 textAlign: TextAlign.center,
                               ),
@@ -199,7 +305,7 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                       ),
                     )
                   else
-                    ..._availableItems.map(
+                    ..._filteredItems.map(
                       (item) => _buildItemSelectionCard(
                         item: item,
                         loc: loc,

@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:bbd_limited/components/personal_info_card.dart';
-import 'package:bbd_limited/components/privacy_policy_bottom_sheet.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
+import 'package:bbd_limited/routes.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/screens/gestion/profil/widgets/change_password_bottom_sheet.dart';
@@ -244,7 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: localizations.translate('privacy_policy'),
             subtitle: localizations.translate('privacy_policy_subtitle'),
             onTap: () {
-              _showPrivacyPolicyDialog(context);
+              Navigator.of(context).pushNamed(Routes.privacyPolicy);
             },
           ),
         ],
@@ -344,18 +344,6 @@ class _ProfilePageState extends State<ProfilePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const ChangePasswordBottomSheet(),
-    );
-  }
-
-  void _showPrivacyPolicyDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        child: const PrivacyPolicyBottomSheet(),
-      ),
     );
   }
 
