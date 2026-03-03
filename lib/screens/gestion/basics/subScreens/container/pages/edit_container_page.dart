@@ -24,25 +24,12 @@ class _EditContainerPageState extends State<EditContainerPage> {
   int _currentStep = 0;
 
   String _getStepTitle() {
-    final isEmployeD = _formKey.currentState?.isEmployeD ?? false;
     switch (_currentStep) {
       case 0:
         return AppLocalizations.of(context)!.translate('container_edit');
       case 1:
-        return isEmployeD
-            ? AppLocalizations.of(context)!
-                .translate('container_form_fees_step')
-            : AppLocalizations.of(context)!
-                .translate('container_form_location_fee');
-      case 2:
-        return isEmployeD
-            ? AppLocalizations.of(context)!
-                .translate('container_items_step_title')
-            : AppLocalizations.of(context)!
-                .translate('container_form_other_fees');
-      case 3:
         return AppLocalizations.of(context)!
-            .translate('container_items_step_title');
+            .translate('container_form_fees_step');
       default:
         return AppLocalizations.of(context)!.translate('container_edit');
     }

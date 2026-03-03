@@ -7,6 +7,8 @@ import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/widgets/filters/filter_button.dart';
+import 'package:bbd_limited/widgets/filters/filter_sheet.dart';
 
 /// Full-page screen to select and embark items into a container.
 /// Reuses the same UI design as the item selection step during container creation.
@@ -32,31 +34,114 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
   bool _isLoadingItems = true;
   bool _isSubmitting = false;
 
-  /// Filtres pour la sélection des articles
-  final TextEditingController _filterClientController = TextEditingController();
-  final TextEditingController _filterSupplierController = TextEditingController();
-  final TextEditingController _filterInvoiceNumberController = TextEditingController();
+  /// Filtres (même modèle que historique_achats_screen)
+  String? _selectedClientName;
+  String? _selectedSupplierName;
+  String? _selectedInvoiceNumber;
+
+  List<String> _getUniqueClientNames() {
+    final set = <String>{};
+    for (final item in _availableItems) {
+      if (item.clientName != null && item.clientName!.isNotEmpty) {
+        set.add(item.clientName!);
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  List<String> _getUniqueSupplierNames() {
+    final set = <String>{};
+    for (final item in _availableItems) {
+      if (item.supplierName != null && item.supplierName!.isNotEmpty) {
+        set.add(item.supplierName!);
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  List<String> _getUniqueInvoiceNumbers() {
+    final set = <String>{};
+    for (final item in _availableItems) {
+      if (item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty) {
+        set.add(item.invoiceNumber!);
+      }
+    }
+    return set.toList()..sort();
+  }
+
+  Future<void> _openClientFilter() async {
+    final names = _getUniqueClientNames();
+    final options =
+        names.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('filter_by_client'),
+      searchHint: loc.translate('search_client_placeholder'),
+      options: options,
+      initialValue: _selectedClientName,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() {
+      _selectedClientName = selected;
+    });
+  }
+
+  Future<void> _openSupplierFilter() async {
+    final names = _getUniqueSupplierNames();
+    final options =
+        names.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('filter_by_supplier'),
+      searchHint: loc.translate('search_supplier_placeholder'),
+      options: options,
+      initialValue: _selectedSupplierName,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() {
+      _selectedSupplierName = selected;
+    });
+  }
+
+  Future<void> _openInvoiceFilter() async {
+    final numbers = _getUniqueInvoiceNumbers();
+    final options =
+        numbers.map((n) => FilterOption<String>(value: n, label: n)).toList();
+    final loc = AppLocalizations.of(context);
+    final selected = await FilterSheet.show<String>(
+      context: context,
+      title: loc.translate('invoice_number'),
+      searchHint: loc.translate('search_supplier_placeholder'),
+      options: options,
+      initialValue: _selectedInvoiceNumber,
+      showAllOption: true,
+      allOptionLabel: loc.translate('container_all'),
+      noResultsLabel: loc.translate('no_results'),
+    );
+    setState(() {
+      _selectedInvoiceNumber = selected;
+    });
+  }
 
   List<Items> get _filteredItems {
-    final client = _filterClientController.text.trim();
-    final supplier = _filterSupplierController.text.trim();
-    final invoice = _filterInvoiceNumberController.text.trim();
-    if (client.isEmpty && supplier.isEmpty && invoice.isEmpty) {
+    if (_selectedClientName == null &&
+        _selectedSupplierName == null &&
+        _selectedInvoiceNumber == null) {
       return _availableItems;
     }
     return _availableItems.where((item) {
-      final clientMatch = client.isEmpty ||
-          (item.clientName ?? '')
-              .toLowerCase()
-              .contains(client.toLowerCase());
-      final supplierMatch = supplier.isEmpty ||
-          (item.supplierName ?? '')
-              .toLowerCase()
-              .contains(supplier.toLowerCase());
-      final invoiceMatch = invoice.isEmpty ||
-          (item.invoiceNumber ?? '')
-              .toLowerCase()
-              .contains(invoice.toLowerCase());
+      final clientMatch = _selectedClientName == null ||
+          item.clientName == _selectedClientName;
+      final supplierMatch = _selectedSupplierName == null ||
+          item.supplierName == _selectedSupplierName;
+      final invoiceMatch = _selectedInvoiceNumber == null ||
+          item.invoiceNumber == _selectedInvoiceNumber;
       return clientMatch && supplierMatch && invoiceMatch;
     }).toList();
   }
@@ -65,17 +150,6 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
   void initState() {
     super.initState();
     _loadAvailableItems();
-    _filterClientController.addListener(() => setState(() {}));
-    _filterSupplierController.addListener(() => setState(() {}));
-    _filterInvoiceNumberController.addListener(() => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _filterClientController.dispose();
-    _filterSupplierController.dispose();
-    _filterInvoiceNumberController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadAvailableItems() async {
@@ -137,67 +211,6 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
     }
   }
 
-  Widget _buildFilterCard(AppLocalizations loc) {
-    return _buildStepCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.filter_list, color: const Color(0xFF1A1E49), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                loc.translate('filter'),
-                style: AppTextSize.subtitleStyle(context,
-                    color: const Color(0xFF1A1E49),
-                    fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _filterClientController,
-            decoration: InputDecoration(
-              labelText: loc.translate('package_client'),
-              hintText: '...',
-              prefixIcon: const Icon(Icons.person_outline, size: 20),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              isDense: true,
-            ),
-            style: AppTextSize.bodyStyle(context),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _filterSupplierController,
-            decoration: InputDecoration(
-              labelText: loc.translate('supplier'),
-              hintText: '...',
-              prefixIcon: const Icon(Icons.business_outlined, size: 20),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              isDense: true,
-            ),
-            style: AppTextSize.bodyStyle(context),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _filterInvoiceNumberController,
-            decoration: InputDecoration(
-              labelText: loc.translate('invoice_number'),
-              hintText: '...',
-              prefixIcon: const Icon(Icons.receipt_long_outlined, size: 20),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              isDense: true,
-            ),
-            style: AppTextSize.bodyStyle(context),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStepCard({required Widget child}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -251,6 +264,49 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Container(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  FilterButton(
+                    label:
+                        '${loc.translate('filter_label_client')} · ${_selectedClientName ?? loc.translate('container_all')}',
+                    isActive: _selectedClientName != null,
+                    icon: Icons.person_outline,
+                    onTap: _openClientFilter,
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                  FilterButton(
+                    label:
+                        '${loc.translate('filter_label_supplier')} · ${_selectedSupplierName ?? loc.translate('container_all')}',
+                    isActive: _selectedSupplierName != null,
+                    icon: Icons.business,
+                    onTap: _openSupplierFilter,
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                  FilterButton(
+                    label:
+                        '${loc.translate('invoice_number')} · ${_selectedInvoiceNumber ?? loc.translate('container_all')}',
+                    isActive: _selectedInvoiceNumber != null,
+                    icon: Icons.receipt_long_outlined,
+                    onTap: _openInvoiceFilter,
+                  ),
+                ],
+              ),
+            ),
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -267,9 +323,6 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                     loc.translate('container_items_step_subtitle'),
                     style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                   ),
-                  const SizedBox(height: 16),
-                  // Filtres : client, fournisseur, numéro de facture
-                  _buildFilterCard(loc),
                   const SizedBox(height: 16),
                   if (_isLoadingItems)
                     const Center(

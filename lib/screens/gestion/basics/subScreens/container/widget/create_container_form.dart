@@ -34,8 +34,8 @@ class CreateContainerFormState extends State<CreateContainerForm> {
   /// EMPLOYE_D : même UX/UI que l'admin dans le conteneur (formulaire complet, 3 étapes).
   bool get _isEmployeD => false;
   bool get isEmployeD => _isEmployeD;
-  int get maxStepIndex => 3;
-  bool get _isItemsStep => currentStep == 3;
+  int get maxStepIndex => 2;
+  bool get _isItemsStep => currentStep == 2;
   final _formKey = GlobalKey<FormState>();
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
   final _mainFeesFormKey = GlobalKey<FormState>();
@@ -198,27 +198,15 @@ class CreateContainerFormState extends State<CreateContainerForm> {
         });
       }
     } else if (currentStep == 1) {
-      if (_isEmployeD) {
-        final valid = _mainFeesFormKey.currentState?.validate() ?? true;
-        if (valid) {
-          setState(() {
-            currentStep = 2;
-            widget.onStepChanged?.call(currentStep);
-            _loadAvailableItems();
-          });
-        }
-      } else {
+      final mainValid = _mainFeesFormKey.currentState?.validate() ?? true;
+      final extraValid = _extraFeesFormKey.currentState?.validate() ?? true;
+      if (mainValid && extraValid) {
         setState(() {
           currentStep = 2;
           widget.onStepChanged?.call(currentStep);
+          _loadAvailableItems();
         });
       }
-    } else if (currentStep == 2 && !_isEmployeD) {
-      setState(() {
-        currentStep = 3;
-        widget.onStepChanged?.call(currentStep);
-        _loadAvailableItems();
-      });
     }
   }
 
@@ -641,13 +629,13 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   ),
                 );
               }
-              return Form(
-                key: _mainFeesFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 16),
-                    _buildStepCard(
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 16),
+                  Form(
+                    key: _mainFeesFormKey,
+                    child: _buildStepCard(
                       child: Builder(
                         builder: (context) {
                           return MainFeesForm(
@@ -732,20 +720,11 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              );
-            } else if (currentStep == 2 && !_isEmployeD) {
-              final user = AuthService.currentUser;
-              final access = AccessControlService();
-              return Form(
-                key: _extraFeesFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 16),
-                    _buildStepCard(
+                  ),
+                  const SizedBox(height: 16),
+                  Form(
+                    key: _extraFeesFormKey,
+                    child: _buildStepCard(
                       child: ExtraFeesForm(
                         showOverweightFee:
                             access.canShowContainerFee(user, 'overweightFee'),
@@ -839,30 +818,14 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                             }
                           });
                         },
-                        transportFeeController: transportFeeController,
-                        transportFeeRateController: transportFeeRateController,
-                        transportFeeCurrency: transportFeeCurrency,
-                        onTransportFeeCurrencyChanged: (currency) {
-                          setState(() {
-                            transportFeeCurrency = currency;
-                            if (currency?.code == 'CNY') {
-                              transportFeeRateController.text = '1';
-                            } else if (currency?.rate != null) {
-                              transportFeeRateController.text =
-                                  currency!.rate.toString();
-                            } else {
-                              transportFeeRateController.clear();
-                            }
-                          });
-                        },
                       ),
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               );
             } else if (_isItemsStep) {
-              // Items : étape 2 pour EMPLOYE_D, étape 3 pour les autres
+              // Items : étape 2
               final loc = AppLocalizations.of(context);
               if (_isLoadingItems) {
                 return const Center(

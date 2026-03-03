@@ -3,13 +3,10 @@ import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/devises_service.dart';
-import 'package:bbd_limited/core/services/item_services.dart';
-import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_info_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
-import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart'
     show MainFeesForm, ExtraFeesForm;
@@ -41,8 +38,7 @@ class EditContainerModalState extends State<EditContainerModal> {
   /// EMPLOYE_D : même UX/UI que l'admin dans le conteneur (formulaire complet, 3 étapes).
   bool get _isEmployeD => false;
   bool get isEmployeD => _isEmployeD;
-  int get maxStepIndex => 3;
-  bool get _isItemsStep => currentStep == 3;
+  int get maxStepIndex => 1;
 
   final _formKey = GlobalKey<FormState>();
   final _containerInfoKey = GlobalKey<ContainerInfoFormState>();
@@ -105,12 +101,9 @@ class EditContainerModalState extends State<EditContainerModal> {
   final AuthService authService = AuthService();
   final ContainerServices containerService = ContainerServices();
   final DeviseServices deviseService = DeviseServices();
-  final ItemServices itemService = ItemServices();
 
-  List<Items> _availableItems = [];
   final Set<int> _selectedItemIdsToAdd = {};
   final Set<int> _selectedItemIdsToRemove = {};
-  bool _isLoadingItems = false;
 
   @override
   void initState() {
@@ -304,41 +297,6 @@ class EditContainerModalState extends State<EditContainerModal> {
           widget.onStepChanged?.call(currentStep);
         });
       }
-    } else if (currentStep == 1) {
-      if (_isEmployeD) {
-        final valid = _mainFeesFormKey.currentState?.validate() ?? true;
-        if (valid) {
-          setState(() {
-            currentStep = 2;
-            widget.onStepChanged?.call(currentStep);
-            _loadAvailableItems();
-          });
-        }
-      } else {
-        setState(() {
-          currentStep = 2;
-          widget.onStepChanged?.call(currentStep);
-        });
-      }
-    } else if (currentStep == 2 && !_isEmployeD) {
-      setState(() {
-        currentStep = 3;
-        widget.onStepChanged?.call(currentStep);
-        _loadAvailableItems();
-      });
-    }
-  }
-
-  Future<void> _loadAvailableItems() async {
-    setState(() => _isLoadingItems = true);
-    try {
-      final list = await itemService.findAllNotInContainer();
-      setState(() {
-        _availableItems = list.toList();
-        _isLoadingItems = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingItems = false);
     }
   }
 
@@ -740,13 +698,13 @@ class EditContainerModalState extends State<EditContainerModal> {
                   ),
                 );
               }
-              return Form(
-                key: _mainFeesFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 16),
-                    Builder(
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 16),
+                  Form(
+                    key: _mainFeesFormKey,
+                    child: Builder(
                       builder: (context) {
                         return MainFeesForm(
                           showLocationFee:
@@ -807,23 +765,30 @@ class EditContainerModalState extends State<EditContainerModal> {
                           },
                           getSupplier: () =>
                               _containerInfoKey.currentState?.selectedSupplier,
+                          transportFeeController: transportFeeController,
+                          transportFeeRateController: transportFeeRateController,
+                          transportFeeCurrency: transportFeeCurrency,
+                          onTransportFeeCurrencyChanged: (currency) {
+                            setState(() {
+                              transportFeeCurrency = currency;
+                              if (currency?.code == 'CNY') {
+                                transportFeeRateController.text = '1';
+                              } else if (currency?.rate != null) {
+                                transportFeeRateController.text =
+                                    currency!.rate.toString();
+                              } else {
+                                transportFeeRateController.clear();
+                              }
+                            });
+                          },
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              );
-            } else if (currentStep == 2 && !_isEmployeD) {
-              final user = AuthService.currentUser;
-              final access = AccessControlService();
-              return Form(
-                key: _extraFeesFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 16),
-                    ExtraFeesForm(
+                  ),
+                  const SizedBox(height: 16),
+                  Form(
+                    key: _extraFeesFormKey,
+                    child: ExtraFeesForm(
                       showOverweightFee:
                           access.canShowContainerFee(user, 'overweightFee'),
                       showCheckingFee:
@@ -915,142 +880,12 @@ class EditContainerModalState extends State<EditContainerModal> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               );
-            } else if (_isItemsStep) {
-              // Items : étape 2 pour EMPLOYE_D, étape 3 pour les autres
-              final loc = AppLocalizations.of(context);
-              final containerItems = widget.container.items ?? [];
-              if (_isLoadingItems) {
-                return const Center(
-                    child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: CircularProgressIndicator()));
-              }
-              final availableToAdd =
-                  _availableItems.where((i) => i.containerId == null).toList();
-              return SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    Text(
-                      loc.translate('container_items_step_title'),
-                      style: AppTextSize.titleStyle(context, color: const Color(0xFF1A1E49)),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      loc.translate('container_items_step_subtitle'),
-                      style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 16),
-                    if (containerItems.isNotEmpty) ...[
-                      Text(
-                        loc.translate('container_items_in_container'),
-                        style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      ...containerItems.map((item) {
-                        final toRemove =
-                            _selectedItemIdsToRemove.contains(item.id);
-                        final clientDisplay =
-                            item.clientName?.isNotEmpty == true
-                                ? item.clientName
-                                : (item.clientId != null
-                                    ? '#${item.clientId}'
-                                    : '—');
-                        return CheckboxListTile(
-                          value: toRemove,
-                          onChanged: (v) {
-                            setState(() {
-                              if (v == true && item.id != null) {
-                                _selectedItemIdsToRemove.add(item.id!);
-                              } else {
-                                _selectedItemIdsToRemove.remove(item.id);
-                              }
-                            });
-                          },
-                          title: Text(item.description ?? 'N/A'),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (toRemove)
-                                Text(loc.translate('container_will_remove')),
-                              Text(
-                                '${loc.translate('weight')}: ${item.totalWeight ?? 0} · ${loc.translate('cbn')}: ${item.cbnTotal ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
-                                style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                          controlAffinity: ListTileControlAffinity.leading,
-                        );
-                      }),
-                      const SizedBox(height: 16),
-                    ],
-                    if (availableToAdd.isNotEmpty) ...[
-                      Text(
-                        loc.translate('container_items_available_to_add'),
-                        style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      ...availableToAdd.map((item) {
-                        final toAdd = _selectedItemIdsToAdd.contains(item.id);
-                        final clientDisplay =
-                            item.clientName?.isNotEmpty == true
-                                ? item.clientName
-                                : (item.clientId != null
-                                    ? '#${item.clientId}'
-                                    : '—');
-                        return CheckboxListTile(
-                          value: toAdd,
-                          onChanged: (v) {
-                            setState(() {
-                              if (v == true && item.id != null) {
-                                _selectedItemIdsToAdd.add(item.id!);
-                              } else {
-                                _selectedItemIdsToAdd.remove(item.id);
-                              }
-                            });
-                          },
-                          title: Text(item.description ?? 'N/A'),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                  '${item.quantity ?? 0} unités${item.carton != null ? ', ${item.carton} cartons' : ''}'),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${loc.translate('weight')}: ${item.totalWeight ?? item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbnTotal ?? item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
-                                style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                          controlAffinity: ListTileControlAffinity.leading,
-                        );
-                      }),
-                    ],
-                    if (availableToAdd.isEmpty && containerItems.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24.0),
-                        child: Center(
-                            child: Text(
-                          loc.translate('container_no_items_available'),
-                          style:
-                              AppTextSize.bodyStyle(context, color: Colors.grey[600]),
-                        )),
-                      ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
             }
+            return const SizedBox.shrink();
           },
         ),
       ),

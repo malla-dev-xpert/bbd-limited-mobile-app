@@ -22,18 +22,9 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
       case 0:
         return AppLocalizations.of(context)!.translate('container_create');
       case 1:
-        return isEmployeD
-            ? AppLocalizations.of(context)!
-                .translate('container_form_fees_step')
-            : AppLocalizations.of(context)!
-                .translate('container_form_location_fee');
+        return AppLocalizations.of(context)!
+            .translate('container_form_fees_step');
       case 2:
-        return isEmployeD
-            ? AppLocalizations.of(context)!
-                .translate('container_items_step_title')
-            : AppLocalizations.of(context)!
-                .translate('container_form_other_fees');
-      case 3:
         return AppLocalizations.of(context)!
             .translate('container_items_step_title');
       default:

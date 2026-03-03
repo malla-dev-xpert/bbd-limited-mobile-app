@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:bbd_limited/models/carrier.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,9 +13,6 @@ class CarrierServices {
         '$baseUrl/carriers?page=$page',
       ),
     );
-
-    log(response.body);
-    log(response.statusCode.toString());
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonBody = json.decode(
