@@ -8,15 +8,15 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-/// Titre PDF : N° conteneur en 1ère position, puis référence.
-String _pdfContainerTitle(Containers c) {
-  final num = c.containerNumber?.trim();
-  final ref = c.reference?.trim();
-  if (num != null && num.isNotEmpty && ref != null && ref.isNotEmpty) {
-    return '$num · $ref';
-  }
-  if (num != null && num.isNotEmpty) return num;
-  return ref ?? '';
+/// Référence du conteneur uniquement (partie rouge du PDF).
+String _pdfContainerReference(Containers c) {
+  return c.reference?.trim() ?? '';
+}
+
+/// Date de chargement ; si nulle, date de création du conteneur.
+String _formatLoadingDate(Containers c, DateFormat dateFormat) {
+  final date = c.loadingDate ?? c.createdAt;
+  return date != null ? dateFormat.format(date) : '';
 }
 
 /// Service pour générer un PDF du résumé du conteneur
@@ -77,8 +77,8 @@ class ContainerPdfService {
               ),
               pw.SizedBox(height: 15),
 
-              // Tableau du résumé
-              _buildSummaryTable(summaries, printLocalizations),
+              // Tableau du résumé (CTNS, T.CBM, CFA, TELEPHONE=carrier, KGS)
+              _buildSummaryTable(summaries, container, printLocalizations),
             ],
           );
         },
@@ -148,10 +148,10 @@ class ContainerPdfService {
   ) {
     return pw.Column(
       children: [
-        // Première ligne: DESTINATION, GRP NO, etc.
+        // Première ligne: DESTINATION (port d'arrivée), GRP NO: -, référence (rouge)
         pw.Row(
           children: [
-            // DESTINATION
+            // DESTINATION = port d'arrivée du conteneur
             pw.Expanded(
               flex: 2,
               child: pw.Container(
@@ -162,17 +162,21 @@ class ContainerPdfService {
                 child: pw.Row(
                   children: [
                     pw.Text(
-                      '${printLocalizations.translate('pdf_destination')}（目的地）: ',
+                      '${printLocalizations.translate('pdf_destination')}: ',
                       style: pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
+                    pw.Text(
+                      container.arrivalHarborName ?? container.arrivalHarborLocation ?? '',
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
                   ],
                 ),
               ),
             ),
-            // GRP NO
+            // GRP NO: - pour le moment
             pw.Expanded(
               flex: 1,
               child: pw.Container(
@@ -181,7 +185,7 @@ class ContainerPdfService {
                   border: pw.Border.all(color: PdfColors.black),
                 ),
                 child: pw.Text(
-                  '${printLocalizations.translate('pdf_grp_no')}（柜推号码）',
+                  '${printLocalizations.translate('pdf_grp_no')}: -',
                   style: pw.TextStyle(
                     fontSize: 8,
                     fontWeight: pw.FontWeight.bold,
@@ -189,7 +193,7 @@ class ContainerPdfService {
                 ),
               ),
             ),
-            // Numéro GRP
+            // Référence du conteneur uniquement (partie rouge)
             pw.Expanded(
               flex: 1,
               child: pw.Container(
@@ -200,7 +204,7 @@ class ContainerPdfService {
                 ),
                 child: pw.Center(
                   child: pw.Text(
-                    _pdfContainerTitle(container),
+                    _pdfContainerReference(container),
                     style: pw.TextStyle(
                       fontSize: 9,
                       fontWeight: pw.FontWeight.bold,
@@ -213,10 +217,10 @@ class ContainerPdfService {
           ],
         ),
 
-        // Deuxième ligne: LOADING DATE et DATE ARRIVAL
+        // Deuxième ligne: LOADING DATE (date de chargement, sinon date de création) et DATE ARRIVAL
         pw.Row(
           children: [
-            // LOADING DATE
+            // LOADING DATE = date de chargement; si nulle, date de création du conteneur
             pw.Expanded(
               flex: 2,
               child: pw.Container(
@@ -228,18 +232,14 @@ class ContainerPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      '${printLocalizations.translate('pdf_loading_date')}（装柜日期）: ',
+                      '${printLocalizations.translate('pdf_loading_date')}: ',
                       style: pw.TextStyle(
                         fontSize: 8,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
                     pw.Text(
-                      container.loadingDate != null
-                          ? dateFormat.format(container.loadingDate!)
-                          : (container.departureDate != null
-                              ? dateFormat.format(container.departureDate!)
-                              : ''),
+                      _formatLoadingDate(container, dateFormat),
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                   ],
@@ -258,7 +258,7 @@ class ContainerPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      '${printLocalizations.translate('pdf_date_arrival')}（到货日期）: ',
+                      '${printLocalizations.translate('pdf_date_arrival')}: ',
                       style: pw.TextStyle(
                         fontSize: 8,
                         fontWeight: pw.FontWeight.bold,
@@ -280,7 +280,7 @@ class ContainerPdfService {
           ],
         ),
 
-        // Troisième ligne: CONTAINER NUMBER et TRANS
+        // Troisième ligne: CONTAINER NUMBER et MARK (carrier)
         pw.Row(
           children: [
             // CONTAINER NUMBER
@@ -295,7 +295,7 @@ class ContainerPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      '${printLocalizations.translate('pdf_container_number')}（柜号）: ',
+                      '${printLocalizations.translate('pdf_container_number')}: ',
                       style: pw.TextStyle(
                         fontSize: 8,
                         fontWeight: pw.FontWeight.bold,
@@ -309,7 +309,7 @@ class ContainerPdfService {
                 ),
               ),
             ),
-            // TRANS
+            // MARK = nom du carrier lié au conteneur
             pw.Expanded(
               flex: 2,
               child: pw.Container(
@@ -321,14 +321,14 @@ class ContainerPdfService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      '${printLocalizations.translate('pdf_trans')}（客货）: ',
+                      '${printLocalizations.translate('pdf_mark')}: ',
                       style: pw.TextStyle(
                         fontSize: 8,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
                     pw.Text(
-                      container.userName ?? '',
+                      container.carrierName ?? '',
                       style: pw.TextStyle(
                         fontSize: 8,
                         fontWeight: pw.FontWeight.bold,
@@ -344,11 +344,19 @@ class ContainerPdfService {
     );
   }
 
-  /// Construit le tableau du résumé
+  /// Construit le tableau du résumé.
+  /// CTNS = total cartons du client, T.CBM = total CBM, CFA = total shipping price du client,
+  /// TELEPHONE = téléphone du carrier du conteneur, KGS = total poids du client.
   static pw.Widget _buildSummaryTable(
     List<ContainerClientSummary> summaries,
+    Containers container,
     PrintLocalizations printLocalizations,
   ) {
+    final carrierPhone = container.carrierContact?.trim();
+    final telephoneDisplay = (carrierPhone != null && carrierPhone.isNotEmpty)
+        ? carrierPhone
+        : '-';
+
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.black, width: 1),
       columnWidths: {
@@ -382,6 +390,9 @@ class ContainerPdfService {
           final index = entry.key;
           final summary = entry.value;
           final isEven = index % 2 == 0;
+          final cfaDisplay = summary.totalShippingPrice > 0
+              ? summary.totalShippingPrice.round().toString()
+              : '-';
 
           return pw.TableRow(
             decoration: pw.BoxDecoration(
@@ -398,8 +409,8 @@ class ContainerPdfService {
                 summary.totalCbm.toStringAsFixed(3),
                 alignment: pw.Alignment.center,
               ),
-              _buildTableCell('-', alignment: pw.Alignment.center),
-              _buildTableCell('-', alignment: pw.Alignment.center),
+              _buildTableCell(cfaDisplay, alignment: pw.Alignment.center),
+              _buildTableCell(telephoneDisplay, alignment: pw.Alignment.center),
               _buildTableCell(
                 '${summary.totalWeight.round()}',
                 alignment: pw.Alignment.center,

@@ -12,6 +12,9 @@ class ContainerClientSummary {
   /// Somme totale du CBM pour ce client (T.CBM dans le tableau)
   final double totalCbm;
 
+  /// Somme totale du shipping price (CFA) des items du client dans le conteneur
+  final double totalShippingPrice;
+
   /// Somme totale du poids pour ce client (KGS dans le tableau)
   final double totalWeight;
 
@@ -19,12 +22,13 @@ class ContainerClientSummary {
     required this.clientName,
     required this.totalCartons,
     required this.totalCbm,
+    required this.totalShippingPrice,
     required this.totalWeight,
   });
 
   @override
   String toString() {
-    return 'ContainerClientSummary(clientName: $clientName, totalCartons: $totalCartons, totalCbm: $totalCbm, totalWeight: $totalWeight)';
+    return 'ContainerClientSummary(clientName: $clientName, totalCartons: $totalCartons, totalCbm: $totalCbm, totalShippingPrice: $totalShippingPrice, totalWeight: $totalWeight)';
   }
 
   @override
@@ -35,6 +39,7 @@ class ContainerClientSummary {
         other.clientName == clientName &&
         other.totalCartons == totalCartons &&
         other.totalCbm == totalCbm &&
+        other.totalShippingPrice == totalShippingPrice &&
         other.totalWeight == totalWeight;
   }
 
@@ -43,6 +48,7 @@ class ContainerClientSummary {
     return clientName.hashCode ^
         totalCartons.hashCode ^
         totalCbm.hashCode ^
+        totalShippingPrice.hashCode ^
         totalWeight.hashCode;
   }
 }

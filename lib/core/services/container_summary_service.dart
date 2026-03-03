@@ -72,10 +72,17 @@ class ContainerSummaryService {
         (sum, item) => sum + (item.totalWeight ?? 0.0),
       );
 
+      // Somme des shipping price (CFA) des items du client
+      final totalShippingPrice = clientItems.fold<double>(
+        0.0,
+        (sum, item) => sum + (item.shippingPrice ?? 0.0),
+      );
+
       return ContainerClientSummary(
         clientName: clientName,
         totalCartons: totalCartons,
         totalCbm: totalCbm,
+        totalShippingPrice: totalShippingPrice,
         totalWeight: totalWeight,
       );
     }).toList();
