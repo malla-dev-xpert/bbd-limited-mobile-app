@@ -167,7 +167,7 @@ class ContainerListItem extends StatelessWidget {
                           child: Icon(
                             isTeam
                                 ? Icons.person_outline
-                                : Icons.group_work_outlined,
+                                : Icons.supervised_user_circle_rounded,
                             size: 20,
                             color: isTeam
                                 ? Colors.blue[700]
@@ -185,7 +185,7 @@ class ContainerListItem extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _buildStatusChip(context, statusColor, statusText),
+                        // _buildStatusChip(context, statusColor, statusText),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -323,19 +323,20 @@ class ContainerListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(BuildContext context, Color color, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: AppTextSize.captionStyle(context, color: color).copyWith(fontWeight: FontWeight.w700),
-      ),
-    );
-  }
+  // Widget _buildStatusChip(BuildContext context, Color color, String text) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+  //     decoration: BoxDecoration(
+  //       color: color.withOpacity(0.12),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Text(
+  //       text,
+  //       style: AppTextSize.captionStyle(context, color: color)
+  //           .copyWith(fontWeight: FontWeight.w700),
+  //     ),
+  //   );
+  // }
 
   Widget _buildInfoItem(BuildContext context,
       {required IconData icon,

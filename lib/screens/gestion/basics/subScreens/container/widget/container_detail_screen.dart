@@ -106,22 +106,23 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 18, color: Colors.grey[600]),
+            Icon(icon, size: 18, color: Colors.grey[800]),
             const SizedBox(width: 8),
           ],
           Expanded(
             child: Text(
               label,
-              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[800]),
             ),
           ),
           Expanded(
             child: Text(
               value ?? '',
-              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
+              style: AppTextSize.subtitleStyle(context,
+                  fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
             ),
           ),
@@ -138,13 +139,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 18, color: Colors.grey[600]),
+            Icon(icon, size: 18, color: Colors.green[300]),
             const SizedBox(width: 8),
           ],
           Expanded(
             child: Text(
               label,
-              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[800]),
             ),
           ),
           Expanded(
@@ -165,15 +166,21 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
   /// Total des frais en CNY : somme des montants convertis en CNY fournis par le backend (uniquement les charges choisies).
   static double _totalFeesCNY(Containers c) {
     double total = 0;
-    if (_isFeeChosen(c.locationFee, c.locationFeeCNY)) total += c.locationFeeCNY ?? 0;
-    if (_isFeeChosen(c.localCharge, c.localChargeCNY)) total += c.localChargeCNY ?? 0;
-    if (_isFeeChosen(c.loadingFee, c.loadingFeeCNY)) total += c.loadingFeeCNY ?? 0;
-    if (_isFeeChosen(c.overweightFee, c.overweightFeeCNY)) total += c.overweightFeeCNY ?? 0;
-    if (_isFeeChosen(c.checkingFee, c.checkingFeeCNY)) total += c.checkingFeeCNY ?? 0;
+    if (_isFeeChosen(c.locationFee, c.locationFeeCNY))
+      total += c.locationFeeCNY ?? 0;
+    if (_isFeeChosen(c.localCharge, c.localChargeCNY))
+      total += c.localChargeCNY ?? 0;
+    if (_isFeeChosen(c.loadingFee, c.loadingFeeCNY))
+      total += c.loadingFeeCNY ?? 0;
+    if (_isFeeChosen(c.overweightFee, c.overweightFeeCNY))
+      total += c.overweightFeeCNY ?? 0;
+    if (_isFeeChosen(c.checkingFee, c.checkingFeeCNY))
+      total += c.checkingFeeCNY ?? 0;
     if (_isFeeChosen(c.telxFee, c.telxFeeCNY)) total += c.telxFeeCNY ?? 0;
     if (_isFeeChosen(c.otherFees, c.otherFeesCNY)) total += c.otherFeesCNY ?? 0;
     if (_isFeeChosen(c.margin, c.marginCNY)) total += c.marginCNY ?? 0;
-    if (_isFeeChosen(c.transportFee, c.transportFeeCNY)) total += c.transportFeeCNY ?? 0;
+    if (_isFeeChosen(c.transportFee, c.transportFeeCNY))
+      total += c.transportFeeCNY ?? 0;
     return total;
   }
 
@@ -232,8 +239,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
       padding: const EdgeInsets.only(bottom: 8.0, top: 16),
       child: Text(
         title,
-        style: AppTextSize.titleStyle(context,
-            color: const Color(0xFF1A1E49)),
+        style: AppTextSize.titleStyle(context, color: const Color(0xFF1A1E49)),
       ),
     );
   }
@@ -336,9 +342,9 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final hasContent =
-        (container.items != null && container.items!.isNotEmpty) ||
-            (container.packages != null && container.packages!.isNotEmpty);
+    // final hasContent =
+    //     (container.items != null && container.items!.isNotEmpty) ||
+    //         (container.packages != null && container.packages!.isNotEmpty);
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -449,41 +455,41 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                 style: AppTextSize.titleStyle(context),
                               ),
                               const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(container.status)
-                                      .withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      container.status == Status.RECEIVED ||
-                                              container.status ==
-                                                  Status.DELIVERED
-                                          ? Icons.check_circle
-                                          : container.status ==
-                                                  Status.INPROGRESS
-                                              ? Icons.local_shipping
-                                              : Icons.hourglass_empty,
-                                      size: 16,
-                                      color: _getStatusColor(container.status),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _getStatusText(container.status),
-                                      style: TextStyle(
-                                        color:
-                                            _getStatusColor(container.status),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // Container(
+                              //   padding: const EdgeInsets.symmetric(
+                              //       horizontal: 12, vertical: 6),
+                              //   decoration: BoxDecoration(
+                              //     color: _getStatusColor(container.status)
+                              //         .withOpacity(0.1),
+                              //     borderRadius: BorderRadius.circular(20),
+                              //   ),
+                              //   child: Row(
+                              //     mainAxisSize: MainAxisSize.min,
+                              //     children: [
+                              //       Icon(
+                              //         container.status == Status.RECEIVED ||
+                              //                 container.status ==
+                              //                     Status.DELIVERED
+                              //             ? Icons.check_circle
+                              //             : container.status ==
+                              //                     Status.INPROGRESS
+                              //                 ? Icons.local_shipping
+                              //                 : Icons.hourglass_empty,
+                              //         size: 16,
+                              //         color: _getStatusColor(container.status),
+                              //       ),
+                              //       const SizedBox(width: 6),
+                              //       Text(
+                              //         _getStatusText(container.status),
+                              //         style: TextStyle(
+                              //           color:
+                              //               _getStatusColor(container.status),
+                              //           fontWeight: FontWeight.bold,
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           );
                         } else {
@@ -495,40 +501,40 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                 _containerDisplayTitle(container),
                                 style: AppTextSize.titleStyle(context),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(container.status)
-                                      .withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      container.status == Status.RECEIVED ||
-                                              container.status ==
-                                                  Status.DELIVERED
-                                          ? Icons.check_circle
-                                          : container.status ==
-                                                  Status.INPROGRESS
-                                              ? Icons.local_shipping
-                                              : Icons.hourglass_empty,
-                                      size: 16,
-                                      color: _getStatusColor(container.status),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _getStatusText(container.status),
-                                      style: TextStyle(
-                                        color:
-                                            _getStatusColor(container.status),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // Container(
+                              //   padding: const EdgeInsets.symmetric(
+                              //       horizontal: 12, vertical: 6),
+                              //   decoration: BoxDecoration(
+                              //     color: _getStatusColor(container.status)
+                              //         .withOpacity(0.1),
+                              //     borderRadius: BorderRadius.circular(20),
+                              //   ),
+                              //   child: Row(
+                              //     children: [
+                              //       Icon(
+                              //         container.status == Status.RECEIVED ||
+                              //                 container.status ==
+                              //                     Status.DELIVERED
+                              //             ? Icons.check_circle
+                              //             : container.status ==
+                              //                     Status.INPROGRESS
+                              //                 ? Icons.local_shipping
+                              //                 : Icons.hourglass_empty,
+                              //         size: 16,
+                              //         color: _getStatusColor(container.status),
+                              //       ),
+                              //       const SizedBox(width: 6),
+                              //       Text(
+                              //         _getStatusText(container.status),
+                              //         style: TextStyle(
+                              //           color:
+                              //               _getStatusColor(container.status),
+                              //           fontWeight: FontWeight.bold,
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           );
                         }
@@ -653,7 +659,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(container.supplierPhone!,
-                                            style: AppTextSize.bodyStyle(context)),
+                                            style:
+                                                AppTextSize.bodyStyle(context)),
                                       ),
                                     ],
                                   ),
@@ -682,7 +689,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           color: Colors.green, size: 18),
                                       const SizedBox(width: 4),
                                       Text(container.supplierPhone!,
-                                          style: AppTextSize.bodyStyle(context)),
+                                          style:
+                                              AppTextSize.bodyStyle(context)),
                                     ],
                                   ),
                               ],
@@ -716,7 +724,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           Text(
                               AppLocalizations.of(context)
                                   .translate('container_bbd_limited'),
-                              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold)),
+                              style: AppTextSize.subtitleStyle(context,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -735,7 +744,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
                 child: Column(
                   children: [
-                    if (_isFeeChosen(container.locationFee, container.locationFeeCNY))
+                    if (_isFeeChosen(
+                        container.locationFee, container.locationFeeCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_location_fee'),
@@ -744,7 +754,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.locationFeeCurrencyCode,
                             amountCNY: container.locationFeeCNY,
                           )),
-                    if (_isFeeChosen(container.loadingFee, container.loadingFeeCNY))
+                    if (_isFeeChosen(
+                        container.loadingFee, container.loadingFeeCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_loading_fee'),
@@ -753,7 +764,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.loadingFeeCurrencyCode,
                             amountCNY: container.loadingFeeCNY,
                           )),
-                    if (_isFeeChosen(container.localCharge, container.localChargeCNY))
+                    if (_isFeeChosen(
+                        container.localCharge, container.localChargeCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_local_charge'),
@@ -762,7 +774,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.localChargeCurrencyCode,
                             amountCNY: container.localChargeCNY,
                           )),
-                    if (_isFeeChosen(container.overweightFee, container.overweightFeeCNY))
+                    if (_isFeeChosen(
+                        container.overweightFee, container.overweightFeeCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_overweight_fee'),
@@ -771,7 +784,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.overweightFeeCurrencyCode,
                             amountCNY: container.overweightFeeCNY,
                           )),
-                    if (_isFeeChosen(container.checkingFee, container.checkingFeeCNY))
+                    if (_isFeeChosen(
+                        container.checkingFee, container.checkingFeeCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_checking_fee'),
@@ -789,7 +803,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.telxFeeCurrencyCode,
                             amountCNY: container.telxFeeCNY,
                           )),
-                    if (_isFeeChosen(container.otherFees, container.otherFeesCNY))
+                    if (_isFeeChosen(
+                        container.otherFees, container.otherFeesCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_other_fees'),
@@ -807,7 +822,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.marginCurrencyCode,
                             amountCNY: container.marginCNY,
                           )),
-                    if (_isFeeChosen(container.transportFee, container.transportFeeCNY))
+                    if (_isFeeChosen(
+                        container.transportFee, container.transportFeeCNY))
                       _infoRowWithFormattedValue(
                           AppLocalizations.of(context)
                               .translate('container_form_transport_fee'),
@@ -816,12 +832,33 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             currencyCode: container.transportFeeCurrencyCode,
                             amountCNY: container.transportFeeCNY,
                           )),
+                    if (_isFeeChosen(container.profitCNY, container.profitCNY))
+                      Container(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.width < 600
+                                ? 8.0
+                                : 8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green[300]!),
+                        ),
+                        child: _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_profit'),
+                            icon: Icons.money,
+                            _formatFeeWidget(
+                              amount: container.profitCNY,
+                              currencyCode: 'CNY',
+                              amountCNY: container.profitCNY,
+                            )),
+                      ),
                     const Divider(),
                     _infoRow(
                         AppLocalizations.of(context)
                             .translate('container_total_fees'),
                         '${formatAmount(_totalFeesCNY(container))} CNY',
-                        icon: Icons.attach_money),
+                        icon: Icons.currency_yen),
                   ],
                 ),
               ),
@@ -1091,342 +1128,348 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
               ),
               // Actions principales (démarrer livraison si conteneur a des items ou des colis)
-              if (hasContent && container.status == Status.PENDING)
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.width < 600
-                          ? 16.0
-                          : 24.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      icon: const Icon(Icons.check, color: Colors.white),
-                      label: Text(
-                          isLoading
-                              ? AppLocalizations.of(context)
-                                  .translate('container_starting')
-                              : AppLocalizations.of(context)
-                                  .translate('container_start_delivery'),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                      onPressed: () async {
-                        DateTime? tempSelectedDate = selectedDeliveryDate;
-                        final bool confirm = await showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return StatefulBuilder(
-                              builder: (context, setStateDialog) {
-                                return AlertDialog(
-                                  title: Text(AppLocalizations.of(context)
-                                      .translate('container_confirm_start')),
-                                  backgroundColor: Colors.white,
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(AppLocalizations.of(context).translate(
-                                          'container_confirm_start_message')),
-                                      const SizedBox(height: 16),
-                                      TextButton.icon(
-                                        icon: const Icon(Icons.date_range),
-                                        label: Text(
-                                          tempSelectedDate != null
-                                              ? '${AppLocalizations.of(context).translate('container_delivery_date')} : '
-                                                  '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
-                                              : AppLocalizations.of(context)
-                                                  .translate(
-                                                      'container_choose_delivery_date'),
-                                        ),
-                                        onPressed: () async {
-                                          final now = DateTime.now();
-                                          final picked = await showDatePicker(
-                                            context: context,
-                                            initialDate:
-                                                tempSelectedDate ?? now,
-                                            firstDate: DateTime(now.year - 1),
-                                            lastDate: DateTime(now.year + 2),
-                                          );
-                                          if (picked != null) {
-                                            setStateDialog(() {
-                                              tempSelectedDate = picked;
-                                            });
-                                          }
-                                        },
-                                      ),
-                                      if (tempSelectedDate != null)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: Text(
-                                            '${AppLocalizations.of(context).translate('container_selected_date')} : '
-                                            '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      if (tempSelectedDate == null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Text(
-                                            'Si aucune date n\'est choisie, la date du jour sera utilisée.',
-                                            style: AppTextSize.bodyStyle(context, color: Colors.grey),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: Text(AppLocalizations.of(context)
-                                          .translate('cancel')),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: Text(
-                                          isLoading
-                                              ? AppLocalizations.of(context)
-                                                  .translate(
-                                                      'container_starting')
-                                              : AppLocalizations.of(context)
-                                                  .translate('confirm'),
-                                          style: const TextStyle(
-                                              color: Colors.green)),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        );
-                        if (confirm != true) return;
-                        setState(() {
-                          isLoading = true;
-                          selectedDeliveryDate = tempSelectedDate;
-                        });
-                        final user = await authService.getUserInfo();
-                        if (user == null) {
-                          showErrorTopSnackBar(
-                              context, "Erreur: Utilisateur non connecté");
-                          setState(() => isLoading = false);
-                          return;
-                        }
-                        try {
-                          // On passe la date sélectionnée ou la date du jour
-                          final deliveryDate =
-                              selectedDeliveryDate ?? DateTime.now();
-                          final result = await containerServices.startDelivery(
-                              container.id!, user.id.toInt(), deliveryDate);
-                          if (result == "SUCCESS") {
-                            final updatedContainer = await containerServices
-                                .getContainerDetails(container.id!);
-                            Navigator.of(context).pop(updatedContainer);
-                            if (widget.onContainerUpdated != null) {
-                              widget.onContainerUpdated!(updatedContainer);
-                            }
-                            showSuccessTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('container_delivery_started'));
-                          } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context).translate(
-                                    'container_no_packages_for_delivery'));
-                          }
-                        } catch (e) {
-                          print(e);
-                          showErrorTopSnackBar(
-                              context,
-                              AppLocalizations.of(context)
-                                  .translate('container_delivery_start_error'));
-                        } finally {
-                          setState(() {
-                            isLoading = false;
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                )
-              else if (container.status == Status.INPROGRESS)
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.width < 600
-                          ? 16.0
-                          : 24.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[800],
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      icon: const Icon(Icons.flag, color: Colors.white),
-                      label: Text(
-                          isLoading
-                              ? AppLocalizations.of(context)
-                                  .translate('container_changing_status')
-                              : AppLocalizations.of(context)
-                                  .translate('container_arrived_destination'),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                      onPressed: () async {
-                        DateTime? tempSelectedConfirmDate;
-                        final bool confirm = await showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return StatefulBuilder(
-                              builder: (context, setStateDialog) {
-                                return AlertDialog(
-                                  title: Text(AppLocalizations.of(context)
-                                      .translate('container_confirm_arrival')),
-                                  backgroundColor: Colors.white,
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(AppLocalizations.of(context).translate(
-                                          'container_confirm_arrival_message')),
-                                      const SizedBox(height: 16),
-                                      TextButton.icon(
-                                        icon: const Icon(Icons.date_range),
-                                        label: Text(
-                                          tempSelectedConfirmDate != null
-                                              ? '${AppLocalizations.of(context).translate('container_confirmation_date')} : '
-                                                  '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}'
-                                              : AppLocalizations.of(context)
-                                                  .translate(
-                                                      'container_choose_confirmation_date'),
-                                        ),
-                                        onPressed: () async {
-                                          final now = DateTime.now();
-                                          final picked = await showDatePicker(
-                                            context: context,
-                                            initialDate:
-                                                tempSelectedConfirmDate ?? now,
-                                            firstDate: DateTime(now.year - 1),
-                                            lastDate: DateTime(now.year + 2),
-                                          );
-                                          if (picked != null) {
-                                            setStateDialog(() {
-                                              tempSelectedConfirmDate = picked;
-                                            });
-                                          }
-                                        },
-                                      ),
-                                      if (tempSelectedConfirmDate != null)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: Text(
-                                            'Date sélectionnée : '
-                                            '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}',
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      if (tempSelectedConfirmDate == null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Text(
-                                            'Si aucune date n\'est choisie, la date du jour sera utilisée.',
-                                            style: AppTextSize.bodyStyle(context, color: Colors.grey),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: Text(AppLocalizations.of(context)
-                                          .translate('cancel')),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: Text(
-                                          isLoading
-                                              ? "Changement de statut..."
-                                              : "Confirmer",
-                                          style: const TextStyle(
-                                              color: Colors.green)),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        );
-                        if (confirm != true) return;
-                        setState(() {
-                          isLoading = true;
-                        });
-                        final user = await authService.getUserInfo();
-                        if (user == null) {
-                          showErrorTopSnackBar(
-                              context, "Erreur: Utilisateur non connecté");
-                          setState(() => isLoading = false);
-                          return;
-                        }
-                        try {
-                          final confirmDate =
-                              tempSelectedConfirmDate ?? DateTime.now();
-                          final result =
-                              await containerServices.confirmReceiving(
-                                  container.id!, user.id.toInt(), confirmDate);
-                          if (result == "SUCCESS") {
-                            final updatedContainer = await containerServices
-                                .getContainerDetails(container.id!);
-                            Navigator.of(context).pop(updatedContainer);
-                            if (widget.onContainerUpdated != null) {
-                              widget.onContainerUpdated!(updatedContainer);
-                            }
-                            showSuccessTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('container_arrival_confirmed'));
-                          } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context).translate(
-                                    'container_no_packages_for_reception'));
-                          } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
-                            showErrorTopSnackBar(
-                                context,
-                                AppLocalizations.of(context)
-                                    .translate('container_not_in_progress'));
-                          }
-                        } catch (e) {
-                          showErrorTopSnackBar(
-                              context,
-                              AppLocalizations.of(context)
-                                  .translate('container_reception_error'));
-                        } finally {
-                          setState(() {
-                            isLoading = false;
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ),
+              // if (hasContent && container.status == Status.PENDING)
+              //   Padding(
+              //     padding: EdgeInsets.only(
+              //         top: MediaQuery.of(context).size.width < 600
+              //             ? 16.0
+              //             : 24.0),
+              //     child: SizedBox(
+              //       width: double.infinity,
+              //       child: ElevatedButton.icon(
+              //         style: ElevatedButton.styleFrom(
+              //           backgroundColor: Colors.green,
+              //           padding: const EdgeInsets.symmetric(vertical: 18),
+              //           shape: RoundedRectangleBorder(
+              //             borderRadius: BorderRadius.circular(12),
+              //           ),
+              //         ),
+              //         icon: const Icon(Icons.check, color: Colors.white),
+              //         label: Text(
+              //             isLoading
+              //                 ? AppLocalizations.of(context)
+              //                     .translate('container_starting')
+              //                 : AppLocalizations.of(context)
+              //                     .translate('container_start_delivery'),
+              //             style: const TextStyle(
+              //                 color: Colors.white,
+              //                 fontWeight: FontWeight.bold)),
+              //         onPressed: () async {
+              //           DateTime? tempSelectedDate = selectedDeliveryDate;
+              //           final bool confirm = await showDialog(
+              //             context: context,
+              //             builder: (BuildContext context) {
+              //               return StatefulBuilder(
+              //                 builder: (context, setStateDialog) {
+              //                   return AlertDialog(
+              //                     title: Text(AppLocalizations.of(context)
+              //                         .translate('container_confirm_start')),
+              //                     backgroundColor: Colors.white,
+              //                     content: Column(
+              //                       mainAxisSize: MainAxisSize.min,
+              //                       crossAxisAlignment:
+              //                           CrossAxisAlignment.start,
+              //                       children: [
+              //                         Text(AppLocalizations.of(context).translate(
+              //                             'container_confirm_start_message')),
+              //                         const SizedBox(height: 16),
+              //                         TextButton.icon(
+              //                           icon: const Icon(Icons.date_range),
+              //                           label: Text(
+              //                             tempSelectedDate != null
+              //                                 ? '${AppLocalizations.of(context).translate('container_delivery_date')} : '
+              //                                     '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}'
+              //                                 : AppLocalizations.of(context)
+              //                                     .translate(
+              //                                         'container_choose_delivery_date'),
+              //                           ),
+              //                           onPressed: () async {
+              //                             final now = DateTime.now();
+              //                             final picked = await showDatePicker(
+              //                               context: context,
+              //                               initialDate:
+              //                                   tempSelectedDate ?? now,
+              //                               firstDate: DateTime(now.year - 1),
+              //                               lastDate: DateTime(now.year + 2),
+              //                             );
+              //                             if (picked != null) {
+              //                               setStateDialog(() {
+              //                                 tempSelectedDate = picked;
+              //                               });
+              //                             }
+              //                           },
+              //                         ),
+              //                         if (tempSelectedDate != null)
+              //                           Padding(
+              //                             padding:
+              //                                 const EdgeInsets.only(top: 8.0),
+              //                             child: Text(
+              //                               '${AppLocalizations.of(context).translate('container_selected_date')} : '
+              //                               '${DateFormat('dd/MM/yyyy').format(tempSelectedDate!)}',
+              //                               style: const TextStyle(
+              //                                   fontWeight: FontWeight.bold),
+              //                             ),
+              //                           ),
+              //                         if (tempSelectedDate == null)
+              //                           Padding(
+              //                             padding:
+              //                                 const EdgeInsets.only(top: 8.0),
+              //                             child: Text(
+              //                               'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+              //                               style: AppTextSize.bodyStyle(
+              //                                   context,
+              //                                   color: Colors.grey),
+              //                             ),
+              //                           ),
+              //                       ],
+              //                     ),
+              //                     actions: [
+              //                       TextButton(
+              //                         onPressed: () =>
+              //                             Navigator.of(context).pop(false),
+              //                         child: Text(AppLocalizations.of(context)
+              //                             .translate('cancel')),
+              //                       ),
+              //                       TextButton(
+              //                         onPressed: () =>
+              //                             Navigator.of(context).pop(true),
+              //                         child: Text(
+              //                             isLoading
+              //                                 ? AppLocalizations.of(context)
+              //                                     .translate(
+              //                                         'container_starting')
+              //                                 : AppLocalizations.of(context)
+              //                                     .translate('confirm'),
+              //                             style: const TextStyle(
+              //                                 color: Colors.green)),
+              //                       ),
+              //                     ],
+              //                   );
+              //                 },
+              //               );
+              //             },
+              //           );
+              //           if (confirm != true) return;
+              //           setState(() {
+              //             isLoading = true;
+              //             selectedDeliveryDate = tempSelectedDate;
+              //           });
+              //           final user = await authService.getUserInfo();
+              //           if (user == null) {
+              //             showErrorTopSnackBar(
+              //                 context, "Erreur: Utilisateur non connecté");
+              //             setState(() => isLoading = false);
+              //             return;
+              //           }
+              //           try {
+              //             // On passe la date sélectionnée ou la date du jour
+              //             final deliveryDate =
+              //                 selectedDeliveryDate ?? DateTime.now();
+              //             final result = await containerServices.startDelivery(
+              //                 container.id!, user.id.toInt(), deliveryDate);
+              //             if (result == "SUCCESS") {
+              //               final updatedContainer = await containerServices
+              //                   .getContainerDetails(container.id!);
+              //               Navigator.of(context).pop(updatedContainer);
+              //               if (widget.onContainerUpdated != null) {
+              //                 widget.onContainerUpdated!(updatedContainer);
+              //               }
+              //               showSuccessTopSnackBar(
+              //                   context,
+              //                   AppLocalizations.of(context)
+              //                       .translate('container_delivery_started'));
+              //             } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+              //               showErrorTopSnackBar(
+              //                   context,
+              //                   AppLocalizations.of(context).translate(
+              //                       'container_no_packages_for_delivery'));
+              //             }
+              //           } catch (e) {
+              //             print(e);
+              //             showErrorTopSnackBar(
+              //                 context,
+              //                 AppLocalizations.of(context)
+              //                     .translate('container_delivery_start_error'));
+              //           } finally {
+              //             setState(() {
+              //               isLoading = false;
+              //             });
+              //           }
+              //         },
+              //       ),
+              //     ),
+              //   )
+              // else if (container.status == Status.INPROGRESS)
+              //   Padding(
+              //     padding: EdgeInsets.only(
+              //         top: MediaQuery.of(context).size.width < 600
+              //             ? 16.0
+              //             : 24.0),
+              //     child: SizedBox(
+              //       width: double.infinity,
+              //       child: ElevatedButton.icon(
+              //         style: ElevatedButton.styleFrom(
+              //           backgroundColor: Colors.blue[800],
+              //           padding: const EdgeInsets.symmetric(vertical: 18),
+              //           shape: RoundedRectangleBorder(
+              //             borderRadius: BorderRadius.circular(12),
+              //           ),
+              //         ),
+              //         icon: const Icon(Icons.flag, color: Colors.white),
+              //         label: Text(
+              //             isLoading
+              //                 ? AppLocalizations.of(context)
+              //                     .translate('container_changing_status')
+              //                 : AppLocalizations.of(context)
+              //                     .translate('container_arrived_destination'),
+              //             style: const TextStyle(
+              //                 color: Colors.white,
+              //                 fontWeight: FontWeight.bold)),
+              //         onPressed: () async {
+              //           DateTime? tempSelectedConfirmDate;
+              //           final bool confirm = await showDialog(
+              //             context: context,
+              //             builder: (BuildContext context) {
+              //               return StatefulBuilder(
+              //                 builder: (context, setStateDialog) {
+              //                   return AlertDialog(
+              //                     title: Text(AppLocalizations.of(context)
+              //                         .translate('container_confirm_arrival')),
+              //                     backgroundColor: Colors.white,
+              //                     content: Column(
+              //                       mainAxisSize: MainAxisSize.min,
+              //                       crossAxisAlignment:
+              //                           CrossAxisAlignment.start,
+              //                       children: [
+              //                         Text(AppLocalizations.of(context).translate(
+              //                             'container_confirm_arrival_message')),
+              //                         const SizedBox(height: 16),
+              //                         TextButton.icon(
+              //                           icon: const Icon(Icons.date_range),
+              //                           label: Text(
+              //                             tempSelectedConfirmDate != null
+              //                                 ? '${AppLocalizations.of(context).translate('container_confirmation_date')} : '
+              //                                     '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}'
+              //                                 : AppLocalizations.of(context)
+              //                                     .translate(
+              //                                         'container_choose_confirmation_date'),
+              //                           ),
+              //                           onPressed: () async {
+              //                             final now = DateTime.now();
+              //                             final picked = await showDatePicker(
+              //                               context: context,
+              //                               initialDate:
+              //                                   tempSelectedConfirmDate ?? now,
+              //                               firstDate: DateTime(now.year - 1),
+              //                               lastDate: DateTime(now.year + 2),
+              //                             );
+              //                             if (picked != null) {
+              //                               setStateDialog(() {
+              //                                 tempSelectedConfirmDate = picked;
+              //                               });
+              //                             }
+              //                           },
+              //                         ),
+              //                         if (tempSelectedConfirmDate != null)
+              //                           Padding(
+              //                             padding:
+              //                                 const EdgeInsets.only(top: 8.0),
+              //                             child: Text(
+              //                               'Date sélectionnée : '
+              //                               '${DateFormat('dd/MM/yyyy').format(tempSelectedConfirmDate!)}',
+              //                               style: const TextStyle(
+              //                                   fontWeight: FontWeight.bold),
+              //                             ),
+              //                           ),
+              //                         if (tempSelectedConfirmDate == null)
+              //                           Padding(
+              //                             padding:
+              //                                 const EdgeInsets.only(top: 8.0),
+              //                             child: Text(
+              //                               'Si aucune date n\'est choisie, la date du jour sera utilisée.',
+              //                               style: AppTextSize.bodyStyle(
+              //                                   context,
+              //                                   color: Colors.grey),
+              //                             ),
+              //                           ),
+              //                       ],
+              //                     ),
+              //                     actions: [
+              //                       TextButton(
+              //                         onPressed: () =>
+              //                             Navigator.of(context).pop(false),
+              //                         child: Text(AppLocalizations.of(context)
+              //                             .translate('cancel')),
+              //                       ),
+              //                       TextButton(
+              //                         onPressed: () =>
+              //                             Navigator.of(context).pop(true),
+              //                         child: Text(
+              //                             isLoading
+              //                                 ? "Changement de statut..."
+              //                                 : "Confirmer",
+              //                             style: const TextStyle(
+              //                                 color: Colors.green)),
+              //                       ),
+              //                     ],
+              //                   );
+              //                 },
+              //               );
+              //             },
+              //           );
+              //           if (confirm != true) return;
+              //           setState(() {
+              //             isLoading = true;
+              //           });
+              //           final user = await authService.getUserInfo();
+              //           if (user == null) {
+              //             showErrorTopSnackBar(
+              //                 context, "Erreur: Utilisateur non connecté");
+              //             setState(() => isLoading = false);
+              //             return;
+              //           }
+              //           try {
+              //             final confirmDate =
+              //                 tempSelectedConfirmDate ?? DateTime.now();
+              //             final result =
+              //                 await containerServices.confirmReceiving(
+              //                     container.id!, user.id.toInt(), confirmDate);
+              //             if (result == "SUCCESS") {
+              //               final updatedContainer = await containerServices
+              //                   .getContainerDetails(container.id!);
+              //               Navigator.of(context).pop(updatedContainer);
+              //               if (widget.onContainerUpdated != null) {
+              //                 widget.onContainerUpdated!(updatedContainer);
+              //               }
+              //               showSuccessTopSnackBar(
+              //                   context,
+              //                   AppLocalizations.of(context)
+              //                       .translate('container_arrival_confirmed'));
+              //             } else if (result == "NO_PACKAGE_FOR_DELIVERY") {
+              //               showErrorTopSnackBar(
+              //                   context,
+              //                   AppLocalizations.of(context).translate(
+              //                       'container_no_packages_for_reception'));
+              //             } else if (result == "CONTAINER_NOT_IN_PROGRESS") {
+              //               showErrorTopSnackBar(
+              //                   context,
+              //                   AppLocalizations.of(context)
+              //                       .translate('container_not_in_progress'));
+              //             }
+              //           } catch (e) {
+              //             showErrorTopSnackBar(
+              //                 context,
+              //                 AppLocalizations.of(context)
+              //                     .translate('container_reception_error'));
+              //           } finally {
+              //             setState(() {
+              //               isLoading = false;
+              //             });
+              //           }
+              //         },
+              //       ),
+              //     ),
+              //   ),
             ],
           ),
         ),
@@ -1438,9 +1481,10 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                   onPressed: _showPrintOptionsDialog,
                   backgroundColor: const Color(0xFF1A1E49),
                   icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
-                  label: const Text(
-                    'Export PDF',
-                    style: TextStyle(color: Colors.white),
+                  label: Text(
+                    AppLocalizations.of(context)
+                        .translate('print_customer_container'),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 )
               : null,

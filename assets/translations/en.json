@@ -1407,6 +1407,8 @@
   "personal_info_title": "Personal information",
   "change_password": "Change password",
   "change_password_button": "Change password",
+  "container_form_profit": "Profit",
+  "print_customer_container": "List of customers in container",
   "privacy_policy_title": "Privacy policy",
   "username": "Username",
   "user_details_role": "Role",

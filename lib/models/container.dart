@@ -48,6 +48,7 @@ class Containers {
   final String? marginCurrencyCode;
   final double? marginRateToCNY;
   final double? amount;
+  final double? profitCNY;
 
   /// Montants CNY calculés par le backend (lecture seule, jamais calculés côté Flutter)
   final double? locationFeeCNY;
@@ -148,6 +149,7 @@ class Containers {
     String? transportFeeCurrencyCode,
     double? transportFeeRateToCNY,
     double? transportFeeCNY,
+    double? profitCNY,
   }) {
     return Containers(
       id: id ?? this.id,
@@ -228,6 +230,7 @@ class Containers {
       transportFeeRateToCNY:
           transportFeeRateToCNY ?? this.transportFeeRateToCNY,
       transportFeeCNY: transportFeeCNY ?? this.transportFeeCNY,
+      profitCNY: profitCNY ?? this.profitCNY,
     );
   }
 
@@ -260,6 +263,7 @@ class Containers {
       'otherFees': otherFees,
       'margin': margin,
       'amount': amount,
+      'profitCNY': profitCNY,
       'carrierId': carrierId,
       'carrierName': carrierName,
       'carrierContact': carrierContact,
@@ -392,6 +396,7 @@ class Containers {
     this.transportFeeCurrencyCode,
     this.transportFeeRateToCNY,
     this.transportFeeCNY,
+    this.profitCNY,
   });
 
   factory Containers.fromJson(Map<String, dynamic> json) {
@@ -501,6 +506,7 @@ class Containers {
       transportFeeRateToCNY:
           (json['transportFeeRateToCNY'] as num?)?.toDouble(),
       transportFeeCNY: (json['transportFeeCNY'] as num?)?.toDouble(),
+      profitCNY: (json['profitCNY'] as num?)?.toDouble(),
     );
   }
 }

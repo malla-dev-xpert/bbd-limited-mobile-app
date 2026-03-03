@@ -2058,6 +2058,8 @@
   "loading_short": "加载中",
   "purchase_history_phone": "电话",
   "client_not_found_or_mismatch": "未找到客户或不匹配客户",
+  "container_form_profit": "利润",
+  "print_customer_container": "容器客户列表",
   "reports_title": "报告和统计",
   "period_selection": "报告期间",
   "current_month": "本月",
