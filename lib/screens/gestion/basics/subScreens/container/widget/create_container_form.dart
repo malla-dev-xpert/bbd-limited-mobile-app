@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_info_form.dart';
 import 'package:bbd_limited/core/services/access_control_service.dart';
@@ -878,19 +879,12 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                   const SizedBox(height: 16),
                   Text(
                     loc.translate('container_items_step_title'),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1E49),
-                    ),
+                    style: AppTextSize.titleStyle(context, color: const Color(0xFF1A1E49)),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     loc.translate('container_items_step_subtitle'),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 16),
                   if (_availableItems.isEmpty)
@@ -909,10 +903,7 @@ class CreateContainerFormState extends State<CreateContainerForm> {
                               const SizedBox(height: 12),
                               Text(
                                 loc.translate('container_no_items_available'),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
+                                style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                                 textAlign: TextAlign.center,
                               ),
                             ],

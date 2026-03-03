@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -47,12 +48,7 @@ class _CreateContainerPageState extends State<CreateContainerPage> {
       appBar: AppBar(
         title: Text(
           _getStepTitle(),
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            color: Colors.white,
-          ),
+          style: AppTextSize.headlineStyle(context, color: Colors.white, fontWeight: FontWeight.w600).copyWith(letterSpacing: 0.5),
         ),
         elevation: 0,
         backgroundColor: const Color(0xFF1A1E49),

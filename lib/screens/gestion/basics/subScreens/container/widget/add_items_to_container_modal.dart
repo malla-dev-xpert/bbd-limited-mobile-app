@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 Future<List<Items>?> showAddItemsToContainerDialog(
@@ -172,11 +173,7 @@ class _AddItemsDialogContentState extends State<_AddItemsDialogContent> {
                 child: Text(
                   loc?.translate('container_embark_items') ??
                       'Embarquer des items',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    letterSpacing: -1,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -1),
                 ),
               ),
               IconButton(
@@ -285,7 +282,7 @@ class _AddItemsDialogContentState extends State<_AddItemsDialogContent> {
                             const SizedBox(width: 8),
                             Text(
                               '${loc?.translate('add') ?? 'Ajouter'} (${_selectedItems.length})',
-                              style: const TextStyle(fontSize: 16),
+                              style: AppTextSize.subtitleStyle(context),
                             ),
                           ],
                         ),

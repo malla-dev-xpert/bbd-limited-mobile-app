@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
 class DateFilterWidget extends StatelessWidget {
@@ -50,11 +51,8 @@ class DateFilterWidget extends StatelessWidget {
                         Text(
                           AppLocalizations.of(context)
                               .translate('filter_by_date_title'),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1E49),
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                            color: const Color(0xFF1A1E49)),
                         ),
                         const Spacer(),
                         IconButton(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
-Widget buildDetailRow(String label, String? value) {
+Widget buildDetailRow(BuildContext context, String label, String? value) {
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 8),
     padding: const EdgeInsets.all(16),
@@ -21,11 +22,8 @@ Widget buildDetailRow(String label, String? value) {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-            fontSize: 16,
-          ),
+          style: AppTextSize.bodyStyle(context,
+              fontWeight: FontWeight.w500, color: Colors.grey[700]),
         ),
         Flexible(
           child: Text(
@@ -33,11 +31,8 @@ Widget buildDetailRow(String label, String? value) {
             textAlign: TextAlign.right,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
-            style: const TextStyle(
-              color: Color(0xFF1A1E49),
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                color: const Color(0xFF1A1E49), fontWeight: FontWeight.w600),
           ),
         ),
       ],

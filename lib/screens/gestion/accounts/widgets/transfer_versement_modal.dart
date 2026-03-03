@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
@@ -205,19 +206,14 @@ class _TransferVersementModalState extends State<TransferVersementModal> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('transfer_versement'),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextSize.titleStyle(context),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       AppLocalizations.of(context)
                           .translate('select_destination_client'),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: AppTextSize.bodyStyle(context,
+                          color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -243,10 +239,8 @@ class _TransferVersementModalState extends State<TransferVersementModal> {
               children: [
                 Text(
                   AppLocalizations.of(context).translate('versement_details'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -293,10 +287,8 @@ class _TransferVersementModalState extends State<TransferVersementModal> {
                 Text(
                   AppLocalizations.of(context)
                       .translate('select_destination_client'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
                 DropDownCustom<Partner>(

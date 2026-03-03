@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../core/localization/app_localizations.dart';
@@ -32,11 +33,7 @@ class PersonalInfoCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       localizations.translate('personal_info_title'),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3748),
-                      ),
+                      style: AppTextSize.headlineStyle(context, color: const Color(0xFF2D3748)),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -49,12 +46,14 @@ class PersonalInfoCard extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               _buildInfoRow(
+                context,
                 icon: Icons.person_outline,
                 label: localizations.translate('last_name'),
                 value: '${user.firstName ?? ''} ${user.lastName ?? ''}',
               ),
               const SizedBox(height: 16),
               _buildInfoRow(
+                context,
                 icon: Icons.email_outlined,
                 label: localizations.translate('email'),
                 value:
@@ -62,6 +61,7 @@ class PersonalInfoCard extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildInfoRow(
+                context,
                 icon: Icons.phone_outlined,
                 label: localizations.translate('phone'),
                 value: user.phoneNumber ??
@@ -69,6 +69,7 @@ class PersonalInfoCard extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildInfoRow(
+                context,
                 icon: Icons.work_outline,
                 label: localizations.translate('role'),
                 value: user.role!.name ??
@@ -81,7 +82,8 @@ class PersonalInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow({
+  Widget _buildInfoRow(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required String value,
@@ -107,19 +109,12 @@ class PersonalInfoCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF718096),
-                ),
+                style: AppTextSize.bodyStyle(context, color: const Color(0xFF718096)),
               ),
               const SizedBox(height: 4),
               Text(
                 value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF2D3748),
-                ),
+                style: AppTextSize.titleStyle(context, color: const Color(0xFF2D3748), fontWeight: FontWeight.w500),
               ),
             ],
           ),

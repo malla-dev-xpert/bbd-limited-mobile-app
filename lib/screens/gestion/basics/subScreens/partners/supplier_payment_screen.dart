@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/payment_services.dart';
@@ -199,20 +200,13 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
-              color: accentColor,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                color: accentColor, fontWeight: FontWeight.w600),
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: accentColor,
-          ),
+          style: AppTextSize.titleStyle(context, color: accentColor),
         ),
       ],
     );
@@ -366,11 +360,9 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                   Text(
                                     AppLocalizations.of(context)
                                         .translate('purchase_number'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: AppTextSize.bodyStyle(context,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500),
                                   ),
                                   const SizedBox(height: 4),
                                   if (isLoadingAchat)
@@ -385,11 +377,8 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                       achat?.id != null
                                           ? '${achat!.id}'
                                           : 'N/A',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
+                                      style: AppTextSize.titleStyle(context,
+                                          color: Colors.black87),
                                     ),
                                 ],
                               ),
@@ -409,20 +398,15 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                   Text(
                                     AppLocalizations.of(context)
                                         .translate('supplier'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: AppTextSize.bodyStyle(context,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     '${widget.supplier.firstName} ${widget.supplier.lastName}',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
-                                    ),
+                                    style: AppTextSize.titleStyle(context,
+                                        color: Colors.black87),
                                   ),
                                 ],
                               ),
@@ -442,11 +426,9 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                   Text(
                                     AppLocalizations.of(context)
                                         .translate('purchase_date'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: AppTextSize.bodyStyle(context,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500),
                                   ),
                                   const SizedBox(height: 4),
                                   if (isLoadingAchat)
@@ -462,11 +444,8 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                                           ? DateFormat('dd/MM/yyyy')
                                               .format(achat!.createdAt!)
                                           : 'N/A',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
+                                      style: AppTextSize.titleStyle(context,
+                                          color: Colors.black87),
                                     ),
                                 ],
                               ),
@@ -526,10 +505,8 @@ class _SupplierPaymentScreenState extends State<SupplierPaymentScreen> {
                           child: Text(
                             AppLocalizations.of(context)
                                 .translate('pay_full_amount'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                fontWeight: FontWeight.w500),
                           ),
                         ),
                         Switch(

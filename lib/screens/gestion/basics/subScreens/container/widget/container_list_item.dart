@@ -185,7 +185,7 @@ class ContainerListItem extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _buildStatusChip(statusColor, statusText),
+                        _buildStatusChip(context, statusColor, statusText),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -323,7 +323,7 @@ class ContainerListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(Color color, String text) {
+  Widget _buildStatusChip(BuildContext context, Color color, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -332,11 +332,7 @@ class ContainerListItem extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextSize.captionStyle(context, color: color).copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }

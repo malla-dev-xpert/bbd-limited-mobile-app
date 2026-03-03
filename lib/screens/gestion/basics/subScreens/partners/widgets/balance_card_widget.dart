@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/amount_format.dart';
@@ -50,7 +51,7 @@ class PartnerBalanceCard extends StatelessWidget {
                   children: [
                     Text(
                       AppLocalizations.of(context).translate('current_balance'),
-                      style: TextStyle(fontSize: 18, color: Colors.grey[50]!),
+                      style: AppTextSize.titleStyle(context, color: Colors.grey[50]),
                     ),
                   ],
                 ),
@@ -66,11 +67,8 @@ class PartnerBalanceCard extends StatelessWidget {
                     ),
                     Text(
                       formatAmountWithSymbol(balance, 'CNY'),
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: statusColor,
-                      ),
+                      style: AppTextSize.headlineStyle(context,
+                        fontWeight: FontWeight.w900, color: statusColor),
                     ),
                   ],
                 ),
@@ -97,15 +95,13 @@ class PartnerBalanceCard extends StatelessWidget {
                         Text(
                           AppLocalizations.of(context)
                               .translate('total_amount_paid'),
-                          style: TextStyle(color: Colors.grey[50]),
+                          style: AppTextSize.bodyStyle(context, color: Colors.grey[50]),
                         ),
                         Text(
                           formatAmountWithSymbol(totalVersementsUSD, 'CNY'),
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: AppTextSize.titleStyle(context,
                             fontWeight: FontWeight.w900,
-                            color: Colors.grey[100],
-                          ),
+                            color: Colors.grey[100]),
                         ),
                       ],
                     ),

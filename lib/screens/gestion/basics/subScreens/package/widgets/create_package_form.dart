@@ -10,6 +10,7 @@ import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/create_container_page.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/create_warehouse_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/date_picker.dart';
@@ -178,11 +179,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                           child: Text(
                             AppLocalizations.of(context)
                                 .translate('create_expedition_title'),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
-                            ),
+                            style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -0.5),
                           ),
                         ),
                         IconButton(
@@ -215,7 +212,7 @@ class _CreateExpeditionFormState extends State<CreateExpeditionForm> {
                                         AppLocalizations.of(context)
                                             .translate('expedition_type_title'),
                                         style:
-                                            TextStyle(color: Colors.grey[600]),
+                                            AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                                       ),
                                     ),
                                     Row(

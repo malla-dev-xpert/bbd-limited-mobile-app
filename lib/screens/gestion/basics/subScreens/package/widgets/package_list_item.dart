@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/packages.dart';
@@ -17,8 +18,6 @@ class PackageListItem extends StatelessWidget {
   static const double _padding = 20.0;
   static const double _iconSize = 17.0;
   static const double _spacing = 10.0;
-  static const double _infoTextSize = 14.0;
-
   const PackageListItem({
     super.key,
     required this.packages,
@@ -106,11 +105,7 @@ class PackageListItem extends StatelessWidget {
           ),
           child: Text(
             statusInfo.displayText,
-            style: TextStyle(
-              color: statusInfo.textColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
+            style: AppTextSize.subtitleStyle(context, color: statusInfo.textColor, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -125,24 +120,28 @@ class PackageListItem extends StatelessWidget {
       children: [
         const SizedBox(height: 5),
         _buildInfoText(
+          context,
           "${AppLocalizations.of(context).translate('package_client_label')} : ${packages.clientName ?? AppLocalizations.of(context).translate('package_client_unspecified')} ${packages.clientPhone != null ? '| ${packages.clientPhone}' : ''}",
           maxLines: 1,
         ),
         _buildInfoText(
+          context,
           packages.expeditionType?.toLowerCase() == "avion"
               ? "${AppLocalizations.of(context).translate('package_weight_label')} : ${packages.weight ?? 0} ${AppLocalizations.of(context).translate('kg')}"
               : "${AppLocalizations.of(context).translate('package_cbn_label')} : ${packages.cbn ?? 0} ${AppLocalizations.of(context).translate('m3')}",
         ),
         _buildInfoText(
+          context,
           "${AppLocalizations.of(context).translate('package_destination_label')} : ${packages.destinationCountry ?? AppLocalizations.of(context).translate('package_destination_unspecified')}",
         ),
         _buildInfoText(
+            context,
             "${AppLocalizations.of(context).translate('package_cartons_count')} : ${packages.itemQuantity ?? 0}"),
       ],
     );
   }
 
-  Widget _buildInfoText(String text, {int maxLines = 2}) {
+  Widget _buildInfoText(BuildContext context, String text, {int maxLines = 2}) {
     // Diviser le texte en deux points pour séparer l’étiquette et la valeur
     final parts = text.split(':');
     if (parts.length != 2) {
@@ -150,11 +149,7 @@ class PackageListItem extends StatelessWidget {
         text,
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Colors.grey[600],
-          fontSize: _infoTextSize,
-        ),
+        style: AppTextSize.bodyStyle(context, color: Colors.grey[600], fontWeight: FontWeight.w600),
       );
     }
 
@@ -165,19 +160,11 @@ class PackageListItem extends StatelessWidget {
         children: [
           TextSpan(
             text: '${parts[0]}: ',
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[600],
-              fontSize: _infoTextSize,
-            ),
+            style: AppTextSize.bodyStyle(context, fontWeight: FontWeight.w400, color: Colors.grey[600]),
           ),
           TextSpan(
             text: parts[1],
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
-              fontSize: _infoTextSize,
-            ),
+            style: AppTextSize.bodyStyle(context, fontWeight: FontWeight.w600, color: Colors.grey[800]),
           ),
         ],
       ),

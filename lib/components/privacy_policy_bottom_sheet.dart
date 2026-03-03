@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import '../core/localization/app_localizations.dart';
 
 class PrivacyPolicyBottomSheet extends StatelessWidget {
@@ -42,10 +43,8 @@ class PrivacyPolicyBottomSheet extends StatelessWidget {
               Expanded(
                 child: Text(
                   localizations.translate('privacy_policy_title'),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextSize.headlineStyle(context,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
               IconButton(
@@ -180,11 +179,9 @@ class PrivacyPolicyBottomSheet extends StatelessWidget {
                         Expanded(
                           child: Text(
                             localizations.translate('privacy_last_updated'),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 16,
-                              fontStyle: FontStyle.italic,
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                    color: Colors.grey[600])
+                                .copyWith(fontStyle: FontStyle.italic),
                           ),
                         ),
                       ],
@@ -230,11 +227,8 @@ class PrivacyPolicyBottomSheet extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                  style: AppTextSize.titleStyle(context,
+                      fontWeight: FontWeight.bold, color: color),
                 ),
               ),
             ],
@@ -242,10 +236,7 @@ class PrivacyPolicyBottomSheet extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             content,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.5,
-            ),
+            style: AppTextSize.bodyStyle(context).copyWith(height: 1.5),
           ),
         ],
       ),

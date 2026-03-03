@@ -8,6 +8,7 @@ import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/widgets/create_carrier_bottom_sheet.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add_harbor.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/partners/widgets/create_supplier_bottom_sheet.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -197,20 +198,14 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                     children: [
                       Text(
                         label,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: AppTextSize.bodyStyle(context, color: Colors.grey),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         date != null ? DateFormat.yMd().format(date) : '—',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: date != null
+                        style: AppTextSize.bodyStyle(context, color: date != null
                               ? Colors.grey[800]
-                              : Colors.grey[500],
-                        ),
+                              : Colors.grey[500]),
                       ),
                     ],
                   ),
@@ -259,11 +254,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
               ),
               child: Text(
                 size,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[800],
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16,
-                ),
+                style: AppTextSize.subtitleStyle(context, color: isSelected ? Colors.white : Colors.grey[800], fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -305,7 +296,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   child: Text(
                       AppLocalizations.of(context)
                           .translate('container_form_size'),
-                      style: const TextStyle(fontSize: 18)),
+                      style: AppTextSize.titleStyle(context)),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -481,7 +472,7 @@ class ContainerInfoFormState extends State<ContainerInfoForm> {
                   child: Text(
                       AppLocalizations.of(context)
                           .translate('container_form_availability'),
-                      style: const TextStyle(fontSize: 18)),
+                      style: AppTextSize.titleStyle(context)),
                 ),
                 Switch(
                   value: _isAvailable,

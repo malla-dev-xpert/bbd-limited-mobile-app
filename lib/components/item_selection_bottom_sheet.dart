@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:intl/intl.dart';
@@ -132,20 +133,15 @@ class _ItemSelectionBottomSheetState extends State<ItemSelectionBottomSheet> {
                         children: [
                           Text(
                             widget.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextSize.titleStyle(context,
+                                color: Colors.white, fontWeight: FontWeight.bold),
                           ),
                           if (widget.subtitle != null) ...[
                             const SizedBox(height: 4),
                             Text(
                               widget.subtitle!,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 14,
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.white.withOpacity(0.8)),
                             ),
                           ],
                         ],
@@ -189,10 +185,8 @@ class _ItemSelectionBottomSheetState extends State<ItemSelectionBottomSheet> {
                   ),
                   child: Text(
                     '${_selectedItemIds.length} / ${widget.items.where((item) => item.id != null).length} ${localizations.translate('items_selected')}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -242,23 +236,19 @@ class _ItemSelectionBottomSheetState extends State<ItemSelectionBottomSheet> {
                                 Text(
                                   item.description ??
                                       localizations.translate('unnamed_item'),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: isSelected
-                                        ? const Color(0xFF1A1E49)
-                                        : Colors.black87,
-                                  ),
+                                  style: AppTextSize.subtitleStyle(context,
+                                      fontWeight: FontWeight.bold,
+                                      color: isSelected
+                                          ? const Color(0xFF1A1E49)
+                                          : Colors.black87),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   '${localizations.translate('quantity')}: ${item.quantity ?? 0} | '
                                   '${localizations.translate('unit_price')}: ${_currencyFormat.format(item.unitPrice ?? 0)} ${widget.currencySymbol} | '
                                   '${localizations.translate('total')}: ${_currencyFormat.format(item.totalPrice ?? 0)} ${widget.currencySymbol}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.grey[600]),
                                 ),
                               ],
                             ),

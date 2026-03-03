@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/utils/partner_print_service.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -270,7 +271,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             textAlign: TextAlign.left,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: AppTextSize.titleStyle(context),
           ),
           elevation: 0,
           backgroundColor: Colors.white,
@@ -699,7 +700,7 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
               AppLocalizations.of(context).translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 18),
+              style: AppTextSize.titleStyle(context, color: Colors.red),
             ),
           ),
         ],

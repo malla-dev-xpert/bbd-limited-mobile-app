@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 Future<bool?> showAddItemsModal(BuildContext context, int packageId) async {
@@ -39,10 +40,7 @@ Future<bool?> showAddItemsModal(BuildContext context, int packageId) async {
                     children: [
                       Text(
                         "Ajouter des articles au colis",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextSize.headlineStyle(context),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),

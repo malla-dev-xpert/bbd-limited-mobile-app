@@ -1,5 +1,6 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
@@ -80,11 +81,7 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
               children: [
                 Text(
                   AppLocalizations.of(context).translate('edit_partner'),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1,
-                  ),
+                  style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -1),
                 ),
                 const SizedBox(height: 20),
                 Column(
@@ -149,7 +146,7 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                           countryListTheme: CountryListThemeData(
                             flagSize: 25,
                             backgroundColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 18),
+                            textStyle: AppTextSize.titleStyle(context),
                             bottomSheetHeight: 300,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),
@@ -178,7 +175,7 @@ class _PartnerEditFormState extends State<PartnerEditForm> {
                                     children: [
                                       Text(
                                         _selectedCountry!.flagEmoji,
-                                        style: const TextStyle(fontSize: 24),
+                                        style: AppTextSize.headlineStyle(context),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(_selectedCountry!.name),

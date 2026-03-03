@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -104,16 +105,14 @@ class ReusableItemCard extends StatelessWidget {
                       children: [
                         Text(
                           item.description ?? 'N/A',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                          style: AppTextSize.titleStyle(context),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         RichText(
                           text: TextSpan(
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
+                            style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                             children: [
                               TextSpan(
                                 text: '${loc.translate('invoice_number')}: ',
@@ -297,20 +296,16 @@ class ReusableItemCard extends StatelessWidget {
                           children: [
                             Text(
                               '${loc.translate('supplier')}: ${item.supplierName ?? loc.translate('not_available')}',
-                              style: TextStyle(
-                                fontSize: 16,
+                              style: AppTextSize.bodyStyle(context,
                                 color: Colors.purple[900],
-                                fontWeight: FontWeight.w500,
-                              ),
+                                fontWeight: FontWeight.w500),
                             ),
                             if (item.supplierPhone != null &&
                                 (item.supplierPhone as String).isNotEmpty)
                               Text(
                                 '${loc.translate('purchase_history_phone')}: ${item.supplierPhone}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.purple[700],
-                                ),
+                                style: AppTextSize.bodyStyle(context,
+                                  color: Colors.purple[700]),
                               ),
                           ],
                         ),
@@ -341,18 +336,14 @@ class ReusableItemCard extends StatelessWidget {
                             children: [
                               Text(
                                 '${loc.translate('client')}: ${achat!.client ?? 'N/A'}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.blue[900],
-                                  fontWeight: FontWeight.w500,
-                                ),
+style: AppTextSize.bodyStyle(context,
+                                color: Colors.blue[900],
+                                fontWeight: FontWeight.w500),
                               ),
                               Text(
                                 '${loc.translate('purchase_history_date')}: ${DateFormat('dd/MM/yyyy').format(achat!.createdAt ?? DateTime.now())}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.blue[700],
-                                ),
+style: AppTextSize.bodyStyle(context,
+                                color: Colors.blue[700]),
                               ),
                             ],
                           ),
@@ -369,11 +360,9 @@ class ReusableItemCard extends StatelessWidget {
                             ),
                             child: Text(
                               loc.translate('purchase_history_debt'),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF7F78AF),
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                color: const Color(0xFF7F78AF),
+                                fontWeight: FontWeight.bold),
                             ),
                           ),
                       ],
@@ -400,20 +389,16 @@ class ReusableItemCard extends StatelessWidget {
                             children: [
                               Text(
                                 '${loc.translate('client')}: ${item.clientName!.trim()}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.blue[900],
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: AppTextSize.bodyStyle(context,
+                                    color: Colors.blue[900],
+                                    fontWeight: FontWeight.w500),
                               ),
                               if (item.clientPhone != null &&
                                   item.clientPhone!.trim().isNotEmpty)
                                 Text(
                                   '${loc.translate('purchase_history_phone')}: ${item.clientPhone!.trim()}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.blue[700],
-                                  ),
+                                  style: AppTextSize.bodyStyle(context,
+                                      color: Colors.blue[700]),
                                 ),
                             ],
                           ),
@@ -442,11 +427,9 @@ class ReusableItemCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           loc.translate('purchase_history_item_pending'),
-                          style: TextStyle(
-                            fontSize: 16,
+                          style: AppTextSize.bodyStyle(context,
                             color: Colors.orange[900],
-                            fontWeight: FontWeight.w500,
-                          ),
+                            fontWeight: FontWeight.w500),
                         ),
                       ),
                       const SizedBox(width: 8),

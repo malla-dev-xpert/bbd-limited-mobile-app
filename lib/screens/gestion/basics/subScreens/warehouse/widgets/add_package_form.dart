@@ -1,5 +1,6 @@
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/create_container_page.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -134,14 +135,10 @@ class _AddPackageFormState extends State<AddPackageForm> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 "Ajouter un nouveau colis",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -1,
-                                ),
+                                style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -1),
                               ),
                             ),
                             IconButton(

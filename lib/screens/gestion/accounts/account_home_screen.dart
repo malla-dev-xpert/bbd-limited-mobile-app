@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
@@ -294,7 +295,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
               AppLocalizations.of(context).translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 18),
+              style: AppTextSize.titleStyle(context, color: Colors.red),
             ),
           ),
         ],
@@ -465,11 +466,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('filter_by_date'),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1E49),
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                              color: const Color(0xFF1A1E49)),
                         ),
                         const Spacer(),
                         IconButton(
@@ -614,11 +612,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('account_management_title'),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -1,
-                          ),
+                          style: AppTextSize.headlineStyle(context)
+                              .copyWith(letterSpacing: -1),
                         ),
                         IconButton(
                           onPressed: _refreshLoading
@@ -657,11 +652,9 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                   title: AppLocalizations.of(context)
                                       .translate('total_versements'),
                                   value: _allVersements.length.toString(),
-                                  valueStyle: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1A1E49),
-                                  ),
+                                  valueStyle: AppTextSize.headlineStyle(
+                                      context,
+                                      color: const Color(0xFF1A1E49)),
                                 ),
                               ),
                             ),
@@ -679,11 +672,8 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                                   title: AppLocalizations.of(context)
                                       .translate('total_amount'),
                                   value: _formatAmountCNY(_totalVersementsUSD),
-                                  valueStyle: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1A1E49),
-                                  ),
+                                  valueStyle: AppTextSize.titleStyle(context,
+                                      color: const Color(0xFF1A1E49)),
                                 ),
                               ),
                             ),
@@ -854,10 +844,7 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('versements_list'),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTextSize.titleStyle(context),
                         ),
                         if (_currentTypeFilter != null)
                           TextButton(
@@ -972,7 +959,8 @@ class _StatItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(title, style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+        Text(title,
+        style: AppTextSize.titleStyle(context, color: Colors.grey[600])),
         const SizedBox(height: 8),
         Text(value, style: valueStyle),
       ],

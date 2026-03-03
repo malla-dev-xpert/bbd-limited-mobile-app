@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/buildDetailRow.dart';
@@ -153,20 +154,14 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16,
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextSize.bodyStyle(context,
+              color: color, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -226,7 +221,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                     const SizedBox(width: 12),
                     Text(
                       DateFormat('dd/MM/yyyy').format(selectedDate),
-                      style: const TextStyle(fontSize: 16),
+                      style: AppTextSize.bodyStyle(context),
                     ),
                   ],
                 ),
@@ -314,10 +309,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
             const SizedBox(height: 16),
             Text(
               "Aucun achat trouvé pour ce versement.",
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.grey[600],
-              ),
+              style: AppTextSize.titleStyle(context, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -378,10 +370,8 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                               children: [
                                 Text(
                                   '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: AppTextSize.titleStyle(context,
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
@@ -395,11 +385,9 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                     Text(
                                       DateFormat('dd/MM/yyyy').format(
                                           achat.createdAt ?? DateTime.now()),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.grey[700]!,
-                                      ),
+                                      style: AppTextSize.bodyStyle(context,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey[700]!),
                                     ),
                                   ],
                                 ),
@@ -417,12 +405,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                       Expanded(
                                         child: Text(
                                           achat.code!,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[800],
-                                            fontFamily: 'monospace',
-                                          ),
+                                          style: AppTextSize.bodyStyle(context,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey[800])
+                                              .copyWith(
+                                                  fontFamily: 'monospace'),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -583,20 +570,16 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                           children: [
                             Text(
                               'Montant total : ',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500),
                             ),
                             Expanded(
                               child: Text(
                                 currencyFormat.format(achat.montantTotal ?? 0),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1E49),
-                                ),
+                                style: AppTextSize.bodyStyle(context,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF1A1E49)),
                                 textAlign: TextAlign.end,
                               ),
                             ),
@@ -637,13 +620,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               _isInfoExpanded = expanded;
             });
           },
-          title: const Text(
+          title: Text(
             "Informations du versement",
-            style: TextStyle(
-              color: Color(0xFF1A1E49),
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-            ),
+            style: AppTextSize.titleStyle(context,
+                color: const Color(0xFF1A1E49), fontWeight: FontWeight.w600),
           ),
           children: [
             Padding(
@@ -651,35 +631,43 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildDetailRow("Référence", widget.versement.reference),
-                  buildDetailRow("Type", widget.versement.type),
-                  buildNoteField(widget.versement.note),
-                  buildDetailRow("Client", widget.versement.partnerName),
-                  if (widget.versement.partnerPhone != null)
-                    buildDetailRow(
-                        "Téléphone", "${widget.versement.partnerPhone}"),
                   buildDetailRow(
+                      context, "Référence", widget.versement.reference),
+                  buildDetailRow(context, "Type", widget.versement.type),
+                  buildNoteField(context, widget.versement.note),
+                  buildDetailRow(
+                      context, "Client", widget.versement.partnerName),
+                  if (widget.versement.partnerPhone != null)
+                    buildDetailRow(context, "Téléphone",
+                        "${widget.versement.partnerPhone}"),
+                  buildDetailRow(
+                    context,
                     "Commissionnaire",
                     widget.versement.commissionnaireName ?? 'N/V',
                   ),
                   buildDetailRow(
+                    context,
                     "Téléphone",
                     "${widget.versement.commissionnairePhone}",
                   ),
                   buildDetailRow(
+                    context,
                     "Montant versé",
                     currencyFormat.format(widget.versement.montantVerser),
                   ),
                   buildDetailRow(
+                    context,
                     "Montant restante",
                     currencyFormat.format(widget.versement.montantRestant),
                   ),
                   buildDetailRow(
+                    context,
                     "Date de versement",
                     DateFormat('dd/MM/yyyy')
                         .format(widget.versement.createdAt!),
                   ),
                   buildDetailRow(
+                    context,
                     "Total des achats",
                     _achats.expand((a) => a.items ?? []).length.toString(),
                   ),
@@ -715,13 +703,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               _isArticlesExpanded = expanded;
             });
           },
-          title: const Text(
+          title: Text(
             "Liste des achats",
-            style: TextStyle(
-              color: Color(0xFF1A1E49),
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-            ),
+            style: AppTextSize.titleStyle(context,
+                color: const Color(0xFF1A1E49), fontWeight: FontWeight.w600),
           ),
           children: [
             Padding(
@@ -852,22 +837,20 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
               _isWithdrawalsExpanded = expanded;
             });
           },
-          title: const Text(
+          title: Text(
             "Liste des retraits d'achat",
-            style: TextStyle(
-              color: Color(0xFF1A1E49),
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-            ),
+            style: AppTextSize.titleStyle(context,
+                color: const Color(0xFF1A1E49), fontWeight: FontWeight.w600),
           ),
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
               child: withdrawals.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         "Aucun retrait effectué pour ce versement.",
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style:
+                            AppTextSize.bodyStyle(context, color: Colors.grey),
                       ),
                     )
                   : ListView.separated(
@@ -907,10 +890,10 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                   Expanded(
                                     child: Text(
                                       currencyFormat.format(w.montant),
-                                      style: const TextStyle(
+                                      style: AppTextSize.titleStyle(
+                                        context,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                        color: Color(0xFF1A1E49),
+                                        color: const Color(0xFF1A1E49),
                                       ),
                                     ),
                                   ),
@@ -939,13 +922,11 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                           w.status == Status.CREATE
                                               ? 'Validé'
                                               : 'En attente',
-                                          style: TextStyle(
-                                            color: w.status == Status.CREATE
-                                                ? Colors.green[700]
-                                                : Colors.orange[700],
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                          ),
+                                          style: AppTextSize.bodyStyle(context,
+                                              color: w.status == Status.CREATE
+                                                  ? Colors.green[700]
+                                                  : Colors.orange[700],
+                                              fontWeight: FontWeight.w500),
                                         ),
                                       ],
                                     ),
@@ -976,8 +957,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                 ? '${w.user.firstName ?? ''} ${w.user.lastName ?? ''}'
                                                     .trim()
                                                 : w.user.username,
-                                        style: const TextStyle(
-                                            fontSize: 16,
+                                        style: AppTextSize.bodyStyle(context,
                                             fontWeight: FontWeight.w500),
                                       ),
                                     ],
@@ -994,8 +974,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                                 .format(DateTime.parse(
                                                     w.dateRetrait.toString()))
                                             : 'Date inconnue',
-                                        style: const TextStyle(
-                                            fontSize: 16,
+                                        style: AppTextSize.bodyStyle(context,
                                             color: Colors.black87),
                                       ),
                                     ],
@@ -1014,8 +993,7 @@ class _VersementDetailScreenState extends State<VersementDetailScreen> {
                                     Expanded(
                                       child: Text(
                                         w.note!,
-                                        style: const TextStyle(
-                                            fontSize: 16,
+                                        style: AppTextSize.bodyStyle(context,
                                             color: Colors.black87),
                                       ),
                                     ),

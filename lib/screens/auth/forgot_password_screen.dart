@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import '../../widgets/rounded_button.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -67,14 +68,14 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           height: 160,
                         ),
                         const SizedBox(height: 20),
-                        const Text(
+                        Text(
                           "Mot de passe oublié",
                           style: TextStyle(
-                            fontSize: 32,
+                            fontSize: AppTextSize.display(context),
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
                             letterSpacing: -0.5,
-                            shadows: [
+                            shadows: const [
                               Shadow(
                                 color: Colors.black45,
                                 blurRadius: 8,
@@ -84,11 +85,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           "Entrez votre email pour réinitialiser votre mot de passe.",
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: AppTextSize.body(context),
                             fontWeight: FontWeight.w400,
                             letterSpacing: -0.5,
                           ),
@@ -154,10 +155,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                 },
                               ),
                               const SizedBox(height: 16),
-                              const Text(
+                              Text(
                                 "Vous allez recevoir un email de réinitialisation si l'adresse est valide.",
-                                style: TextStyle(
-                                    color: Colors.black54, fontSize: 16),
+                                style: AppTextSize.bodyStyle(context,
+                                    color: Colors.black54),
                                 textAlign: TextAlign.center,
                               ),
                             ],

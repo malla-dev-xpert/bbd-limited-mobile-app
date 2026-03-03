@@ -1,4 +1,5 @@
 import 'package:bbd_limited/models/container_client_summary.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 /// Widget de tableau affichant le résumé agrégé par client des items d'un conteneur.
@@ -25,10 +26,7 @@ class ContainerSummaryTable extends StatelessWidget {
           padding: const EdgeInsets.all(24.0),
           child: Text(
             'Aucune donnée disponible',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
-            ),
+            style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
           ),
         ),
       );
@@ -52,70 +50,49 @@ class ContainerSummaryTable extends StatelessWidget {
         // Hauteur de ligne de données
         dataRowHeight: 56,
         // Colonnes du tableau
-        columns: const [
+        columns: [
           DataColumn(
             label: Text(
               'N',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
           ),
           DataColumn(
             label: Text(
               'MARK',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
           ),
           DataColumn(
             label: Text(
               'CTNS',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
             numeric: true,
           ),
           DataColumn(
             label: Text(
               'T.CBM',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
             numeric: true,
           ),
           DataColumn(
             label: Text(
               'CFA',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
           ),
           DataColumn(
             label: Text(
               'TELEPHONE',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
           ),
           DataColumn(
             label: Text(
               'KGS',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold),
             ),
             numeric: true,
           ),
@@ -131,58 +108,49 @@ class ContainerSummaryTable extends StatelessWidget {
               DataCell(
                 Text(
                   '${index + 1}',
-                  style: const TextStyle(fontSize: 15),
+                  style: AppTextSize.bodyStyle(context),
                 ),
               ),
               // Nom du client (MARK)
               DataCell(
                 Text(
                   summary.clientName,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextSize.bodyStyle(context, fontWeight: FontWeight.w500),
                 ),
               ),
               // Nombre total de cartons (CTNS) - entier
               DataCell(
                 Text(
                   '${summary.totalCartons}',
-                  style: const TextStyle(fontSize: 15),
+                  style: AppTextSize.bodyStyle(context),
                 ),
               ),
               // Volume total CBM (T.CBM) - 3 décimales
               DataCell(
                 Text(
                   summary.totalCbm.toStringAsFixed(3),
-                  style: const TextStyle(fontSize: 15),
+                  style: AppTextSize.bodyStyle(context),
                 ),
               ),
               // CFA - temporairement statique
               DataCell(
                 Text(
                   '-',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                 ),
               ),
               // TELEPHONE - temporairement statique
               DataCell(
                 Text(
                   '-',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                 ),
               ),
               // Poids total (KGS) - arrondi à l'entier
               DataCell(
                 Text(
                   '${summary.totalWeight.round()}',
-                  style: const TextStyle(fontSize: 15),
+                  style: AppTextSize.bodyStyle(context),
                 ),
               ),
             ],

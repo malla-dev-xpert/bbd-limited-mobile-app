@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
@@ -103,10 +104,7 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
               // Section des items
               Text(
                 AppLocalizations.of(context).translate('purchased_items'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextSize.titleStyle(context),
               ),
               const SizedBox(height: 16),
 
@@ -156,20 +154,14 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context).translate('no_items_purchased'),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
+            style: AppTextSize.titleStyle(context,
+                color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)
                 .translate('no_items_purchased_description'),
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[500],
-            ),
+            style: AppTextSize.bodyStyle(context, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/core/services/package_services.dart';
@@ -133,14 +134,10 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Ajouter des colis',
-                  style: TextStyle(
-                    fontSize: 20,
-                    letterSpacing: -1,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -1),
                 ),
               ),
               IconButton(
@@ -246,7 +243,7 @@ class __AddPackagesDialogContentState extends State<_AddPackagesDialogContent> {
                             const SizedBox(width: 8),
                             Text(
                               'Ajouter (${_selectedPackages.length})',
-                              style: const TextStyle(fontSize: 16),
+                              style: AppTextSize.subtitleStyle(context),
                             ),
                           ],
                         ),

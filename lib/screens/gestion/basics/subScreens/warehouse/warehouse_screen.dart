@@ -1,12 +1,13 @@
 import 'dart:async';
 
-import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/warehouses.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/detail_warehouse_screen.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:intl/intl.dart';
@@ -236,7 +237,7 @@ class _WarehouseState extends State<WarehouseScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
               TranslationHelper.t(context, 'delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 18),
+              style: AppTextSize.titleStyle(context, color: Colors.red),
             ),
           ),
         ],
@@ -390,11 +391,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                           child: Text(
                             TranslationHelper.t(
                                 context, 'modify_warehouse_title'),
-                            style: const TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -1,
-                            ),
+                            style: AppTextSize.headlineStyle(context,
+                                fontWeight: FontWeight.bold)
+                                .copyWith(letterSpacing: -1),
                             softWrap: true,
                             overflow: TextOverflow.visible,
                           ),
@@ -542,11 +541,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                                   child: Text(
                                     TranslationHelper.t(
                                         context, 'add_new_warehouse_title'),
-                                    style: const TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -1,
-                                    ),
+                                    style: AppTextSize.headlineStyle(context,
+                                        fontWeight: FontWeight.bold)
+                                        .copyWith(letterSpacing: -1),
                                     softWrap: true,
                                     overflow: TextOverflow.visible,
                                   ),
@@ -683,7 +680,7 @@ class _WarehouseState extends State<WarehouseScreen> {
       return Center(
         child: Text(
           TranslationHelper.t(context, 'no_warehouse_found'),
-          style: const TextStyle(fontSize: 16, color: Colors.grey),
+          style: AppTextSize.bodyStyle(context, color: Colors.grey),
         ),
       );
     }
@@ -816,10 +813,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                                   warehouse.name ??
                                       TranslationHelper.t(
                                           context, 'warehouse_without_name'),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1A1E49),
+                                  style: AppTextSize.titleStyle(context,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1A1E49),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -839,10 +835,9 @@ class _WarehouseState extends State<WarehouseScreen> {
                                     warehouse.storageType ??
                                         TranslationHelper.t(
                                             context, 'type_not_defined'),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF1A1E49),
-                                      fontWeight: FontWeight.w500,
+                                    style: AppTextSize.bodyStyle(context,
+                                        color: const Color(0xFF1A1E49),
+                                        fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
@@ -907,20 +902,15 @@ class _WarehouseState extends State<WarehouseScreen> {
         const SizedBox(width: 8),
         Text(
           '$label: ',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextSize.bodyStyle(context,
+              color: Colors.grey[600], fontWeight: FontWeight.w500),
         ),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              color: valueColor ?? Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                color: valueColor ?? Colors.black87,
+                fontWeight: FontWeight.w600),
             overflow: TextOverflow.ellipsis,
           ),
         ),

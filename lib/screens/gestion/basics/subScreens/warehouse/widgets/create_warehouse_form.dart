@@ -3,6 +3,7 @@ import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/warehouse_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 class CreateWarehouseForm extends StatefulWidget {
@@ -41,9 +42,9 @@ class _CreateWarehouseFormState extends State<CreateWarehouseForm> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Ajouter un entrepôt',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: AppTextSize.headlineStyle(context),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),

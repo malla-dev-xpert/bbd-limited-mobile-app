@@ -5,6 +5,7 @@ import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_list_item.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 class EmbarkContainersPage extends StatefulWidget {
@@ -138,11 +139,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
       appBar: AppBar(
         title: Text(
           loc.translate('harbor_embark_title'),
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+          style: AppTextSize.headlineStyle(context, color: Colors.white, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         backgroundColor: const Color(0xFF1A1E49),
@@ -156,10 +153,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
                     padding: const EdgeInsets.only(left: 16, bottom: 12),
                     child: Text(
                       widget.harborName!,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 14,
-                      ),
+                      style: AppTextSize.bodyStyle(context, color: Colors.white.withOpacity(0.9)),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -220,10 +214,7 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
                           )
                         : Text(
                             '${loc.translate('harbor_embark_button')} (${_selectedIds.length})',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+                            style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
                           ),
                   ),
                 ),
@@ -247,20 +238,13 @@ class _EmbarkContainersPageState extends State<EmbarkContainersPage> {
             const SizedBox(height: 24),
             Text(
               loc.translate('harbor_embark_empty_title'),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
-              ),
+              style: AppTextSize.headlineStyle(context, color: Colors.grey[800], fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               loc.translate('harbor_embark_empty_subtitle'),
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[600],
-              ),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],

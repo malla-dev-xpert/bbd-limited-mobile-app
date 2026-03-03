@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
 class ItemDetailChip extends StatelessWidget {
   final String text;
@@ -34,20 +35,14 @@ class ItemDetailChip extends StatelessWidget {
               children: [
                 TextSpan(
                   text: label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      color: Colors.grey[600], fontWeight: FontWeight.w500),
                 ),
                 if (value.isNotEmpty)
                   TextSpan(
                     text: ' $value',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                        color: Colors.grey[800], fontWeight: FontWeight.bold),
                   ),
               ],
             ),

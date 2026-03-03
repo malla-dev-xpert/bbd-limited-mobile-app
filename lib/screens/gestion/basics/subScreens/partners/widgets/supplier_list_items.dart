@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -108,11 +109,8 @@ class _SupplierListItemState extends State<SupplierListItem> {
                 else
                   Text(
                     '${paidItems ?? 0}/${totalItems ?? 0}',
-                    style: const TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                      color: Colors.blue, fontWeight: FontWeight.bold),
                   ),
               ],
             ),

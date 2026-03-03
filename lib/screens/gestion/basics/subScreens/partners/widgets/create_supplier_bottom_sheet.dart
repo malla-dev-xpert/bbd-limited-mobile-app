@@ -2,6 +2,7 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:country_picker/country_picker.dart';
@@ -57,11 +58,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                 children: [
                   Text(
                     AppLocalizations.of(context).translate('add_new_supplier'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -1,
-                    ),
+                    style: AppTextSize.headlineStyle(context)
+                        .copyWith(letterSpacing: -1),
                   ),
                   IconButton(
                     onPressed: () => {Navigator.pop(context)},
@@ -131,12 +129,12 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                         showCountryPicker(
                           context: context,
                           showPhoneCode: true,
-                          countryListTheme: const CountryListThemeData(
+                          countryListTheme: CountryListThemeData(
                             flagSize: 25,
                             backgroundColor: Colors.white,
-                            textStyle: TextStyle(fontSize: 18),
+                            textStyle: AppTextSize.titleStyle(context),
                             bottomSheetHeight: 300,
-                            borderRadius: BorderRadius.only(
+                            borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20),
                             ),
@@ -163,7 +161,8 @@ class _CreateSupplierBottomSheetState extends State<CreateSupplierBottomSheet> {
                                     children: [
                                       Text(
                                         _selectedCountry!.flagEmoji,
-                                        style: const TextStyle(fontSize: 24),
+                                        style:
+                                            AppTextSize.headlineStyle(context),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(_selectedCountry!.name),

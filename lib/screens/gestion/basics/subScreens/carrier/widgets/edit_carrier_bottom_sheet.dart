@@ -4,6 +4,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/carrier_services.dart';
 import 'package:bbd_limited/models/carrier.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
@@ -72,11 +73,7 @@ class _EditCarrierBottomSheetState extends State<EditCarrierBottomSheet> {
                 children: [
                   Text(
                     loc.translate('edit_carrier'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -1,
-                    ),
+                    style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -1),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

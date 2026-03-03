@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -74,7 +75,7 @@ class PaiementListItem extends StatelessWidget {
         leading: Icon(partnerIcon, color: Color(0xFF7F78AF)),
         title: Text(
           versement.reference!,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: AppTextSize.bodyStyle(context, fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -82,11 +83,11 @@ class PaiementListItem extends StatelessWidget {
           children: [
             Text(
               DateFormat('dd/MM/yyyy').format(versement.createdAt!),
-              style: const TextStyle(fontSize: 16),
+              style: AppTextSize.bodyStyle(context),
             ),
             Text(
               versement.partnerName ?? '',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
             ),
           ],
         ),

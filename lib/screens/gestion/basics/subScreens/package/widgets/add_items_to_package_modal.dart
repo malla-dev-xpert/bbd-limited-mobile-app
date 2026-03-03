@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -67,8 +68,7 @@ class _AddItemsToPackageModalState extends State<AddItemsToPackageModal> {
                 Text(
                   AppLocalizations.of(context)
                       .translate('add_items_modal_title'),
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                  style: AppTextSize.headlineStyle(context),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),

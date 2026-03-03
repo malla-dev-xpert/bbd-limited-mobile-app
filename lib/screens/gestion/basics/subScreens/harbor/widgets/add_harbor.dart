@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/harbor_services.dart';
 import 'package:bbd_limited/models/harbor.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 
@@ -44,10 +45,7 @@ Future<bool?> showAddHarborModal(BuildContext context, {Harbor? harbor}) async {
                     children: [
                       Text(
                         harbor == null ? 'Ajouter un port' : 'Modifier le port',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextSize.headlineStyle(context),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),

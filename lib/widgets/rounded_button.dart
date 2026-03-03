@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
 class RoundedButton extends StatelessWidget {
   final String text;
@@ -29,7 +30,8 @@ class RoundedButton extends StatelessWidget {
           ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
           : Text(
               text,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: AppTextSize.buttonStyle(context,
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
     );
   }

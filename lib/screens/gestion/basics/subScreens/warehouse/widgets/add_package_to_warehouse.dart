@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/providers/package_provider.dart';
 import 'package:provider/provider.dart';
@@ -199,14 +200,10 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
                       children: [
                         Row(
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 "Ajouter un nouveau colis",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.5,
-                                ),
+                                style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -0.5),
                               ),
                             ),
                             IconButton(
@@ -509,18 +506,12 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
             const SizedBox(height: 16),
             Text(
               'Aucun item éligible',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Veuillez sélectionner un client pour voir ses items.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -542,14 +533,11 @@ class _AddPackageToWarehouseFormState extends State<AddPackageToWarehouseForm> {
             title: Text(
               item.description ??
                   AppLocalizations.of(context).translate('no_description'),
-              style: const TextStyle(fontSize: 16),
+              style: AppTextSize.subtitleStyle(context),
             ),
             subtitle: Text(
               '${AppLocalizations.of(context).translate('item_quantity_label')}: ${item.quantity?.toString() ?? "-"}',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
             ),
             secondary: Icon(
               Icons.inventory_2,

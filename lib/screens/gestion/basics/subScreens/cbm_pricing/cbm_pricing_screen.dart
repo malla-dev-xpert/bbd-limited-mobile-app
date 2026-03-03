@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/models/cbm_pricing.dart';
@@ -64,11 +65,7 @@ class _CbmPricingScreenState extends ConsumerState<CbmPricingScreen> {
                 children: [
                   Text(
                     AppLocalizations.of(context).translate('add_cbm_pricing'),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1E49),
-                    ),
+                    style: AppTextSize.headlineStyle(context, color: const Color(0xFF1A1E49)),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

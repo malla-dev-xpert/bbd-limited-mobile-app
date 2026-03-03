@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 
 /// Modèle pour un article de facture
@@ -77,14 +78,14 @@ class InvoiceItemsTable extends StatelessWidget {
                   color: Color(0xFFE3F2FD),
                 ),
                 children: [
-                  _buildHeaderCell('Product Name'),
-                  _buildHeaderCell('Total CBM'),
-                  _buildHeaderCell('Total Weight'),
-                  _buildHeaderCell('Carton'),
-                  _buildHeaderCell('Unit / Carton'),
-                  _buildHeaderCell('Total Quantity'),
-                  _buildHeaderCell('Price'),
-                  _buildHeaderCell('Amount'),
+                  _buildHeaderCell(context, 'Product Name'),
+                  _buildHeaderCell(context, 'Total CBM'),
+                  _buildHeaderCell(context, 'Total Weight'),
+                  _buildHeaderCell(context, 'Carton'),
+                  _buildHeaderCell(context, 'Unit / Carton'),
+                  _buildHeaderCell(context, 'Total Quantity'),
+                  _buildHeaderCell(context, 'Price'),
+                  _buildHeaderCell(context, 'Amount'),
                 ],
               ),
             ],
@@ -121,14 +122,14 @@ class InvoiceItemsTable extends StatelessWidget {
                   color: isEven ? Colors.white : Colors.grey[50],
                 ),
                 children: [
-                  _buildDataCell(item.productName),
-                  _buildDataCell(item.totalCBM.toStringAsFixed(2)),
-                  _buildDataCell(item.totalWeight.toStringAsFixed(2)),
-                  _buildDataCell(item.carton.toString()),
-                  _buildDataCell(item.unitPerCarton.toStringAsFixed(2)),
-                  _buildDataCell(item.totalQuantity.toStringAsFixed(2)),
-                  _buildDataCell(currencyFormat.format(item.price)),
-                  _buildDataCell(currencyFormat.format(item.amount)),
+                  _buildDataCell(context, item.productName),
+                  _buildDataCell(context, item.totalCBM.toStringAsFixed(2)),
+                  _buildDataCell(context, item.totalWeight.toStringAsFixed(2)),
+                  _buildDataCell(context, item.carton.toString()),
+                  _buildDataCell(context, item.unitPerCarton.toStringAsFixed(2)),
+                  _buildDataCell(context, item.totalQuantity.toStringAsFixed(2)),
+                  _buildDataCell(context, currencyFormat.format(item.price)),
+                  _buildDataCell(context, currencyFormat.format(item.amount)),
                 ],
               );
             }).toList(),
@@ -144,16 +145,14 @@ class InvoiceItemsTable extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCell(String text) {
+  Widget _buildHeaderCell(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF1A1E49),
-        ),
+        style: AppTextSize.captionStyle(context,
+                color: const Color(0xFF1A1E49))
+            .copyWith(fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
         maxLines: 2,
@@ -161,17 +160,14 @@ class InvoiceItemsTable extends StatelessWidget {
     );
   }
 
-  Widget _buildDataCell(dynamic content) {
+  Widget _buildDataCell(BuildContext context, dynamic content) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
       child: content is Widget
           ? Center(child: content)
           : Text(
               content.toString(),
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.captionStyle(context, color: Colors.black87),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
@@ -188,10 +184,7 @@ class InvoiceItemsTable extends StatelessWidget {
       children: [
         Text(
           timestamp,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
         ),
         Row(
           children: [
@@ -206,11 +199,8 @@ class InvoiceItemsTable extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               '$currentPage/$totalPages',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1E49),
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  fontWeight: FontWeight.w600, color: const Color(0xFF1A1E49)),
             ),
             const SizedBox(width: 16),
             IconButton(

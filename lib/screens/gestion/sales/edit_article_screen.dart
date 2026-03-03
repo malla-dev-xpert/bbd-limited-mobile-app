@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
@@ -321,8 +322,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                         const SizedBox(height: 16),
                         Text(
                           loc.translate('carton'),
-                          style: TextStyle(
-                              fontSize: 14,
+                          style: AppTextSize.bodyStyle(context,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[700]),
                         ),
@@ -357,8 +357,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                         const SizedBox(height: 16),
                         Text(
                           loc.translate('weight'),
-                          style: TextStyle(
-                              fontSize: 14,
+                          style: AppTextSize.bodyStyle(context,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[700]),
                         ),
@@ -389,15 +388,14 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'CBN / CBM (m³)',
-                          style: TextStyle(
-                              fontSize: 14,
+                          style: AppTextSize.bodyStyle(context,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[700]),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Dimensions en centimètres',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 8),
                         Row(

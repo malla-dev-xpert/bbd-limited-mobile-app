@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -75,39 +76,24 @@ class DeviseListItem extends StatelessWidget {
                     children: [
                       Text(
                         devise.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: Color(0xFF2C2C2C),
-                        ),
+                        style: AppTextSize.titleStyle(context, color: const Color(0xFF2C2C2C)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         devise.code,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
+                        style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   devise.rate?.toStringAsFixed(2) ?? 'N/A',
-                  style: TextStyle(
-                    color: devise.rate != null ? rateColor : Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: AppTextSize.titleStyle(context, color: devise.rate != null ? rateColor : Colors.grey),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   devise.code,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: AppTextSize.subtitleStyle(context, color: Colors.grey[600]),
                 ),
               ],
             ),

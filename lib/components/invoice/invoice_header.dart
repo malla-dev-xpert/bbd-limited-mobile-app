@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 
 /// Widget réutilisable pour l'en-tête de facture
@@ -70,41 +71,35 @@ class InvoiceHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Nom de l'entreprise
-                      const Text(
+                      Text(
                         'BBD LIMITED',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          color: primaryColor,
-                          letterSpacing: 1.5,
-                          fontStyle: FontStyle.italic,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(1, 1),
-                              blurRadius: 2,
-                              color: Colors.black26,
-                            ),
-                          ],
-                        ),
+                        style: AppTextSize.displayStyle(context,
+                                color: primaryColor, fontWeight: FontWeight.w900)
+                            .copyWith(
+                                letterSpacing: 1.5,
+                                fontStyle: FontStyle.italic,
+                                shadows: const [
+                                  Shadow(
+                                    offset: Offset(1, 1),
+                                    blurRadius: 2,
+                                    color: Colors.black26,
+                                  ),
+                                ]),
                       ),
                       const SizedBox(height: 12),
 
                       // Adresse en rouge
-                      const Text(
+                      Text(
                         '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.red,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextSize.captionStyle(context,
+                            color: Colors.red)
+                            .copyWith(fontWeight: FontWeight.w500),
                       ),
-                      const Text(
+                      Text(
                         '中国 浙江省义乌市赵宅3区10栋1单元102',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.red,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextSize.captionStyle(context,
+                            color: Colors.red)
+                            .copyWith(fontWeight: FontWeight.w500),
                       ),
 
                       // Ligne séparatrice bleu foncé
@@ -116,68 +111,53 @@ class InvoiceHeader extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       // Informations de contact
-                      const Row(
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Téléphones à gauche
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Contact :',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.black87)
+                                      .copyWith(fontWeight: FontWeight.bold),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   '0086 18678859834',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.black87),
                                 ),
                                 Text(
                                   '0086 13503032311',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.black87),
                                 ),
                                 Text(
                                   '0086 (579)85568522',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.black87),
                                 ),
                               ],
                             ),
                           ),
-
-                          // Email à droite
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'EMail :',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.black87)
+                                      .copyWith(fontWeight: FontWeight.bold),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   'bbd@bbdcompany.com',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.captionStyle(context,
+                                      color: Colors.black87),
                                 ),
                               ],
                             ),
@@ -212,12 +192,9 @@ class InvoiceHeader extends StatelessWidget {
         // Titre de la facture (différent selon le type)
         Text(
           isVersement ? 'Payment Invoice' : 'Market Finance Invoice',
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: primaryColor,
-            letterSpacing: 1.2,
-          ),
+          style: AppTextSize.headlineStyle(context,
+                  color: primaryColor, fontWeight: FontWeight.bold)
+              .copyWith(letterSpacing: 1.2),
         ),
         const SizedBox(height: 20),
 
@@ -231,25 +208,27 @@ class InvoiceHeader extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildInfoRow('Invoice No.', invoiceNumber),
-              _buildInfoRow('Invoice Date', dateFormat.format(invoiceDate)),
-              _buildInfoRow('Currency', currency),
-              _buildInfoRow('Exchange Rate', exchangeRate.toStringAsFixed(2)),
+              _buildInfoRow(context, 'Invoice No.', invoiceNumber),
+              _buildInfoRow(context, 'Invoice Date', dateFormat.format(invoiceDate)),
+              _buildInfoRow(context, 'Currency', currency),
+              _buildInfoRow(context, 'Exchange Rate', exchangeRate.toStringAsFixed(2)),
               if (isVersement) ...[
                 if (montantVerser != null)
                   _buildInfoRow(
+                      context,
                       'Amount Paid',
                       NumberFormat.currency(locale: 'fr_FR', symbol: currency)
                           .format(montantVerser)),
                 if (montantRestant != null)
                   _buildInfoRow(
+                      context,
                       'Remaining Amount',
                       NumberFormat.currency(locale: 'fr_FR', symbol: currency)
                           .format(montantRestant)),
               ],
               if (totalPurchaseOrder != null && !isVersement)
                 _buildInfoRow(
-                    'Total Purchase Order', totalPurchaseOrder.toString()),
+                    context, 'Total Purchase Order', totalPurchaseOrder.toString()),
             ],
           ),
         ),
@@ -265,43 +244,35 @@ class InvoiceHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Client',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
+                      style: AppTextSize.titleStyle(context,
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     if (customerName != null)
-                      _buildClientInfoRow('Nom', customerName!),
+                      _buildClientInfoRow(context, 'Nom', customerName!),
                     if (customerPhone != null)
-                      _buildClientInfoRow('Tél', customerPhone!),
+                      _buildClientInfoRow(context, 'Tél', customerPhone!),
                     if (customerRegisterNo != null)
-                      _buildClientInfoRow('Register No.', customerRegisterNo!),
+                      _buildClientInfoRow(context, 'Register No.', customerRegisterNo!),
                   ],
                 ),
               ),
-
-              // Section Commissionnaire
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'COMISSIONNAIRE',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
+                      style: AppTextSize.titleStyle(context,
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     if (commissionnaireName != null)
-                      _buildClientInfoRow('Nom', commissionnaireName!),
+                      _buildClientInfoRow(context, 'Nom', commissionnaireName!),
                     if (commissionnairePhone != null)
-                      _buildClientInfoRow('Tél', commissionnairePhone!),
+                      _buildClientInfoRow(context, 'Tél', commissionnairePhone!),
                   ],
                 ),
               ),
@@ -312,7 +283,7 @@ class InvoiceHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -322,20 +293,14 @@ class InvoiceHeader extends StatelessWidget {
             width: 180,
             child: Text(
               '$label:',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  fontWeight: FontWeight.w600, color: Colors.black87),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.bodyStyle(context, color: Colors.black87),
             ),
           ),
         ],
@@ -343,7 +308,7 @@ class InvoiceHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildClientInfoRow(String label, String value) {
+  Widget _buildClientInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -353,20 +318,14 @@ class InvoiceHeader extends StatelessWidget {
             width: 100,
             child: Text(
               '$label :',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  fontWeight: FontWeight.w500, color: Colors.black87),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.bodyStyle(context, color: Colors.black87),
             ),
           ),
         ],

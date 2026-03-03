@@ -6,6 +6,7 @@ import 'package:bbd_limited/screens/gestion/users/widgets/user_form_modal.dart';
 import 'package:bbd_limited/screens/gestion/users/widgets/user_details_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -260,7 +261,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               _isLoading
                   ? AppLocalizations.of(context).translate('deleting')
                   : AppLocalizations.of(context).translate('delete'),
-              style: TextStyle(color: Colors.red, fontSize: 18),
+              style: AppTextSize.titleStyle(context, color: Colors.red),
             ),
           ),
         ],
@@ -344,11 +345,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             const SizedBox(height: 30),
             Text(
               AppLocalizations.of(context).translate('user_management_title'),
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -1,
-              ),
+              style: AppTextSize.headlineStyle(context,
+                  fontWeight: FontWeight.bold).copyWith(letterSpacing: -1),
             ),
             const SizedBox(height: 10),
 
@@ -369,11 +367,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                           title: AppLocalizations.of(context)
                               .translate('user_stats_total'),
                           value: _allUsers.length.toString(),
-                          valueStyle: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1E49),
-                          ),
+                          valueStyle: AppTextSize.headlineStyle(context,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A1E49)),
                           icon: Icons.people,
                           iconColor: Colors.blue,
                         ),
@@ -397,11 +393,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                               .where((u) => u.roleName == 'ADMINISTRATEUR')
                               .length
                               .toString(),
-                          valueStyle: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1E49),
-                          ),
+                          valueStyle: AppTextSize.headlineStyle(context,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1A1E49)),
                           icon: Icons.admin_panel_settings,
                           iconColor: Colors.purple,
                         ),
@@ -540,11 +534,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                           : user.username)
                       .substring(0, 1)
                       .toUpperCase(),
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
               if (isCurrentUser)
@@ -570,18 +562,16 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 children: [
                   Text(
                     AppLocalizations.of(context).translate('user_login_id'),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       user.username,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 16),
+                      style: AppTextSize.bodyStyle(context,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -591,18 +581,16 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 children: [
                   Text(
                     AppLocalizations.of(context).translate('user_full_name'),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       '${user.firstName ?? ''} ${user.lastName ?? ''}',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                      style: AppTextSize.bodyStyle(context,
+                          fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -621,7 +609,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                     user.roleName ??
                         AppLocalizations.of(context)
                             .translate('role_not_defined'),
-                    style: TextStyle(color: Colors.blue[600], fontSize: 16),
+                    style: AppTextSize.bodyStyle(context,
+                        color: Colors.blue[600]),
                   ),
                 ),
               ],
@@ -631,7 +620,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               ? null
               : Text(
                   '${user.firstName ?? ''} ${user.lastName ?? ''}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                  style: AppTextSize.bodyStyle(context,
+                      color: Colors.grey[600]),
                   overflow: TextOverflow.ellipsis,
                 ),
           trailing: isMobile
@@ -654,7 +644,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         user.roleName ??
                             AppLocalizations.of(context)
                                 .translate('user_role_undefined'),
-                        style: TextStyle(color: Colors.blue[600], fontSize: 16),
+                        style: AppTextSize.bodyStyle(context,
+                        color: Colors.blue[600]),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -682,16 +673,16 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             const SizedBox(height: 16),
             Text(
               AppLocalizations.of(context).translate('no_users_found'),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+              style: AppTextSize.titleStyle(context,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
               ),
             ),
             const SizedBox(height: 8),
             Text(
               AppLocalizations.of(context).translate('no_users_message'),
-              style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+              style: AppTextSize.bodyStyle(context,
+                  color: Colors.grey[500]),
             ),
           ],
         ),
@@ -727,7 +718,8 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           title,
-          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          style: AppTextSize.bodyStyle(context,
+              color: Colors.grey[600]),
           overflow: TextOverflow.ellipsis,
         ),
       ],

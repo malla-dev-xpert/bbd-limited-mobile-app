@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 class ItemInfoDisplay extends StatelessWidget {
@@ -22,18 +23,11 @@ class ItemInfoDisplay extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           "$label : ",
-          style: TextStyle(
-            color: Colors.grey[800],
-            fontSize: 16,
-          ),
+          style: AppTextSize.bodyStyle(context, color: Colors.grey[800]),
         ),
         Text(
           value,
-          style: TextStyle(
-            color: valueColor ?? Colors.grey[900],
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextSize.subtitleStyle(context, color: valueColor ?? Colors.grey[900], fontWeight: FontWeight.w600),
         ),
       ],
     );

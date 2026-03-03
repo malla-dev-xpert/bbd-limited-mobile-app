@@ -7,6 +7,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/cr
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
@@ -178,8 +179,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
           const SizedBox(height: 10),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context).copyWith(
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? color : null,
             ),
@@ -299,10 +299,9 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('home_manage_packages_title'),
-                          style: const TextStyle(
-                            fontSize: 24,
+                          style: AppTextSize.headlineStyle(context).copyWith(
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1A1E49),
+                            color: const Color(0xFF1A1E49),
                             letterSpacing: -0.5,
                             wordSpacing: 0.2,
                           ),
@@ -312,11 +311,7 @@ class _PackageHomeScreenState extends State<PackageHomeScreen> {
                               .translate('packages_found')
                               .replaceAll('{count}',
                                   filteredPackages.length.toString()),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                            letterSpacing: 0.2,
-                          ),
+                          style: AppTextSize.bodyStyle(context, color: Colors.grey[600]).copyWith(letterSpacing: 0.2),
                         ),
                       ],
                     ),

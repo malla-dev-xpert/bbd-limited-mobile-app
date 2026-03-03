@@ -10,6 +10,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/widgets/add
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 class HarborScreen extends StatefulWidget {
@@ -343,11 +344,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                     children: [
                                                       Text(
                                                         port.name!,
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 18,
-                                                        ),
+                                                        style: AppTextSize.titleStyle(context),
                                                         maxLines: 1,
                                                         overflow: TextOverflow
                                                             .ellipsis,
@@ -367,11 +364,7 @@ class _HarborScreen extends State<HarborScreen> {
                                                               port.location ??
                                                                   'Non spécifiée',
                                                               style:
-                                                                  const TextStyle(
-                                                                fontSize: 16,
-                                                                color:
-                                                                    Colors.grey,
-                                                              ),
+                                                                  AppTextSize.bodyStyle(context, color: Colors.grey),
                                                               maxLines: 1,
                                                               overflow:
                                                                   TextOverflow
@@ -391,14 +384,10 @@ class _HarborScreen extends State<HarborScreen> {
                                                           ),
                                                           const SizedBox(
                                                               width: 4),
-                                                          Text(
+                                                            Text(
                                                             "${port.containers!.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length} conteneurs",
                                                             style:
-                                                                const TextStyle(
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.grey,
-                                                            ),
+                                                                AppTextSize.bodyStyle(context, color: Colors.grey),
                                                           ),
                                                         ],
                                                       ),
@@ -436,11 +425,7 @@ class _HarborScreen extends State<HarborScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 "Aucun port trouvé",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: AppTextSize.headlineStyle(context, color: Colors.grey[600], fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),

@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/embarquement.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 Future<List<Containers>?> showAddContainerToHarborDialog(
@@ -120,12 +121,10 @@ class _AddContainerToHarborDialogContentState
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Ajouter des conteneurs',
-                style: TextStyle(
-                  fontSize: 20,
+                style: AppTextSize.headlineStyle(context).copyWith(
                   letterSpacing: -1,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
@@ -231,7 +230,7 @@ class _AddContainerToHarborDialogContentState
                             const SizedBox(width: 8),
                             Text(
                               'Ajouter (${_selectedContainers.length})',
-                              style: const TextStyle(fontSize: 16),
+                              style: AppTextSize.subtitleStyle(context),
                             ),
                           ],
                         ),

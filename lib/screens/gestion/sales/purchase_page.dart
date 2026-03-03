@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -464,20 +465,14 @@ class _PurchasePageState extends State<PurchasePage> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                fontWeight: FontWeight.w600, color: Colors.black87),
           ),
         ],
       ),
@@ -728,10 +723,7 @@ class _PurchasePageState extends State<PurchasePage> {
         children: [
           Text(
             AppLocalizations.of(context).translate('purchase_info'),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTextSize.titleStyle(context),
           ),
           const SizedBox(height: 16),
 
@@ -753,21 +745,16 @@ class _PurchasePageState extends State<PurchasePage> {
                     children: [
                       Text(
                         AppLocalizations.of(context).translate('client'),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blue[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextSize.bodyStyle(context,
+                            color: Colors.blue[600],
+                            fontWeight: FontWeight.w500),
                       ),
                       Text(
                         selectedCustomer != null
                             ? '${selectedCustomer!.firstName} ${selectedCustomer!.lastName}'
                             : AppLocalizations.of(context).translate('loading'),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                        style: AppTextSize.titleStyle(context,
+                            color: Colors.black87),
                       ),
                     ],
                   ),
@@ -796,19 +783,14 @@ class _PurchasePageState extends State<PurchasePage> {
                       children: [
                         Text(
                           AppLocalizations.of(context).translate('versement'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.green[600],
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTextSize.bodyStyle(context,
+                              color: Colors.green[600],
+                              fontWeight: FontWeight.w500),
                         ),
                         Text(
                           '${selectedVersement!.reference} - ${currencyFormat.format(selectedVersement!.montantRestant)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                              color: Colors.black87),
                         ),
                       ],
                     ),
@@ -837,20 +819,15 @@ class _PurchasePageState extends State<PurchasePage> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('purchase_type'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.orange[600],
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTextSize.bodyStyle(context,
+                              color: Colors.orange[600],
+                              fontWeight: FontWeight.w500),
                         ),
                         Text(
                           AppLocalizations.of(context)
                               .translate('debt_purchase'),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                              color: Colors.black87),
                         ),
                       ],
                     ),
@@ -890,20 +867,14 @@ class _PurchasePageState extends State<PurchasePage> {
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context).translate('no_items_yet'),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
+            style: AppTextSize.titleStyle(context,
+                color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)
                 .translate('add_first_item_description'),
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[500],
-            ),
+            style: AppTextSize.bodyStyle(context, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -918,10 +889,7 @@ class _PurchasePageState extends State<PurchasePage> {
       children: [
         Text(
           AppLocalizations.of(context).translate('items'),
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextSize.titleStyle(context),
         ),
         const SizedBox(height: 16),
         ListView.builder(
@@ -1026,21 +994,16 @@ class _PurchasePageState extends State<PurchasePage> {
                               children: [
                                 Text(
                                   item['description']?.toString() ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
+                                  style: AppTextSize.titleStyle(context,
+                                      color: Colors.black87),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   '${AppLocalizations.of(context).translate('supplier')}: ${item['supplierName']?.toString() ?? ''}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
+                                  style: AppTextSize.bodyStyle(context,
+                                      color: Colors.grey[600]),
                                 ),
                               ],
                             ),
@@ -1127,11 +1090,8 @@ class _PurchasePageState extends State<PurchasePage> {
                                   ),
                                   Text(
                                     currencyFormat.format(total),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                      color: Colors.blue[700],
-                                    ),
+                                    style: AppTextSize.titleStyle(context,
+                                        color: Colors.blue[700]),
                                   ),
                                 ],
                               ),
@@ -1168,19 +1128,12 @@ class _PurchasePageState extends State<PurchasePage> {
         children: [
           Text(
             '${AppLocalizations.of(context).translate('total')}:',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: AppTextSize.titleStyle(context, color: Colors.black87),
           ),
           Text(
             currencyFormat.format(total),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue[700],
-            ),
+            style: AppTextSize.titleStyle(context,
+                color: Colors.blue[700]),
           ),
         ],
       ),
@@ -1222,11 +1175,8 @@ class _PurchasePageState extends State<PurchasePage> {
                 Text(
                   AppLocalizations.of(context)
                       .translate('add_new_package_title'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      color: Colors.white, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -1272,11 +1222,9 @@ class _PurchasePageState extends State<PurchasePage> {
                     const SizedBox(width: 8),
                     Text(
                       AppLocalizations.of(context).translate('add_new_item'),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextSize.bodyStyle(context,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -1335,11 +1283,9 @@ class _PurchasePageState extends State<PurchasePage> {
                                       .translate('create_debt')
                                   : AppLocalizations.of(context)
                                       .translate('create_purchase'),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),
@@ -1379,10 +1325,7 @@ class _PurchasePageState extends State<PurchasePage> {
 
           Text(
             AppLocalizations.of(context).translate('add_item'),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTextSize.titleStyle(context),
           ),
           const SizedBox(height: 16),
 
@@ -1465,11 +1408,9 @@ class _PurchasePageState extends State<PurchasePage> {
                 Text(
                   AppLocalizations.of(context)
                       .translate('price_calculation_mode'),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700]),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -1479,7 +1420,7 @@ class _PurchasePageState extends State<PurchasePage> {
                         title: Text(
                           AppLocalizations.of(context)
                               .translate('price_per_total_quantity'),
-                          style: const TextStyle(fontSize: 12),
+                          style: AppTextSize.captionStyle(context),
                         ),
                         value: false,
                         groupValue: _isPricePerCarton,
@@ -1497,7 +1438,7 @@ class _PurchasePageState extends State<PurchasePage> {
                         title: Text(
                           AppLocalizations.of(context)
                               .translate('price_per_carton'),
-                          style: const TextStyle(fontSize: 12),
+                          style: AppTextSize.captionStyle(context),
                         ),
                         value: true,
                         groupValue: _isPricePerCarton,
@@ -1543,19 +1484,13 @@ class _PurchasePageState extends State<PurchasePage> {
               children: [
                 Text(
                   AppLocalizations.of(context).translate('total_price'),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue[700],
-                  ),
+                  style: AppTextSize.titleStyle(context,
+                      color: Colors.blue[700]),
                 ),
                 Text(
                   currencyFormat.format(_calculateItemTotalPrice()),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
-                  ),
+                  style: AppTextSize.titleStyle(context,
+                      color: Colors.blue[800]),
                 ),
               ],
             ),
@@ -1625,10 +1560,7 @@ class _PurchasePageState extends State<PurchasePage> {
       children: [
         Text(
           AppLocalizations.of(context).translate('customer_selection'),
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextSize.titleStyle(context),
         ),
         const SizedBox(height: 16),
 
@@ -1667,10 +1599,7 @@ class _PurchasePageState extends State<PurchasePage> {
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context).translate('versement_selection'),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextSize.titleStyle(context),
           ),
           const SizedBox(height: 8),
 
@@ -1709,11 +1638,9 @@ class _PurchasePageState extends State<PurchasePage> {
                     child: Text(
                       AppLocalizations.of(context)
                           .translate('no_versements_available'),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        fontStyle: FontStyle.italic,
-                      ),
+                      style: AppTextSize.bodyStyle(context,
+                          color: Colors.grey[600])
+                          .copyWith(fontStyle: FontStyle.italic),
                     ),
                   ),
                 ],
@@ -1742,12 +1669,10 @@ class _PurchasePageState extends State<PurchasePage> {
                 Expanded(
                   child: Text(
                     AppLocalizations.of(context).translate('debt_purchase'),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: selectedVersement != null
-                          ? Colors.grey
-                          : Colors.black,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                        color: selectedVersement != null
+                            ? Colors.grey
+                            : Colors.black),
                   ),
                 ),
               ],
@@ -1770,11 +1695,9 @@ class _PurchasePageState extends State<PurchasePage> {
                     child: Text(
                       AppLocalizations.of(context)
                           .translate('no_versements_available_debt_mode'),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.orange[700],
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextSize.bodyStyle(context,
+                          color: Colors.orange[700],
+                          fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],

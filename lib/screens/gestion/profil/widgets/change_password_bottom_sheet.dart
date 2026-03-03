@@ -2,6 +2,7 @@ import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 
 class ChangePasswordBottomSheet extends StatefulWidget {
@@ -155,10 +156,8 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                 children: [
                   Text(
                     localizations.translate('change_password_title'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextSize.titleStyle(context,
+                        fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),

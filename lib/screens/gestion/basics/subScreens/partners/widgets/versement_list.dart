@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/utils/amount_format.dart';
 import 'package:bbd_limited/models/versement.dart';
@@ -118,16 +119,13 @@ class VersementListWidget extends StatelessWidget {
       title: Text(
         versement.reference ??
             AppLocalizations.of(context).translate('without_reference'),
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        style: AppTextSize.bodyStyle(context, fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
         versement.createdAt != null
             ? DateFormat('dd/MM/yyyy').format(versement.createdAt!)
             : AppLocalizations.of(context).translate('unknown_date'),
-        style: const TextStyle(fontSize: 16),
+        style: AppTextSize.bodyStyle(context),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -139,15 +137,14 @@ class VersementListWidget extends StatelessWidget {
               Text(
                 formatAmountWithSymbol(
                     versement.montantVerser ?? 0, currencySymbol),
-                style: const TextStyle(fontSize: 16, color: Colors.blue),
+                style: AppTextSize.bodyStyle(context, color: Colors.blue),
               ),
-              Text(
-                formatAmountWithSymbol(
-                    versement.montantRestant ?? 0, currencySymbol),
-                style: TextStyle(
-                  color: statusColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+              Expanded(
+                child: Text(
+                  formatAmountWithSymbol(
+                      versement.montantRestant ?? 0, currencySymbol),
+                  style: AppTextSize.bodyStyle(context,
+                      color: statusColor, fontWeight: FontWeight.w600),
                 ),
               ),
             ],

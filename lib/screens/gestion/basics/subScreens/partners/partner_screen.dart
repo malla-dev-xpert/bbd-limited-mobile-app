@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/partner_notification_service.dart';
@@ -209,11 +210,8 @@ class _PartnerScreenState extends State<PartnerScreen> {
                   AppLocalizations.of(context).translate('total') +
                       ' : ${_filteredPartners.length} ' +
                       AppLocalizations.of(context).translate('sales_customers'),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                    color: Colors.grey[600], fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -359,7 +357,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
             icon: const Icon(Icons.delete, color: Colors.red),
             label: Text(
               AppLocalizations.of(context).translate('delete'),
-              style: const TextStyle(color: Colors.red, fontSize: 18),
+              style: AppTextSize.titleStyle(context, color: Colors.red),
             ),
           ),
         ],

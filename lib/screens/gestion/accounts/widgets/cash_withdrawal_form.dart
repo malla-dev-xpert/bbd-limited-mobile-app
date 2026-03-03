@@ -1,4 +1,5 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/text_input.dart';
 
@@ -54,14 +55,12 @@ class _CashWithdrawalFormState extends State<CashWithdrawalForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         "Retrait d'argent",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          letterSpacing: -0.5,
-                        ),
+                        style: AppTextSize.titleStyle(context,
+                            fontWeight: FontWeight.bold)
+                            .copyWith(letterSpacing: -0.5),
                       ),
                     ),
                     IconButton(

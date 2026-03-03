@@ -11,6 +11,7 @@ import 'package:bbd_limited/screens/gestion/basics/subScreens/container/pages/ed
 import 'package:bbd_limited/screens/gestion/basics/subScreens/harbor/pages/embark_containers_page.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -316,11 +317,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                   Text(
                     widget.harbor.name ??
                         loc.translate('harbor_detail_no_name'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
+                    style: AppTextSize.headlineStyle(context, color: Colors.white),
                     maxLines: 1,
                   ),
                   const SizedBox(height: 8),
@@ -336,10 +333,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                         child: Text(
                           widget.harbor.location ??
                               loc.translate('harbor_detail_no_address'),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 12,
-                          ),
+                          style: AppTextSize.captionStyle(context, color: Colors.white.withOpacity(0.9)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -361,10 +355,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                             Expanded(
                               child: Text(
                                 formattedDate,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 12,
-                                ),
+                                style: AppTextSize.captionStyle(context, color: Colors.white.withOpacity(0.9)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -384,10 +375,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                             Expanded(
                               child: Text(
                                 "${widget.harbor.containers?.where((c) => c.status != Status.DELETE && c.status != Status.RETRIEVE).length ?? 0} ${loc.translate('harbor_detail_containers_count')}",
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 12,
-                                ),
+                                style: AppTextSize.captionStyle(context, color: Colors.white.withOpacity(0.9)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -457,10 +445,7 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       child: Text(
                         AppLocalizations.of(context)
                             .translate('harbor_detail_container_list'),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextSize.headlineStyle(context),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -520,20 +505,13 @@ class _HarborDetailPageState extends State<HarborDetailPage> {
                       Text(
                         AppLocalizations.of(context)
                             .translate('harbor_detail_no_results'),
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextSize.titleStyle(context, color: Colors.grey[600], fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         AppLocalizations.of(context)
                             .translate('harbor_detail_no_results_subtitle'),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[500],
-                        ),
+                        style: AppTextSize.bodyStyle(context, color: Colors.grey[500]),
                         textAlign: TextAlign.center,
                       ),
                     ],

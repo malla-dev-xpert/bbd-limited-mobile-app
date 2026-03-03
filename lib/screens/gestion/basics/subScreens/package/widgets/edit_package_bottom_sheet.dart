@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/components/text_input.dart';
@@ -193,14 +194,10 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           "Modifier l'expédition",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
-                          ),
+                          style: AppTextSize.headlineStyle(context).copyWith(letterSpacing: -0.5),
                         ),
                       ),
                       IconButton(
@@ -231,7 +228,7 @@ class _EditPackageBottomSheetState extends State<EditPackageBottomSheet> {
                                     padding: const EdgeInsets.all(12),
                                     child: Text(
                                       'Type d\'expédition',
-                                      style: TextStyle(color: Colors.grey[600]),
+                                      style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                                     ),
                                   ),
                                   Row(

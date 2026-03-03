@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -34,7 +35,7 @@ class PartnerArticlesListWidget extends StatelessWidget {
                   Text(
                     AppLocalizations.of(context)
                         .translate('purchase_history_no_items'),
-                    style: TextStyle(fontSize: 20, color: Colors.grey[600]),
+                    style: AppTextSize.titleStyle(context, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
                 ],

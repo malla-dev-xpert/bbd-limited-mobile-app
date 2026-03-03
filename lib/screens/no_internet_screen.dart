@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
 class NoInternetScreen extends StatelessWidget {
   const NoInternetScreen({super.key});
@@ -17,16 +18,16 @@ class NoInternetScreen extends StatelessWidget {
               height: 200,
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               "Pas de connexion Internet",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: AppTextSize.titleStyle(context),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               "Veuillez vérifier votre connexion réseau",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey),
             ),
           ],
         ),

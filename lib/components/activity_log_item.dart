@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/activity_log.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
 import 'package:bbd_limited/components/log_detail_page.dart';
@@ -98,7 +99,7 @@ class ActivityLogItem extends StatelessWidget {
                   // Badge action (point focal)
                   LogActionBadge(
                     action: action,
-                    fontSize: 12,
+                    fontSize: AppTextSize.caption(context),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 5,
@@ -108,12 +109,10 @@ class ActivityLogItem extends StatelessWidget {
                   // Phrase métier (lisible)
                   Text(
                     actionText,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                      height: 1.4,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87)
+                        .copyWith(height: 1.4),
                   ),
                   const SizedBox(height: 8),
                   // Divider
@@ -140,11 +139,9 @@ class ActivityLogItem extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             userName,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -160,11 +157,9 @@ class ActivityLogItem extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             dateTimeText,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w400,
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w400),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -191,11 +186,9 @@ class ActivityLogItem extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 '$entityCount',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.deepPurple[700],
-                                ),
+                                style: AppTextSize.captionStyle(context,
+                                        color: Colors.deepPurple[700])
+                                    .copyWith(fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),

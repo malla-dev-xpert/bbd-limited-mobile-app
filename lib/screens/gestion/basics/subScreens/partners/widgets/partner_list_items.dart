@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:intl/intl.dart';
@@ -81,11 +82,8 @@ class PartnerListItem extends StatelessWidget {
             children: [
               Text(
                 '${partner.id}',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextSize.bodyStyle(context,
+                    color: Colors.blue, fontWeight: FontWeight.w500),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -93,7 +91,9 @@ class PartnerListItem extends StatelessWidget {
               ),
             ],
           ),
-          subtitle: Text(partner.phoneNumber),
+          subtitle: Text(partner.phoneNumber,
+              style: AppTextSize.bodyStyle(context,
+                  color: Colors.grey[700], fontWeight: FontWeight.w500)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

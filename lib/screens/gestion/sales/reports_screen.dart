@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bbd_limited/providers/reports_provider.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -35,14 +36,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Rapports et Statistiques',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            color: Colors.white,
-          ),
+          style: AppTextSize.headlineStyle(context,
+                  color: Colors.white)
+              .copyWith(letterSpacing: 0.5, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         backgroundColor: const Color(0xFF1A1E49),
@@ -118,11 +116,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   Expanded(
                     child: Text(
                       'Période de rapport',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
+                      style: AppTextSize.titleStyle(context,
+                          color: Colors.grey[800]),
                     ),
                   ),
                   Icon(
@@ -278,11 +273,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             const SizedBox(height: 16),
             Text(
               'Erreur lors du chargement des rapports',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[600],
-              ),
+              style: AppTextSize.titleStyle(context,
+                  color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -436,11 +428,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1E49),
-                      ),
+                      style: AppTextSize.titleStyle(context,
+                          color: const Color(0xFF1A1E49)),
                     ),
                   ),
                   Icon(
@@ -475,11 +464,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
+          style: AppTextSize.bodyStyle(context,
+              fontWeight: FontWeight.w600, color: Colors.grey[800]),
         ),
       ],
     );
@@ -641,11 +627,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 child: Center(
                   child: Text(
                     '${index + 1}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
+                    style: AppTextSize.titleStyle(context, color: color),
                   ),
                 ),
               ),
@@ -663,11 +645,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         Flexible(
                           child: Text(
                             title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1A1E49),
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1E49)),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -677,11 +657,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       value,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[600],
-                      ),
+                      style: AppTextSize.bodyStyle(context,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -701,7 +679,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         : index == 1
                             ? '🥈'
                             : '🥉',
-                    style: const TextStyle(fontSize: 16),
+                    style: AppTextSize.bodyStyle(context),
                   ),
                 ),
             ],
@@ -749,11 +727,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             const SizedBox(height: 16),
             Text(
               message,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  color: Colors.grey[600], fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ],

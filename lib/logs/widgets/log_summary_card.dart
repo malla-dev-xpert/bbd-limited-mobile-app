@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
@@ -48,16 +49,14 @@ class LogSummaryCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 localizations.translate('summary'),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
+                style: AppTextSize.titleStyle(context,
+                    fontWeight: FontWeight.bold, color: Colors.grey[800]),
               ),
             ],
           ),
           const SizedBox(height: 16),
           ...filteredData.entries.map((entry) => _buildSummaryRow(
+                context,
                 _translateKey(entry.key),
                 _formatValue(entry.key, entry.value),
               )),
@@ -134,7 +133,7 @@ class LogSummaryCard extends StatelessWidget {
         keyLower.contains('edited');
   }
 
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildSummaryRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -144,22 +143,16 @@ class LogSummaryCard extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  fontWeight: FontWeight.w600, color: Colors.grey[700]),
             ),
           ),
           Expanded(
             flex: 3,
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  fontWeight: FontWeight.w500, color: Colors.black87),
             ),
           ),
         ],

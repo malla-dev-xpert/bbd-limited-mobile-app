@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/partner.dart';
@@ -131,10 +132,7 @@ class _PackageItemsListState extends State<PackageItemsList> {
                     Expanded(
                       child: Text(
                         item['description'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextSize.titleStyle(context),
                       ),
                     ),
                     Row(
@@ -199,21 +197,14 @@ class _PackageItemsListState extends State<PackageItemsList> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               "Total :",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
+                              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
                             ),
                             Text(
                               currencyFormat.format((item['unitPrice'] as num) *
                                   (item['quantity'] as num)),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Theme.of(context).primaryColor,
-                              ),
+                              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
                             ),
                           ],
                         ),

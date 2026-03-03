@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -45,10 +46,7 @@ class _DebtListWidgetState extends State<DebtListWidget> {
             const SizedBox(height: 16),
             Text(
               AppLocalizations.of(context).translate('no_debts_found'),
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.grey[600],
-              ),
+              style: AppTextSize.titleStyle(context, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -111,10 +109,7 @@ class _DebtListWidgetState extends State<DebtListWidget> {
                                 children: [
                                   Text(
                                     '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: AppTextSize.titleStyle(context),
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
@@ -128,11 +123,9 @@ class _DebtListWidgetState extends State<DebtListWidget> {
                                       Text(
                                         DateFormat('dd/MM/yyyy').format(
                                             achat.createdAt ?? DateTime.now()),
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[700]!,
-                                        ),
+                                        style: AppTextSize.bodyStyle(context,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[700]),
                                       ),
                                     ],
                                   ),
@@ -150,12 +143,13 @@ class _DebtListWidgetState extends State<DebtListWidget> {
                                         Expanded(
                                           child: Text(
                                             achat.code!,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[800],
-                                              fontFamily: 'monospace',
-                                            ),
+                                            style: AppTextSize.bodyStyle(
+                                                    context,
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                    color: Colors.grey[800])
+                                                .copyWith(
+                                                    fontFamily: 'monospace'),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -324,19 +318,14 @@ class _DebtListWidgetState extends State<DebtListWidget> {
                               Text(
                                 AppLocalizations.of(context)
                                     .translate('purchase_history_total_amount'),
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
+                                style: AppTextSize.bodyStyle(context,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500),
                               ),
                               Text(
                                 '${_formatAmount(achat.montantTotal)} ¥',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1E49),
-                                ),
+                                style: AppTextSize.titleStyle(context,
+                                    color: const Color(0xFF1A1E49)),
                               ),
                             ],
                           ),
@@ -430,20 +419,14 @@ class _DebtListWidgetState extends State<DebtListWidget> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16,
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextSize.bodyStyle(context,
+              color: color, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -492,7 +475,7 @@ class _DebtListWidgetState extends State<DebtListWidget> {
                       const SizedBox(width: 12),
                       Text(
                         DateFormat('dd/MM/yyyy').format(selectedDate),
-                        style: const TextStyle(fontSize: 16),
+                        style: AppTextSize.bodyStyle(context),
                       ),
                     ],
                   ),

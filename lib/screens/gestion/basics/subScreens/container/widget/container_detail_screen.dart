@@ -1,5 +1,6 @@
 import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_pdf_service.dart';
@@ -114,13 +115,13 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey[600], fontSize: 17),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
             ),
           ),
           Expanded(
             child: Text(
               value ?? '',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
             ),
           ),
@@ -143,7 +144,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: Colors.grey[600], fontSize: 17),
+              style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
             ),
           ),
           Expanded(
@@ -185,7 +186,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     if (amount == null) {
       return Text(
         '-',
-        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
         textAlign: TextAlign.right,
       );
     }
@@ -203,20 +204,14 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           children: [
             TextSpan(
               text: '${formatAmount(amount)} $displayCurrency',
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+              style: AppTextSize.subtitleStyle(context,
+                  fontWeight: FontWeight.w600, color: Colors.black87),
             ),
             const TextSpan(text: ' '),
             TextSpan(
               text: '(${formatAmount(amountCNY)} CNY)',
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: Colors.green,
-              ),
+              style: AppTextSize.subtitleStyle(context,
+                  fontWeight: FontWeight.w600, color: Colors.green),
             ),
           ],
         ),
@@ -227,7 +222,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     // Sinon afficher uniquement montant + devise
     return Text(
       '${formatAmount(amount)} $displayCurrency',
-      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+      style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
       textAlign: TextAlign.right,
     );
   }
@@ -237,11 +232,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
       padding: const EdgeInsets.only(bottom: 8.0, top: 16),
       child: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-          color: Color(0xFF1A1E49),
-        ),
+        style: AppTextSize.titleStyle(context,
+            color: const Color(0xFF1A1E49)),
       ),
     );
   }
@@ -454,8 +446,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             children: [
                               Text(
                                 _containerDisplayTitle(container),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 20),
+                                style: AppTextSize.titleStyle(context),
                               ),
                               const SizedBox(height: 8),
                               Container(
@@ -502,8 +493,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                             children: [
                               Text(
                                 _containerDisplayTitle(container),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 20),
+                                style: AppTextSize.titleStyle(context),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -647,9 +637,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     Expanded(
                                       child: Text(
                                         '${container.supplierName ?? ""}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
+                                        style: AppTextSize.bodyStyle(context,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                   ],
@@ -664,8 +653,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(container.supplierPhone!,
-                                            style:
-                                                const TextStyle(fontSize: 16)),
+                                            style: AppTextSize.bodyStyle(context)),
                                       ),
                                     ],
                                   ),
@@ -682,9 +670,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                 Expanded(
                                   child: Text(
                                     '${container.supplierName ?? ""}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
+                                    style: AppTextSize.bodyStyle(context,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 if (container.supplierPhone != null &&
@@ -695,7 +682,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           color: Colors.green, size: 18),
                                       const SizedBox(width: 4),
                                       Text(container.supplierPhone!,
-                                          style: const TextStyle(fontSize: 16)),
+                                          style: AppTextSize.bodyStyle(context)),
                                     ],
                                   ),
                               ],
@@ -729,8 +716,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           Text(
                               AppLocalizations.of(context)
                                   .translate('container_bbd_limited'),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 17)),
+                              style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -910,7 +896,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                               Text(
                                 AppLocalizations.of(context)
                                     .translate('container_no_items'),
-                                style: const TextStyle(fontSize: 20),
+                                style: AppTextSize.titleStyle(context),
                               ),
                               if (container.status == Status.PENDING) ...[
                                 const SizedBox(height: 16),
@@ -937,7 +923,7 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                   label: Text(
                                     AppLocalizations.of(context)
                                         .translate('container_add_items'),
-                                    style: const TextStyle(fontSize: 20),
+                                    style: AppTextSize.titleStyle(context),
                                   ),
                                   icon: const Icon(Icons.add),
                                 ),
@@ -1188,13 +1174,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           ),
                                         ),
                                       if (tempSelectedDate == null)
-                                        const Padding(
-                                          padding: EdgeInsets.only(top: 8.0),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 8.0),
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
-                                            style: TextStyle(
-                                                fontSize: 17,
-                                                color: Colors.grey),
+                                            style: AppTextSize.bodyStyle(context, color: Colors.grey),
                                           ),
                                         ),
                                     ],
@@ -1358,13 +1342,11 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                           ),
                                         ),
                                       if (tempSelectedConfirmDate == null)
-                                        const Padding(
-                                          padding: EdgeInsets.only(top: 8.0),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 8.0),
                                           child: Text(
                                             'Si aucune date n\'est choisie, la date du jour sera utilisée.',
-                                            style: TextStyle(
-                                                fontSize: 17,
-                                                color: Colors.grey),
+                                            style: AppTextSize.bodyStyle(context, color: Colors.grey),
                                           ),
                                         ),
                                     ],

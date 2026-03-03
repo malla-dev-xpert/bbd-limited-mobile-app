@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/user.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -163,12 +164,11 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                                     .translate('actions_unavailable')
                                 : AppLocalizations.of(context)
                                     .translate('dangerous_actions'),
-                            style: TextStyle(
-                              color: widget.isCurrentUser
-                                  ? Colors.grey[600]
-                                  : Colors.red[600],
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                color: widget.isCurrentUser
+                                    ? Colors.grey[600]
+                                    : Colors.red[600],
+                                fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -179,12 +179,10 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                                 .translate('cannot_disable_self')
                             : AppLocalizations.of(context)
                                 .translate('disable_account_warning'),
-                        style: TextStyle(
-                          color: widget.isCurrentUser
-                              ? Colors.grey[700]
-                              : Colors.red[700],
-                          fontSize: 16,
-                        ),
+                        style: AppTextSize.bodyStyle(context,
+                            color: widget.isCurrentUser
+                                ? Colors.grey[700]
+                                : Colors.red[700]),
                       ),
                       if (!widget.isCurrentUser) ...[
                         const SizedBox(height: 16),
@@ -214,7 +212,8 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
                                       .translate("disabling")
                                   : AppLocalizations.of(context)
                                       .translate("disable_account"),
-                              style: const TextStyle(color: Colors.white),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.white),
                             ),
                             onPressed:
                                 _isDisabling ? null : _showDisableConfirmation,
@@ -275,19 +274,15 @@ class _UserDetailsBottomSheetState extends State<UserDetailsBottomSheet> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextSize.bodyStyle(context,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),

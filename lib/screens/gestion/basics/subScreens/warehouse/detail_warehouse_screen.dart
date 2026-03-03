@@ -7,6 +7,7 @@ import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/package_list_item.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/warehouse/widgets/add_package_to_warehouse.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/package_details_screen.dart';
 import 'package:bbd_limited/core/localization/translation_helper.dart';
@@ -161,11 +162,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
         title: Text(
           TranslationHelper.tWithParams(
               context, 'warehouse_detail_title', {'name': widget.name ?? ''}),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: AppTextSize.headlineStyle(context, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -250,11 +247,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                   Text(
                                     TranslationHelper.t(
                                         context, 'packages_list_title'),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1A1E49),
-                                    ),
+                                    style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold, color: const Color(0xFF1A1E49)),
                                   ),
                                   if (_currentFilter != null)
                                     TextButton.icon(
@@ -306,10 +299,7 @@ class _WarehouseDetailPageState extends State<WarehouseDetailPage>
                                   Text(
                                     TranslationHelper.t(
                                         context, 'no_packages_found'),
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: AppTextSize.titleStyle(context, color: Colors.grey[600]),
                                   ),
                                 ],
                               ),

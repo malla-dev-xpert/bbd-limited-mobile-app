@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
@@ -258,11 +259,8 @@ class _EditSupplierPaymentScreenState extends State<EditSupplierPaymentScreen> {
                             Expanded(
                               child: Text(
                                 widget.item.description ?? 'N/A',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
+                                style: AppTextSize.titleStyle(context,
+                                    color: Colors.black87),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -286,19 +284,14 @@ class _EditSupplierPaymentScreenState extends State<EditSupplierPaymentScreen> {
                                   Text(
                                     AppLocalizations.of(context)
                                         .translate('total'),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: AppTextSize.bodyStyle(context,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500),
                                   ),
                                   Text(
                                     '${_formatAmount(totalPrice)} ¥',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange[900],
-                                    ),
+                                    style: AppTextSize.titleStyle(context,
+                                        color: Colors.orange[900]),
                                   ),
                                 ],
                               ),

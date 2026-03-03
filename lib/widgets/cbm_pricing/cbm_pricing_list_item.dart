@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/cbm_pricing.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -65,30 +66,19 @@ class CbmPricingListItem extends StatelessWidget {
                   children: [
                     Text(
                       "${cbmPricing.cbmValue} CBM",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                        color: Color(0xFF2C2C2C),
-                      ),
+                      style: AppTextSize.titleStyle(context, color: const Color(0xFF2C2C2C)),
                     ),
                     if (cbmPricing.currency != null)
                       Text(
                         cbmPricing.currency!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                       ),
                   ],
                 ),
               ),
               Text(
                 "${cbmPricing.price}",
-                style: const TextStyle(
-                  color: Color(0xFF1A1E49),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+                style: AppTextSize.titleStyle(context, color: const Color(0xFF1A1E49)),
               ),
             ],
           ),

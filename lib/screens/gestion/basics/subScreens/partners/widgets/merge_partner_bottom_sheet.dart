@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
@@ -196,11 +197,8 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                             Expanded(
                               child: Text(
                                 localizations.translate('merge_partners'),
-                                style: const TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1E49),
-                                ),
+                                style: AppTextSize.headlineStyle(context,
+                                    color: const Color(0xFF1A1E49)),
                               ),
                             ),
                             IconButton(
@@ -244,30 +242,22 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                   children: [
                                     Text(
                                       localizations.translate('main_partner'),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style: AppTextSize.titleStyle(context,
+                                          color: Colors.black87),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       '${widget.mainPartner.firstName} ${widget.mainPartner.lastName}',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1A1E49),
-                                      ),
+                                      style: AppTextSize.titleStyle(context,
+                                          color: const Color(0xFF1A1E49)),
                                     ),
                                     const SizedBox(height: 4),
                                     if (widget
                                         .mainPartner.phoneNumber.isNotEmpty)
                                       Text(
                                         widget.mainPartner.phoneNumber,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.grey,
-                                        ),
+                                        style: AppTextSize.titleStyle(context,
+                                            color: Colors.grey),
                                       ),
                                   ],
                                 ),
@@ -303,10 +293,8 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                               padding: const EdgeInsets.all(40),
                               child: Text(
                                 localizations.translate('no_partner_found'),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.grey,
-                                ),
+                                style: AppTextSize.titleStyle(context,
+                                    color: Colors.grey),
                               ),
                             )
                           : ListView.builder(
@@ -368,14 +356,12 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                               children: [
                                                 Text(
                                                   '${partner.firstName} ${partner.lastName}',
-                                                  style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isSelected
-                                                        ? const Color(
-                                                            0xFF1A1E49)
-                                                        : Colors.black87,
-                                                  ),
+                                                  style: AppTextSize.titleStyle(
+                                                      context,
+                                                      color: isSelected
+                                                          ? const Color(
+                                                              0xFF1A1E49)
+                                                          : Colors.black87),
                                                 ),
                                                 if (partner
                                                     .phoneNumber.isNotEmpty)
@@ -384,10 +370,9 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                                     .phoneNumber.isNotEmpty)
                                                   Text(
                                                     partner.phoneNumber,
-                                                    style: const TextStyle(
-                                                      fontSize: 18,
-                                                      color: Colors.grey,
-                                                    ),
+                                                    style: AppTextSize
+                                                        .titleStyle(context,
+                                                            color: Colors.grey),
                                                   ),
                                                 const SizedBox(height: 4),
                                                 Row(
@@ -396,31 +381,32 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                                       child: Text(
                                                         localizations.translate(
                                                             'balance'),
-                                                        style: const TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.blue,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
+                                                        style: AppTextSize
+                                                            .bodyStyle(context,
+                                                                color: Colors
+                                                                    .blue,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500),
                                                       ),
                                                     ),
                                                     const SizedBox(width: 12),
                                                     Text(
                                                       currencyFormat.format(
                                                           partner.balance ?? 0),
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color:
-                                                            (partner.balance ??
-                                                                        0) >=
-                                                                    0
-                                                                ? Colors
-                                                                    .green[600]
-                                                                : Colors
-                                                                    .red[600],
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
+                                                      style: AppTextSize
+                                                          .bodyStyle(context,
+                                                              color: (partner
+                                                                          .balance ??
+                                                                      0) >=
+                                                                  0
+                                                                  ? Colors
+                                                                      .green[600]
+                                                                  : Colors
+                                                                      .red[600],
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500),
                                                     ),
                                                   ],
                                                 ),
@@ -484,11 +470,8 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                       children: [
                         Text(
                           localizations.translate('merge_summary'),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1E49),
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                              color: const Color(0xFF1A1E49)),
                         ),
                         const SizedBox(height: 12),
                         Row(
@@ -548,11 +531,8 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
                                 const SizedBox(width: 12),
                                 Text(
                                   localizations.translate('merge_now'),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: AppTextSize.titleStyle(context,
+                                      color: Colors.white),
                                 ),
                               ],
                             ),
@@ -585,38 +565,27 @@ class _MergePartnerBottomSheetState extends State<MergePartnerBottomSheet> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                fontWeight: FontWeight.bold, color: color),
           ),
           const SizedBox(height: 6),
           Text(
             '${partner.firstName} ${partner.lastName}',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextSize.titleStyle(context),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
             partner.phoneNumber,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+            style: AppTextSize.bodyStyle(context, color: Colors.grey),
           ),
           const SizedBox(height: 4),
           Text(
             currencyFormat.format(partner.balance ?? 0),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: (partner.balance ?? 0) >= 0 ? Colors.green : Colors.red,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                fontWeight: FontWeight.bold,
+                color: (partner.balance ?? 0) >= 0 ? Colors.green : Colors.red),
           ),
         ],
       ),

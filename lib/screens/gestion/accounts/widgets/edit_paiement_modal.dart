@@ -1,5 +1,6 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/components/date_picker.dart';
 import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -223,12 +224,9 @@ class _EditPaiementModalState extends State<EditPaiementModal> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "Modifier le paiement",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextSize.titleStyle(context),
                             ),
                             Container(
                               padding: EdgeInsets.symmetric(

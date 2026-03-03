@@ -9,6 +9,7 @@ import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/container_info_form.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/container/widget/create_container_form.dart'
     show MainFeesForm, ExtraFeesForm;
@@ -938,23 +939,18 @@ class EditContainerModalState extends State<EditContainerModal> {
                     const SizedBox(height: 16),
                     Text(
                       loc.translate('container_items_step_title'),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1E49),
-                      ),
+                      style: AppTextSize.titleStyle(context, color: const Color(0xFF1A1E49)),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       loc.translate('container_items_step_subtitle'),
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
                     if (containerItems.isNotEmpty) ...[
                       Text(
                         loc.translate('container_items_in_container'),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16),
+                        style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
                       ...containerItems.map((item) {
@@ -986,10 +982,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                                 Text(loc.translate('container_will_remove')),
                               Text(
                                 '${loc.translate('weight')}: ${item.totalWeight ?? 0} · ${loc.translate('cbn')}: ${item.cbnTotal ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                                style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
                               ),
                             ],
                           ),
@@ -1001,8 +994,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                     if (availableToAdd.isNotEmpty) ...[
                       Text(
                         loc.translate('container_items_available_to_add'),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16),
+                        style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
                       ...availableToAdd.map((item) {
@@ -1034,10 +1026,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                               const SizedBox(height: 4),
                               Text(
                                 '${loc.translate('weight')}: ${item.totalWeight ?? item.weight ?? 0} · ${loc.translate('cbn')}: ${item.cbnTotal ?? item.cbn ?? 0} · ${loc.translate('package_client')}: $clientDisplay',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                                style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
                               ),
                             ],
                           ),
@@ -1052,7 +1041,7 @@ class EditContainerModalState extends State<EditContainerModal> {
                             child: Text(
                           loc.translate('container_no_items_available'),
                           style:
-                              TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                         )),
                       ),
                     const SizedBox(height: 24),

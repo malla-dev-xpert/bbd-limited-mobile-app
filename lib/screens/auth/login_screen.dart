@@ -4,6 +4,7 @@ import 'login_controller.dart';
 import '../../widgets/rounded_button.dart';
 import '../../widgets/responsive_container.dart';
 import '../../components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import '../../core/localization/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -71,13 +72,13 @@ class _LoginViewState extends State<_LoginView> {
                         const SizedBox(height: 20),
                         Text(
                           localizations.translate('welcome'),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Pacifico',
-                            fontSize: 38,
+                            fontSize: AppTextSize.display(context),
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
-                            shadows: [
+                            shadows: const [
                               Shadow(
                                 color: Colors.black45,
                                 blurRadius: 8,
@@ -90,9 +91,9 @@ class _LoginViewState extends State<_LoginView> {
                         Text(
                           localizations.translate('login_subtitle'),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: AppTextSize.headline(context),
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0.5,
                           ),
@@ -206,14 +207,12 @@ class _LoginViewState extends State<_LoginView> {
                                   Expanded(
                                     child: Text(
                                       controller.errorMessage!,
-                                      style: TextStyle(
-                                        color: controller.errorMessage!
-                                                .contains('désactivé')
-                                            ? Colors.orange[700]
-                                            : Colors.red[700],
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style: AppTextSize.bodyStyle(context,
+                                          color: controller.errorMessage!
+                                                  .contains('désactivé')
+                                              ? Colors.orange[700]
+                                              : Colors.red[700],
+                                          fontWeight: FontWeight.w500),
                                     ),
                                   ),
                                 ],
@@ -234,16 +233,15 @@ class _LoginViewState extends State<_LoginView> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          const Text("Vous n'avez pas de compte ?",
-                              style: TextStyle(color: Colors.black54)),
+                          Text("Vous n'avez pas de compte ?",
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.black54)),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             textAlign: TextAlign.center,
                             'Veuillez contacter l\'administrateur pour toute assistance.',
-                            style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
+                            style: AppTextSize.bodyStyle(context,
+                                color: Colors.grey, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

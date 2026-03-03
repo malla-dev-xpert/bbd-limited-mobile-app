@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/components/custom_dropdown.dart';
 import 'package:bbd_limited/components/date_picker.dart';
@@ -512,11 +513,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                                       .translate('date_and_commissionnaire')
                                   : AppLocalizations.of(context)
                                       .translate('additional_note')),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                      ),
+                      style: AppTextSize.titleStyle(context)
+                          .copyWith(letterSpacing: -0.5),
                     ),
                   ),
                   IconButton(
@@ -772,11 +770,8 @@ class _NewVersementModalState extends ConsumerState<NewVersementModal>
                   Expanded(
                     child: Text(
                       AppLocalizations.of(context).translate('add_new_devise'),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1E49),
-                      ),
+                      style: AppTextSize.headlineStyle(context,
+                          color: const Color(0xFF1A1E49)),
                     ),
                   ),
                   IconButton(

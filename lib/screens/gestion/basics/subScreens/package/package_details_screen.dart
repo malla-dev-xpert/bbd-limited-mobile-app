@@ -3,6 +3,7 @@ import 'package:bbd_limited/core/services/package_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/package/widgets/edit_package_bottom_sheet.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/models/packages.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -185,15 +186,12 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('package_reference'),
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 16),
+                              AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                         ),
                         Text(
                           widget.packages.ref ??
                               AppLocalizations.of(context).translate('na'),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+                          style: AppTextSize.titleStyle(context),
                         ),
                       ],
                     ),
@@ -205,7 +203,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('package_type'),
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 16),
+                              AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -239,14 +237,12 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                               Text(
                                 _getTranslatedExpeditionType(
                                     widget.packages.expeditionType),
-                                style: TextStyle(
-                                  color: widget.packages.expeditionType
+                                style: AppTextSize.bodyStyle(context, color: widget.packages.expeditionType
                                               ?.toLowerCase() ==
                                           'avion'
                                       ? Colors.amber[800]
                                       : Colors.deepPurple,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                  fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -261,7 +257,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           AppLocalizations.of(context)
                               .translate('package_status'),
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 16),
+                              AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -292,11 +288,9 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                               const SizedBox(width: 6),
                               Text(
                                 _getStatusText(widget.packages.status),
-                                style: TextStyle(
-                                  color:
+                                style: AppTextSize.bodyStyle(context, color:
                                       _getStatusColor(widget.packages.status),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                  fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -311,14 +305,12 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                           Text(
                             AppLocalizations.of(context)
                                 .translate('package_delivered_on'),
-                            style: TextStyle(
-                                color: Colors.grey[600], fontSize: 16),
+                            style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                           ),
                           Text(
                             DateFormat('dd/MM/yyyy')
                                 .format(widget.packages.receivedDate!),
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
+                            style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -508,7 +500,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         ),
                         label: Text(
                             AppLocalizations.of(context).translate('add_items'),
-                            style: const TextStyle(fontSize: 16)),
+                            style: AppTextSize.subtitleStyle(context)),
                         icon: const Icon(Icons.add, size: 16)),
                   ],
                 ],
@@ -533,11 +525,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         ),
                         label: Text(
                           AppLocalizations.of(context).translate('delete'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         icon: const Icon(Icons.delete, color: Colors.white),
                       ),
@@ -555,11 +543,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         ),
                         label: Text(
                           AppLocalizations.of(context).translate('expedite'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         icon: const Icon(
                           Icons.check_circle_outline_outlined,
@@ -582,11 +566,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         label: Text(
                           AppLocalizations.of(context)
                               .translate('arrive_at_destination'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         icon: const Icon(Icons.local_shipping,
                             color: Colors.white),
@@ -607,11 +587,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                         label: Text(
                           AppLocalizations.of(context)
                               .translate('confirm_delivery'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         icon: const Icon(Icons.verified, color: Colors.white),
                       ),
@@ -634,13 +610,13 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: AppTextSize.subtitleStyle(context, fontWeight: FontWeight.w500),
             textAlign: TextAlign.right,
           ),
         ),
@@ -666,7 +642,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
           ),
           content: Text(
             AppLocalizations.of(context).translate('confirm_delete_package'),
-            style: const TextStyle(fontSize: 18),
+            style: AppTextSize.titleStyle(context),
           ),
           actions: [
             TextButton(
@@ -766,7 +742,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(
                     AppLocalizations.of(context)
                         .translate('confirm_start_expedition'),
-                    style: const TextStyle(fontSize: 18),
+                    style: AppTextSize.titleStyle(context),
                   ),
                 ],
               ),
@@ -872,7 +848,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(
                     AppLocalizations.of(context)
                         .translate('confirm_arrival_package'),
-                    style: const TextStyle(fontSize: 18),
+                    style: AppTextSize.titleStyle(context),
                   ),
                 ],
               ),
@@ -981,7 +957,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                   Text(
                     AppLocalizations.of(context)
                         .translate('confirm_package_delivery'),
-                    style: const TextStyle(fontSize: 18),
+                    style: AppTextSize.titleStyle(context),
                   ),
                   const SizedBox(height: 16),
                   TextButton.icon(
@@ -1021,7 +997,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                       child: Text(
                         AppLocalizations.of(context)
                             .translate('no_date_selected_info'),
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style: AppTextSize.bodyStyle(context, color: Colors.grey),
                       ),
                     ),
                 ],

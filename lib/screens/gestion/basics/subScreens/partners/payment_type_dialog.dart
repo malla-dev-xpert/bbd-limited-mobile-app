@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:intl/intl.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
@@ -71,10 +72,7 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
             children: [
               Text(
                 AppLocalizations.of(context).translate('select_payment_type'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextSize.titleStyle(context),
               ),
               const SizedBox(height: 24),
               // Option: Paiement à livraison
@@ -123,20 +121,16 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
                             Text(
                               AppLocalizations.of(context)
                                   .translate('payment_on_delivery'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.green[900],
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green[900]),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               AppLocalizations.of(context)
                                   .translate('payment_on_delivery_description'),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -190,20 +184,16 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
                             Text(
                               AppLocalizations.of(context)
                                   .translate('other_payment'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue[900],
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue[900]),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               AppLocalizations.of(context)
                                   .translate('other_payment_description'),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -235,10 +225,8 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
                               Text(
                                 AppLocalizations.of(context)
                                     .translate('payment_date'),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[600],
-                                ),
+                                style: AppTextSize.bodyStyle(context,
+                                    color: Colors.grey[600]),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -247,13 +235,11 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
                                         .format(_selectedDate!)
                                     : AppLocalizations.of(context)
                                         .translate('select_date'),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: _selectedDate != null
-                                      ? Colors.black87
-                                      : Colors.grey[400],
-                                ),
+                                style: AppTextSize.bodyStyle(context,
+                                    fontWeight: FontWeight.w600,
+                                    color: _selectedDate != null
+                                        ? Colors.black87
+                                        : Colors.grey[400]),
                               ),
                             ],
                           ),
@@ -280,7 +266,7 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
                       ),
                       child: Text(
                         AppLocalizations.of(context).translate('cancel'),
-                        style: const TextStyle(fontSize: 16),
+                        style: AppTextSize.bodyStyle(context),
                       ),
                     ),
                   ),
@@ -297,11 +283,9 @@ class _PaymentTypeDialogState extends State<PaymentTypeDialog> {
                       ),
                       child: Text(
                         AppLocalizations.of(context).translate('confirm'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                        style: AppTextSize.bodyStyle(context,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
                       ),
                     ),
                   ),

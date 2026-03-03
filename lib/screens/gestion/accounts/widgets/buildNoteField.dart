@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
-Widget buildNoteField(String? note) {
+Widget buildNoteField(BuildContext context, String? note) {
   if (note == null || note.isEmpty) return const SizedBox.shrink();
 
   return Container(
@@ -24,19 +25,14 @@ Widget buildNoteField(String? note) {
       children: [
         Text(
           "Note",
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-            fontSize: 16,
-          ),
+          style: AppTextSize.bodyStyle(context,
+              fontWeight: FontWeight.w500, color: Colors.grey[700]),
         ),
         const SizedBox(height: 8),
         Text(
           note,
-          style: const TextStyle(
-            color: Color(0xFF1A1E49),
-            fontSize: 16,
-          ),
+          style: AppTextSize.bodyStyle(context,
+              color: const Color(0xFF1A1E49)),
         ),
       ],
     ),

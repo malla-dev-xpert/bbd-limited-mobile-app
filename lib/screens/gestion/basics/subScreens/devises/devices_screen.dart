@@ -6,6 +6,7 @@ import 'package:bbd_limited/core/services/devises_service.dart';
 import 'package:bbd_limited/models/devises.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
 import 'package:bbd_limited/components/text_input.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,11 +115,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
                   Expanded(
                     child: Text(
                       AppLocalizations.of(context).translate('add_new_devise'),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1E49),
-                      ),
+                      style: AppTextSize.headlineStyle(context, color: const Color(0xFF1A1E49)),
                     ),
                   ),
                   IconButton(
@@ -356,11 +353,7 @@ class _DeviseState extends ConsumerState<DevicesScreen> {
         elevation: 0,
         title: Text(
           AppLocalizations.of(context).translate('devise_management_title'),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: AppTextSize.headlineStyle(context, color: Colors.white),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: const IconThemeData(color: Colors.white),

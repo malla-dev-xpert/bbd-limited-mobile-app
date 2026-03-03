@@ -1,3 +1,4 @@
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:bbd_limited/components/reusable_item_card.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -140,12 +141,7 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
       appBar: AppBar(
         title: Text(
           loc.translate('container_embark_items'),
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            color: Colors.white,
-          ),
+          style: AppTextSize.headlineStyle(context, color: Colors.white, fontWeight: FontWeight.w600).copyWith(letterSpacing: 0.5),
         ),
         elevation: 0,
         backgroundColor: const Color(0xFF1A1E49),
@@ -163,19 +159,12 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                   const SizedBox(height: 16),
                   Text(
                     loc.translate('container_items_step_title'),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1E49),
-                    ),
+                    style: AppTextSize.titleStyle(context, color: const Color(0xFF1A1E49)),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     loc.translate('container_items_step_subtitle'),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 16),
                   if (_isLoadingItems)
@@ -201,10 +190,7 @@ class _EmbarkItemsPageState extends State<EmbarkItemsPage> {
                               const SizedBox(height: 12),
                               Text(
                                 loc.translate('container_no_items_available'),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
+                                style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
                                 textAlign: TextAlign.center,
                               ),
                             ],

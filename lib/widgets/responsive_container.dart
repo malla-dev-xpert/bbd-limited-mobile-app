@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
 class ResponsiveContainer extends StatelessWidget {
   final Widget child;
@@ -6,10 +7,8 @@ class ResponsiveContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    double horizontalPadding = width > 600 ? width * 0.2 : 12;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      padding: AppSpacing.horizontal(context),
       child: child,
     );
   }
