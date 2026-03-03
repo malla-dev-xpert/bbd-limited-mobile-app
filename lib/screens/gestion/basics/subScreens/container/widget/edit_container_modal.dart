@@ -538,6 +538,9 @@ class EditContainerModalState extends State<EditContainerModal> {
         otherFeesRateToCNY: access.canShowContainerFee(user, 'otherFees')
             ? effectiveRate(otherFeesCurrency, otherFeesRateController.text)
             : widget.container.otherFeesRateToCNY,
+        margin: access.canShowContainerFee(user, 'margin')
+            ? margFee
+            : widget.container.margin,
         marginCurrencyCode: access.canShowContainerFee(user, 'margin')
             ? marginCurrency?.code
             : widget.container.marginCurrencyCode,

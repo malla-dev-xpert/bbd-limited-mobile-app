@@ -200,6 +200,23 @@ class _PartnerScreenState extends State<PartnerScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  AppLocalizations.of(context).translate('total') +
+                      ' : ${_filteredPartners.length} ' +
+                      AppLocalizations.of(context).translate('sales_customers'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             Expanded(child: _buildPartnerList()),
           ],

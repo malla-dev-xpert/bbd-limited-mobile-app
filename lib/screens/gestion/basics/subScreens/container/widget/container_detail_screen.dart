@@ -154,16 +154,26 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
     );
   }
 
-  /// Total des frais en CNY : somme des montants convertis en CNY fournis par le backend.
+  /// Retourne true si la charge est « choisie » (a un montant renseigné).
+  static bool _isFeeChosen(double? amount, double? amountCNY) {
+    final hasAmount = amount != null && amount != 0;
+    final hasCNY = amountCNY != null && amountCNY != 0;
+    return hasAmount || hasCNY;
+  }
+
+  /// Total des frais en CNY : somme des montants convertis en CNY fournis par le backend (uniquement les charges choisies).
   static double _totalFeesCNY(Containers c) {
-    return (c.locationFeeCNY ?? 0) +
-        (c.localChargeCNY ?? 0) +
-        (c.loadingFeeCNY ?? 0) +
-        (c.overweightFeeCNY ?? 0) +
-        (c.checkingFeeCNY ?? 0) +
-        (c.telxFeeCNY ?? 0) +
-        (c.otherFeesCNY ?? 0) +
-        (c.marginCNY ?? 0);
+    double total = 0;
+    if (_isFeeChosen(c.locationFee, c.locationFeeCNY)) total += c.locationFeeCNY ?? 0;
+    if (_isFeeChosen(c.localCharge, c.localChargeCNY)) total += c.localChargeCNY ?? 0;
+    if (_isFeeChosen(c.loadingFee, c.loadingFeeCNY)) total += c.loadingFeeCNY ?? 0;
+    if (_isFeeChosen(c.overweightFee, c.overweightFeeCNY)) total += c.overweightFeeCNY ?? 0;
+    if (_isFeeChosen(c.checkingFee, c.checkingFeeCNY)) total += c.checkingFeeCNY ?? 0;
+    if (_isFeeChosen(c.telxFee, c.telxFeeCNY)) total += c.telxFeeCNY ?? 0;
+    if (_isFeeChosen(c.otherFees, c.otherFeesCNY)) total += c.otherFeesCNY ?? 0;
+    if (_isFeeChosen(c.margin, c.marginCNY)) total += c.marginCNY ?? 0;
+    if (_isFeeChosen(c.transportFee, c.transportFeeCNY)) total += c.transportFeeCNY ?? 0;
+    return total;
   }
 
   /// Affiche un montant. amountCNY uniquement si renvoyé par l'API (jamais de calcul côté Flutter).
@@ -739,70 +749,87 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                 ),
                 child: Column(
                   children: [
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_location_fee'),
-                        _formatFeeWidget(
-                          amount: container.locationFee,
-                          currencyCode: container.locationFeeCurrencyCode,
-                          amountCNY: container.locationFeeCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_loading_fee'),
-                        _formatFeeWidget(
-                          amount: container.loadingFee,
-                          currencyCode: container.loadingFeeCurrencyCode,
-                          amountCNY: container.loadingFeeCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_local_charge'),
-                        _formatFeeWidget(
-                          amount: container.localCharge,
-                          currencyCode: container.localChargeCurrencyCode,
-                          amountCNY: container.localChargeCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_overweight_fee'),
-                        _formatFeeWidget(
-                          amount: container.overweightFee,
-                          currencyCode: container.overweightFeeCurrencyCode,
-                          amountCNY: container.overweightFeeCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_checking_fee'),
-                        _formatFeeWidget(
-                          amount: container.checkingFee,
-                          currencyCode: container.checkingFeeCurrencyCode,
-                          amountCNY: container.checkingFeeCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_telx_fee'),
-                        _formatFeeWidget(
-                          amount: container.telxFee,
-                          currencyCode: container.telxFeeCurrencyCode,
-                          amountCNY: container.telxFeeCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_other_fees'),
-                        _formatFeeWidget(
-                          amount: container.otherFees,
-                          currencyCode: container.otherFeesCurrencyCode,
-                          amountCNY: container.otherFeesCNY,
-                        )),
-                    _infoRowWithFormattedValue(
-                        AppLocalizations.of(context)
-                            .translate('container_form_margin'),
-                        _formatFeeWidget(
-                          amount: container.margin,
-                          currencyCode: container.marginCurrencyCode,
-                          amountCNY: container.marginCNY,
-                        )),
+                    if (_isFeeChosen(container.locationFee, container.locationFeeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_location_fee'),
+                          _formatFeeWidget(
+                            amount: container.locationFee,
+                            currencyCode: container.locationFeeCurrencyCode,
+                            amountCNY: container.locationFeeCNY,
+                          )),
+                    if (_isFeeChosen(container.loadingFee, container.loadingFeeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_loading_fee'),
+                          _formatFeeWidget(
+                            amount: container.loadingFee,
+                            currencyCode: container.loadingFeeCurrencyCode,
+                            amountCNY: container.loadingFeeCNY,
+                          )),
+                    if (_isFeeChosen(container.localCharge, container.localChargeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_local_charge'),
+                          _formatFeeWidget(
+                            amount: container.localCharge,
+                            currencyCode: container.localChargeCurrencyCode,
+                            amountCNY: container.localChargeCNY,
+                          )),
+                    if (_isFeeChosen(container.overweightFee, container.overweightFeeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_overweight_fee'),
+                          _formatFeeWidget(
+                            amount: container.overweightFee,
+                            currencyCode: container.overweightFeeCurrencyCode,
+                            amountCNY: container.overweightFeeCNY,
+                          )),
+                    if (_isFeeChosen(container.checkingFee, container.checkingFeeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_checking_fee'),
+                          _formatFeeWidget(
+                            amount: container.checkingFee,
+                            currencyCode: container.checkingFeeCurrencyCode,
+                            amountCNY: container.checkingFeeCNY,
+                          )),
+                    if (_isFeeChosen(container.telxFee, container.telxFeeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_telx_fee'),
+                          _formatFeeWidget(
+                            amount: container.telxFee,
+                            currencyCode: container.telxFeeCurrencyCode,
+                            amountCNY: container.telxFeeCNY,
+                          )),
+                    if (_isFeeChosen(container.otherFees, container.otherFeesCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_other_fees'),
+                          _formatFeeWidget(
+                            amount: container.otherFees,
+                            currencyCode: container.otherFeesCurrencyCode,
+                            amountCNY: container.otherFeesCNY,
+                          )),
+                    if (_isFeeChosen(container.margin, container.marginCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_margin'),
+                          _formatFeeWidget(
+                            amount: container.margin,
+                            currencyCode: container.marginCurrencyCode,
+                            amountCNY: container.marginCNY,
+                          )),
+                    if (_isFeeChosen(container.transportFee, container.transportFeeCNY))
+                      _infoRowWithFormattedValue(
+                          AppLocalizations.of(context)
+                              .translate('container_form_transport_fee'),
+                          _formatFeeWidget(
+                            amount: container.transportFee,
+                            currencyCode: container.transportFeeCurrencyCode,
+                            amountCNY: container.transportFeeCNY,
+                          )),
                     const Divider(),
                     _infoRow(
                         AppLocalizations.of(context)

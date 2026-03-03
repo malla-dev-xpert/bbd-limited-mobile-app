@@ -77,7 +77,22 @@ class PartnerListItem extends StatelessWidget {
           }
         },
         child: ListTile(
-          title: Text("${partner.firstName} ${partner.lastName}"),
+          title: Row(
+            children: [
+              Text(
+                '${partner.id}',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text("${partner.firstName} ${partner.lastName}"),
+              ),
+            ],
+          ),
           subtitle: Text(partner.phoneNumber),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
