@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:bbd_limited/core/print/pdf_header.dart';
 import 'package:bbd_limited/core/services/cbm_pricing_services.dart';
 import 'package:bbd_limited/core/services/container_summary_service.dart';
 import 'package:bbd_limited/models/container.dart';
@@ -68,12 +69,8 @@ class ContainerPdfService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // En-tête avec logo et titre
-              _buildHeader(logoBytes, printLocalizations),
-              pw.SizedBox(height: 10),
-
-              // Adresse et email
-              _buildCompanyInfo(),
+              // En-tête unifié (société + logo)
+              PdfHeader.build(logoBytes),
               pw.SizedBox(height: 15),
 
               // Ligne de séparation
@@ -103,58 +100,6 @@ class ContainerPdfService {
     );
 
     return pdf.save();
-  }
-
-  /// Construit l'en-tête avec le logo et le titre BBD LIMITED
-  static pw.Widget _buildHeader(
-    Uint8List logoBytes,
-    PrintLocalizations printLocalizations,
-  ) {
-    return pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
-      children: [
-        // Logo BBD LIMITED
-        pw.Image(
-          pw.MemoryImage(logoBytes),
-          width: 80,
-          height: 80,
-        ),
-
-        // Titre BBD LIMITED
-        pw.Text(
-          'BBD LIMITED',
-          style: pw.TextStyle(
-            fontSize: 32,
-            fontWeight: pw.FontWeight.bold,
-            fontStyle: pw.FontStyle.italic,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Construit les informations de l'entreprise (adresse et email)
-  static pw.Widget _buildCompanyInfo() {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
-      children: [
-        pw.Text(
-          'Room 102,Building,No. 10,Zhao zhai 3 District Choucheng Yiwu China',
-          style: const pw.TextStyle(fontSize: 10),
-          textAlign: pw.TextAlign.center,
-        ),
-        pw.SizedBox(height: 3),
-        pw.Text(
-          'EMAIL: bbd.g@hotmail.com/doubailimited@hotmail.com',
-          style: pw.TextStyle(
-            fontSize: 10,
-            fontStyle: pw.FontStyle.italic,
-          ),
-          textAlign: pw.TextAlign.center,
-        ),
-      ],
-    );
   }
 
   /// Construit les informations du conteneur
