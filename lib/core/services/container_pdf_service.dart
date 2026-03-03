@@ -1,7 +1,8 @@
 import 'dart:typed_data';
+import 'package:bbd_limited/core/services/cbm_pricing_services.dart';
+import 'package:bbd_limited/core/services/container_summary_service.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/container_client_summary.dart';
-import 'package:bbd_limited/core/services/container_summary_service.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -19,6 +20,18 @@ String _formatLoadingDate(Containers c, DateFormat dateFormat) {
   return date != null ? dateFormat.format(date) : '';
 }
 
+/// Formate un montant CFA avec séparateur de milliers (ex. 1 000 000, 35 000).
+String _formatCfaAmount(double value) {
+  final n = value.round().abs();
+  final s = n.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buffer.write(' ');
+    buffer.write(s[i]);
+  }
+  return value.round() < 0 ? '-${buffer}' : buffer.toString();
+}
+
 /// Service pour générer un PDF du résumé du conteneur
 /// au format facture BBD LIMITED avec support multi-langue
 class ContainerPdfService {
@@ -33,7 +46,11 @@ class ContainerPdfService {
     PrintLocalizations printLocalizations,
   ) async {
     final pdf = pw.Document();
-    final summaries = ContainerSummaryService.generateSummary(container);
+    final cbmService = CbmPricingServices();
+    final summaries = await ContainerSummaryService.generateSummaryWithShipping(
+      container,
+      cbmService,
+    );
 
     // Charger le logo
     final Uint8List logoBytes = await rootBundle
@@ -391,7 +408,7 @@ class ContainerPdfService {
           final summary = entry.value;
           final isEven = index % 2 == 0;
           final cfaDisplay = summary.totalShippingPrice > 0
-              ? summary.totalShippingPrice.round().toString()
+              ? _formatCfaAmount(summary.totalShippingPrice)
               : '-';
 
           return pw.TableRow(
