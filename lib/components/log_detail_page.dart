@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/log_detail.dart';
 import 'package:bbd_limited/core/services/log_service.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -77,10 +78,9 @@ class _LogDetailPageState extends State<LogDetailPage> {
         ),
         title: Text(
           localizations.translate('activity_history_details'),
-          style: const TextStyle(
-            fontSize: 22,
+          style: AppTextSize.headlineStyle(context,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1E49),
+            color: const Color(0xFF1A1E49),
           ),
         ),
         centerTitle: false,
@@ -202,8 +202,7 @@ class _LogDetailPageState extends State<LogDetailPage> {
           // Type d'entité lisible
           Text(
             entityType.displayName,
-            style: const TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -219,8 +218,7 @@ class _LogDetailPageState extends State<LogDetailPage> {
               Expanded(
                 child: Text(
                   'Effectué par : ${detail.userName ?? 'Inconnu'}',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTextSize.bodyStyle(context,
                     color: Colors.grey[700],
                     fontWeight: FontWeight.w500,
                   ),
@@ -237,8 +235,7 @@ class _LogDetailPageState extends State<LogDetailPage> {
               Expanded(
                 child: Text(
                   'Le : ${ActivityLogTranslator.formatDateTime(detail.createdAt)}',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTextSize.bodyStyle(context,
                     color: Colors.grey[700],
                     fontWeight: FontWeight.w500,
                   ),

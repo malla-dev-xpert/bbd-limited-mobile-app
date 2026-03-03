@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
@@ -146,8 +147,7 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
         children: [
           Text(
             widget.localizations.translate('details'),
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -169,11 +169,9 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
                   const SizedBox(width: 8),
                   Text(
                     'Chargement des détails...',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextSize.bodyStyle(context,
                       color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
-                    ),
+                    ).copyWith(fontStyle: FontStyle.italic),
                   ),
                 ],
               ),
@@ -197,8 +195,7 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
             const SizedBox(height: 16),
             Text(
               _translate('items', 'Articles'),
-              style: TextStyle(
-                fontSize: 16,
+              style: AppTextSize.subtitleStyle(context,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[800],
               ),
@@ -231,8 +228,7 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
         children: [
           Text(
             description,
-            style: const TextStyle(
-              fontSize: 15,
+            style: AppTextSize.bodyStyle(context,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
@@ -243,15 +239,13 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
             children: [
               Text(
                 '${_translate('quantity', 'Quantité')}: $quantity',
-                style: TextStyle(
-                  fontSize: 14,
+                style: AppTextSize.bodyStyle(context,
                   color: Colors.grey[700],
                 ),
               ),
               Text(
                 '${_translate('unit_price', 'Prix unitaire')}: ${_formatAmount(unitPrice)}',
-                style: TextStyle(
-                  fontSize: 14,
+                style: AppTextSize.bodyStyle(context,
                   color: Colors.grey[700],
                 ),
               ),
@@ -263,8 +257,7 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
             children: [
               Text(
                 '${_translate('total', 'Total')}: ${_formatAmount(totalPrice)}',
-                style: TextStyle(
-                  fontSize: 15,
+                style: AppTextSize.bodyStyle(context,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue[900],
                 ),
@@ -286,8 +279,7 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -296,8 +288,7 @@ class _PurchaseLogDetailsWidgetState extends State<PurchaseLogDetailsWidget> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

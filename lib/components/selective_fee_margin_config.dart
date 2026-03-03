@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/models/selective_margin.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -200,9 +201,8 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                 Expanded(
                   child: Text(
                     localizations.translate('selective_fee_margin_title'),
-                    style: const TextStyle(
+                    style: AppTextSize.titleStyle(context,
                       color: Colors.white,
-                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -231,8 +231,7 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                 children: [
                   Text(
                     localizations.translate('selective_fee_margin_description'),
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextSize.bodyStyle(context,
                       color: Colors.grey[700],
                     ),
                   ),
@@ -285,8 +284,8 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                             ),
                             subtitle: Text(
                               '${localizations.translate('original_amount')}: ${_currencyFormat.format(feeAmount)} ${widget.currencySymbol}',
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
+                              style: AppTextSize.captionStyle(context,
+                                  color: Colors.grey[600]),
                             ),
                             trailing: isSelected
                                 ? Icon(Icons.check_circle,
@@ -303,9 +302,8 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                                   Text(
                                     localizations
                                         .translate('margin_configuration'),
-                                    style: const TextStyle(
+                                    style: AppTextSize.bodyStyle(context,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -417,28 +415,28 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
                                                   Text(
                                                     localizations.translate(
                                                         'margin_preview'),
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                    style: AppTextSize.captionStyle(context,
                                                       color: Colors.purple[700],
-                                                      fontSize: 12,
-                                                    ),
+                                                    ).copyWith(fontWeight: FontWeight.bold),
                                                   ),
                                                 ],
                                               ),
                                               const SizedBox(height: 8),
                                               _buildPreviewRow(
+                                                context,
                                                 localizations.translate(
                                                     'original_amount'),
                                                 '${_currencyFormat.format(feeAmount)} ${widget.currencySymbol}',
                                               ),
                                               _buildPreviewRow(
+                                                context,
                                                 localizations
                                                     .translate('margin_amount'),
                                                 '+${_currencyFormat.format(margin.marginAmount)} ${widget.currencySymbol}',
                                               ),
                                               const Divider(height: 16),
                                               _buildPreviewRow(
+                                                context,
                                                 localizations.translate(
                                                     'adjusted_amount'),
                                                 '${_currencyFormat.format(margin.adjustedAmount)} ${widget.currencySymbol}',
@@ -467,7 +465,7 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
     );
   }
 
-  Widget _buildPreviewRow(String label, String value, {bool isBold = false}) {
+  Widget _buildPreviewRow(BuildContext context, String label, String value, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -475,19 +473,15 @@ class _SelectiveFeeMarginConfigState extends State<SelectiveFeeMarginConfig> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
+            style: AppTextSize.captionStyle(context,
               color: Colors.grey[700],
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
+            ).copyWith(fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
           ),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: isBold ? Colors.purple[700] : Colors.black87,
-            ),
+            style: AppTextSize.captionStyle(context,
+              color: isBold ? Colors.purple[700]! : Colors.black87,
+            ).copyWith(fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -50,11 +51,9 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       child: Text(
                         '${customer.firstName.isNotEmpty ? customer.firstName[0] : ''}${customer.lastName.isNotEmpty ? customer.lastName[0] : ''}'
                             .toUpperCase(),
-                        style: const TextStyle(
-                          color: Color(0xFF1A1E49),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextSize.titleStyle(context,
+                            color: const Color(0xFF1A1E49),
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -65,18 +64,14 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       children: [
                         Text(
                           '${customer.firstName} ${customer.lastName}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTextSize.titleStyle(context,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
                         Text(
                           customer.phoneNumber,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
+                          style: AppTextSize.bodyStyle(context,
+                              color: Colors.white70),
                         ),
                       ],
                     ),
@@ -96,13 +91,11 @@ class CustomerPurchasesDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Historique des achats',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1E49),
-                      ),
+                      style: AppTextSize.titleStyle(context,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1A1E49)),
                     ),
                     const SizedBox(height: 16),
                     _buildPurchasesList(context),
@@ -145,19 +138,15 @@ class CustomerPurchasesDialog extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Aucun achat trouvé',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextSize.titleStyle(context,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Text(
               'Ce client n\'a pas encore effectué d\'${AppLocalizations.of(context).translate('purchases_count')}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -211,19 +200,15 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         children: [
                           Text(
                             '${AppLocalizations.of(context).translate('reference_short')}: ${versement.reference ?? AppLocalizations.of(context).translate('not_available')}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1A1E49),
-                            ),
+                            style: AppTextSize.bodyStyle(context,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1E49)),
                           ),
                           if (date != null)
                             Text(
                               DateFormat('dd/MM/yyyy').format(date),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.grey[600]),
                             ),
                         ],
                       ),
@@ -240,11 +225,9 @@ class CustomerPurchasesDialog extends StatelessWidget {
                       ),
                       child: Text(
                         _getStatusText(achat.status, context),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: _getStatusColor(achat.status),
-                        ),
+                        style: AppTextSize.bodyStyle(context,
+                            fontWeight: FontWeight.w500,
+                            color: _getStatusColor(achat.status)),
                       ),
                     ),
                   ],
@@ -263,17 +246,16 @@ class CustomerPurchasesDialog extends StatelessWidget {
                     children: [
                       Text(
                         item.description ?? 'Description non disponible',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1E49),
-                        ),
+                        style: AppTextSize.titleStyle(context,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1E49)),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
                             child: _buildItemDetail(
+                              context,
                               AppLocalizations.of(context)
                                   .translate('quantity'),
                               '${item.quantity ?? 0}',
@@ -282,6 +264,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           ),
                           Expanded(
                             child: _buildItemDetail(
+                              context,
                               'Prix unitaire',
                               NumberFormat.currency(
                                 locale: 'fr_FR',
@@ -297,6 +280,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildItemDetail(
+                            context,
                             AppLocalizations.of(context).translate('total'),
                             NumberFormat.currency(
                               locale: 'fr_FR',
@@ -307,6 +291,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
                           if (item.supplierName != null) ...[
                             const SizedBox(height: 8),
                             _buildItemDetail(
+                              context,
                               AppLocalizations.of(context)
                                   .translate('supplier'),
                               item.supplierName,
@@ -326,7 +311,7 @@ class CustomerPurchasesDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildItemDetail(String label, String value, IconData icon) {
+  Widget _buildItemDetail(BuildContext context, String label, String value, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -336,22 +321,18 @@ class CustomerPurchasesDialog extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextSize.bodyStyle(context,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500),
             ),
           ],
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1E49),
-          ),
+          style: AppTextSize.bodyStyle(context,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1A1E49)),
         ),
       ],
     );

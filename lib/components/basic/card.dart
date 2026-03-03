@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
 class CustomCard extends StatelessWidget {
   final IconData icon;
@@ -93,12 +94,14 @@ class CustomCard extends StatelessWidget {
                             AutoSizeText(
                               title,
                               textAlign: TextAlign.start,
-                              style: TextStyle(
-                                fontSize: isTablet ? 20 : 16,
-                                color: titleColor,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: -0.5,
-                              ),
+                              style: (isTablet
+                                      ? AppTextSize.headlineStyle(context,
+                                          color: titleColor,
+                                          fontWeight: FontWeight.w500)
+                                      : AppTextSize.subtitleStyle(context,
+                                          color: titleColor,
+                                          fontWeight: FontWeight.w500))
+                                  .copyWith(letterSpacing: -0.5),
                               minFontSize: 8,
                             ),
                             if (isTablet && description != null) ...[
@@ -106,8 +109,7 @@ class CustomCard extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   description!,
-                                  style: TextStyle(
-                                    fontSize: 20,
+                                  style: AppTextSize.headlineStyle(context,
                                     color: titleColor.withOpacity(0.7),
                                     fontWeight: FontWeight.w400,
                                   ),

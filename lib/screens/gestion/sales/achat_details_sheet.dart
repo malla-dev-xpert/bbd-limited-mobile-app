@@ -1,4 +1,5 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/enums/status.dart';
 import 'package:bbd_limited/core/services/achat_services.dart';
 import 'package:bbd_limited/core/services/access_control_service.dart';
@@ -186,8 +187,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('confirm_delivery_dialog_title'),
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: AppTextSize.headlineStyle(context,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -214,8 +214,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('total_quantity'),
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: AppTextSize.subtitleStyle(context,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -224,8 +223,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           quantityTotal != null
                               ? quantityTotal.toString()
                               : '—',
-                          style: TextStyle(
-                            fontSize: 16,
+                          style: AppTextSize.subtitleStyle(context,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).primaryColor,
                           ),
@@ -435,10 +433,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                 AppLocalizations.of(context).translate(
                                     'purchase_history_edit_item_title'),
                                 textAlign: TextAlign.start,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    letterSpacing: -0.5),
+                                style: AppTextSize.headlineStyle(context,
+                                    fontWeight: FontWeight.bold)
+                                    .copyWith(letterSpacing: -0.5),
                               ),
                               const SizedBox(height: 30),
                               buildTextField(
@@ -778,8 +775,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             Text(
                 AppLocalizations.of(context)
                     .translate('purchase_history_reverse_confirm_title'),
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                style: AppTextSize.headlineStyle(context,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
         content: Text(AppLocalizations.of(context)
@@ -1033,11 +1030,9 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                 child: Text(
                   AppLocalizations.of(context)
                       .translate('purchase_history_details_title'),
-                  style: TextStyle(
-                      fontSize:
-                          MediaQuery.of(context).size.width < 400 ? 20 : 24,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5),
+                  style: AppTextSize.headlineStyle(context,
+                      fontWeight: FontWeight.bold)
+                      .copyWith(letterSpacing: -0.5),
                 ),
               ),
               IconButton(
@@ -1088,6 +1083,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildInfoRow(
+                    context,
                     achat.isDebt == true
                         ? AppLocalizations.of(context)
                             .translate('purchase_history_date')
@@ -1100,6 +1096,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                             AppLocalizations.of(context)
                                 .translate('not_available'))),
                 _buildInfoRow(
+                    context,
                     AppLocalizations.of(context)
                         .translate('purchase_history_client'),
                     achat.client ??
@@ -1107,6 +1104,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                             .translate('not_available')),
                 if (achat.clientPhone != null)
                   _buildInfoRow(
+                      context,
                       AppLocalizations.of(context)
                           .translate('purchase_history_phone'),
                       achat.clientPhone!),
@@ -1118,9 +1116,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                       children: [
                         Text(
                           AppLocalizations.of(context).translate('code'),
-                          style: TextStyle(
+                          style: AppTextSize.subtitleStyle(context,
                             color: Colors.grey[600],
-                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1130,12 +1127,10 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                             Expanded(
                               child: Text(
                                 achat.code!,
-                                style: const TextStyle(
-                                  fontSize: 15,
+                                style: AppTextSize.bodyStyle(context,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black,
-                                  fontFamily: 'monospace',
-                                ),
+                                ).copyWith(fontFamily: 'monospace'),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -1167,9 +1162,11 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     ),
                   ),
                 _buildInfoRow(
+                    context,
                     AppLocalizations.of(context)
                         .translate('purchase_history_total_amount'),
-                    '${_formatAmount(achat.montantTotal ?? 0)} ¥'),
+                    '${_formatAmount(achat.montantTotal ?? 0)} ¥',
+                    isAmount: true),
                 const SizedBox(height: 20),
                 // Section Articles achetés avec bouton d'export
                 Row(
@@ -1178,8 +1175,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('purchase_history_purchased_items'),
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: AppTextSize.headlineStyle(context,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1235,7 +1231,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {bool isAmount = false}) {
+  Widget _buildInfoRow(BuildContext context, String label, String value, {bool isAmount = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -1243,20 +1239,21 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: AppTextSize.subtitleStyle(context,
               color: Colors.grey[600],
-              fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: isAmount ? 16 : 15,
-              fontWeight: isAmount ? FontWeight.bold : FontWeight.w600,
-              color: isAmount ? const Color(0xFF1A1E49) : Colors.black,
-            ),
+            style: isAmount
+                ? AppTextSize.subtitleStyle(context,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1A1E49))
+                : AppTextSize.bodyStyle(context,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black),
           ),
         ],
       ),

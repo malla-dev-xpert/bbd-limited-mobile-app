@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/language_provider.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 
@@ -72,9 +73,8 @@ class LanguageSelectionModal extends ConsumerWidget {
                 ),
                 subtitle: Text(
                   language['name']!,
-                  style: TextStyle(
+                  style: AppTextSize.subtitleStyle(context,
                     color: isSelected ? Colors.blue[600] : Colors.grey[600],
-                    fontSize: 16,
                   ),
                 ),
                 trailing: isSelected
@@ -126,9 +126,8 @@ class LanguageSelectionModal extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     localizations.translate('language_change_info'),
-                    style: TextStyle(
+                    style: AppTextSize.subtitleStyle(context,
                       color: Colors.blue[700],
-                      fontSize: 16,
                     ),
                   ),
                 ),

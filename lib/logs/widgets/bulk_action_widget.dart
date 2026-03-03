@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/enums/log_entity_type.dart';
@@ -25,15 +26,15 @@ class BulkActionWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Résumé global
-        _buildSummaryCard(),
+        _buildSummaryCard(context),
         const SizedBox(height: 24),
         // Détails si disponibles
-        if (!businessData.isEmpty) _buildDetailsSection(),
+        if (!businessData.isEmpty) _buildDetailsSection(context),
       ],
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -63,8 +64,7 @@ class BulkActionWidget extends StatelessWidget {
               children: [
                 Text(
                   localizations.translate('bulk_action'),
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: AppTextSize.titleStyle(context,
                     fontWeight: FontWeight.bold,
                     color: Colors.deepPurple[900],
                   ),
@@ -75,8 +75,7 @@ class BulkActionWidget extends StatelessWidget {
                         '{count}',
                         entityCount.toString(),
                       ),
-                  style: TextStyle(
-                    fontSize: 15,
+                  style: AppTextSize.bodyStyle(context,
                     color: Colors.grey[700],
                     fontWeight: FontWeight.w500,
                   ),
@@ -89,7 +88,7 @@ class BulkActionWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsSection() {
+  Widget _buildDetailsSection(BuildContext context) {
     final data = businessData.mainData;
 
     if (data.isEmpty) {
@@ -108,14 +107,14 @@ class BulkActionWidget extends StatelessWidget {
         children: [
           Text(
             localizations.translate('summary'),
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
           ),
           const SizedBox(height: 16),
           ...data.entries.map((entry) => _buildInfoRow(
+                context,
                 _translateKey(entry.key),
                 _formatValue(entry.key, entry.value),
               )),
@@ -124,7 +123,7 @@ class BulkActionWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -134,8 +133,7 @@ class BulkActionWidget extends StatelessWidget {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -144,8 +142,7 @@ class BulkActionWidget extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

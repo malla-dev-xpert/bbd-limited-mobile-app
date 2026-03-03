@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
@@ -21,24 +22,24 @@ class GenericDeleteWidget extends StatelessWidget {
     final data = businessData.beforeData ?? businessData.mainData;
 
     if (data.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(context);
     }
 
     // Filtrer les données pour l'affichage
     final filteredData = _filterAndSortForDisplay(data);
 
     if (filteredData.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(context);
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Message d'avertissement
-        _buildWarningBanner(),
+        _buildWarningBanner(context),
         const SizedBox(height: 20),
         // Données avant suppression
-        _buildDataSection(filteredData),
+        _buildDataSection(context, filteredData),
       ],
     );
   }
@@ -109,7 +110,7 @@ class GenericDeleteWidget extends StatelessWidget {
         keyLower.contains('edited');
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -124,9 +125,8 @@ class GenericDeleteWidget extends StatelessWidget {
           Expanded(
             child: Text(
               localizations.translate('no_data_available'),
-              style: TextStyle(
+              style: AppTextSize.bodyStyle(context,
                 color: Colors.grey[700],
-                fontSize: 14,
               ),
             ),
           ),
@@ -135,7 +135,7 @@ class GenericDeleteWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildWarningBanner() {
+  Widget _buildWarningBanner(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -160,18 +160,16 @@ class GenericDeleteWidget extends StatelessWidget {
               children: [
                 Text(
                   localizations.translate('element_deleted'),
-                  style: TextStyle(
+                  style: AppTextSize.subtitleStyle(context,
                     color: Colors.red[900],
-                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'L\'entité suivante a été supprimée :',
-                  style: TextStyle(
+                  style: AppTextSize.bodyStyle(context,
                     color: Colors.red[700],
-                    fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -183,7 +181,7 @@ class GenericDeleteWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDataSection(Map<String, dynamic> data) {
+  Widget _buildDataSection(BuildContext context, Map<String, dynamic> data) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -195,6 +193,7 @@ class GenericDeleteWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ...data.entries.map((entry) => _buildInfoRow(
+                context,
                 _translateKey(entry.key),
                 _formatValue(entry.key, entry.value),
               )),
@@ -203,7 +202,7 @@ class GenericDeleteWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -213,8 +212,7 @@ class GenericDeleteWidget extends StatelessWidget {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -223,8 +221,7 @@ class GenericDeleteWidget extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

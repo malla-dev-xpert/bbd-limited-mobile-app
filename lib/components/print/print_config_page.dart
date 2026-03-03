@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/components/invoice_options_config.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -201,8 +202,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
         children: [
           Text(
             widget.printOptionsTitle,
-            style: const TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -383,8 +383,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
       children: [
         Text(
           localizations.translate('print_language'),
-          style: const TextStyle(
-            fontSize: 16,
+          style: AppTextSize.subtitleStyle(context,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -428,12 +427,12 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                   children: [
                     Text(
                       language.flag,
-                      style: const TextStyle(fontSize: 20),
+                      style: AppTextSize.headlineStyle(context),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       displayName,
-                      style: const TextStyle(fontSize: 16),
+                      style: AppTextSize.subtitleStyle(context),
                     ),
                   ],
                 );
@@ -461,12 +460,12 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                   children: [
                     Text(
                       language.flag,
-                      style: const TextStyle(fontSize: 20),
+                      style: AppTextSize.headlineStyle(context),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       displayName,
-                      style: const TextStyle(fontSize: 16),
+                      style: AppTextSize.subtitleStyle(context),
                     ),
                   ],
                 ),
@@ -507,7 +506,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
               Expanded(
                 child: Text(
                   widget.includeSupplierLabel,
-                  style: const TextStyle(fontSize: 16),
+                  style: AppTextSize.subtitleStyle(context),
                 ),
               ),
             ],
@@ -526,7 +525,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
               Expanded(
                 child: Text(
                   widget.proformaLabel,
-                  style: const TextStyle(fontSize: 16),
+                  style: AppTextSize.subtitleStyle(context),
                 ),
               ),
             ],
@@ -552,8 +551,7 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
               const SizedBox(width: 8),
               Text(
                 widget.billingOptionsTitle,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: AppTextSize.titleStyle(context,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -576,11 +574,9 @@ class _PrintConfigPageState extends State<PrintConfigPage> {
                   Expanded(
                     child: Text(
                       widget.appliedOptionsLabel,
-                      style: TextStyle(
+                      style: AppTextSize.captionStyle(context,
                         color: Colors.blue[700],
-                        fontWeight: FontWeight.bold,
-                        fontSize: isMobile ? 11 : 12,
-                      ),
+                      ).copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

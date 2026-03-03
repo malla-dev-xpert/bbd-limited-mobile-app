@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/services/log_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/models/activity_log.dart';
@@ -45,12 +46,13 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
     return _selectedUser != null || _selectedDateOption != DateFilterOption.all;
   }
 
-  Widget? _buildActiveFiltersBar(AppLocalizations localizations) {
+  Widget? _buildActiveFiltersBar(BuildContext context, AppLocalizations localizations) {
     final filters = <Widget>[];
 
     if (_selectedUser != null) {
       filters.add(
         _buildFilterChip(
+          context,
           icon: Icons.person,
           label: localizations.translate('activity_history_user'),
           value: _getUserDisplayName(_selectedUser!),
@@ -75,6 +77,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
 
       filters.add(
         _buildFilterChip(
+          context,
           icon: Icons.calendar_today,
           label: localizations.translate('filter_by_date'),
           value: dateLabel,
@@ -124,8 +127,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                 const SizedBox(width: 6),
                 Text(
                   localizations.translate('active_filters'),
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: AppTextSize.bodyStyle(context,
                     color: Colors.grey[700],
                     fontWeight: FontWeight.w600,
                   ),
@@ -149,11 +151,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                     ),
                     child: Text(
                       localizations.translate('clear_filters'),
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: AppTextSize.captionStyle(context,
                         color: const Color(0xFF1A1E49),
-                        fontWeight: FontWeight.w600,
-                      ),
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
               ],
@@ -175,7 +175,8 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
     );
   }
 
-  Widget _buildFilterChip({
+  Widget _buildFilterChip(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required String value,
@@ -210,11 +211,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                 Flexible(
                   child: Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: AppTextSize.captionStyle(context,
                       color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                    ),
+                    ).copyWith(fontWeight: FontWeight.w500),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -222,11 +221,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                 Flexible(
                   child: Text(
                     value,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF1A1E49),
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextSize.captionStyle(context,
+                      color: const Color(0xFF1A1E49),
+                    ).copyWith(fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -446,12 +443,10 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
         ),
         title: Text(
           localizations.translate('activity_history_title'),
-          style: const TextStyle(
-            color: Color(0xFF1A1E49),
+          style: AppTextSize.headlineStyle(context,
+            color: const Color(0xFF1A1E49),
             fontWeight: FontWeight.bold,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+          ).copyWith(letterSpacing: -0.5),
         ),
         centerTitle: false,
         actions: [
@@ -485,7 +480,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
       ),
       body: Column(
         children: [
-          if (_hasActiveFilters()) _buildActiveFiltersBar(localizations)!,
+          if (_hasActiveFilters()) _buildActiveFiltersBar(context, localizations)!,
           Expanded(
             child: _isCheckingAdmin || _isInitialLoading
                 ? const Center(
@@ -569,8 +564,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             const SizedBox(height: 16),
             Text(
               localizations.translate('activity_history_error'),
-              style: const TextStyle(
-                fontSize: 18,
+              style: AppTextSize.titleStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
@@ -579,8 +573,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? localizations.translate('network_error'),
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTextSize.bodyStyle(context,
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
@@ -623,8 +616,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             const SizedBox(height: 16),
             Text(
               localizations.translate('activity_history_empty'),
-              style: const TextStyle(
-                fontSize: 18,
+              style: AppTextSize.titleStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
@@ -633,8 +625,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
             const SizedBox(height: 8),
             Text(
               localizations.translate('activity_history_empty_desc'),
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTextSize.bodyStyle(context,
                 color: Colors.grey[600],
               ),
               textAlign: TextAlign.center,
@@ -679,10 +670,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                 children: [
                   Text(
                     localizations.translate('filter'),
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: AppTextSize.headlineStyle(context,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1E49),
+                      color: const Color(0xFF1A1E49),
                     ),
                   ),
                   const Spacer(),
@@ -704,10 +694,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                   // Filtre utilisateur
                   Text(
                     localizations.translate('activity_history_user'),
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: AppTextSize.subtitleStyle(context,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1E49),
+                      color: const Color(0xFF1A1E49),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -716,10 +705,9 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                   // Filtre date
                   Text(
                     localizations.translate('filter_by_date'),
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: AppTextSize.subtitleStyle(context,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1E49),
+                      color: const Color(0xFF1A1E49),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -778,8 +766,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                                         .format(_customDate!)
                                     : localizations
                                         .translate('filter_date_custom'),
-                                style: TextStyle(
-                                  fontSize: 16,
+                                style: AppTextSize.subtitleStyle(context,
                                   color: _customDate != null
                                       ? Colors.black87
                                       : Colors.grey[600],
@@ -815,8 +802,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                           ),
                           child: Text(
                             localizations.translate('clear_filters'),
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: AppTextSize.subtitleStyle(context,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -841,8 +827,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                           ),
                           child: Text(
                             localizations.translate('apply_filters'),
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: AppTextSize.subtitleStyle(context,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

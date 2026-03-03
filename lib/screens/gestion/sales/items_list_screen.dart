@@ -253,8 +253,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('confirm_delivery_dialog_title'),
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                      style: AppTextSize.headlineStyle(context,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     buildTextField(
@@ -279,18 +279,17 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('total_quantity'),
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
+                          style: AppTextSize.subtitleStyle(context,
+                              fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           quantityTotal != null
                               ? quantityTotal.toString()
                               : '—',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor),
+                          style: AppTextSize.subtitleStyle(context,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -458,8 +457,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
               child: Text(
                 AppLocalizations.of(context)
                     .translate('purchase_history_reverse_confirm_title'),
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: AppTextSize.headlineStyle(context,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -660,8 +659,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
       appBar: AppBar(
         title: Text(
           loc.translate('items_list_title'),
-          style: const TextStyle(
-              color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+          style: AppTextSize.headlineStyle(context,
+              color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1A1E49),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -798,8 +797,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                                         .translate('purchase_history_no_items')
                                     : AppLocalizations.of(context)
                                         .translate('items_list_no_results'),
-                                style: TextStyle(
-                                    fontSize: 20, color: Colors.grey[600]),
+                                style: AppTextSize.headlineStyle(context,
+                                    color: Colors.grey[600]),
                                 textAlign: TextAlign.center,
                               ),
                             ],

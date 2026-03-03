@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 
 class ReportCard extends StatelessWidget {
   final String title;
@@ -64,11 +65,13 @@ class ReportCard extends StatelessWidget {
             Flexible(
               child: AutoSizeText(
                 title,
-                style: TextStyle(
-                  color: textColor.withOpacity(0.85),
-                  fontSize: isTablet ? 16 : 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: (isTablet
+                        ? AppTextSize.subtitleStyle(context,
+                            color: textColor.withOpacity(0.85),
+                            fontWeight: FontWeight.w500)
+                        : AppTextSize.bodyStyle(context,
+                            color: textColor.withOpacity(0.85),
+                            fontWeight: FontWeight.w500)),
                 textAlign: TextAlign.center,
                 minFontSize: isTablet ? 12 : 10,
                 maxLines: 2,
@@ -79,12 +82,10 @@ class ReportCard extends StatelessWidget {
             Flexible(
               child: AutoSizeText(
                 value,
-                style: TextStyle(
+                style: AppTextSize.displayStyle(context,
                   color: textColor,
-                  fontSize: isTablet ? 32 : 28,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
+                ).copyWith(letterSpacing: -0.5),
                 textAlign: TextAlign.center,
                 minFontSize: isTablet ? 16 : 14,
                 maxLines: 2,

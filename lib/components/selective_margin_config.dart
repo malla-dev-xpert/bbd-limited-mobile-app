@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/models/invoice_options.dart';
 import 'package:bbd_limited/models/selective_margin.dart';
 import 'package:bbd_limited/models/achats/achat.dart';
@@ -178,9 +179,8 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                 Expanded(
                   child: Text(
                     localizations.translate('selective_margin_title'),
-                    style: const TextStyle(
+                    style: AppTextSize.titleStyle(context,
                       color: Colors.white,
-                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -210,8 +210,7 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                 children: [
                   Text(
                     localizations.translate('selective_margin_description'),
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextSize.bodyStyle(context,
                       color: Colors.grey[700],
                     ),
                   ),
@@ -268,8 +267,8 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                               '${localizations.translate('quantity')}: ${item.quantity ?? 0} | '
                               '${localizations.translate('unit_price')}: ${_currencyFormat.format(item.unitPrice ?? 0)} ${widget.currencySymbol} | '
                               '${localizations.translate('total')}: ${_currencyFormat.format(item.totalPrice ?? 0)} ${widget.currencySymbol}',
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
+                              style: AppTextSize.captionStyle(context,
+                                  color: Colors.grey[600]),
                             ),
                             trailing: isSelected
                                 ? Icon(Icons.check_circle,
@@ -288,9 +287,8 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                   Text(
                                     localizations
                                         .translate('margin_configuration'),
-                                    style: const TextStyle(
+                                    style: AppTextSize.bodyStyle(context,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -365,11 +363,9 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                   // Mode d'affichage
                                   Text(
                                     'Mode d\'affichage',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                    style: AppTextSize.captionStyle(context,
                                       color: Colors.grey[700],
-                                    ),
+                                    ).copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
                                   DropDownCustom<MarginDisplayMode>(
@@ -513,17 +509,15 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                                   Text(
                                                     localizations.translate(
                                                         'margin_preview'),
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                    style: AppTextSize.captionStyle(context,
                                                       color: Colors.blue[700],
-                                                      fontSize: 12,
-                                                    ),
+                                                    ).copyWith(fontWeight: FontWeight.bold),
                                                   ),
                                                 ],
                                               ),
                                               const SizedBox(height: 8),
                                               _buildPreviewRow(
+                                                context,
                                                 localizations.translate(
                                                     'original_total'),
                                                 '${_currencyFormat.format(item.totalPrice ?? 0)} ${widget.currencySymbol}',
@@ -532,27 +526,32 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
                                                   MarginDisplayMode
                                                       .displayMarginOnly) ...[
                                                 _buildPreviewRow(
+                                                  context,
                                                   localizations.translate(
                                                       'margin_amount'),
                                                   '+${_currencyFormat.format(margin.marginAmount)} ${widget.currencySymbol}',
                                                 ),
                                                 _buildPreviewRow(
+                                                  context,
                                                   'Pourcentage',
                                                   '${margin.realMarginPercentage.toStringAsFixed(2)}%',
                                                 ),
                                               ] else if (finalPrice !=
                                                   null) ...[
                                                 _buildPreviewRow(
+                                                  context,
                                                   'Marge réelle',
                                                   '+${_currencyFormat.format(margin.marginAmount)} ${widget.currencySymbol}',
                                                 ),
                                                 _buildPreviewRow(
+                                                  context,
                                                   'Pourcentage réel',
                                                   '${margin.realMarginPercentage.toStringAsFixed(2)}%',
                                                 ),
                                               ],
                                               const Divider(height: 16),
                                               _buildPreviewRow(
+                                                context,
                                                 localizations.translate(
                                                     'adjusted_total'),
                                                 '${_currencyFormat.format(margin.adjustedTotalPrice)} ${widget.currencySymbol}',
@@ -581,7 +580,7 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
     );
   }
 
-  Widget _buildPreviewRow(String label, String value, {bool isBold = false}) {
+  Widget _buildPreviewRow(BuildContext context, String label, String value, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -589,19 +588,15 @@ class _SelectiveMarginConfigState extends State<SelectiveMarginConfig> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
+            style: AppTextSize.captionStyle(context,
               color: Colors.grey[700],
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
+            ).copyWith(fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
           ),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            style: AppTextSize.captionStyle(context,
               color: isBold ? const Color(0xFF1A1E49) : Colors.black87,
-            ),
+            ).copyWith(fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
           ),
         ],
       ),

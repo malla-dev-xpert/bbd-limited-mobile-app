@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'report_card.dart';
 
 class ReportCardData {
@@ -49,8 +50,7 @@ class ReportCardList extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Aucune donnée disponible',
-                style: TextStyle(
-                  fontSize: 18,
+                style: AppTextSize.titleStyle(context,
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
                 ),

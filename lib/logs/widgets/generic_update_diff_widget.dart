@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/logs/mappers/entity_details_mapper.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -22,7 +23,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!businessData.hasBothBeforeAfter) {
       // Si pas de before/after, afficher les données principales
-      return _buildSimpleData(businessData.mainData);
+      return _buildSimpleData(context, businessData.mainData);
     }
 
     final before = businessData.beforeData!;
@@ -30,7 +31,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
     final differences = EntityDetailsMapper.computeDifferences(before, after);
 
     if (differences.isEmpty) {
-      return _buildNoChangesMessage();
+      return _buildNoChangesMessage(context);
     }
 
     // Obtenir toutes les clés uniques pour l'affichage
@@ -55,10 +56,10 @@ class GenericUpdateDiffWidget extends StatelessWidget {
 
         if (isWide) {
           // Desktop/Tablet: Split view côte à côte
-          return _buildSplitView(displayKeys, before, after, differences);
+          return _buildSplitView(context, displayKeys, before, after, differences);
         } else {
           // Mobile: Vue empilée
-          return _buildStackedView(displayKeys, before, after, differences);
+          return _buildStackedView(context, displayKeys, before, after, differences);
         }
       },
     );
@@ -66,6 +67,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
 
   /// Split view: Avant et Après côte à côte (Desktop/Tablet)
   Widget _buildSplitView(
+    BuildContext context,
     List<String> keys,
     Map<String, dynamic> before,
     Map<String, dynamic> after,
@@ -94,8 +96,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'AVANT',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: AppTextSize.subtitleStyle(context,
                         fontWeight: FontWeight.bold,
                         color: Colors.red[700],
                       ),
@@ -111,8 +112,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'APRÈS',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: AppTextSize.subtitleStyle(context,
                         fontWeight: FontWeight.bold,
                         color: Colors.green[700],
                       ),
@@ -142,6 +142,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
                       final isChanged = differences.containsKey(key);
                       final value = before[key];
                       return _buildFieldRow(
+                        context,
                         key,
                         value,
                         isChanged: isChanged,
@@ -164,6 +165,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
                       final isChanged = differences.containsKey(key);
                       final value = after[key];
                       return _buildFieldRow(
+                        context,
                         key,
                         value,
                         isChanged: isChanged,
@@ -182,6 +184,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
 
   /// Stacked view: Avant puis Après (Mobile)
   Widget _buildStackedView(
+    BuildContext context,
     List<String> keys,
     Map<String, dynamic> before,
     Map<String, dynamic> after,
@@ -192,6 +195,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
       children: [
         // Section AVANT
         _buildStackedSection(
+          context,
           title: 'AVANT',
           keys: keys,
           data: before,
@@ -202,6 +206,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
         const SizedBox(height: 20),
         // Section APRÈS
         _buildStackedSection(
+          context,
           title: 'APRÈS',
           keys: keys,
           data: after,
@@ -213,7 +218,8 @@ class GenericUpdateDiffWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStackedSection({
+  Widget _buildStackedSection(
+    BuildContext context, {
     required String title,
     required List<String> keys,
     required Map<String, dynamic> data,
@@ -233,8 +239,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontSize: 16,
+            style: AppTextSize.subtitleStyle(context,
               fontWeight: FontWeight.bold,
               color: title == 'AVANT' ? Colors.red[700] : Colors.green[700],
             ),
@@ -244,6 +249,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
             final isChanged = differences.containsKey(key);
             final value = data[key];
             return _buildFieldRow(
+              context,
               key,
               value,
               isChanged: isChanged,
@@ -256,6 +262,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
   }
 
   Widget _buildFieldRow(
+    BuildContext context,
     String key,
     dynamic value, {
     required bool isChanged,
@@ -281,8 +288,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
               Expanded(
                 child: Text(
                   _translateKey(key),
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTextSize.bodyStyle(context,
                     fontWeight: isChanged ? FontWeight.bold : FontWeight.w600,
                     color: isChanged ? Colors.orange[900] : Colors.grey[700],
                   ),
@@ -308,12 +314,12 @@ class GenericUpdateDiffWidget extends StatelessWidget {
             ),
             child: Text(
               _formatValue(key, value),
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: isChanged ? FontWeight.bold : FontWeight.w500,
                 color: isChanged
                     ? (isBefore ? Colors.red[900] : Colors.green[900])
                     : Colors.black87,
+              ).copyWith(
                 decoration:
                     isChanged && isBefore ? TextDecoration.lineThrough : null,
               ),
@@ -332,12 +338,13 @@ class GenericUpdateDiffWidget extends StatelessWidget {
         keyLower.endsWith('ids');
   }
 
-  Widget _buildSimpleData(Map<String, dynamic> data) {
+  Widget _buildSimpleData(BuildContext context, Map<String, dynamic> data) {
     if (data.isEmpty) {
       return const SizedBox.shrink();
     }
 
     return _buildSection(
+      context,
       title: localizations.translate('details'),
       data: data,
       color: Colors.blue[50]!,
@@ -345,7 +352,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildNoChangesMessage() {
+  Widget _buildNoChangesMessage(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -360,9 +367,8 @@ class GenericUpdateDiffWidget extends StatelessWidget {
           Expanded(
             child: Text(
               localizations.translate('no_changes_detected'),
-              style: TextStyle(
+              style: AppTextSize.bodyStyle(context,
                 color: Colors.grey[700],
-                fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -372,7 +378,8 @@ class GenericUpdateDiffWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSection({
+  Widget _buildSection(
+    BuildContext context, {
     required String title,
     required Map<String, dynamic> data,
     required Color color,
@@ -394,14 +401,14 @@ class GenericUpdateDiffWidget extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
           ),
           const SizedBox(height: 16),
           ...data.entries.map((entry) => _buildInfoRow(
+                context,
                 _translateKey(entry.key),
                 _formatValue(entry.key, entry.value),
               )),
@@ -410,7 +417,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -420,8 +427,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -430,8 +436,7 @@ class GenericUpdateDiffWidget extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

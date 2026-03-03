@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/core/services/partner_services.dart';
 import 'package:bbd_limited/models/partner.dart';
@@ -150,13 +151,11 @@ class _CustomersWithPurchasesBottomSheetState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Clients avec achats',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1E49),
-                      ),
+                      style: AppTextSize.headlineStyle(context,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1A1E49)),
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
@@ -214,21 +213,17 @@ class _CustomersWithPurchasesBottomSheetState
                               _searchController.text.isEmpty
                                   ? 'Aucun client avec achats'
                                   : 'Aucun client trouvé',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextSize.titleStyle(context,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               _searchController.text.isEmpty
                                   ? 'Les clients apparaîtront ici après leurs premiers achats'
                                   : 'Essayez avec d\'autres termes de recherche',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[500],
-                              ),
+                              style: AppTextSize.bodyStyle(context,
+                                  color: Colors.grey[500]),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -286,11 +281,9 @@ class _CustomersWithPurchasesBottomSheetState
                                           child: Text(
                                             '${customer.firstName.isNotEmpty ? customer.firstName[0] : ''}${customer.lastName.isNotEmpty ? customer.lastName[0] : ''}'
                                                 .toUpperCase(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                            style: AppTextSize.titleStyle(context,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                       ),
@@ -305,20 +298,16 @@ class _CustomersWithPurchasesBottomSheetState
                                           children: [
                                             Text(
                                               '${customer.firstName} ${customer.lastName}',
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF1A1E49),
-                                              ),
+                                              style: AppTextSize.titleStyle(context,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: const Color(0xFF1A1E49)),
                                             ),
                                             const SizedBox(height: 4),
                                             if (customer.phoneNumber.isNotEmpty)
                                               Text(
                                                 customer.phoneNumber,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey[600],
-                                                ),
+                                                style: AppTextSize.bodyStyle(context,
+                                                    color: Colors.grey[600]),
                                               ),
                                             const SizedBox(height: 8),
                                             Wrap(
@@ -326,11 +315,13 @@ class _CustomersWithPurchasesBottomSheetState
                                               runSpacing: 4,
                                               children: [
                                                 _buildStatChip(
+                                                  context,
                                                   Icons.shopping_cart,
                                                   '$totalPurchases achats',
                                                   Colors.blue,
                                                 ),
                                                 _buildStatChip(
+                                                  context,
                                                   Icons.currency_yen,
                                                   NumberFormat.currency(
                                                     locale: 'fr_FR',
@@ -365,7 +356,7 @@ class _CustomersWithPurchasesBottomSheetState
     );
   }
 
-  Widget _buildStatChip(IconData icon, String text, Color color) {
+  Widget _buildStatChip(BuildContext context, IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -380,11 +371,9 @@ class _CustomersWithPurchasesBottomSheetState
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: color,
-            ),
+            style: AppTextSize.bodyStyle(context,
+                fontWeight: FontWeight.w500,
+                color: color),
           ),
         ],
       ),

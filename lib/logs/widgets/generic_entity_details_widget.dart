@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
@@ -55,8 +56,7 @@ class GenericEntityDetailsWidget extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 localizations.translate('creation_successful'),
-                style: TextStyle(
-                  fontSize: 18,
+                style: AppTextSize.titleStyle(context,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[800],
                 ),
@@ -66,14 +66,14 @@ class GenericEntityDetailsWidget extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             localizations.translate('new_entity_created'),
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTextSize.bodyStyle(context,
               color: Colors.grey[700],
               fontWeight: FontWeight.w400,
             ),
           ),
           const SizedBox(height: 16),
           ...filteredData.entries.map((entry) => _buildInfoRow(
+                context,
                 _translateKey(entry.key),
                 _formatValue(entry.key, entry.value),
               )),
@@ -148,7 +148,7 @@ class GenericEntityDetailsWidget extends StatelessWidget {
         keyLower.contains('edited');
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -158,8 +158,7 @@ class GenericEntityDetailsWidget extends StatelessWidget {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -168,8 +167,7 @@ class GenericEntityDetailsWidget extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

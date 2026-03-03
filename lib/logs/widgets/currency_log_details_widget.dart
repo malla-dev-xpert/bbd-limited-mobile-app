@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
@@ -164,8 +165,7 @@ class _CurrencyLogDetailsWidgetState extends State<CurrencyLogDetailsWidget> {
         children: [
           Text(
             widget.localizations.translate('details'),
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -187,11 +187,9 @@ class _CurrencyLogDetailsWidgetState extends State<CurrencyLogDetailsWidget> {
                   const SizedBox(width: 8),
                   Text(
                     'Chargement des détails...',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextSize.bodyStyle(context,
                       color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
-                    ),
+                    ).copyWith(fontStyle: FontStyle.italic),
                   ),
                 ],
               ),
@@ -245,8 +243,7 @@ class _CurrencyLogDetailsWidgetState extends State<CurrencyLogDetailsWidget> {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -255,8 +252,7 @@ class _CurrencyLogDetailsWidgetState extends State<CurrencyLogDetailsWidget> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bbd_limited/core/constants/design_system.dart';
 import 'package:bbd_limited/logs/models/business_entity_data.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/activity_log_translator.dart';
@@ -158,8 +159,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
         children: [
           Text(
             widget.localizations.translate('details'),
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -181,11 +181,9 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
                   const SizedBox(width: 8),
                   Text(
                     'Chargement des détails...',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
-                    ),
+                    style: AppTextSize.bodyStyle(context,
+                        color: Colors.grey[600],
+                    ).copyWith(fontStyle: FontStyle.italic),
                   ),
                 ],
               ),
@@ -414,9 +412,8 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
               Expanded(
                 child: Text(
                   widget.localizations.translate('element_deleted'),
-                  style: TextStyle(
+                  style: AppTextSize.bodyStyle(context,
                     color: Colors.red[900],
-                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -500,8 +497,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTextSize.titleStyle(context,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -557,9 +553,8 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
             Expanded(
               child: Text(
                 widget.localizations.translate('no_changes_detected'),
-                style: TextStyle(
+                style: AppTextSize.bodyStyle(context,
                   color: Colors.grey[700],
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -584,8 +579,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
               const SizedBox(width: 8),
               Text(
                 widget.localizations.translate('changes'),
-                style: TextStyle(
-                  fontSize: 18,
+                style: AppTextSize.titleStyle(context,
                   fontWeight: FontWeight.bold,
                   color: Colors.orange[900],
                 ),
@@ -666,8 +660,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -690,11 +683,9 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
                     ),
                     child: Text(
                       beforeValue,
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: AppTextSize.bodyStyle(context,
                         color: Colors.red[900],
-                        decoration: TextDecoration.lineThrough,
-                      ),
+                      ).copyWith(decoration: TextDecoration.lineThrough),
                     ),
                   ),
                 ),
@@ -715,8 +706,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
                     ),
                     child: Text(
                       afterValue,
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: AppTextSize.bodyStyle(context,
                         fontWeight: FontWeight.bold,
                         color: Colors.green[900],
                       ),
@@ -741,8 +731,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
@@ -751,8 +740,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 15,
+              style: AppTextSize.bodyStyle(context,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
@@ -913,8 +901,7 @@ class _DepositLogDetailsWidgetState extends State<DepositLogDetailsWidget> {
               const SizedBox(width: 12),
               Text(
                 widget.localizations.translate('transfer'),
-                style: TextStyle(
-                  fontSize: 20,
+                style: AppTextSize.headlineStyle(context,
                   fontWeight: FontWeight.bold,
                   color: Colors.purple[900],
                 ),
