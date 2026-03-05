@@ -9,7 +9,7 @@ import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/paiement_list.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
+import 'package:bbd_limited/screens/gestion/accounts/transfer_versement_screen.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:bbd_limited/utils/amount_format.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -384,26 +384,22 @@ class _AccountHomeScreenState extends State<AccountHomeScreen> {
   }
 
   Future<void> _showTransferVersementModal(Versement versement) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TransferVersementModal(
-        versement: versement,
-        currentPartnerId: versement.partnerId ?? 0,
-        onTransferSuccess: () async {
-          // Rafraîchir les données après le transfert
-          await fetchPaiements(reset: true);
-          // Notifier les mises à jour de partenaires
-          await _notifyPartnerUpdates(versement);
-        },
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransferVersementScreen(
+          versement: versement,
+          currentPartnerId: versement.partnerId ?? 0,
+          onTransferSuccess: () async {
+            await fetchPaiements(reset: true);
+            await _notifyPartnerUpdates(versement);
+          },
+        ),
       ),
     );
 
-    if (result == true) {
-      // Le transfert a été effectué avec succès
+    if (result == true && mounted) {
       await fetchPaiements(reset: true);
-      // Notifier les mises à jour de partenaires
       await _notifyPartnerUpdates(versement);
     }
   }

@@ -53,10 +53,11 @@ class ContainerPdfService {
       cbmService,
     );
 
-    // Charger le logo
+    // Charger le logo et les polices du header
     final Uint8List logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
 
     // Formats de dates
     final dateFormat = DateFormat('yyyy.MM.dd');
@@ -70,7 +71,7 @@ class ContainerPdfService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // En-tête unifié (société + logo)
-              PdfHeader.build(logoBytes),
+              PdfHeader.build(logoBytes, headerFonts),
               pw.SizedBox(height: 15),
 
               // Ligne de séparation

@@ -6,26 +6,31 @@ Widget confirmationButton({
   required String label,
   required IconData icon,
   required String subLabel,
+  Color? backgroundColor,
+  Color? foregroundColor,
 }) {
+  final bg = backgroundColor ?? Colors.green;
+  final fg = foregroundColor ?? Colors.white;
   return ElevatedButton.icon(
     style: ElevatedButton.styleFrom(
       minimumSize: const Size(double.infinity, 50),
-      backgroundColor: Colors.green,
+      backgroundColor: bg,
+      foregroundColor: fg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
     icon: isLoading
-        ? const SizedBox(
+        ? SizedBox(
             width: 20,
             height: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Colors.white,
+              color: fg,
             ),
           )
-        : Icon(icon, color: Colors.white),
+        : Icon(icon, color: fg),
     label: Text(
       isLoading ? subLabel : label,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: fg),
     ),
     onPressed: isLoading ? null : onPressed,
   );

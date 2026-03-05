@@ -14,7 +14,7 @@ import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/versement_services.dart';
 import 'package:bbd_limited/core/services/item_services.dart';
 import 'package:bbd_limited/screens/gestion/accounts/widgets/new_versement.dart';
-import 'package:bbd_limited/screens/gestion/accounts/widgets/transfer_versement_modal.dart';
+import 'package:bbd_limited/screens/gestion/accounts/transfer_versement_screen.dart';
 import 'package:bbd_limited/screens/gestion/accounts/versement_detail_screen.dart';
 import 'package:printing/printing.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
@@ -772,26 +772,23 @@ class _PartnerDetailScreenState extends State<PartnerDetailScreen> {
   }
 
   Future<void> _showTransferVersementModal(Versement versement) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TransferVersementModal(
-        versement: versement,
-        currentPartnerId: _partner.id,
-        onTransferSuccess: () async {
-          // Rafraîchir les données du partenaire après le transfert
-          await _refreshData();
-          // Notifier le parent que le partenaire a été mis à jour
-          if (widget.onPartnerUpdated != null) {
-            widget.onPartnerUpdated!(_partner);
-          }
-        },
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransferVersementScreen(
+          versement: versement,
+          currentPartnerId: _partner.id,
+          onTransferSuccess: () async {
+            await _refreshData();
+            if (widget.onPartnerUpdated != null) {
+              widget.onPartnerUpdated!(_partner);
+            }
+          },
+        ),
       ),
     );
 
-    if (result == true) {
-      // Le transfert a été effectué avec succès
+    if (result == true && mounted) {
       await _refreshData();
       if (widget.onPartnerUpdated != null) {
         widget.onPartnerUpdated!(_partner);

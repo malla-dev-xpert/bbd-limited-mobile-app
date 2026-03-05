@@ -33,6 +33,7 @@ class PartnerPrintService {
     final logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
 
     final filteredVersements = _filterVersements(partner.versements, dateRange);
     final filteredPackages = _filterPackages(partner.packages, dateRange);
@@ -54,7 +55,7 @@ class PartnerPrintService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                _buildHeader(logoBytes, dateRange, printLocalizations),
+                _buildHeader(logoBytes, headerFonts, dateRange, printLocalizations),
                 _buildClientInfoSection(partner, printLocalizations),
                 _buildSummarySection(
                   filteredVersements,
@@ -113,7 +114,10 @@ class PartnerPrintService {
     }).toList();
   }
 
-  static pw.Widget _buildHeader(Uint8List logoBytes, DateTimeRange? dateRange,
+  static pw.Widget _buildHeader(
+      Uint8List logoBytes,
+      PdfHeaderFonts headerFonts,
+      DateTimeRange? dateRange,
       PrintLocalizations printLocalizations) {
     final font = printLocalizations.language.code == 'zh'
         ? pw.Font.courier()
@@ -123,7 +127,7 @@ class PartnerPrintService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        PdfHeader.build(logoBytes),
+        PdfHeader.build(logoBytes, headerFonts),
         pw.SizedBox(height: 20),
 
         // Titre du rapport

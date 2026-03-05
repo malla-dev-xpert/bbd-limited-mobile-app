@@ -30,6 +30,7 @@ class InvoiceService {
     final Uint8List logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
 
     // Calcul du sous-total (avec marges sélectives si activées)
     final options = invoiceOptions ?? const InvoiceOptions();
@@ -86,7 +87,7 @@ class InvoiceService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                _buildHeader(logoBytes, versement, dateFormat,
+                _buildHeader(logoBytes, headerFonts, versement, dateFormat,
                     printLocalizations, currencyFormat),
                 pw.SizedBox(height: 24),
                 _buildArticlesSection(achats, versement, printLocalizations,
@@ -344,6 +345,7 @@ class InvoiceService {
   // Nouveau design aligné sur l'image fournie
   static pw.Widget _buildHeader(
       Uint8List logoBytes,
+      PdfHeaderFonts headerFonts,
       Versement versement,
       DateFormat dateFormat,
       PrintLocalizations printLocalizations,
@@ -351,7 +353,7 @@ class InvoiceService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        PdfHeader.build(logoBytes),
+        PdfHeader.build(logoBytes, headerFonts),
         pw.SizedBox(height: 20),
 
         // Titre de la facture (style Market Finance - barre verte)
