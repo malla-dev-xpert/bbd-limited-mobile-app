@@ -45,7 +45,11 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage> {
   final _formKey = GlobalKey<FormState>();
-  late NumberFormat currencyFormat;
+  /// Devise effective : celle du versement sélectionné, sinon widget.devise, sinon CNY.
+  String get _effectiveDeviseCode =>
+      selectedVersement?.deviseCode ?? widget.devise?.code ?? 'CNY';
+  NumberFormat get currencyFormat =>
+      NumberFormat.currency(locale: 'fr_FR', symbol: _effectiveDeviseCode);
   final List<Map<String, dynamic>> localItems = [];
   bool isLoading = false;
   bool isSuppliersLoading = true;
@@ -100,10 +104,6 @@ class _PurchasePageState extends State<PurchasePage> {
 
     // Debug: Afficher les paramètres reçus
     log("PurchasePage initState - clientId: ${widget.clientId}, versementId: ${widget.versementId}");
-
-    // Initialiser le format de devise
-    final deviseCode = widget.devise?.code ?? 'CNY';
-    currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: deviseCode);
 
     // Initialiser le sales rate avec la valeur par défaut 1
     _salesRateController.text = '1';
@@ -1613,8 +1613,13 @@ class _PurchasePageState extends State<PurchasePage> {
                   items: versements,
                   selectedItem: selectedVersement,
                   onChanged: _onVersementSelected,
-                  itemToString: (versement) =>
-                      '${versement.reference} - ${currencyFormat.format(versement.montantRestant)}',
+                  itemToString: (versement) {
+                    final symbol =
+                        versement.deviseCode ?? 'CNY';
+                    final fmt = NumberFormat.currency(
+                        locale: 'fr_FR', symbol: symbol);
+                    return '${versement.reference} - ${fmt.format(versement.montantRestant ?? 0)}';
+                  },
                   hintText: AppLocalizations.of(context)
                       .translate('select_versement_or_debt'),
                   prefixIcon: Icons.payment,
