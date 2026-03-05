@@ -34,7 +34,11 @@ class _CbmPricingFormState extends State<CbmPricingForm> {
     if (widget.cbmPricing != null) {
       _cbmValueController.text = widget.cbmPricing!.cbmValue.toString();
       _priceController.text = widget.cbmPricing!.price.toString();
-      _currencyController.text = widget.cbmPricing!.currency ?? '';
+      _currencyController.text = widget.cbmPricing!.currency != null && widget.cbmPricing!.currency!.isNotEmpty
+          ? widget.cbmPricing!.currency!
+          : 'XOF';
+    } else {
+      _currencyController.text = 'XOF';
     }
   }
 
@@ -61,8 +65,8 @@ class _CbmPricingFormState extends State<CbmPricingForm> {
       widget.onSubmit(
         double.parse(_cbmValueController.text),
         double.parse(_priceController.text),
-        _currencyController.text.isEmpty
-            ? null
+        _currencyController.text.trim().isEmpty
+            ? 'XOF'
             : _currencyController.text.trim(),
       );
     }

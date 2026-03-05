@@ -26,7 +26,7 @@ class AccessControlService {
     return name.toUpperCase() == roleEmployeD;
   }
 
-  /// Routes autorisées pour EMPLOYE_D : Profil, Conteneur, Liste items, Sales (New purchase + History uniquement).
+  /// Routes autorisées pour EMPLOYE_D : Profil, Conteneur, Liste items, CBM Pricing, Sales (New purchase + History uniquement).
   static const Set<String> _allowedRoutesForEmployeD = {
     Routes.login,
     Routes.forgotPassword,
@@ -34,6 +34,7 @@ class AccessControlService {
     Routes.home,
     Routes.containers,
     Routes.itemsList,
+    Routes.cbmPricing,
     Routes.sales,
     Routes.purchase,
   };

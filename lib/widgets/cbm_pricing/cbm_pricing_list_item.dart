@@ -68,11 +68,12 @@ class CbmPricingListItem extends StatelessWidget {
                       "${cbmPricing.cbmValue} CBM",
                       style: AppTextSize.titleStyle(context, color: const Color(0xFF2C2C2C)),
                     ),
-                    if (cbmPricing.currency != null)
-                      Text(
-                        cbmPricing.currency!,
-                        style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
-                      ),
+                    Text(
+                      cbmPricing.currency != null && cbmPricing.currency!.isNotEmpty
+                          ? cbmPricing.currency!
+                          : 'XOF',
+                      style: AppTextSize.bodyStyle(context, color: Colors.grey[600]),
+                    ),
                   ],
                 ),
               ),

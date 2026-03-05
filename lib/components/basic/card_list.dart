@@ -35,7 +35,7 @@ class MenuCategory {
   });
 }
 
-/// Menu réduit pour le rôle EMPLOYE_D : uniquement Conteneur et Liste des articles.
+/// Menu pour le rôle EMPLOYE_D : Conteneur, Liste des articles, et gestion CBM (tout faire).
 List<MenuCategory> _getMenuCategoriesEmployeD(
     BuildContext context, AppLocalizations localizations) {
   return [
@@ -63,6 +63,17 @@ List<MenuCategory> _getMenuCategoriesEmployeD(
             Navigator.of(context).pushNamed('/items-list');
           },
           description: localizations.translate('home_items_list_desc'),
+        ),
+        CardData(
+          icon: Icons.square_foot,
+          title: localizations.translate('home_manage_cbm_pricing_title'),
+          backgroundColor: Colors.grey[50]!,
+          iconColor: const Color(0xFF13084F),
+          titleColor: const Color(0xFF13084F),
+          onPressed: (context) {
+            Navigator.of(context).pushNamed('/cbm-pricing');
+          },
+          description: localizations.translate('home_manage_cbm_pricing_desc'),
         ),
       ],
     ),
