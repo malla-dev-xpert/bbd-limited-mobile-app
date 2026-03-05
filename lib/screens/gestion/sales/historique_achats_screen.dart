@@ -1725,6 +1725,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             actions: itemSlidableActions,
             showSupplierInfo: true,
             showPurchaseInfo: true,
+            showReceptionInfo: true,
             isLoading: isLoading,
             onConfirm: (item, achat) async {
               final data = await _showConfirmDeliveryDialog(item);

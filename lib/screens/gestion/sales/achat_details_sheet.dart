@@ -1167,6 +1167,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         .translate('purchase_history_total_amount'),
                     '${_formatAmount(achat.montantTotal ?? 0)} ¥',
                     isAmount: true),
+                // Réception : personne(s) ayant confirmé et date(s)
+                ..._buildReceptionSummary(context, achat),
                 const SizedBox(height: 20),
                 // Section Articles achetés avec bouton d'export
                 Row(
@@ -1260,6 +1262,43 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     );
   }
 
+  /// Affiche dans les détails de l'achat les personnes ayant confirmé la réception et les dates.
+  List<Widget> _buildReceptionSummary(BuildContext context, Achat achat) {
+    final receivedItems = (achat.items ?? [])
+        .where((i) =>
+            i.status == Status.RECEIVED &&
+            (i.receivedByUserName != null || i.receivedAt != null))
+        .toList();
+    if (receivedItems.isEmpty) return [];
+
+    final names = receivedItems
+        .map((i) => i.receivedByUserName ?? '')
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    final dates = receivedItems
+        .map((i) => i.receivedAt)
+        .whereType<DateTime>()
+        .toSet()
+        .map((d) => DateFormat('dd/MM/yyyy HH:mm').format(d))
+        .toList();
+
+    final loc = AppLocalizations.of(context);
+    return [
+      const SizedBox(height: 12),
+      _buildInfoRow(
+        context,
+        loc.translate('received_by'),
+        names.isEmpty ? '—' : names.join(', '),
+      ),
+      _buildInfoRow(
+        context,
+        loc.translate('received_at'),
+        dates.isEmpty ? '—' : dates.join(', '),
+      ),
+    ];
+  }
+
   Widget _buildItemCard(Items item, Achat achat) {
     final user = AuthService.currentUser;
     final access = AccessControlService();
@@ -1311,6 +1350,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
       achat: achat,
       actions: slidableActions,
       showSupplierInfo: true,
+      showReceptionInfo: true,
       isLoading: isLoading,
       onConfirm: (item, achat) async {
         final data = await _showConfirmDeliveryDialog(item);

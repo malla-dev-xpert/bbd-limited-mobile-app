@@ -342,6 +342,7 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
                           achat: e.achat,
                           showSupplierInfo: true,
                           showPurchaseInfo: true,
+                          showReceptionInfo: true,
                           onTap: () {
                             Navigator.push<void>(
                               context,
