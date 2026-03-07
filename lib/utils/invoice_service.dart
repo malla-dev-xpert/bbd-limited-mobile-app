@@ -37,15 +37,6 @@ class InvoiceService {
     double sousTotal = 0;
     for (final achat in achats) {
       for (final item in (achat.items ?? [])) {
-        // Si marges sélectives activées, ne considérer que les articles sélectionnés
-        if (options.enableSelectiveItemMargins &&
-            options.selectiveItemMargins.isNotEmpty) {
-          if (item.id == null ||
-              !options.selectiveItemMargins.containsKey(item.id)) {
-            continue; // Ignorer les articles non sélectionnés
-          }
-        }
-
         if (options.enableSelectiveItemMargins &&
             item.id != null &&
             options.selectiveItemMargins.containsKey(item.id)) {
@@ -140,15 +131,6 @@ class InvoiceService {
     final options = invoiceOptions ?? const InvoiceOptions();
     double sousTotal = 0;
     for (final item in (filteredItems ?? [])) {
-      // Si marges sélectives activées, ne considérer que les articles sélectionnés
-      if (options.enableSelectiveItemMargins &&
-          options.selectiveItemMargins.isNotEmpty) {
-        if (item.id == null ||
-            !options.selectiveItemMargins.containsKey(item.id)) {
-          continue; // Ignorer les articles non sélectionnés
-        }
-      }
-
       if (options.enableSelectiveItemMargins &&
           item.id != null &&
           options.selectiveItemMargins.containsKey(item.id)) {
@@ -626,13 +608,6 @@ class InvoiceService {
                 final rows = <(Achat, Items)>[];
                 for (final achat in achats) {
                   for (final item in (achat.items ?? [])) {
-                    if (options.enableSelectiveItemMargins &&
-                        options.selectiveItemMargins.isNotEmpty) {
-                      if (item.id == null ||
-                          !options.selectiveItemMargins.containsKey(item.id)) {
-                        continue;
-                      }
-                    }
                     rows.add((achat, item));
                   }
                 }
@@ -1592,16 +1567,7 @@ class InvoiceService {
                 ),
               ),
               ...() {
-                final itemsToShow = (filteredItems ?? []).where((item) {
-                  if (options.enableSelectiveItemMargins &&
-                      options.selectiveItemMargins.isNotEmpty) {
-                    if (item.id == null ||
-                        !options.selectiveItemMargins.containsKey(item.id)) {
-                      return false;
-                    }
-                  }
-                  return true;
-                }).toList();
+                final itemsToShow = (filteredItems ?? []).toList();
                 return [
                   for (var idx = 0; idx < itemsToShow.length; idx++)
                     () {
