@@ -82,18 +82,19 @@ class PrintStyles {
   /// Couleur fond lignes de données (blanc).
   static final PdfColor tableRowAltBackground = PdfColors.white;
 
-  /// Couleur de la ligne Sous-total (vert menthe léger, cohérent avec en-têtes).
-  static final PdfColor subtotalRowBackground = headerGreen;
+  /// Couleur de la ligne Sous-total (gris clair).
+  static final PdfColor subtotalRowBackground =
+      PdfColor(245 / 255, 245 / 255, 245 / 255);
 
-  /// Couleur de la ligne Total (vert menthe léger, cohérent avec en-têtes).
-  static final PdfColor totalRowBackground = headerGreen;
+  /// Couleur de la ligne Total (bleu très clair).
+  static final PdfColor totalRowBackground =
+      PdfColor(232 / 255, 240 / 255, 254 / 255);
 
   /// Couleur accent (titres, montants importants) - bleu/teal foncé (#1A1E49), RGB explicite.
   static final PdfColor accentColor = PdfColor(26 / 255, 30 / 255, 73 / 255);
 
   /// Style texte cellule (tableau).
-  static pw.TextStyle cellTextStyle({double? fontSize}) =>
-      pw.TextStyle(
+  static pw.TextStyle cellTextStyle({double? fontSize}) => pw.TextStyle(
         fontSize: fontSize ?? tableFontSize,
         color: textColor,
       );

@@ -245,7 +245,7 @@ class InvoiceService {
             decoration: pw.BoxDecoration(
               border: PrintStyles.tableBorder,
               borderRadius: pw.BorderRadius.circular(4),
-              color: PrintStyles.headerGreen,
+              color: PdfColors.white,
             ),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -330,11 +330,12 @@ class InvoiceService {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text(label,
-              style: PrintStyles.smallStyle()),
+          pw.Text(label, style: PrintStyles.smallStyle()),
           pw.Text(
             "${format.format(amount)} ${currencyCode ?? 'CNY'}",
-            style: pw.TextStyle(fontSize: PrintStyles.smallFontSize, fontWeight: pw.FontWeight.bold),
+            style: pw.TextStyle(
+                fontSize: PrintStyles.smallFontSize,
+                fontWeight: pw.FontWeight.bold),
           ),
         ],
       ),
@@ -356,12 +357,12 @@ class InvoiceService {
         PdfHeader.build(logoBytes, headerFonts),
         pw.SizedBox(height: 20),
 
-        // Titre de la facture (style Market Finance - barre verte)
+        // Titre de la facture (style Market Finance)
         pw.Container(
           width: double.infinity,
           padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           decoration: pw.BoxDecoration(
-            color: PrintStyles.headerGreen,
+            color: PdfColors.white,
           ),
           child: pw.Text(
             'Payment Invoice',
@@ -456,9 +457,11 @@ class InvoiceService {
         children: [
           pw.Container(
             width: 140,
-            padding: pw.EdgeInsets.symmetric(vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
             decoration: pw.BoxDecoration(
-              color: PrintStyles.headerGreen,
+              color: PdfColors.white,
             ),
             child: pw.Text(
               label,
@@ -467,7 +470,9 @@ class InvoiceService {
           ),
           pw.Expanded(
             child: pw.Container(
-              padding: pw.EdgeInsets.symmetric(vertical: PrintStyles.cellPaddingV, horizontal: PrintStyles.cellPaddingH),
+              padding: pw.EdgeInsets.symmetric(
+                  vertical: PrintStyles.cellPaddingV,
+                  horizontal: PrintStyles.cellPaddingH),
               color: PdfColors.white,
               decoration: pw.BoxDecoration(
                 border: pw.Border(
@@ -477,7 +482,8 @@ class InvoiceService {
               alignment: pw.Alignment.centerLeft,
               child: pw.Text(
                 value,
-                style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
+                style: PrintStyles.cellTextStyle(
+                    fontSize: PrintStyles.labelFontSize),
               ),
             ),
           ),
@@ -496,13 +502,15 @@ class InvoiceService {
             width: 80,
             child: pw.Text(
               '$label :',
-              style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
+              style: PrintStyles.cellTextStyle(
+                  fontSize: PrintStyles.labelFontSize),
             ),
           ),
           pw.Expanded(
             child: pw.Text(
               value,
-              style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
+              style: PrintStyles.cellTextStyle(
+                  fontSize: PrintStyles.labelFontSize),
             ),
           ),
         ],
@@ -542,263 +550,271 @@ class InvoiceService {
                     vertical: PrintStyles.cellPaddingV,
                     horizontal: PrintStyles.cellPaddingH),
                 child: pw.Row(
-            children: [
-              pw.Container(
-                  width: 28,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_table_number'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 4),
-              pw.Expanded(
-                  flex: 3,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_product_name'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      maxLines: PrintStyles.maxLinesLongText)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 80,
-                  child: pw.Text(printLocalizations.translate('pdf_reference'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center,
-                      maxLines: PrintStyles.maxLinesLongText)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 70,
-                  child: pw.Text(
-                      printLocalizations
-                          .translate('pdf_remaining_amount_label'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center,
-                      maxLines: PrintStyles.maxLinesLongText)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 30,
-                  child: pw.Text(printLocalizations.translate('pdf_carton'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_quantity_per_carton'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_total_quantity'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 40,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_unit_price_label'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 4),
-              pw.Container(
-                  width: 50,
-                  child: pw.Text(printLocalizations.translate('pdf_amount'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-            ],
-          ),
-        ),
-        // Corps du tableau (padding uniforme, texte avec retours à la ligne)
-        ...() {
-          final rows = <(Achat, Items)>[];
-          for (final achat in achats) {
-            for (final item in (achat.items ?? [])) {
-              if (options.enableSelectiveItemMargins &&
-                  options.selectiveItemMargins.isNotEmpty) {
-                if (item.id == null ||
-                    !options.selectiveItemMargins.containsKey(item.id)) {
-                  continue;
-                }
-              }
-              rows.add((achat, item));
-            }
-          }
-          return [
-            for (var idx = 0; idx < rows.length; idx++)
-              () {
-                final (achat, item) = rows[idx];
-                final rowNumber = idx + 1;
-                // Recalcul du prix de l'article : marge puis remise sur le prix après marge
-                final margin = item.id != null &&
-                        options.selectiveItemMargins.containsKey(item.id)
-                    ? options.selectiveItemMargins[item.id]
-                    : null;
-                final discount = item.id != null &&
-                        options.selectiveLineDiscounts.containsKey(item.id)
-                    ? options.selectiveLineDiscounts[item.id]
-                    : null;
-                final priceResult = MarginCalculationService.getItemFinalPrice(
-                  item: item,
-                  margin: margin,
-                  discount: discount,
-                );
-                final adjustedUnitPrice = priceResult.unitPrice;
-                final adjustedTotalPrice = priceResult.totalPrice;
-                final currentMargin = margin;
-
-                // Calculer les valeurs pour les colonnes
-                final carton = item.carton ?? 0;
-                final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
-                final totalQuantity = (item.quantity ?? 0).toDouble();
-                // Déterminer si le prix final a été modifié (Option A)
-                final isPriceModified = currentMargin != null &&
-                    currentMargin.displayMode ==
-                        MarginDisplayMode.modifyFinalPrice &&
-                    currentMargin.finalPrice != null;
-
-                return pw.Container(
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.white,
-                    border: pw.Border(
-                      bottom: PrintStyles.tableBorderSide,
-                    ),
-                  ),
-                  padding: pw.EdgeInsets.symmetric(
-                      vertical: PrintStyles.cellPaddingV,
-                      horizontal: PrintStyles.cellPaddingH),
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Container(
-                          width: 28,
-                          child: pw.Text(rowNumber.toString(),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Expanded(
-                          flex: 3,
-                          child: pw.Text(item.description ?? '',
-                              style: PrintStyles.cellTextStyle(),
-                              maxLines: PrintStyles.maxLinesLongText)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 80,
-                          child: pw.Text(_achatReferenceDisplay(achat),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center,
-                              maxLines: PrintStyles.maxLinesLongText)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 70,
-                          child: pw.Text(montantRestantDisplay,
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center,
-                              maxLines: PrintStyles.maxLinesLongText)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 30,
-                          child: pw.Text(carton.toString(),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 50,
-                          child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 50,
-                          child: pw.Text(totalQuantity.toStringAsFixed(2),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 40,
-                          child: pw.Text(
-                              currencyFormat.format(adjustedUnitPrice),
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center)),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 50,
-                          child:
-                              pw.Text(currencyFormat.format(adjustedTotalPrice),
-                                  style: pw.TextStyle(
-                                    fontSize: PrintStyles.tableFontSize,
-                                    fontWeight: isPriceModified
-                                        ? pw.FontWeight.bold
-                                        : pw.FontWeight.normal,
-                                    color: isPriceModified
-                                        ? PrintStyles.accentColor
-                                        : PrintStyles.textColor,
-                                  ),
-                                  textAlign: pw.TextAlign.center)),
-                    ],
-                  ),
-                );
-              }(),
-          ];
-        }(),
-        // Ligne Sous-total (vert menthe, style Market Finance)
-        pw.Container(
-          width: double.infinity,
-          decoration: pw.BoxDecoration(
-            color: PrintStyles.subtotalRowBackground,
-          ),
-          padding: pw.EdgeInsets.symmetric(
-              vertical: PrintStyles.cellPaddingV,
-              horizontal: PrintStyles.cellPaddingH),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                printLocalizations.translate('pdf_subtotal_label'),
-                style: PrintStyles.labelStyle(),
-              ),
-              pw.Text(
-                currencyFormat.format(sousTotal),
-                style: PrintStyles.labelStyle(),
-              ),
-            ],
-          ),
-        ),
-        // Ligne Total (vert menthe, style Market Finance)
-        pw.Container(
-          width: double.infinity,
-          decoration: pw.BoxDecoration(
-            color: PrintStyles.totalRowBackground,
-          ),
-          padding: pw.EdgeInsets.symmetric(
-              vertical: PrintStyles.cellPaddingV,
-              horizontal: PrintStyles.cellPaddingH),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                printLocalizations.translate('pdf_total_final'),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.labelFontSize,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.accentColor,
+                  children: [
+                    pw.Container(
+                        width: 28,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_table_number'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 4),
+                    pw.Expanded(
+                        flex: 3,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_product_name'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            maxLines: PrintStyles.maxLinesLongText)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 80,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_reference'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center,
+                            maxLines: PrintStyles.maxLinesLongText)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 70,
+                        child: pw.Text(
+                            printLocalizations
+                                .translate('pdf_remaining_amount_label'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center,
+                            maxLines: PrintStyles.maxLinesLongText)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 30,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_carton'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(
+                            printLocalizations
+                                .translate('pdf_quantity_per_carton'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_total_quantity'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 40,
+                        child: pw.Text(
+                            printLocalizations
+                                .translate('pdf_unit_price_label'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 4),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_amount'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                  ],
                 ),
               ),
-              pw.Text(
-                currencyFormat.format(montantTotal),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.labelFontSize,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.accentColor,
+              // Corps du tableau (padding uniforme, texte avec retours à la ligne)
+              ...() {
+                final rows = <(Achat, Items)>[];
+                for (final achat in achats) {
+                  for (final item in (achat.items ?? [])) {
+                    if (options.enableSelectiveItemMargins &&
+                        options.selectiveItemMargins.isNotEmpty) {
+                      if (item.id == null ||
+                          !options.selectiveItemMargins.containsKey(item.id)) {
+                        continue;
+                      }
+                    }
+                    rows.add((achat, item));
+                  }
+                }
+                return [
+                  for (var idx = 0; idx < rows.length; idx++)
+                    () {
+                      final (achat, item) = rows[idx];
+                      final rowNumber = idx + 1;
+                      // Recalcul du prix de l'article : marge puis remise sur le prix après marge
+                      final margin = item.id != null &&
+                              options.selectiveItemMargins.containsKey(item.id)
+                          ? options.selectiveItemMargins[item.id]
+                          : null;
+                      final discount = item.id != null &&
+                              options.selectiveLineDiscounts
+                                  .containsKey(item.id)
+                          ? options.selectiveLineDiscounts[item.id]
+                          : null;
+                      final priceResult =
+                          MarginCalculationService.getItemFinalPrice(
+                        item: item,
+                        margin: margin,
+                        discount: discount,
+                      );
+                      final adjustedUnitPrice = priceResult.unitPrice;
+                      final adjustedTotalPrice = priceResult.totalPrice;
+                      final currentMargin = margin;
+
+                      // Calculer les valeurs pour les colonnes
+                      final carton = item.carton ?? 0;
+                      final unitPerCarton =
+                          (item.quantityPerCarton ?? 0).toDouble();
+                      final totalQuantity = (item.quantity ?? 0).toDouble();
+                      // Déterminer si le prix final a été modifié (Option A)
+                      final isPriceModified = currentMargin != null &&
+                          currentMargin.displayMode ==
+                              MarginDisplayMode.modifyFinalPrice &&
+                          currentMargin.finalPrice != null;
+
+                      return pw.Container(
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.white,
+                          border: pw.Border(
+                            bottom: PrintStyles.tableBorderSide,
+                          ),
+                        ),
+                        padding: pw.EdgeInsets.symmetric(
+                            vertical: PrintStyles.cellPaddingV,
+                            horizontal: PrintStyles.cellPaddingH),
+                        child: pw.Row(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Container(
+                                width: 28,
+                                child: pw.Text(rowNumber.toString(),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center)),
+                            pw.SizedBox(width: 4),
+                            pw.Expanded(
+                                flex: 3,
+                                child: pw.Text(item.description ?? '',
+                                    style: PrintStyles.cellTextStyle(),
+                                    maxLines: PrintStyles.maxLinesLongText)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 80,
+                                child: pw.Text(_achatReferenceDisplay(achat),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: PrintStyles.maxLinesLongText)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 70,
+                                child: pw.Text(montantRestantDisplay,
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: PrintStyles.maxLinesLongText)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 30,
+                                child: pw.Text(carton.toString(),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 50,
+                                child: pw.Text(unitPerCarton.toStringAsFixed(2),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 50,
+                                child: pw.Text(totalQuantity.toStringAsFixed(2),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 40,
+                                child: pw.Text(
+                                    currencyFormat.format(adjustedUnitPrice),
+                                    style: PrintStyles.cellTextStyle(),
+                                    textAlign: pw.TextAlign.center)),
+                            pw.SizedBox(width: 4),
+                            pw.Container(
+                                width: 50,
+                                child: pw.Text(
+                                    currencyFormat.format(adjustedTotalPrice),
+                                    style: pw.TextStyle(
+                                      fontSize: PrintStyles.tableFontSize,
+                                      fontWeight: isPriceModified
+                                          ? pw.FontWeight.bold
+                                          : pw.FontWeight.normal,
+                                      color: isPriceModified
+                                          ? PrintStyles.accentColor
+                                          : PrintStyles.textColor,
+                                    ),
+                                    textAlign: pw.TextAlign.center)),
+                          ],
+                        ),
+                      );
+                    }(),
+                ];
+              }(),
+              // Ligne Sous-total (vert menthe, style Market Finance)
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.subtotalRowBackground,
+                ),
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      printLocalizations.translate('pdf_subtotal_label'),
+                      style: PrintStyles.labelStyle(),
+                    ),
+                    pw.Text(
+                      currencyFormat.format(sousTotal),
+                      style: PrintStyles.labelStyle(),
+                    ),
+                  ],
+                ),
+              ),
+              // Ligne Total (vert menthe, style Market Finance)
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.totalRowBackground,
+                ),
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      printLocalizations.translate('pdf_total_final'),
+                      style: pw.TextStyle(
+                        fontSize: PrintStyles.labelFontSize,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PrintStyles.accentColor,
+                      ),
+                    ),
+                    pw.Text(
+                      currencyFormat.format(montantTotal),
+                      style: pw.TextStyle(
+                        fontSize: PrintStyles.labelFontSize,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PrintStyles.accentColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ],
-    ),
-    ),
-  ],
-  );
+    );
   }
 
   static pw.Widget _buildPricingSummary(
@@ -829,7 +845,8 @@ class InvoiceService {
                       pw.Text(
                         printLocalizations
                             .translate('pdf_line_discounts_selective'),
-                        style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
+                        style: PrintStyles.cellTextStyle(
+                            fontSize: PrintStyles.labelFontSize),
                       ),
                       pw.SizedBox(width: 10),
                       pw.Text(
@@ -862,7 +879,8 @@ class InvoiceService {
                       children: [
                         pw.Text(
                           '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
-                          style: PrintStyles.cellTextStyle(fontSize: PrintStyles.tableFontSize),
+                          style: PrintStyles.cellTextStyle(
+                              fontSize: PrintStyles.tableFontSize),
                         ),
                         pw.SizedBox(width: 10),
                         pw.Text(
@@ -1012,10 +1030,10 @@ class InvoiceService {
         pw.Text(printLocalizations.translate("pdf_cash_withdrawals_list"),
             style: PrintStyles.sectionTitleStyle()),
         pw.SizedBox(height: 8),
-        // En-tête du tableau (style Market Finance - vert menthe)
+        // En-tête du tableau (style Market Finance)
         pw.Container(
           decoration: pw.BoxDecoration(
-            color: PrintStyles.headerGreen,
+            color: PrintStyles.tableHeaderBackground,
           ),
           padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: pw.Row(
@@ -1254,12 +1272,12 @@ class InvoiceService {
 
         pw.SizedBox(height: 20),
 
-        // Titre de la facture (style Market Finance - barre verte)
+        // Titre de la facture (style Market Finance)
         pw.Container(
           width: double.infinity,
           padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           decoration: pw.BoxDecoration(
-            color: PrintStyles.headerGreen,
+            color: PdfColors.white,
           ),
           child: pw.Text(
             isProforma
@@ -1491,288 +1509,304 @@ class InvoiceService {
                     vertical: PrintStyles.cellPaddingV,
                     horizontal: PrintStyles.cellPaddingH),
                 child: pw.Row(
-            children: [
-              pw.Container(
-                  width: 28,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_table_number'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 4),
-              pw.Expanded(
-                  flex: 3,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_product_name'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      maxLines: PrintStyles.maxLinesLongText)),
-              pw.SizedBox(width: 4),
-              if (includeSupplierInfo) ...[
-                pw.Container(
-                    width: 60,
-                    child: pw.Text(
-                        printLocalizations.translate('pdf_supplier_name'),
-                        style: PrintStyles.tableHeaderStyle(),
-                        textAlign: pw.TextAlign.center,
-                        maxLines: 2)),
-                pw.SizedBox(width: 3),
-                pw.Container(
-                    width: 50,
-                    child: pw.Text(
-                        printLocalizations.translate('pdf_supplier_phone'),
-                        style: PrintStyles.tableHeaderStyle(),
-                        textAlign: pw.TextAlign.center,
-                        maxLines: 2)),
-                pw.SizedBox(width: 3),
-              ],
-              pw.Container(
-                  width: 30,
-                    child: pw.Text(printLocalizations.translate('pdf_carton'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
-                  width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_quantity_per_carton'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
-                  width: 50,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_total_quantity'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
-                  width: 40,
-                  child: pw.Text(
-                      printLocalizations.translate('pdf_unit_price_label'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              pw.SizedBox(width: 3),
-              pw.Container(
-                  width: 50,
-                  child: pw.Text(printLocalizations.translate('pdf_amount'),
-                      style: PrintStyles.tableHeaderStyle(),
-                      textAlign: pw.TextAlign.center)),
-              if (isProforma) ...[
-                pw.SizedBox(width: 3),
-                pw.Container(
-                    width: 60,
-                    child: pw.Text(printLocalizations.translate('pdf_status'),
-                        style: PrintStyles.tableHeaderStyle(),
-                        textAlign: pw.TextAlign.center)),
-              ],
-            ],
-          ),
-        ),
-        ...() {
-          final itemsToShow = (filteredItems ?? []).where((item) {
-            if (options.enableSelectiveItemMargins &&
-                options.selectiveItemMargins.isNotEmpty) {
-              if (item.id == null ||
-                  !options.selectiveItemMargins.containsKey(item.id)) {
-                return false;
-              }
-            }
-            return true;
-          }).toList();
-          return [
-            for (var idx = 0; idx < itemsToShow.length; idx++)
-              () {
-                final item = itemsToShow[idx];
-                final rowNumber = idx + 1;
-                // Recalcul du prix de l'article : marge puis remise sur le prix après marge
-                final margin = item.id != null &&
-                        options.selectiveItemMargins.containsKey(item.id)
-                    ? options.selectiveItemMargins[item.id]
-                    : null;
-                final discount = item.id != null &&
-                        options.selectiveLineDiscounts.containsKey(item.id)
-                    ? options.selectiveLineDiscounts[item.id]
-                    : null;
-                final priceResult = MarginCalculationService.getItemFinalPrice(
-                  item: item,
-                  margin: margin,
-                  discount: discount,
-                );
-                final adjustedUnitPrice = priceResult.unitPrice;
-                final adjustedTotalPrice = priceResult.totalPrice;
-                final currentMargin = margin;
-
-                // Calculer les valeurs pour les colonnes
-                final carton = item.carton ?? 0;
-                final unitPerCarton = (item.quantityPerCarton ?? 0).toDouble();
-                final totalQuantity = (item.quantity ?? 0).toDouble();
-
-                // Déterminer si le prix final a été modifié (Option A)
-                final isPriceModified = currentMargin != null &&
-                    currentMargin.displayMode ==
-                        MarginDisplayMode.modifyFinalPrice &&
-                    currentMargin.finalPrice != null;
-
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // Ligne principale de l'article (style Market Finance, bordure bas)
                     pw.Container(
-                      decoration: pw.BoxDecoration(
-                        color: PdfColors.white,
-                        border: pw.Border(
-                          bottom: PrintStyles.tableBorderSide,
-                        ),
-                      ),
-                      padding: pw.EdgeInsets.symmetric(
-                          vertical: PrintStyles.cellPaddingV,
-                          horizontal: PrintStyles.cellPaddingH),
-                      child: pw.Row(
+                        width: 28,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_table_number'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 4),
+                    pw.Expanded(
+                        flex: 3,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_product_name'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            maxLines: PrintStyles.maxLinesLongText)),
+                    pw.SizedBox(width: 4),
+                    if (includeSupplierInfo) ...[
+                      pw.Container(
+                          width: 60,
+                          child: pw.Text(
+                              printLocalizations.translate('pdf_supplier_name'),
+                              style: PrintStyles.tableHeaderStyle(),
+                              textAlign: pw.TextAlign.center,
+                              maxLines: 2)),
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 50,
+                          child: pw.Text(
+                              printLocalizations
+                                  .translate('pdf_supplier_phone'),
+                              style: PrintStyles.tableHeaderStyle(),
+                              textAlign: pw.TextAlign.center,
+                              maxLines: 2)),
+                      pw.SizedBox(width: 3),
+                    ],
+                    pw.Container(
+                        width: 30,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_carton'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(
+                            printLocalizations
+                                .translate('pdf_quantity_per_carton'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_total_quantity'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 40,
+                        child: pw.Text(
+                            printLocalizations
+                                .translate('pdf_unit_price_label'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    pw.SizedBox(width: 3),
+                    pw.Container(
+                        width: 50,
+                        child: pw.Text(
+                            printLocalizations.translate('pdf_amount'),
+                            style: PrintStyles.tableHeaderStyle(),
+                            textAlign: pw.TextAlign.center)),
+                    if (isProforma) ...[
+                      pw.SizedBox(width: 3),
+                      pw.Container(
+                          width: 60,
+                          child: pw.Text(
+                              printLocalizations.translate('pdf_status'),
+                              style: PrintStyles.tableHeaderStyle(),
+                              textAlign: pw.TextAlign.center)),
+                    ],
+                  ],
+                ),
+              ),
+              ...() {
+                final itemsToShow = (filteredItems ?? []).where((item) {
+                  if (options.enableSelectiveItemMargins &&
+                      options.selectiveItemMargins.isNotEmpty) {
+                    if (item.id == null ||
+                        !options.selectiveItemMargins.containsKey(item.id)) {
+                      return false;
+                    }
+                  }
+                  return true;
+                }).toList();
+                return [
+                  for (var idx = 0; idx < itemsToShow.length; idx++)
+                    () {
+                      final item = itemsToShow[idx];
+                      final rowNumber = idx + 1;
+                      // Recalcul du prix de l'article : marge puis remise sur le prix après marge
+                      final margin = item.id != null &&
+                              options.selectiveItemMargins.containsKey(item.id)
+                          ? options.selectiveItemMargins[item.id]
+                          : null;
+                      final discount = item.id != null &&
+                              options.selectiveLineDiscounts
+                                  .containsKey(item.id)
+                          ? options.selectiveLineDiscounts[item.id]
+                          : null;
+                      final priceResult =
+                          MarginCalculationService.getItemFinalPrice(
+                        item: item,
+                        margin: margin,
+                        discount: discount,
+                      );
+                      final adjustedUnitPrice = priceResult.unitPrice;
+                      final adjustedTotalPrice = priceResult.totalPrice;
+                      final currentMargin = margin;
+
+                      // Calculer les valeurs pour les colonnes
+                      final carton = item.carton ?? 0;
+                      final unitPerCarton =
+                          (item.quantityPerCarton ?? 0).toDouble();
+                      final totalQuantity = (item.quantity ?? 0).toDouble();
+
+                      // Déterminer si le prix final a été modifié (Option A)
+                      final isPriceModified = currentMargin != null &&
+                          currentMargin.displayMode ==
+                              MarginDisplayMode.modifyFinalPrice &&
+                          currentMargin.finalPrice != null;
+
+                      return pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
+                          // Ligne principale de l'article (style Market Finance, bordure bas)
                           pw.Container(
-                              width: 28,
-                              child: pw.Text(rowNumber.toString(),
-                                  style: PrintStyles.cellTextStyle(),
-                                  textAlign: pw.TextAlign.center)),
-                          pw.SizedBox(width: 4),
-                          pw.Expanded(
-                              flex: 3,
-                              child: pw.Text(item.description ?? '',
-                                  style: PrintStyles.cellTextStyle(),
-                                  maxLines: PrintStyles.maxLinesLongText)),
-                          pw.SizedBox(width: 4),
-                          if (includeSupplierInfo) ...[
-                            pw.Container(
-                                width: 60,
-                                child: pw.Text(item.supplierName ?? '-',
-                                    style: PrintStyles.cellTextStyle(),
-                                    textAlign: pw.TextAlign.center,
-                                    maxLines: PrintStyles.maxLinesLongText)),
-                            pw.SizedBox(width: 4),
-                            pw.Container(
-                                width: 50,
-                                child: pw.Text(item.supplierPhone ?? '-',
-                                    style: PrintStyles.cellTextStyle(),
-                                    textAlign: pw.TextAlign.center,
-                                    maxLines: PrintStyles.maxLinesLongText)),
-                            pw.SizedBox(width: 4),
-                          ],
-                          pw.Container(
-                              width: 30,
-                              child: pw.Text(carton.toString(),
-                                  style: PrintStyles.cellTextStyle(),
-                                  textAlign: pw.TextAlign.center)),
-                          pw.SizedBox(width: 4),
-                          pw.Container(
-                              width: 50,
-                              child: pw.Text(unitPerCarton.toStringAsFixed(2),
-                                  style: PrintStyles.cellTextStyle(),
-                                  textAlign: pw.TextAlign.center)),
-                          pw.SizedBox(width: 4),
-                          pw.Container(
-                              width: 50,
-                              child: pw.Text(totalQuantity.toStringAsFixed(2),
-                                  style: PrintStyles.cellTextStyle(),
-                                  textAlign: pw.TextAlign.center)),
-                          pw.SizedBox(width: 4),
-                          pw.Container(
-                              width: 40,
-                              child: pw.Text(
-                                  currencyFormat.format(adjustedUnitPrice),
-                                  style: PrintStyles.cellTextStyle(),
-                                  textAlign: pw.TextAlign.center)),
-                          pw.SizedBox(width: 4),
-                          pw.Container(
-                              width: 50,
-                              child: pw.Text(
-                                  currencyFormat.format(adjustedTotalPrice),
-                                  style: pw.TextStyle(
-                                    fontSize: PrintStyles.tableFontSize,
-                                    fontWeight: isPriceModified
-                                        ? pw.FontWeight.bold
-                                        : pw.FontWeight.normal,
-                                    color: isPriceModified
-                                        ? PrintStyles.accentColor
-                                        : PrintStyles.textColor,
-                                  ),
-                                  textAlign: pw.TextAlign.center)),
-                          if (isProforma) ...[
-                            pw.SizedBox(width: 4),
-                            pw.Container(
-                                width: 60,
-                                child: pw.Text(
-                                    printLocalizations
-                                        .translateStatus(item.status),
-                                    style: PrintStyles.cellTextStyle(),
-                                    textAlign: pw.TextAlign.center)),
-                          ],
+                            decoration: pw.BoxDecoration(
+                              color: PdfColors.white,
+                              border: pw.Border(
+                                bottom: PrintStyles.tableBorderSide,
+                              ),
+                            ),
+                            padding: pw.EdgeInsets.symmetric(
+                                vertical: PrintStyles.cellPaddingV,
+                                horizontal: PrintStyles.cellPaddingH),
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Container(
+                                    width: 28,
+                                    child: pw.Text(rowNumber.toString(),
+                                        style: PrintStyles.cellTextStyle(),
+                                        textAlign: pw.TextAlign.center)),
+                                pw.SizedBox(width: 4),
+                                pw.Expanded(
+                                    flex: 3,
+                                    child: pw.Text(item.description ?? '',
+                                        style: PrintStyles.cellTextStyle(),
+                                        maxLines:
+                                            PrintStyles.maxLinesLongText)),
+                                pw.SizedBox(width: 4),
+                                if (includeSupplierInfo) ...[
+                                  pw.Container(
+                                      width: 60,
+                                      child: pw.Text(item.supplierName ?? '-',
+                                          style: PrintStyles.cellTextStyle(),
+                                          textAlign: pw.TextAlign.center,
+                                          maxLines:
+                                              PrintStyles.maxLinesLongText)),
+                                  pw.SizedBox(width: 4),
+                                  pw.Container(
+                                      width: 50,
+                                      child: pw.Text(item.supplierPhone ?? '-',
+                                          style: PrintStyles.cellTextStyle(),
+                                          textAlign: pw.TextAlign.center,
+                                          maxLines:
+                                              PrintStyles.maxLinesLongText)),
+                                  pw.SizedBox(width: 4),
+                                ],
+                                pw.Container(
+                                    width: 30,
+                                    child: pw.Text(carton.toString(),
+                                        style: PrintStyles.cellTextStyle(),
+                                        textAlign: pw.TextAlign.center)),
+                                pw.SizedBox(width: 4),
+                                pw.Container(
+                                    width: 50,
+                                    child: pw.Text(
+                                        unitPerCarton.toStringAsFixed(2),
+                                        style: PrintStyles.cellTextStyle(),
+                                        textAlign: pw.TextAlign.center)),
+                                pw.SizedBox(width: 4),
+                                pw.Container(
+                                    width: 50,
+                                    child: pw.Text(
+                                        totalQuantity.toStringAsFixed(2),
+                                        style: PrintStyles.cellTextStyle(),
+                                        textAlign: pw.TextAlign.center)),
+                                pw.SizedBox(width: 4),
+                                pw.Container(
+                                    width: 40,
+                                    child: pw.Text(
+                                        currencyFormat
+                                            .format(adjustedUnitPrice),
+                                        style: PrintStyles.cellTextStyle(),
+                                        textAlign: pw.TextAlign.center)),
+                                pw.SizedBox(width: 4),
+                                pw.Container(
+                                    width: 50,
+                                    child: pw.Text(
+                                        currencyFormat
+                                            .format(adjustedTotalPrice),
+                                        style: pw.TextStyle(
+                                          fontSize: PrintStyles.tableFontSize,
+                                          fontWeight: isPriceModified
+                                              ? pw.FontWeight.bold
+                                              : pw.FontWeight.normal,
+                                          color: isPriceModified
+                                              ? PrintStyles.accentColor
+                                              : PrintStyles.textColor,
+                                        ),
+                                        textAlign: pw.TextAlign.center)),
+                                if (isProforma) ...[
+                                  pw.SizedBox(width: 4),
+                                  pw.Container(
+                                      width: 60,
+                                      child: pw.Text(
+                                          printLocalizations
+                                              .translateStatus(item.status),
+                                          style: PrintStyles.cellTextStyle(),
+                                          textAlign: pw.TextAlign.center)),
+                                ],
+                              ],
+                            ),
+                          ),
                         ],
+                      );
+                    }(),
+                ];
+              }(),
+              // Ligne Sous-total (vert menthe, style Market Finance)
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.subtotalRowBackground,
+                ),
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      printLocalizations.translate('pdf_subtotal_label'),
+                      style: PrintStyles.labelStyle(),
+                    ),
+                    pw.Text(
+                      currencyFormat.format(sousTotal),
+                      style: PrintStyles.labelStyle(),
+                    ),
+                  ],
+                ),
+              ),
+              // Ligne Total (vert menthe, style Market Finance)
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  color: PrintStyles.totalRowBackground,
+                ),
+                padding: pw.EdgeInsets.symmetric(
+                    vertical: PrintStyles.cellPaddingV,
+                    horizontal: PrintStyles.cellPaddingH),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      printLocalizations.translate('pdf_total_final'),
+                      style: pw.TextStyle(
+                        fontSize: PrintStyles.labelFontSize,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PrintStyles.accentColor,
+                      ),
+                    ),
+                    pw.Text(
+                      currencyFormat.format(montantTotal),
+                      style: pw.TextStyle(
+                        fontSize: PrintStyles.labelFontSize,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PrintStyles.accentColor,
                       ),
                     ),
                   ],
-                );
-              }(),
-          ];
-        }(),
-        // Ligne Sous-total (vert menthe, style Market Finance)
-        pw.Container(
-          width: double.infinity,
-          decoration: pw.BoxDecoration(
-            color: PrintStyles.subtotalRowBackground,
-          ),
-          padding: pw.EdgeInsets.symmetric(
-              vertical: PrintStyles.cellPaddingV,
-              horizontal: PrintStyles.cellPaddingH),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                printLocalizations.translate('pdf_subtotal_label'),
-                style: PrintStyles.labelStyle(),
-              ),
-              pw.Text(
-                currencyFormat.format(sousTotal),
-                style: PrintStyles.labelStyle(),
-              ),
-            ],
-          ),
-        ),
-        // Ligne Total (vert menthe, style Market Finance)
-        pw.Container(
-          width: double.infinity,
-          decoration: pw.BoxDecoration(
-            color: PrintStyles.totalRowBackground,
-          ),
-          padding: pw.EdgeInsets.symmetric(
-              vertical: PrintStyles.cellPaddingV,
-              horizontal: PrintStyles.cellPaddingH),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                printLocalizations.translate('pdf_total_final'),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.labelFontSize,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.accentColor,
-                ),
-              ),
-              pw.Text(
-                currencyFormat.format(montantTotal),
-                style: pw.TextStyle(
-                  fontSize: PrintStyles.labelFontSize,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PrintStyles.accentColor,
                 ),
               ),
             ],
           ),
         ),
       ],
-    ),
-    ),
-  ],
-  );
+    );
   }
 
   static pw.Widget _buildAchatPricingSummary(
@@ -1805,7 +1839,8 @@ class InvoiceService {
                       pw.Text(
                         printLocalizations
                             .translate('pdf_line_discounts_selective'),
-                        style: PrintStyles.cellTextStyle(fontSize: PrintStyles.labelFontSize),
+                        style: PrintStyles.cellTextStyle(
+                            fontSize: PrintStyles.labelFontSize),
                       ),
                       pw.SizedBox(width: 10),
                       pw.Text(
@@ -1847,7 +1882,8 @@ class InvoiceService {
                       children: [
                         pw.Text(
                           '$itemLabel - ${discount.type == DiscountType.percentage ? '${discount.value}%' : currencyFormat.format(discount.value)} :',
-                          style: PrintStyles.cellTextStyle(fontSize: PrintStyles.tableFontSize),
+                          style: PrintStyles.cellTextStyle(
+                              fontSize: PrintStyles.tableFontSize),
                         ),
                         pw.SizedBox(width: 10),
                         pw.Text(
