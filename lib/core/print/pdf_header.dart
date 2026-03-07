@@ -27,10 +27,13 @@ abstract class _PdfHeaderConstants {
   // --- Couleurs (spécification) ---
   /// Bleu titre BBD LIMITED — #4A79B8
   static final PdfColor colorTitle = PdfColor.fromHex('#4A79B8');
+
   /// Rouge adresses — #C62828
   static final PdfColor colorAddress = PdfColor.fromHex('#C62828');
+
   /// Ligne de séparation — #3F51B5
   static final PdfColor colorSeparator = PdfColor.fromHex('#3F51B5');
+
   /// Texte secondaire (contact, email)
   static final PdfColor colorSecondary = PdfColors.grey800;
 
@@ -92,24 +95,31 @@ class PdfHeader {
   static pw.Widget build(Uint8List logoBytes, PdfHeaderFonts fonts) {
     return pw.Container(
       decoration: pw.BoxDecoration(
-        color: PdfColor.fromHex('#E3F2FD'), // fond bleu très clair
+        // Outer border only, no generic background color to allow right side to be white
         border: pw.Border.all(
           color: _PdfHeaderConstants.colorSeparator,
           width: 1.0,
         ),
       ),
       child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        crossAxisAlignment: pw.CrossAxisAlignment
+            .start, // Avoid stretch to fix TooManyPagesException
         children: [
           pw.Expanded(
             flex: _PdfHeaderConstants.flexLeft,
             child: pw.Container(
-              padding: const pw.EdgeInsets.only(
-                left: _PdfHeaderConstants.paddingLeftSection,
-                right: _PdfHeaderConstants.paddingLeftSection,
-                top: _PdfHeaderConstants.paddingLeftSection,
-                bottom: _PdfHeaderConstants.paddingLeftSection,
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromHex(
+                    '#E3F2FD'), // Background color moved to left container
+                border: pw.Border(
+                  right: pw.BorderSide(
+                    color: _PdfHeaderConstants.colorSeparator,
+                    width: 1.0,
+                  ),
+                ),
               ),
+              padding: const pw.EdgeInsets.all(
+                  _PdfHeaderConstants.paddingLeftSection),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 mainAxisSize: pw.MainAxisSize.min,
@@ -134,7 +144,8 @@ class PdfHeader {
                       font: fonts.latin,
                     ),
                   ),
-                  pw.SizedBox(height: _PdfHeaderConstants.spacingBetweenAddresses),
+                  pw.SizedBox(
+                      height: _PdfHeaderConstants.spacingBetweenAddresses),
                   pw.Text(
                     _addressZh,
                     style: pw.TextStyle(
@@ -143,12 +154,14 @@ class PdfHeader {
                       font: fonts.chinese,
                     ),
                   ),
-                  pw.SizedBox(height: _PdfHeaderConstants.spacingBeforeSeparator),
+                  pw.SizedBox(
+                      height: _PdfHeaderConstants.spacingBeforeSeparator),
                   pw.Container(
                     height: _PdfHeaderConstants.separatorHeight,
                     color: _PdfHeaderConstants.colorSeparator,
                   ),
-                  pw.SizedBox(height: _PdfHeaderConstants.spacingAfterSeparator),
+                  pw.SizedBox(
+                      height: _PdfHeaderConstants.spacingAfterSeparator),
                   pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
@@ -160,7 +173,8 @@ class PdfHeader {
                             pw.Text(
                               'Contact :',
                               style: pw.TextStyle(
-                                fontSize: _PdfHeaderConstants.fontSizeContactLabel,
+                                fontSize:
+                                    _PdfHeaderConstants.fontSizeContactLabel,
                                 fontWeight: pw.FontWeight.bold,
                                 color: _PdfHeaderConstants.colorSecondary,
                                 font: fonts.latin,
@@ -172,7 +186,8 @@ class PdfHeader {
                             pw.Text(
                               _phone1,
                               style: pw.TextStyle(
-                                fontSize: _PdfHeaderConstants.fontSizeContactValue,
+                                fontSize:
+                                    _PdfHeaderConstants.fontSizeContactValue,
                                 color: _PdfHeaderConstants.colorSecondary,
                                 font: fonts.latin,
                               ),
@@ -180,7 +195,8 @@ class PdfHeader {
                             pw.Text(
                               _phone2,
                               style: pw.TextStyle(
-                                fontSize: _PdfHeaderConstants.fontSizeContactValue,
+                                fontSize:
+                                    _PdfHeaderConstants.fontSizeContactValue,
                                 color: _PdfHeaderConstants.colorSecondary,
                                 font: fonts.latin,
                               ),
@@ -188,7 +204,8 @@ class PdfHeader {
                             pw.Text(
                               _phone3,
                               style: pw.TextStyle(
-                                fontSize: _PdfHeaderConstants.fontSizeContactValue,
+                                fontSize:
+                                    _PdfHeaderConstants.fontSizeContactValue,
                                 color: _PdfHeaderConstants.colorSecondary,
                                 font: fonts.latin,
                               ),
@@ -197,7 +214,8 @@ class PdfHeader {
                         ),
                       ),
                       pw.SizedBox(
-                          width: _PdfHeaderConstants.spacingBetweenContactColumns),
+                          width:
+                              _PdfHeaderConstants.spacingBetweenContactColumns),
                       pw.Expanded(
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -206,7 +224,8 @@ class PdfHeader {
                             pw.Text(
                               'EMail :',
                               style: pw.TextStyle(
-                                fontSize: _PdfHeaderConstants.fontSizeContactLabel,
+                                fontSize:
+                                    _PdfHeaderConstants.fontSizeContactLabel,
                                 fontWeight: pw.FontWeight.bold,
                                 color: _PdfHeaderConstants.colorSecondary,
                                 font: fonts.latin,
@@ -218,7 +237,8 @@ class PdfHeader {
                             pw.Text(
                               _email,
                               style: pw.TextStyle(
-                                fontSize: _PdfHeaderConstants.fontSizeContactValue,
+                                fontSize:
+                                    _PdfHeaderConstants.fontSizeContactValue,
                                 color: _PdfHeaderConstants.colorSecondary,
                                 font: fonts.latin,
                               ),
@@ -235,15 +255,10 @@ class PdfHeader {
           pw.Expanded(
             flex: _PdfHeaderConstants.flexRight,
             child: pw.Container(
-              padding: const pw.EdgeInsets.all(_PdfHeaderConstants.logoContainerPadding),
+              padding: const pw.EdgeInsets.all(
+                  _PdfHeaderConstants.logoContainerPadding),
               alignment: pw.Alignment.center,
-              decoration: pw.BoxDecoration(
-                color: PdfColors.white,
-                border: pw.Border.all(
-                  color: _PdfHeaderConstants.colorSeparator,
-                  width: 1.0,
-                ),
-              ),
+              // Background is naturally white, and left border is handled by the left container's right border
               child: pw.Center(
                 child: pw.Image(
                   pw.MemoryImage(logoBytes),

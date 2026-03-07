@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
+import 'package:bbd_limited/core/print/pdf_header.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
-import 'package:bbd_limited/core/print/pdf_header.dart';
 import 'package:bbd_limited/models/partner.dart';
 import 'package:bbd_limited/models/versement.dart';
 import 'package:bbd_limited/models/packages.dart';
@@ -55,7 +55,8 @@ class PartnerPrintService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                _buildHeader(logoBytes, headerFonts, dateRange, printLocalizations),
+                _buildHeader(
+                    logoBytes, headerFonts, dateRange, printLocalizations),
                 _buildClientInfoSection(partner, printLocalizations),
                 _buildSummarySection(
                   filteredVersements,
@@ -114,11 +115,8 @@ class PartnerPrintService {
     }).toList();
   }
 
-  static pw.Widget _buildHeader(
-      Uint8List logoBytes,
-      PdfHeaderFonts headerFonts,
-      DateTimeRange? dateRange,
-      PrintLocalizations printLocalizations) {
+  static pw.Widget _buildHeader(Uint8List logoBytes, PdfHeaderFonts headerFonts,
+      DateTimeRange? dateRange, PrintLocalizations printLocalizations) {
     final font = printLocalizations.language.code == 'zh'
         ? pw.Font.courier()
         : pw.Font.helvetica();
@@ -709,7 +707,9 @@ class PartnerPrintService {
     final fallbackFonts = [pw.Font.times(), pw.Font.courier()];
 
     // Collecter tous les articles de tous les achats (avec référence et montant restant du versement)
-    final List<({Items item, String versementRef, String montantRestantDisplay})> allItems = [];
+    final List<
+            ({Items item, String versementRef, String montantRestantDisplay})>
+        allItems = [];
     for (final versement in versements) {
       final montantRestantDisplay = versement.montantRestant != null
           ? _currencyFormat.format(versement.montantRestant!)
@@ -722,7 +722,11 @@ class PartnerPrintService {
                   achat.referenceVersement!.isEmpty)
               ? 'Dette'
               : achat.referenceVersement!;
-          allItems.add((item: item, versementRef: versementRef, montantRestantDisplay: montantRestantDisplay));
+          allItems.add((
+            item: item,
+            versementRef: versementRef,
+            montantRestantDisplay: montantRestantDisplay
+          ));
         }
       }
     }
@@ -797,7 +801,8 @@ class PartnerPrintService {
               pw.Container(
                   width: 70,
                   child: pw.Text(
-                      printLocalizations.translate('pdf_remaining_amount_label'),
+                      printLocalizations
+                          .translate('pdf_remaining_amount_label'),
                       style: pw.TextStyle(
                           color: PdfColor.fromHex('#1A1E49'),
                           fontWeight: pw.FontWeight.bold,
@@ -815,7 +820,8 @@ class PartnerPrintService {
   }
 
   static pw.Widget _buildPurchasedItemsTable(
-      List<({Items item, String versementRef, String montantRestantDisplay})> allItems,
+      List<({Items item, String versementRef, String montantRestantDisplay})>
+          allItems,
       pw.Font font,
       List<pw.Font> fallbackFonts,
       PrintLocalizations printLocalizations) {
@@ -1129,6 +1135,7 @@ class PartnerPrintService {
     final logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
 
     // Calculer les données selon la règle métier
     final customerData = _calculateCustomerBalances(partners, dateRange);
@@ -1160,7 +1167,7 @@ class PartnerPrintService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 _buildCustomersBalanceHeader(
-                    logoBytes, printLocalizations, periodText),
+                    logoBytes, headerFonts, printLocalizations, periodText),
                 pw.SizedBox(height: 24),
                 _buildCustomersBalanceTable(customerData, printLocalizations),
               ],
@@ -1184,6 +1191,7 @@ class PartnerPrintService {
     final logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
 
     // Calculer les données selon la règle métier
     final supplierData = await _calculateSupplierBalances(suppliers, dateRange);
@@ -1215,7 +1223,7 @@ class PartnerPrintService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 _buildSuppliersBalanceHeader(
-                    logoBytes, printLocalizations, periodText),
+                    logoBytes, headerFonts, printLocalizations, periodText),
                 pw.SizedBox(height: 24),
                 _buildSuppliersBalanceTable(supplierData, printLocalizations),
               ],
@@ -1282,6 +1290,7 @@ class PartnerPrintService {
   /// Construit l'en-tête pour le PDF des soldes fournisseurs
   static pw.Widget _buildSuppliersBalanceHeader(
     Uint8List logoBytes,
+    PdfHeaderFonts headerFonts,
     PrintLocalizations printLocalizations,
     String periodText,
   ) {
@@ -1293,181 +1302,8 @@ class PartnerPrintService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        // En-tête avec gradient et logo circulaire (même style que les factures)
-        pw.Container(
-          decoration: pw.BoxDecoration(
-            borderRadius: pw.BorderRadius.circular(2.5),
-            border:
-                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
-          ),
-          child: pw.Row(
-            children: [
-              // Section gauche avec fond dégradé bleu clair
-              pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(16),
-                  decoration: const pw.BoxDecoration(
-                    gradient: pw.LinearGradient(
-                      begin: pw.Alignment.centerLeft,
-                      end: pw.Alignment.centerRight,
-                      colors: [
-                        PdfColors.blue100, // Bleu clair
-                        PdfColors.white, // Blanc
-                      ],
-                    ),
-                    borderRadius: pw.BorderRadius.only(
-                      topLeft: pw.Radius.circular(2.5),
-                      bottomLeft: pw.Radius.circular(2.5),
-                    ),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Nom de l'entreprise
-                      pw.Text(
-                        'BBD LIMITED',
-                        style: pw.TextStyle(
-                          fontSize: 28,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColor.fromHex('#1A1E49'),
-                          letterSpacing: 1.2,
-                          font: font,
-                          fontStyle: pw.FontStyle.italic,
-                          fontFallback: fallbackFonts,
-                        ),
-                      ),
-                      pw.SizedBox(height: 10),
-
-                      // Adresse
-                      pw.Text(
-                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.red700,
-                          fontWeight: pw.FontWeight.normal,
-                          font: font,
-                          fontFallback: fallbackFonts,
-                        ),
-                      ),
-                      pw.Text(
-                        '中国浙江省义乌市赵宅3区10栋1单元102',
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.red700,
-                          fontWeight: pw.FontWeight.normal,
-                          font: font,
-                          fontFallback: fallbackFonts,
-                        ),
-                      ),
-
-                      // Ligne séparatrice bleu foncé
-                      pw.SizedBox(height: 10),
-                      pw.Container(
-                        height: 1.5,
-                        color: PdfColor.fromHex('#1A1E49'),
-                      ),
-                      pw.SizedBox(height: 10),
-
-                      // Informations de contact
-                      pw.Row(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          // Téléphones à gauche
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  'Contact :',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 3),
-                                pw.Text(
-                                  '0086 18678859834',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.Text(
-                                  '0086 13503032311',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.Text(
-                                  '0086 (579)85568522',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Email à droite
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  'EMail :',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 3),
-                                pw.Text(
-                                  'bbd@bbdcompany.com',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Ligne verticale séparatrice
-              pw.Container(
-                width: 1.5,
-                color: PdfColor.fromHex('#1A1E49'),
-              ),
-
-              // Section droite avec logo sur fond blanc
-              pw.Padding(
-                padding: const pw.EdgeInsets.all(12),
-                child: pw.Image(
-                  pw.MemoryImage(logoBytes),
-                  width: 70,
-                  height: 70,
-                ),
-              ),
-            ],
-          ),
-        ),
+        // En-tête utilisant le composant unifié PdfHeader
+        PdfHeader.build(logoBytes, headerFonts),
         pw.SizedBox(height: 20),
 
         // Titre du rapport
@@ -1833,6 +1669,7 @@ class PartnerPrintService {
   /// Construit l'en-tête pour le PDF des soldes clients
   static pw.Widget _buildCustomersBalanceHeader(
     Uint8List logoBytes,
+    PdfHeaderFonts headerFonts,
     PrintLocalizations printLocalizations,
     String periodText,
   ) {
@@ -1844,181 +1681,8 @@ class PartnerPrintService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        // En-tête avec gradient et logo circulaire (même style que les factures)
-        pw.Container(
-          decoration: pw.BoxDecoration(
-            borderRadius: pw.BorderRadius.circular(2.5),
-            border:
-                pw.Border.all(color: PdfColor.fromHex('#1A1E49'), width: 1.5),
-          ),
-          child: pw.Row(
-            children: [
-              // Section gauche avec fond dégradé bleu clair
-              pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(16),
-                  decoration: const pw.BoxDecoration(
-                    gradient: pw.LinearGradient(
-                      begin: pw.Alignment.centerLeft,
-                      end: pw.Alignment.centerRight,
-                      colors: [
-                        PdfColors.blue100, // Bleu clair
-                        PdfColors.white, // Blanc
-                      ],
-                    ),
-                    borderRadius: pw.BorderRadius.only(
-                      topLeft: pw.Radius.circular(2.5),
-                      bottomLeft: pw.Radius.circular(2.5),
-                    ),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Nom de l'entreprise
-                      pw.Text(
-                        'BBD LIMITED',
-                        style: pw.TextStyle(
-                          fontSize: 28,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColor.fromHex('#1A1E49'),
-                          letterSpacing: 1.2,
-                          font: font,
-                          fontStyle: pw.FontStyle.italic,
-                          fontFallback: fallbackFonts,
-                        ),
-                      ),
-                      pw.SizedBox(height: 10),
-
-                      // Adresse
-                      pw.Text(
-                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.red700,
-                          fontWeight: pw.FontWeight.normal,
-                          font: font,
-                          fontFallback: fallbackFonts,
-                        ),
-                      ),
-                      pw.Text(
-                        '中国浙江省义乌市赵宅3区10栋1单元102',
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.red700,
-                          fontWeight: pw.FontWeight.normal,
-                          font: font,
-                          fontFallback: fallbackFonts,
-                        ),
-                      ),
-
-                      // Ligne séparatrice bleu foncé
-                      pw.SizedBox(height: 10),
-                      pw.Container(
-                        height: 1.5,
-                        color: PdfColor.fromHex('#1A1E49'),
-                      ),
-                      pw.SizedBox(height: 10),
-
-                      // Informations de contact
-                      pw.Row(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          // Téléphones à gauche
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  'Contact :',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 3),
-                                pw.Text(
-                                  '0086 18678859834',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.Text(
-                                  '0086 13503032311',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.Text(
-                                  '0086 (579)85568522',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Email à droite
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  'EMail :',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 3),
-                                pw.Text(
-                                  'bbd@bbdcompany.com',
-                                  style: pw.TextStyle(
-                                    fontSize: 8,
-                                    font: font,
-                                    fontFallback: fallbackFonts,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Ligne verticale séparatrice
-              pw.Container(
-                width: 1.5,
-                color: PdfColor.fromHex('#1A1E49'),
-              ),
-
-              // Section droite avec logo sur fond blanc
-              pw.Padding(
-                padding: const pw.EdgeInsets.all(12),
-                child: pw.Image(
-                  pw.MemoryImage(logoBytes),
-                  width: 70,
-                  height: 70,
-                ),
-              ),
-            ],
-          ),
-        ),
+        // En-tête utilisant le composant unifié PdfHeader
+        PdfHeader.build(logoBytes, headerFonts),
         pw.SizedBox(height: 20),
 
         // Titre du rapport

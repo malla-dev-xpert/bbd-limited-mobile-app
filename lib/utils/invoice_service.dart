@@ -119,6 +119,7 @@ class InvoiceService {
     final Uint8List logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
 
     // Filtrer les items selon le type de document
     final filteredItems = isProforma
@@ -164,7 +165,7 @@ class InvoiceService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                _buildAchatHeader(logoBytes, achat, dateFormat,
+                _buildAchatHeader(logoBytes, headerFonts, achat, dateFormat,
                     printLocalizations, isProforma),
                 pw.SizedBox(height: 24),
                 if (containers != null && containers.isNotEmpty) ...[
@@ -1089,6 +1090,7 @@ class InvoiceService {
 
   static pw.Widget _buildAchatHeader(
       Uint8List logoBytes,
+      PdfHeaderFonts headerFonts,
       Achat achat,
       DateFormat dateFormat,
       PrintLocalizations printLocalizations,
@@ -1096,155 +1098,8 @@ class InvoiceService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        // En-tête avec design de carte de visite
-        pw.Container(
-          decoration: pw.BoxDecoration(
-            border: PrintStyles.tableBorder,
-            borderRadius: pw.BorderRadius.circular(4),
-          ),
-          child: pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Section gauche avec fond dégradé bleu clair
-              pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(16),
-                  decoration: const pw.BoxDecoration(
-                    gradient: pw.LinearGradient(
-                      begin: pw.Alignment.centerLeft,
-                      end: pw.Alignment.centerRight,
-                      colors: [
-                        PdfColors.blue100, // Bleu clair
-                        PdfColors.white, // Bleu très clair
-                      ],
-                    ),
-                    borderRadius: pw.BorderRadius.only(
-                      topLeft: pw.Radius.circular(2.5),
-                      bottomLeft: pw.Radius.circular(2.5),
-                    ),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Nom de l'entreprise
-                      pw.Text(
-                        'BBD LIMITED',
-                        style: pw.TextStyle(
-                          fontSize: 28,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PrintStyles.accentColor,
-                          letterSpacing: 1.2,
-                          fontStyle: pw.FontStyle.italic,
-                        ),
-                      ),
-                      pw.SizedBox(height: 10),
-
-                      // Adresse en rouge
-                      pw.Text(
-                        '1Floor, Building 10,Room 102, Zhao Zhai san qu, Yiwu, Zhejiang, China',
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.red700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
-                      ),
-                      pw.Text(
-                        '中国 浙江省义乌市赵宅3区10栋1单元102',
-                        style: pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.red700,
-                          fontWeight: pw.FontWeight.normal,
-                        ),
-                      ),
-
-                      // Ligne séparatrice (couleur unifiée)
-                      pw.SizedBox(height: 10),
-                      pw.Container(
-                        height: PrintStyles.tableBorderWidth,
-                        color: PrintStyles.tableBorderColor,
-                      ),
-                      pw.SizedBox(height: 10),
-
-                      // Informations de contact
-                      pw.Row(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          // Téléphones à gauche
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  'Contact :',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 3),
-                                pw.Text(
-                                  '0086 18678859834',
-                                  style: const pw.TextStyle(fontSize: 8),
-                                ),
-                                pw.Text(
-                                  '0086 13503032311',
-                                  style: const pw.TextStyle(fontSize: 8),
-                                ),
-                                pw.Text(
-                                  '0086 (579)85568522',
-                                  style: const pw.TextStyle(fontSize: 8),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Email à droite
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  'EMail :',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: PdfColors.black,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 3),
-                                pw.Text(
-                                  'bbd@bbdcompany.com',
-                                  style: const pw.TextStyle(fontSize: 8),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Ligne verticale séparatrice (couleur unifiée)
-              pw.Container(
-                width: PrintStyles.tableBorderWidth,
-                color: PrintStyles.tableBorderColor,
-              ),
-
-              // Section droite avec logo sur fond blanc
-              pw.Padding(
-                padding: const pw.EdgeInsets.all(12),
-                child: pw.Image(
-                  pw.MemoryImage(logoBytes),
-                  width: 70,
-                  height: 70,
-                ),
-              ),
-            ],
-          ),
-        ),
+        // En-tête avec design de carte de visite unifié
+        PdfHeader.build(logoBytes, headerFonts),
 
         pw.SizedBox(height: 20),
 
