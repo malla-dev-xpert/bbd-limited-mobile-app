@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:bbd_limited/core/print/pdf_header.dart';
 import 'package:bbd_limited/core/services/cbm_pricing_services.dart';
 import 'package:bbd_limited/core/services/container_summary_service.dart';
+import 'package:bbd_limited/models/achats/achat.dart';
 import 'package:bbd_limited/models/container.dart';
 import 'package:bbd_limited/models/container_client_summary.dart';
 import 'package:bbd_limited/core/print/print_localizations.dart';
@@ -48,8 +49,25 @@ class ContainerPdfService {
   ) async {
     final pdf = pw.Document();
     final cbmService = CbmPricingServices();
+
+    // Utiliser container.items ; si vide, agréger les items des packages
+    Containers containerWithItems = container;
+    if (container.items == null || container.items!.isEmpty) {
+      if (container.packages != null && container.packages!.isNotEmpty) {
+        final flatItems = <Items>[];
+        for (final p in container.packages!) {
+          if (p.items != null && p.items!.isNotEmpty) {
+            flatItems.addAll(p.items!);
+          }
+        }
+        if (flatItems.isNotEmpty) {
+          containerWithItems = container.copyWith(items: flatItems);
+        }
+      }
+    }
+
     final summaries = await ContainerSummaryService.generateSummaryWithShipping(
-      container,
+      containerWithItems,
       cbmService,
     );
 

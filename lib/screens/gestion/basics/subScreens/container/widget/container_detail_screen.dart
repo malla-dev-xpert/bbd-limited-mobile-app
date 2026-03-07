@@ -311,11 +311,23 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
       final printLocalizations = await PrintLocalizations.create(printLanguage);
       if (!context.mounted) return;
 
+      // Charger les détails complets du conteneur (avec items) pour que le PDF ait des données
+      Containers containerForPdf = container;
+      if (container.id != null) {
+        try {
+          containerForPdf = await containerServices.getContainerDetails(container.id!);
+        } catch (_) {
+          // Si le rechargement échoue, utiliser le conteneur en mémoire
+        }
+      }
+      if (!context.mounted) return;
+
       final pdfBytes = await ContainerPdfService.generateContainerSummaryPdf(
-        container,
+        containerForPdf,
         printLocalizations,
       );
 
+      if (!context.mounted) return;
       await showDialog(
         context: context,
         builder: (context) {
