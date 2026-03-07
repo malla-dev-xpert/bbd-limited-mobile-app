@@ -187,7 +187,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('confirm_delivery_dialog_title'),
-                      style: AppTextSize.headlineStyle(context,
+                      style: AppTextSize.headlineStyle(
+                        context,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -214,7 +215,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('total_quantity'),
-                          style: AppTextSize.subtitleStyle(context,
+                          style: AppTextSize.subtitleStyle(
+                            context,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -223,7 +225,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                           quantityTotal != null
                               ? quantityTotal.toString()
                               : '—',
-                          style: AppTextSize.subtitleStyle(context,
+                          style: AppTextSize.subtitleStyle(
+                            context,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).primaryColor,
                           ),
@@ -434,7 +437,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                     'purchase_history_edit_item_title'),
                                 textAlign: TextAlign.start,
                                 style: AppTextSize.headlineStyle(context,
-                                    fontWeight: FontWeight.bold)
+                                        fontWeight: FontWeight.bold)
                                     .copyWith(letterSpacing: -0.5),
                               ),
                               const SizedBox(height: 30),
@@ -973,8 +976,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
         achatToUse.referenceVersement!.isNotEmpty &&
         achatToUse.isDebt != true) {
       try {
-        versement =
-            await VersementServices().getByReference(achatToUse.referenceVersement!);
+        versement = await VersementServices()
+            .getByReference(achatToUse.referenceVersement!);
       } catch (e) {
         print('Erreur lors de la récupération du versement: $e');
       }
@@ -1031,7 +1034,7 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                   AppLocalizations.of(context)
                       .translate('purchase_history_details_title'),
                   style: AppTextSize.headlineStyle(context,
-                      fontWeight: FontWeight.bold)
+                          fontWeight: FontWeight.bold)
                       .copyWith(letterSpacing: -0.5),
                 ),
               ),
@@ -1082,94 +1085,82 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow(
-                    context,
-                    achat.isDebt == true
-                        ? AppLocalizations.of(context)
-                            .translate('purchase_history_date')
-                        : AppLocalizations.of(context)
-                            .translate('purchase_history_reference'),
-                    achat.isDebt == true
-                        ? DateFormat('dd/MM/yyyy HH:mm')
-                            .format(achat.createdAt ?? DateTime.now())
-                        : (achat.referenceVersement ??
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.grey.shade100, width: 1.5),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildModernInfoRow(
+                        context,
+                        icon: achat.isDebt == true
+                            ? Icons.calendar_today
+                            : Icons.receipt_long,
+                        label: achat.isDebt == true
+                            ? AppLocalizations.of(context)
+                                .translate('purchase_history_date')
+                            : AppLocalizations.of(context)
+                                .translate('purchase_history_reference'),
+                        value: achat.isDebt == true
+                            ? DateFormat('dd/MM/yyyy HH:mm')
+                                .format(achat.createdAt ?? DateTime.now())
+                            : (achat.referenceVersement ??
+                                AppLocalizations.of(context)
+                                    .translate('not_available')),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1),
+                      ),
+                      _buildModernInfoRow(
+                        context,
+                        icon: Icons.person_outline,
+                        label: AppLocalizations.of(context)
+                            .translate('purchase_history_client'),
+                        value: achat.client ??
                             AppLocalizations.of(context)
-                                .translate('not_available'))),
-                _buildInfoRow(
-                    context,
-                    AppLocalizations.of(context)
-                        .translate('purchase_history_client'),
-                    achat.client ??
-                        AppLocalizations.of(context)
-                            .translate('not_available')),
-                if (achat.clientPhone != null)
-                  _buildInfoRow(
-                      context,
-                      AppLocalizations.of(context)
-                          .translate('purchase_history_phone'),
-                      achat.clientPhone!),
-                if (achat.code != null && achat.code!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).translate('code'),
-                          style: AppTextSize.subtitleStyle(context,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
+                                .translate('not_available'),
+                      ),
+                      if (achat.clientPhone != null) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(height: 1),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                achat.code!,
-                                style: AppTextSize.bodyStyle(context,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
-                                ).copyWith(fontFamily: 'monospace'),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(8),
-                                onTap: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: achat.code!));
-                                  showSuccessTopSnackBar(
-                                      context,
-                                      AppLocalizations.of(context)
-                                          .translate('code_copied'));
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: Icon(
-                                    Icons.copy,
-                                    size: 20,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                        _buildModernInfoRow(
+                          context,
+                          icon: Icons.phone_outlined,
+                          label: AppLocalizations.of(context)
+                              .translate('purchase_history_phone'),
+                          value: achat.clientPhone!,
                         ),
                       ],
-                    ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1),
+                      ),
+                      _buildModernInfoRow(
+                        context,
+                        icon: Icons.payments_outlined,
+                        label: AppLocalizations.of(context)
+                            .translate('purchase_history_total_amount'),
+                        value: '${_formatAmount(achat.montantTotal ?? 0)} ¥',
+                        isAmount: true,
+                        valueColor: const Color(0xFF1A1E49),
+                      ),
+                    ],
                   ),
-                _buildInfoRow(
-                    context,
-                    AppLocalizations.of(context)
-                        .translate('purchase_history_total_amount'),
-                    '${_formatAmount(achat.montantTotal ?? 0)} ¥',
-                    isAmount: true),
-                // Réception : personne(s) ayant confirmé et date(s)
-                ..._buildReceptionSummary(context, achat),
-                const SizedBox(height: 20),
+                ),
+                const SizedBox(height: 24),
                 // Section Articles achetés avec bouton d'export
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1177,7 +1168,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('purchase_history_purchased_items'),
-                      style: AppTextSize.headlineStyle(context,
+                      style: AppTextSize.headlineStyle(
+                        context,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1233,70 +1225,58 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String label, String value, {bool isAmount = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppTextSize.subtitleStyle(context,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+  Widget _buildModernInfoRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    bool isAmount = false,
+    Color? valueColor,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1E49).withOpacity(0.06),
+            borderRadius: BorderRadius.circular(10),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: isAmount
-                ? AppTextSize.subtitleStyle(context,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1A1E49))
-                : AppTextSize.bodyStyle(context,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black),
+          child: Icon(icon, size: 22, color: const Color(0xFF1A1E49)),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppTextSize.subtitleStyle(
+                  context,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: isAmount
+                    ? AppTextSize.headlineStyle(
+                        context,
+                        fontWeight: FontWeight.bold,
+                        color: valueColor ?? const Color(0xFF1A1E49),
+                      )
+                    : AppTextSize.bodyStyle(
+                        context,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
-  }
-
-  /// Affiche dans les détails de l'achat les personnes ayant confirmé la réception et les dates.
-  List<Widget> _buildReceptionSummary(BuildContext context, Achat achat) {
-    final receivedItems = (achat.items ?? [])
-        .where((i) =>
-            i.status == Status.RECEIVED &&
-            (i.receivedByUserName != null || i.receivedAt != null))
-        .toList();
-    if (receivedItems.isEmpty) return [];
-
-    final names = receivedItems
-        .map((i) => i.receivedByUserName ?? '')
-        .where((s) => s.isNotEmpty)
-        .toSet()
-        .toList();
-    final dates = receivedItems
-        .map((i) => i.receivedAt)
-        .whereType<DateTime>()
-        .toSet()
-        .map((d) => DateFormat('dd/MM/yyyy HH:mm').format(d))
-        .toList();
-
-    final loc = AppLocalizations.of(context);
-    return [
-      const SizedBox(height: 12),
-      _buildInfoRow(
-        context,
-        loc.translate('received_by'),
-        names.isEmpty ? '—' : names.join(', '),
-      ),
-      _buildInfoRow(
-        context,
-        loc.translate('received_at'),
-        dates.isEmpty ? '—' : dates.join(', '),
-      ),
-    ];
   }
 
   Widget _buildItemCard(Items item, Achat achat) {
