@@ -93,31 +93,22 @@ class PdfHeader {
   /// [logoBytes] : image du logo (ex. chargée depuis assets/images/logo.png).
   /// [fonts] : polices retournées par [loadFonts()].
   static pw.Widget build(Uint8List logoBytes, PdfHeaderFonts fonts) {
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        // Outer border only, no generic background color to allow right side to be white
-        border: pw.Border.all(
-          color: _PdfHeaderConstants.colorSeparator,
-          width: 1.0,
-        ),
+    return pw.Table(
+      border: pw.TableBorder.all(
+        color: _PdfHeaderConstants.colorSeparator,
+        width: 1.0,
       ),
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment
-            .start, // Avoid stretch to fix TooManyPagesException
-        children: [
-          pw.Expanded(
-            flex: _PdfHeaderConstants.flexLeft,
-            child: pw.Container(
-              decoration: pw.BoxDecoration(
-                color: PdfColor.fromHex(
-                    '#E3F2FD'), // Background color moved to left container
-                border: pw.Border(
-                  right: pw.BorderSide(
-                    color: _PdfHeaderConstants.colorSeparator,
-                    width: 1.0,
-                  ),
-                ),
-              ),
+      columnWidths: {
+        0: pw.FlexColumnWidth(_PdfHeaderConstants.flexLeft.toDouble()),
+        1: pw.FlexColumnWidth(_PdfHeaderConstants.flexRight.toDouble()),
+      },
+      children: [
+        pw.TableRow(
+          children: [
+            // Colonne Gauche - Informations
+            pw.Container(
+              color:
+                  PdfColor.fromHex('#E3F2FD'), // Fond bleu de toute la section
               padding: const pw.EdgeInsets.all(
                   _PdfHeaderConstants.paddingLeftSection),
               child: pw.Column(
@@ -251,26 +242,23 @@ class PdfHeader {
                 ],
               ),
             ),
-          ),
-          pw.Expanded(
-            flex: _PdfHeaderConstants.flexRight,
-            child: pw.Container(
+
+            // Colonne Droite - Logo
+            pw.Container(
               padding: const pw.EdgeInsets.all(
                   _PdfHeaderConstants.logoContainerPadding),
-              alignment: pw.Alignment.center,
-              // Background is naturally white, and left border is handled by the left container's right border
-              child: pw.Center(
-                child: pw.Image(
-                  pw.MemoryImage(logoBytes),
-                  width: _PdfHeaderConstants.logoSize,
-                  height: _PdfHeaderConstants.logoSize,
-                  fit: pw.BoxFit.contain,
-                ),
+              alignment: pw.Alignment
+                  .center, // Centre verticalement et horizontalement la table cell
+              child: pw.Image(
+                pw.MemoryImage(logoBytes),
+                width: _PdfHeaderConstants.logoSize,
+                height: _PdfHeaderConstants.logoSize,
+                fit: pw.BoxFit.contain,
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }
