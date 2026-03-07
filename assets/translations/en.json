@@ -1206,7 +1206,7 @@
   "pdf_table_number": "No.",
   "pdf_product_name": "Product name",
   "pdf_total_quantity": "Total quantity",
-  "pdf_line_discounts_selective": "Line discounts (selective)",
+  "pdf_line_discounts_selective": "Discount for ",
   "pdf_versement_info_section": "Payment information",
   "pdf_total_paid": "Total paid (Dr)",
   "pdf_remaining_to_pay": "Remaining to pay (Cr)",

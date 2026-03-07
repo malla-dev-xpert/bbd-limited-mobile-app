@@ -82,6 +82,10 @@ class PrintStyles {
   /// Couleur fond lignes de données (blanc).
   static final PdfColor tableRowAltBackground = PdfColors.white;
 
+  /// Couleur fond lignes de résumé (frais de travail, remises, etc.) - jaune très clair.
+  static final PdfColor summaryRowBackground =
+      PdfColor(255 / 255, 250 / 255, 230 / 255);
+
   /// Couleur de la ligne Sous-total (gris clair).
   static final PdfColor subtotalRowBackground =
       PdfColor(245 / 255, 245 / 255, 245 / 255);

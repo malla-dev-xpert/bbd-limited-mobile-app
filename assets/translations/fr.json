@@ -1238,7 +1238,7 @@
   "pdf_table_number": "N°",
   "pdf_product_name": "Désignation",
   "pdf_total_quantity": "Quantité totale",
-  "pdf_line_discounts_selective": "Remises par ligne (sélectives)",
+  "pdf_line_discounts_selective": "Remises pour ",
   "pdf_versement_info_section": "Informations du versement",
   "pdf_total_paid": "Total payé (Dr)",
   "pdf_remaining_to_pay": "Reste à payer (Cr)",
