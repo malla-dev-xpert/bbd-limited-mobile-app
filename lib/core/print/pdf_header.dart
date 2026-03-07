@@ -21,8 +21,8 @@ abstract class _PdfHeaderConstants {
   _PdfHeaderConstants._();
 
   // --- Proportions layout (A4) ---
-  static const int flexLeft = 8;
-  static const int flexRight = 2;
+  static const int flexLeft = 7;
+  static const int flexRight = 3;
 
   // --- Couleurs (spécification) ---
   /// Bleu titre BBD LIMITED — #4A79B8
@@ -53,7 +53,7 @@ abstract class _PdfHeaderConstants {
   static const double spacingContactLabelToValue = 3.0;
   static const double paddingLeftSection = 16.0;
   static const double logoContainerPadding = 8.0;
-  static const double logoSize = 70.0;
+  static const double logoSize = 130.0;
   static const double letterSpacingTitle = 1.2;
 }
 
