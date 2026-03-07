@@ -244,7 +244,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
       appBar: AppBar(
         title: Text(
           loc.translate('purchase_history_title'),
-          style: AppTextSize.headlineStyle(context,
+          style: AppTextSize.headlineStyle(
+            context,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ).copyWith(letterSpacing: 0.5),
@@ -367,7 +368,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                         padding: EdgeInsets.only(bottom: AppSpacing.sm),
                         child: Text(
                           loc.translate('purchase_history_filter_status'),
-                          style: AppTextSize.subtitleStyle(context,
+                          style: AppTextSize.subtitleStyle(
+                            context,
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w600,
                           ),
@@ -379,11 +381,13 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                           children: [
                             _buildStatusFilterChip(context, null,
                                 loc.translate('purchase_history_filter_all')),
-                            _buildStatusFilterChip(context,
+                            _buildStatusFilterChip(
+                                context,
                                 Status.COMPLETED,
                                 loc.translate(
                                     'purchase_history_filter_completed')),
-                            _buildStatusFilterChip(context,
+                            _buildStatusFilterChip(
+                                context,
                                 Status.PENDING,
                                 loc.translate(
                                     'purchase_history_filter_pending')),
@@ -454,7 +458,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                             Text(
                               AppLocalizations.of(context)
                                   .translate('purchase_history_no_purchases'),
-                              style: AppTextSize.headlineStyle(context,
+                              style: AppTextSize.headlineStyle(
+                                context,
                                 color: Colors.grey[600],
                               ),
                             ),
@@ -535,11 +540,12 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                       children: [
                                                         Text(
                                                           '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
-                                                          style:
-                                                              AppTextSize.titleStyle(
+                                                          style: AppTextSize
+                                                              .titleStyle(
                                                                   context,
                                                                   fontWeight:
-                                                                      FontWeight.bold),
+                                                                      FontWeight
+                                                                          .bold),
                                                         ),
                                                         const SizedBox(
                                                             height: 8),
@@ -567,81 +573,11 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                                       FontWeight
                                                                           .w600,
                                                                   color: Colors
-                                                                      .grey[700]!),
+                                                                          .grey[
+                                                                      700]!),
                                                             ),
                                                           ],
                                                         ),
-                                                        if (achat.code !=
-                                                                null &&
-                                                            achat.code!
-                                                                .isNotEmpty) ...[
-                                                          const SizedBox(
-                                                              height: 6),
-                                                          Row(
-                                                            children: [
-                                                              Icon(
-                                                                Icons.qr_code_2,
-                                                                size: 16,
-                                                                color: Colors
-                                                                    .grey[700]!,
-                                                              ),
-                                                              const SizedBox(
-                                                                  width: 6),
-                                                              Expanded(
-                                                                child: Text(
-                                                                  achat.code!,
-                                                                  style: AppTextSize
-                                                                      .bodyStyle(
-                                                                          context,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                          color:
-                                                                              Colors.grey[800])
-                                                                      .copyWith(
-                                                                          fontFamily:
-                                                                              'monospace'),
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                ),
-                                                              ),
-                                                              Material(
-                                                                color: Colors
-                                                                    .transparent,
-                                                                child: InkWell(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8),
-                                                                  onTap: () {
-                                                                    Clipboard.setData(
-                                                                        ClipboardData(
-                                                                            text:
-                                                                                achat.code!));
-                                                                    showSuccessTopSnackBar(
-                                                                        context,
-                                                                        AppLocalizations.of(context)
-                                                                            .translate('code_copied'));
-                                                                  },
-                                                                  child:
-                                                                      Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            4),
-                                                                    child: Icon(
-                                                                        Icons
-                                                                            .copy,
-                                                                        size:
-                                                                            18,
-                                                                        color: Colors
-                                                                            .grey[700]!),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
                                                         if (achat.isDebt ==
                                                             true)
                                                           Padding(
@@ -831,20 +767,25 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                               context)
                                                           .translate(
                                                               'purchase_history_total_amount'),
-                                                      style: AppTextSize.subtitleStyle(
-                                                          context,
-                                                          color: Colors.grey[600],
-                                                          fontWeight:
-                                                              FontWeight.w500),
+                                                      style: AppTextSize
+                                                          .subtitleStyle(
+                                                              context,
+                                                              color: Colors
+                                                                  .grey[600],
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500),
                                                     ),
                                                     Text(
                                                       '${_formatAmount(achat.montantTotal)} ¥',
-                                                      style: AppTextSize.headlineStyle(
-                                                          context,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color:
-                                                              const Color(0xFF1A1E49)),
+                                                      style: AppTextSize
+                                                          .headlineStyle(
+                                                              context,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: const Color(
+                                                                  0xFF1A1E49)),
                                                     ),
                                                   ],
                                                 ),
@@ -929,8 +870,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   }
 
   // Méthode pour construire une ligne d'information sur les articles
-  Widget _buildArticleInfoRow(
-      BuildContext context, IconData icon, String label, String value, Color color) {
+  Widget _buildArticleInfoRow(BuildContext context, IconData icon, String label,
+      String value, Color color) {
     return Row(
       children: [
         Icon(
@@ -942,7 +883,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         Expanded(
           child: Text(
             label,
-            style: AppTextSize.subtitleStyle(context,
+            style: AppTextSize.subtitleStyle(
+              context,
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
@@ -950,7 +892,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         ),
         Text(
           value,
-          style: AppTextSize.subtitleStyle(context,
+          style: AppTextSize.subtitleStyle(
+            context,
             color: color,
             fontWeight: FontWeight.bold,
           ),
@@ -1088,7 +1031,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     }
   }
 
-  Widget _buildStatusFilterChip(BuildContext context, Status? status, String label) {
+  Widget _buildStatusFilterChip(
+      BuildContext context, Status? status, String label) {
     final isSelected = _selectedStatus == status;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -1138,7 +1082,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                   ],
                   Text(
                     label,
-                    style: AppTextSize.subtitleStyle(context,
+                    style: AppTextSize.subtitleStyle(
+                      context,
                       color: isSelected ? Colors.white : Colors.black87,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w500,
@@ -1181,7 +1126,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             Flexible(
               child: Text(
                 label,
-                style: AppTextSize.subtitleStyle(context,
+                style: AppTextSize.subtitleStyle(
+                  context,
                   color: isSelected ? Colors.white : Colors.grey[700],
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
@@ -1226,7 +1172,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                     Text(
                       AppLocalizations.of(context)
                           .translate('confirm_delivery_dialog_title'),
-                      style: AppTextSize.headlineStyle(context,
+                      style: AppTextSize.headlineStyle(
+                        context,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1253,7 +1200,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                         Text(
                           AppLocalizations.of(context)
                               .translate('total_quantity'),
-                          style: AppTextSize.subtitleStyle(context,
+                          style: AppTextSize.subtitleStyle(
+                            context,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1262,7 +1210,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                           quantityTotal != null
                               ? quantityTotal.toString()
                               : '—',
-                          style: AppTextSize.subtitleStyle(context,
+                          style: AppTextSize.subtitleStyle(
+                            context,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).primaryColor,
                           ),
@@ -1661,7 +1610,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
             Text(
               AppLocalizations.of(context)
                   .translate('purchase_history_no_items'),
-              style: AppTextSize.headlineStyle(context,
+              style: AppTextSize.headlineStyle(
+                context,
                 color: Colors.grey[600],
               ),
             ),
