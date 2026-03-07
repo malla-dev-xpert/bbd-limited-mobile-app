@@ -88,8 +88,13 @@ class ContainerPdfService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // En-tête unifié (société + logo)
-              PdfHeader.build(logoBytes, headerFonts),
+              // En-tête unifié (société + logo) avec détails Congo/Mali
+              PdfHeader.build(
+                logoBytes,
+                headerFonts,
+                localizations: printLocalizations,
+                isContainerDetail: true,
+              ),
               pw.SizedBox(height: 15),
 
               // Ligne de séparation
@@ -150,7 +155,9 @@ class ContainerPdfService {
                       ),
                     ),
                     pw.Text(
-                      container.arrivalHarborName ?? container.arrivalHarborLocation ?? '',
+                      container.arrivalHarborName ??
+                          container.arrivalHarborLocation ??
+                          '',
                       style: const pw.TextStyle(fontSize: 9),
                     ),
                   ],
@@ -334,9 +341,8 @@ class ContainerPdfService {
     PrintLocalizations printLocalizations,
   ) {
     final carrierPhone = container.carrierContact?.trim();
-    final telephoneDisplay = (carrierPhone != null && carrierPhone.isNotEmpty)
-        ? carrierPhone
-        : '-';
+    final telephoneDisplay =
+        (carrierPhone != null && carrierPhone.isNotEmpty) ? carrierPhone : '-';
 
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.black, width: 1),

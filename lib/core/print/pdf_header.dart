@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:bbd_limited/core/print/print_localizations.dart';
 
 /// Polices préchargées pour le header PDF (latin + chinois).
 /// Obtenir via [PdfHeader.loadFonts()].
@@ -92,7 +93,12 @@ class PdfHeader {
   /// Construit le widget header (carte société + logo).
   /// [logoBytes] : image du logo (ex. chargée depuis assets/images/logo.png).
   /// [fonts] : polices retournées par [loadFonts()].
-  static pw.Widget build(Uint8List logoBytes, PdfHeaderFonts fonts) {
+  static pw.Widget build(
+    Uint8List logoBytes,
+    PdfHeaderFonts fonts, {
+    PrintLocalizations? localizations,
+    bool isContainerDetail = false,
+  }) {
     return pw.Table(
       border: pw.TableBorder.all(
         color: _PdfHeaderConstants.colorSeparator,
@@ -145,6 +151,46 @@ class PdfHeader {
                       font: fonts.chinese,
                     ),
                   ),
+                  if (isContainerDetail) ...[
+                    pw.SizedBox(height: 6.0),
+                    // Congo
+                    pw.Text(
+                      localizations?.translate('pdf_congo_address') ??
+                          'Congo Address',
+                      style: pw.TextStyle(
+                        fontSize: _PdfHeaderConstants.fontSizeAddress - 1,
+                        color: _PdfHeaderConstants.colorAddress,
+                        font: fonts.latin,
+                      ),
+                    ),
+                    pw.Text(
+                      '${localizations?.translate('pdf_congo_contact1') ?? ''} / ${localizations?.translate('pdf_congo_contact2') ?? ''}',
+                      style: pw.TextStyle(
+                        fontSize: _PdfHeaderConstants.fontSizeAddress - 2,
+                        color: _PdfHeaderConstants.colorSecondary,
+                        font: fonts.latin,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4.0),
+                    // Mali
+                    pw.Text(
+                      localizations?.translate('pdf_mali_address') ??
+                          'Mali Address',
+                      style: pw.TextStyle(
+                        fontSize: _PdfHeaderConstants.fontSizeAddress - 1,
+                        color: _PdfHeaderConstants.colorAddress,
+                        font: fonts.latin,
+                      ),
+                    ),
+                    pw.Text(
+                      '${localizations?.translate('pdf_mali_contact1') ?? ''} / ${localizations?.translate('pdf_mali_contact2') ?? ''}',
+                      style: pw.TextStyle(
+                        fontSize: _PdfHeaderConstants.fontSizeAddress - 2,
+                        color: _PdfHeaderConstants.colorSecondary,
+                        font: fonts.latin,
+                      ),
+                    ),
+                  ],
                   pw.SizedBox(
                       height: _PdfHeaderConstants.spacingBeforeSeparator),
                   pw.Container(
@@ -162,7 +208,7 @@ class PdfHeader {
                           mainAxisSize: pw.MainAxisSize.min,
                           children: [
                             pw.Text(
-                              'Contact :',
+                              '${localizations?.translate('pdf_contact') ?? 'Contact'} :',
                               style: pw.TextStyle(
                                 fontSize:
                                     _PdfHeaderConstants.fontSizeContactLabel,
@@ -213,7 +259,7 @@ class PdfHeader {
                           mainAxisSize: pw.MainAxisSize.min,
                           children: [
                             pw.Text(
-                              'EMail :',
+                              '${localizations?.translate('pdf_email') ?? 'EMail'} :',
                               style: pw.TextStyle(
                                 fontSize:
                                     _PdfHeaderConstants.fontSizeContactLabel,
