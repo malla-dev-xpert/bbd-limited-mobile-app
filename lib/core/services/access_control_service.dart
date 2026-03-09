@@ -46,7 +46,8 @@ class AccessControlService {
   bool isRestrictedBranch(User user) =>
       user.branchName == branchCongo || user.branchName == branchMali;
 
-  /// Liste des routes accessibles pour les branches restreintes
+  /// Liste des routes accessibles pour les branches restreintes (hors Chine)
+  /// Peuvent voir la liste des conteneurs et le détail + export, mais pas créer/modifier/supprimer.
   static const Set<String> _allowedRoutesForRestricted = {
     Routes.login,
     Routes.forgotPassword,
@@ -56,6 +57,7 @@ class AccessControlService {
     Routes.devises,
     Routes.warehouse,
     Routes.accounts,
+    Routes.containers,
   };
 
   /// Vérifie si l'utilisateur peut naviguer vers une route donnée

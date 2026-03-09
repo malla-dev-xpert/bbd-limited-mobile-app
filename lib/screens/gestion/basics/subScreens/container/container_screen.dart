@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bbd_limited/core/constants/design_system.dart';
+import 'package:bbd_limited/core/services/access_control_service.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/services/container_services.dart';
 import 'package:bbd_limited/models/container.dart';
@@ -28,6 +29,7 @@ class _ContainerScreen extends State<ContainerScreen> {
   final TextEditingController searchController = TextEditingController();
   final ContainerServices _containerServices = ContainerServices();
   final AuthService _authService = AuthService();
+  final AccessControlService _accessControl = AccessControlService();
 
   List<Containers> _allContainers = [];
   List<Containers> _filteredContainers = [];
@@ -39,6 +41,7 @@ class _ContainerScreen extends State<ContainerScreen> {
   bool _isLoading = false;
   bool _hasMoreData = true;
   int currentPage = 0;
+  bool _containerReadOnly = false;
 
   final StreamController<void> _refreshController =
       StreamController<void>.broadcast();
@@ -46,11 +49,21 @@ class _ContainerScreen extends State<ContainerScreen> {
   @override
   void initState() {
     super.initState();
+    _loadUserAndCheckRestriction();
     fetchContainers();
     searchController.addListener(_applyFilters);
     _refreshController.stream.listen((_) {
       fetchContainers(reset: true);
     });
+  }
+
+  Future<void> _loadUserAndCheckRestriction() async {
+    final user = await _authService.getUserInfo();
+    if (mounted) {
+      setState(() {
+        _containerReadOnly = user != null && _accessControl.isRestrictedBranch(user);
+      });
+    }
   }
 
   void _applyFilters() {
@@ -359,12 +372,14 @@ class _ContainerScreen extends State<ContainerScreen> {
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCreateConatinerBottomSheet(context),
-        backgroundColor: primaryColor,
-        heroTag: 'container_fab',
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: _containerReadOnly
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _openCreateConatinerBottomSheet(context),
+              backgroundColor: primaryColor,
+              heroTag: 'container_fab',
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
       body: Padding(
         padding: AppSpacing.screen(context),
         child: Column(
@@ -488,6 +503,7 @@ class _ContainerScreen extends State<ContainerScreen> {
 
                                   return ContainerListItem(
                                     container: container,
+                                    readOnly: _containerReadOnly,
                                     onTap: () async {
                                       final updatedContainer =
                                           await Navigator.push(
@@ -496,6 +512,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                                           builder: (context) =>
                                               ContainerDetailPage(
                                             container: container,
+                                            readOnly: _containerReadOnly,
                                             onContainerUpdated: (updated) {
                                               setState(() {
                                                 final idx = _filteredContainers

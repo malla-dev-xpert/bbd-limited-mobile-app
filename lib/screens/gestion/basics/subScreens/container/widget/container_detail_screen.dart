@@ -35,10 +35,15 @@ String _containerDisplayTitle(Containers c) {
 class ContainerDetailPage extends StatefulWidget {
   final Containers container;
   final Function(Containers)? onContainerUpdated;
+  /// Si true (utilisateurs hors Chine), pas de modification ni suppression, export PDF autorisé.
+  final bool readOnly;
 
-  const ContainerDetailPage(
-      {Key? key, required this.container, this.onContainerUpdated})
-      : super(key: key);
+  const ContainerDetailPage({
+    Key? key,
+    required this.container,
+    this.onContainerUpdated,
+    this.readOnly = false,
+  }) : super(key: key);
 
   @override
   State<ContainerDetailPage> createState() => _ContainerDetailPageState();
@@ -368,7 +373,9 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
           elevation: 0,
           iconTheme: const IconThemeData(color: Color(0xFF1A1E49)),
           actions: [
-            if (!_allItemsSameClient() && container.isTeam == false)
+            if (!widget.readOnly &&
+                !_allItemsSameClient() &&
+                container.isTeam == false)
               isLoading
                   ? const SizedBox(
                       width: 24,
@@ -743,138 +750,140 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                     ),
                   ],
                 ),
-              // Bloc frais
-              _sectionTitle(AppLocalizations.of(context)
-                  .translate('container_fees_charges')),
-              Container(
-                padding: EdgeInsets.all(
-                    MediaQuery.of(context).size.width < 600 ? 12.0 : 16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Column(
-                  children: [
-                    if (_isFeeChosen(
-                        container.locationFee, container.locationFeeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_location_fee'),
-                          _formatFeeWidget(
-                            amount: container.locationFee,
-                            currencyCode: container.locationFeeCurrencyCode,
-                            amountCNY: container.locationFeeCNY,
-                          )),
-                    if (_isFeeChosen(
-                        container.loadingFee, container.loadingFeeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_loading_fee'),
-                          _formatFeeWidget(
-                            amount: container.loadingFee,
-                            currencyCode: container.loadingFeeCurrencyCode,
-                            amountCNY: container.loadingFeeCNY,
-                          )),
-                    if (_isFeeChosen(
-                        container.localCharge, container.localChargeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_local_charge'),
-                          _formatFeeWidget(
-                            amount: container.localCharge,
-                            currencyCode: container.localChargeCurrencyCode,
-                            amountCNY: container.localChargeCNY,
-                          )),
-                    if (_isFeeChosen(
-                        container.overweightFee, container.overweightFeeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_overweight_fee'),
-                          _formatFeeWidget(
-                            amount: container.overweightFee,
-                            currencyCode: container.overweightFeeCurrencyCode,
-                            amountCNY: container.overweightFeeCNY,
-                          )),
-                    if (_isFeeChosen(
-                        container.checkingFee, container.checkingFeeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_checking_fee'),
-                          _formatFeeWidget(
-                            amount: container.checkingFee,
-                            currencyCode: container.checkingFeeCurrencyCode,
-                            amountCNY: container.checkingFeeCNY,
-                          )),
-                    if (_isFeeChosen(container.telxFee, container.telxFeeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_telx_fee'),
-                          _formatFeeWidget(
-                            amount: container.telxFee,
-                            currencyCode: container.telxFeeCurrencyCode,
-                            amountCNY: container.telxFeeCNY,
-                          )),
-                    if (_isFeeChosen(
-                        container.otherFees, container.otherFeesCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_other_fees'),
-                          _formatFeeWidget(
-                            amount: container.otherFees,
-                            currencyCode: container.otherFeesCurrencyCode,
-                            amountCNY: container.otherFeesCNY,
-                          )),
-                    if (_isFeeChosen(container.margin, container.marginCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_margin'),
-                          _formatFeeWidget(
-                            amount: container.margin,
-                            currencyCode: container.marginCurrencyCode,
-                            amountCNY: container.marginCNY,
-                          )),
-                    if (_isFeeChosen(
-                        container.transportFee, container.transportFeeCNY))
-                      _infoRowWithFormattedValue(
-                          AppLocalizations.of(context)
-                              .translate('container_form_transport_fee'),
-                          _formatFeeWidget(
-                            amount: container.transportFee,
-                            currencyCode: container.transportFeeCurrencyCode,
-                            amountCNY: container.transportFeeCNY,
-                          )),
-                    if (_isFeeChosen(container.profitCNY, container.profitCNY))
-                      Container(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.width < 600
-                                ? 8.0
-                                : 8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.green[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green[300]!),
-                        ),
-                        child: _infoRowWithFormattedValue(
+              // Bloc frais (masqué en lecture seule - utilisateurs hors Chine)
+              if (!widget.readOnly) ...[
+                _sectionTitle(AppLocalizations.of(context)
+                    .translate('container_fees_charges')),
+                Container(
+                  padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width < 600 ? 12.0 : 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Column(
+                    children: [
+                      if (_isFeeChosen(
+                          container.locationFee, container.locationFeeCNY))
+                        _infoRowWithFormattedValue(
                             AppLocalizations.of(context)
-                                .translate('container_form_profit'),
-                            icon: Icons.money,
+                                .translate('container_form_location_fee'),
                             _formatFeeWidget(
-                              amount: container.profitCNY,
-                              currencyCode: 'CNY',
-                              amountCNY: container.profitCNY,
+                              amount: container.locationFee,
+                              currencyCode: container.locationFeeCurrencyCode,
+                              amountCNY: container.locationFeeCNY,
                             )),
-                      ),
-                    const Divider(),
-                    _infoRow(
-                        AppLocalizations.of(context)
-                            .translate('container_total_fees'),
-                        '${formatAmount(_totalFeesCNY(container))} CNY',
-                        icon: Icons.currency_yen),
-                  ],
+                      if (_isFeeChosen(
+                          container.loadingFee, container.loadingFeeCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_loading_fee'),
+                            _formatFeeWidget(
+                              amount: container.loadingFee,
+                              currencyCode: container.loadingFeeCurrencyCode,
+                              amountCNY: container.loadingFeeCNY,
+                            )),
+                      if (_isFeeChosen(
+                          container.localCharge, container.localChargeCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_local_charge'),
+                            _formatFeeWidget(
+                              amount: container.localCharge,
+                              currencyCode: container.localChargeCurrencyCode,
+                              amountCNY: container.localChargeCNY,
+                            )),
+                      if (_isFeeChosen(
+                          container.overweightFee, container.overweightFeeCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_overweight_fee'),
+                            _formatFeeWidget(
+                              amount: container.overweightFee,
+                              currencyCode: container.overweightFeeCurrencyCode,
+                              amountCNY: container.overweightFeeCNY,
+                            )),
+                      if (_isFeeChosen(
+                          container.checkingFee, container.checkingFeeCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_checking_fee'),
+                            _formatFeeWidget(
+                              amount: container.checkingFee,
+                              currencyCode: container.checkingFeeCurrencyCode,
+                              amountCNY: container.checkingFeeCNY,
+                            )),
+                      if (_isFeeChosen(container.telxFee, container.telxFeeCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_telx_fee'),
+                            _formatFeeWidget(
+                              amount: container.telxFee,
+                              currencyCode: container.telxFeeCurrencyCode,
+                              amountCNY: container.telxFeeCNY,
+                            )),
+                      if (_isFeeChosen(
+                          container.otherFees, container.otherFeesCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_other_fees'),
+                            _formatFeeWidget(
+                              amount: container.otherFees,
+                              currencyCode: container.otherFeesCurrencyCode,
+                              amountCNY: container.otherFeesCNY,
+                            )),
+                      if (_isFeeChosen(container.margin, container.marginCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_margin'),
+                            _formatFeeWidget(
+                              amount: container.margin,
+                              currencyCode: container.marginCurrencyCode,
+                              amountCNY: container.marginCNY,
+                            )),
+                      if (_isFeeChosen(
+                          container.transportFee, container.transportFeeCNY))
+                        _infoRowWithFormattedValue(
+                            AppLocalizations.of(context)
+                                .translate('container_form_transport_fee'),
+                            _formatFeeWidget(
+                              amount: container.transportFee,
+                              currencyCode: container.transportFeeCurrencyCode,
+                              amountCNY: container.transportFeeCNY,
+                            )),
+                      if (_isFeeChosen(container.profitCNY, container.profitCNY))
+                        Container(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.width < 600
+                                  ? 8.0
+                                  : 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green[300]!),
+                          ),
+                          child: _infoRowWithFormattedValue(
+                              AppLocalizations.of(context)
+                                  .translate('container_form_profit'),
+                              icon: Icons.money,
+                              _formatFeeWidget(
+                                amount: container.profitCNY,
+                                currencyCode: 'CNY',
+                                amountCNY: container.profitCNY,
+                              )),
+                        ),
+                      const Divider(),
+                      _infoRow(
+                          AppLocalizations.of(context)
+                              .translate('container_total_fees'),
+                          '${formatAmount(_totalFeesCNY(container))} CNY',
+                          icon: Icons.currency_yen),
+                    ],
+                  ),
                 ),
-              ),
-              // Liste des items dans le conteneur (Embarquer des items)
+              ],
+              // Liste des items dans le conteneur (Embarquer des items - masqué en readOnly)
               _sectionTitle(
                   AppLocalizations.of(context).translate('container_items')),
               const SizedBox(height: 16),
@@ -890,35 +899,37 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                           icon: Icons.search,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1E49),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          onPressed: () async {
-                            final embarked = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute<bool>(
-                                builder: (context) => EmbarkItemsPage(
-                                  containerId: container.id!,
+                      if (!widget.readOnly) ...[
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1A1E49),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: IconButton(
+                            onPressed: () async {
+                              final embarked = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute<bool>(
+                                  builder: (context) => EmbarkItemsPage(
+                                    containerId: container.id!,
+                                  ),
                                 ),
-                              ),
-                            );
-                            if (embarked == true && mounted) {
-                              final updatedContainer = await containerServices
-                                  .getContainerDetails(container.id!);
-                              setState(() {
-                                container = updatedContainer;
-                              });
-                            }
-                          },
-                          icon: const Icon(Icons.add, color: Colors.white),
-                          tooltip: AppLocalizations.of(context)
-                              .translate('container_add_items'),
+                              );
+                              if (embarked == true && mounted) {
+                                final updatedContainer = await containerServices
+                                    .getContainerDetails(container.id!);
+                                setState(() {
+                                  container = updatedContainer;
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.add, color: Colors.white),
+                            tooltip: AppLocalizations.of(context)
+                                .translate('container_add_items'),
+                          ),
                         ),
-                      ),
+                      ],
                     ]
                   ],
                 ),
@@ -947,7 +958,8 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     .translate('container_no_items'),
                                 style: AppTextSize.titleStyle(context),
                               ),
-                              if (container.status == Status.PENDING) ...[
+                              if (!widget.readOnly &&
+                                  container.status == Status.PENDING) ...[
                                 const SizedBox(height: 16),
                                 TextButton.icon(
                                   onPressed: () async {
@@ -1008,10 +1020,12 @@ class _ContainerDetailPageState extends State<ContainerDetailPage> {
                                     final item = _filteredItems[index];
                                     return Dismissible(
                                       key: Key('item_${item.id}'),
-                                      direction:
-                                          container.status != Status.INPROGRESS
+                                      direction: widget.readOnly
+                                          ? DismissDirection.none
+                                          : (container.status !=
+                                                  Status.INPROGRESS
                                               ? DismissDirection.endToStart
-                                              : DismissDirection.none,
+                                              : DismissDirection.none),
                                       background: Container(
                                         padding:
                                             const EdgeInsets.only(right: 16),

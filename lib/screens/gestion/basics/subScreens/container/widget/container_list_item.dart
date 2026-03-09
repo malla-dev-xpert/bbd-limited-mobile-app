@@ -12,6 +12,8 @@ class ContainerListItem extends StatelessWidget {
   final Function() onTap;
   final bool isSelected;
   final bool isSelectionMode;
+  /// Si true (utilisateurs hors Chine), pas d'actions modifier/supprimer.
+  final bool readOnly;
 
   const ContainerListItem({
     super.key,
@@ -21,6 +23,7 @@ class ContainerListItem extends StatelessWidget {
     required this.onTap,
     this.isSelected = false,
     this.isSelectionMode = false,
+    this.readOnly = false,
   });
 
   Color _getStatusColor() {
@@ -97,34 +100,36 @@ class ContainerListItem extends StatelessWidget {
         vertical: isTablet ? AppSpacing.md : AppSpacing.sm,
       ),
       child: Slidable(
-        enabled: !isSelectionMode && container.status != Status.INPROGRESS,
-        endActionPane: ActionPane(
-          motion: const DrawerMotion(),
-          extentRatio: isTablet ? 0.25 : 0.4,
-          children: [
-            SlidableAction(
-              onPressed: (container.status != Status.INPROGRESS &&
-                      container.status != Status.RECEIVED)
-                  ? (context) => onEdit()
-                  : null,
-              backgroundColor: const Color(0xFF42A5F5),
-              foregroundColor: Colors.white,
-              icon: Icons.edit_outlined,
-              label: loc.translate('container_edit'),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            SlidableAction(
-              onPressed: (container.status != Status.INPROGRESS)
-                  ? (context) => onDelete()
-                  : null,
-              backgroundColor: const Color(0xFFEF5350),
-              foregroundColor: Colors.white,
-              icon: Icons.delete_outline,
-              label: loc.translate('container_delete'),
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ],
-        ),
+        enabled: !readOnly && !isSelectionMode && container.status != Status.INPROGRESS,
+        endActionPane: readOnly
+            ? null
+            : ActionPane(
+                motion: const DrawerMotion(),
+                extentRatio: isTablet ? 0.25 : 0.4,
+                children: [
+                  SlidableAction(
+                    onPressed: (container.status != Status.INPROGRESS &&
+                            container.status != Status.RECEIVED)
+                        ? (context) => onEdit()
+                        : null,
+                    backgroundColor: const Color(0xFF42A5F5),
+                    foregroundColor: Colors.white,
+                    icon: Icons.edit_outlined,
+                    label: loc.translate('container_edit'),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  SlidableAction(
+                    onPressed: (container.status != Status.INPROGRESS)
+                        ? (context) => onDelete()
+                        : null,
+                    backgroundColor: const Color(0xFFEF5350),
+                    foregroundColor: Colors.white,
+                    icon: Icons.delete_outline,
+                    label: loc.translate('container_delete'),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ],
+              ),
         child: Container(
           decoration: BoxDecoration(
             color: isSelected

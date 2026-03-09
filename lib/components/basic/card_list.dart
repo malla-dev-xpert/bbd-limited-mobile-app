@@ -193,23 +193,33 @@ List<MenuCategory> getMenuCategories(
     ),
   ];
 
-  // Catégorie: Inventaire et Logistique (Masqué pour restreints)
-  if (!isRestricted) {
+  // Catégorie: Inventaire et Logistique
+  // - Utilisateurs Chine : conteneurs + transporteurs
+  // - Utilisateurs autres pays (restreints) : conteneurs uniquement (lecture + détail + export, pas de création/modification/suppression)
+  if (isRestricted) {
     categories.add(
       MenuCategory(
         title: localizations.translate('home_inventory_logistics'),
         items: [
-          // CardData(
-          //   icon: Icons.inventory_2,
-          //   title: localizations.translate('home_manage_packages_title'),
-          //   backgroundColor: Colors.grey[50]!,
-          //   iconColor: const Color(0xFF13084F),
-          //   titleColor: const Color(0xFF13084F),
-          //   onPressed: (context) {
-          //     Navigator.of(context).pushNamed('/package');
-          //   },
-          //   description: localizations.translate('home_manage_packages_desc'),
-          // ),
+          CardData(
+            icon: Icons.view_quilt,
+            title: localizations.translate('home_manage_containers_title'),
+            backgroundColor: Colors.grey[50]!,
+            iconColor: const Color(0xFF13084F),
+            titleColor: const Color(0xFF13084F),
+            onPressed: (context) {
+              Navigator.of(context).pushNamed('/container');
+            },
+            description: localizations.translate('home_manage_containers_desc'),
+          ),
+        ],
+      ),
+    );
+  } else {
+    categories.add(
+      MenuCategory(
+        title: localizations.translate('home_inventory_logistics'),
+        items: [
           CardData(
             icon: Icons.view_quilt,
             title: localizations.translate('home_manage_containers_title'),
