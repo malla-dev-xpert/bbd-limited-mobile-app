@@ -537,8 +537,43 @@ class _PartnerScreenState extends State<PartnerScreen> {
   }
 
   Future<void> _showClientSummaryPreview(Partner partner) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PrintConfigPage(
+          title: AppLocalizations.of(context).translate('pdf_client_summary'),
+          previewButtonLabel: AppLocalizations.of(context)
+              .translate('purchase_history_preview_pdf'),
+          initialOptions: _invoiceOptions,
+          currencySymbol: '¥',
+          onOptionsChanged: (options) {
+            setState(() => _invoiceOptions = options);
+          },
+          onPreview: (result) {
+            Navigator.pop(context);
+            _generateAndShowMfiPdf(partner, result.printLanguage);
+          },
+          printOptionsTitle: AppLocalizations.of(context)
+              .translate('purchase_history_invoice_options'),
+          billingOptionsTitle:
+              AppLocalizations.of(context).translate('billing_options'),
+          appliedOptionsLabel: AppLocalizations.of(context)
+              .translate('currently_applied_options'),
+          showDateRange: false,
+          showBillingOptions: false,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _generateAndShowMfiPdf(Partner partner, PrintLanguage printLanguage) async {
     try {
-      final pdfBytes = await PartnerPrintService.buildMarketFinanceInvoicePdfBytes(partner);
+      final printLocalizations = await PrintLocalizations.create(printLanguage);
+      if (!mounted) return;
+      final pdfBytes = await PartnerPrintService.buildMarketFinanceInvoicePdfBytes(
+        partner,
+        printLocalizations: printLocalizations,
+      );
       if (!mounted) return;
       await showDialog(
         context: context,

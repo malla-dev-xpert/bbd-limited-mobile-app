@@ -95,18 +95,22 @@ class PartnerPrintService {
 
   static final DateFormat _invoiceDateFormat = DateFormat('yyyy.MM.dd');
 
-  /// Génère le PDF "Market Finance Invoice" (Résumé du client) identique au modèle fourni.
-  static Future<Uint8List> buildMarketFinanceInvoicePdfBytes(Partner partner) async {
+  /// Génère le PDF "Market Finance Invoice" (Résumé du client) dans la langue choisie.
+  static Future<Uint8List> buildMarketFinanceInvoicePdfBytes(
+    Partner partner, {
+    required PrintLocalizations printLocalizations,
+  }) async {
     final pdf = pw.Document();
     final logoBytes = await rootBundle
         .load('assets/images/logo.png')
         .then((data) => data.buffer.asUint8List());
     final headerFonts = await PdfHeader.loadFonts();
     final versements = partner.versements ?? [];
+    final pl = printLocalizations;
 
     final supplierRows = _computeSupplierPoRows(versements);
     final totalDelivery = supplierRows.fold(0.0, (s, r) => s + r.delivery);
-    final accountRows = _buildMfiAccountDetailRows();
+    final accountRows = _buildMfiAccountDetailRows(pl);
     final totalChargesCommission = accountRows.fold(0.0, (s, r) => s + r.amount);
 
     pdf.addPage(
@@ -118,18 +122,19 @@ class PartnerPrintService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                _buildMarketFinanceInvoiceTitle(logoBytes, headerFonts),
+                _buildMarketFinanceInvoiceTitle(logoBytes, headerFonts, pl),
                 pw.SizedBox(height: 12),
-                _buildMfiInfoBlock(partner, supplierRows.length),
+                _buildMfiInfoBlock(partner, supplierRows.length, pl),
                 pw.SizedBox(height: 16),
-                _buildMfiPurchaseOrderTable(partner.id, supplierRows),
+                _buildMfiPurchaseOrderTable(partner.id, supplierRows, pl),
                 pw.SizedBox(height: 16),
-                _buildMfiAccountDetailsTable(accountRows),
+                _buildMfiAccountDetailsTable(accountRows, pl),
                 pw.SizedBox(height: 16),
                 _buildMfiResumerDuClient(
                   totalDelivery: totalDelivery,
                   totalChargesCommission: totalChargesCommission,
                   partner: partner,
+                  printLocalizations: pl,
                 ),
               ],
             ),
@@ -179,21 +184,21 @@ class PartnerPrintService {
   }
 
   static pw.Widget _buildMarketFinanceInvoiceTitle(
-      Uint8List logoBytes, PdfHeaderFonts headerFonts) {
+      Uint8List logoBytes, PdfHeaderFonts headerFonts, PrintLocalizations pl) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         PdfHeader.build(logoBytes, headerFonts),
         pw.SizedBox(height: 16),
         pw.Text(
-          'Market Finance Invoice',
+          pl.translate('mfi_title'),
           style: PrintStyles.mainTitleStyle(),
         ),
       ],
     );
   }
 
-  static pw.Widget _buildMfiInfoBlock(Partner partner, int totalPurchaseOrder) {
+  static pw.Widget _buildMfiInfoBlock(Partner partner, int totalPurchaseOrder, PrintLocalizations pl) {
     final invoiceDate = _invoiceDateFormat.format(DateTime.now());
     final customerName = '${partner.firstName} ${partner.lastName}'.trim();
 
@@ -208,9 +213,9 @@ class PartnerPrintService {
                 horizontal: PrintStyles.cellPaddingH),
             child: pw.Row(
               children: [
-                _mfiInfoCell('Invoice No.', '${partner.id}'),
-                _mfiInfoCell('Invoice Date', invoiceDate),
-                _mfiInfoCell('Customer Register No.', '${partner.id}'),
+                _mfiInfoCell(pl.translate('mfi_invoice_no'), '${partner.id}'),
+                _mfiInfoCell(pl.translate('mfi_invoice_date'), invoiceDate),
+                _mfiInfoCell(pl.translate('mfi_customer_register_no'), '${partner.id}'),
               ],
             ),
           ),
@@ -221,10 +226,10 @@ class PartnerPrintService {
                 horizontal: PrintStyles.cellPaddingH),
             child: pw.Row(
               children: [
-                _mfiInfoCell('Customer Name', customerName),
-                _mfiInfoCell('Currency', 'CNY'),
-                _mfiInfoCell('Exchange Rate', '1.00'),
-                _mfiInfoCell('Total Purchase Order', '$totalPurchaseOrder'),
+                _mfiInfoCell(pl.translate('mfi_customer_name'), customerName),
+                _mfiInfoCell(pl.translate('mfi_currency'), 'CNY'),
+                _mfiInfoCell(pl.translate('mfi_exchange_rate'), '1.00'),
+                _mfiInfoCell(pl.translate('mfi_total_purchase_order'), '$totalPurchaseOrder'),
               ],
             ),
           ),
@@ -250,8 +255,17 @@ class PartnerPrintService {
   static pw.Widget _buildMfiPurchaseOrderTable(
     int regNo,
     List<({String supplierName, double poAmount, double delivery, double balance})> supplierRows,
+    PrintLocalizations pl,
   ) {
-    final headers = ['Reg.No.', 'P.O.', 'Supplier', 'P.O.Amount', 'Delivery', 'Deposit', 'Balance'];
+    final headers = [
+      pl.translate('mfi_reg_no'),
+      pl.translate('mfi_po'),
+      pl.translate('mfi_supplier'),
+      pl.translate('mfi_po_amount'),
+      pl.translate('mfi_delivery'),
+      pl.translate('mfi_deposit'),
+      pl.translate('mfi_balance'),
+    ];
     final totalPo = supplierRows.fold(0.0, (s, r) => s + r.poAmount);
     final totalDelivery = supplierRows.fold(0.0, (s, r) => s + r.delivery);
     const totalDeposit = 0.0;
@@ -299,7 +313,7 @@ class PartnerPrintService {
                 horizontal: PrintStyles.cellPaddingH),
             child: pw.Row(
               children: [
-                pw.Expanded(child: pw.Text('Total :', style: PrintStyles.tableHeaderStyle())),
+                pw.Expanded(child: pw.Text(pl.translate('pdf_total'), style: PrintStyles.tableHeaderStyle())),
                 pw.Expanded(child: pw.SizedBox()),
                 pw.Expanded(child: pw.SizedBox()),
                 pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalPo), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
@@ -316,8 +330,15 @@ class PartnerPrintService {
 
   static pw.Widget _buildMfiAccountDetailsTable(
     List<({String name, String remarks, String rate, String addLess, double amount})> rows,
+    PrintLocalizations pl,
   ) {
-    final headers = ['Account Name', 'Remarks', 'Rate %', 'Add/Less', 'Amount'];
+    final headers = [
+      pl.translate('mfi_account_name'),
+      pl.translate('mfi_remarks'),
+      pl.translate('mfi_rate'),
+      pl.translate('mfi_add_less'),
+      pl.translate('mfi_amount'),
+    ];
     final totalAmount = rows.fold(0.0, (s, r) => s + r.amount);
     final lightGreen = PrintStyles.tableHeaderBackground; // vert clair comme dans l'image
 
@@ -361,7 +382,7 @@ class PartnerPrintService {
                 horizontal: PrintStyles.cellPaddingH),
             child: pw.Row(
               children: [
-                pw.Expanded(child: pw.Text('Total :', style: PrintStyles.tableHeaderStyle())),
+                pw.Expanded(child: pw.Text(pl.translate('pdf_total'), style: PrintStyles.tableHeaderStyle())),
                 pw.Expanded(flex: 3, child: pw.SizedBox()),
                 pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalAmount), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
               ],
@@ -372,15 +393,15 @@ class PartnerPrintService {
     );
   }
 
-  /// Noms des charges comme dans l'image : Commission Income, Sea Freight Account, OTHERS EXPENSE DIVERS, Over Weight Chage Expenses.
-  static List<({String name, String remarks, String rate, String addLess, double amount})> _buildMfiAccountDetailRows() {
+  /// Noms des charges comme dans l'image, traduits selon la langue d'impression.
+  static List<({String name, String remarks, String rate, String addLess, double amount})> _buildMfiAccountDetailRows(PrintLocalizations pl) {
     return [
-      (name: 'Commission Income', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
-      (name: 'Sea Freight Account', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
-      (name: 'OTHERS EXPENSE DIVERS', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
-      (name: 'Sea Freight Account', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
-      (name: 'Over Weight Chage Expenses', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
-      (name: 'OTHERS EXPENSE DIVERS', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: pl.translate('mfi_commission_income'), remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: pl.translate('mfi_sea_freight_account'), remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: pl.translate('mfi_others_expense_divers'), remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: pl.translate('mfi_sea_freight_account'), remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: pl.translate('mfi_over_weight_charge_expenses'), remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: pl.translate('mfi_others_expense_divers'), remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
     ];
   }
 
@@ -388,7 +409,9 @@ class PartnerPrintService {
     required double totalDelivery,
     required double totalChargesCommission,
     required Partner partner,
+    required PrintLocalizations printLocalizations,
   }) {
+    final pl = printLocalizations;
     final a = totalDelivery;
     final b = 0.0;
     final c = a - b;
@@ -400,14 +423,14 @@ class PartnerPrintService {
 
     final fmt = NumberFormat('#,##0.00');
     final rows = <({String label, String value, PdfColor bgColor})>[
-      (label: 'Total Delivery Amount [A]', value: fmt.format(a), bgColor: PdfColors.white),
-      (label: 'Less: Customer Paid Deposit [B]', value: fmt.format(b), bgColor: PdfColors.white),
-      (label: 'Payable Delivery Amount [C]=[A]-[B]', value: fmt.format(c), bgColor: PdfColors.white),
-      (label: 'Add: Charges + Commission [D]', value: fmt.format(d), bgColor: PdfColors.white),
-      (label: 'Invoice Amount [E]=[C]+[D]', value: fmt.format(e), bgColor: PrintStyles.invoiceAmountHighlight),
-      (label: 'Less: Money Received [F]', value: fmt.format(f), bgColor: PrintStyles.moneyReceivedHighlight),
-      (label: 'Previous M.F.Balance [G]', value: fmt.format(g), bgColor: PdfColors.white),
-      (label: 'Balance Amount = [E]-[F]+[G]', value: fmt.format(balanceAmount), bgColor: PdfColors.white),
+      (label: pl.translate('mfi_total_delivery_amount_a'), value: fmt.format(a), bgColor: PdfColors.white),
+      (label: pl.translate('mfi_less_customer_paid_deposit_b'), value: fmt.format(b), bgColor: PdfColors.white),
+      (label: pl.translate('mfi_payable_delivery_amount_c'), value: fmt.format(c), bgColor: PdfColors.white),
+      (label: pl.translate('mfi_add_charges_commission_d'), value: fmt.format(d), bgColor: PdfColors.white),
+      (label: pl.translate('mfi_invoice_amount_e'), value: fmt.format(e), bgColor: PrintStyles.invoiceAmountHighlight),
+      (label: pl.translate('mfi_less_money_received_f'), value: fmt.format(f), bgColor: PrintStyles.moneyReceivedHighlight),
+      (label: pl.translate('mfi_previous_mf_balance_g'), value: fmt.format(g), bgColor: PdfColors.white),
+      (label: pl.translate('mfi_balance_amount'), value: fmt.format(balanceAmount), bgColor: PdfColors.white),
     ];
 
     return pw.Container(
@@ -419,7 +442,7 @@ class PartnerPrintService {
             padding: pw.EdgeInsets.symmetric(
                 vertical: PrintStyles.cellPaddingV,
                 horizontal: PrintStyles.cellPaddingH),
-            child: pw.Text('Resumer du client', style: PrintStyles.sectionTitleStyle()),
+            child: pw.Text(pl.translate('mfi_resumer_du_client'), style: PrintStyles.sectionTitleStyle()),
           ),
           for (final r in rows)
             pw.Container(
