@@ -1124,6 +1124,7 @@
   "pdf_purchase_rate": "Purchase rate",
   "pdf_supplier": "Supplier",
   "pdf_client_status": "CLIENT STATUS",
+  "pdf_client_summary": "Client summary",
   "pdf_packages": "PACKAGES",
   "pdf_quantity": "Quantity",
   "pdf_unit_price": "Unit price",

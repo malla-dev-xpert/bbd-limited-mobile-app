@@ -93,6 +93,355 @@ class PartnerPrintService {
     return pdf.save();
   }
 
+  static final DateFormat _invoiceDateFormat = DateFormat('yyyy.MM.dd');
+
+  /// Génère le PDF "Market Finance Invoice" (Résumé du client) identique au modèle fourni.
+  static Future<Uint8List> buildMarketFinanceInvoicePdfBytes(Partner partner) async {
+    final pdf = pw.Document();
+    final logoBytes = await rootBundle
+        .load('assets/images/logo.png')
+        .then((data) => data.buffer.asUint8List());
+    final headerFonts = await PdfHeader.loadFonts();
+    final versements = partner.versements ?? [];
+
+    final supplierRows = _computeSupplierPoRows(versements);
+    final totalDelivery = supplierRows.fold(0.0, (s, r) => s + r.delivery);
+    final accountRows = _buildMfiAccountDetailRows();
+    final totalChargesCommission = accountRows.fold(0.0, (s, r) => s + r.amount);
+
+    pdf.addPage(
+      pw.MultiPage(
+        margin: pw.EdgeInsets.zero,
+        build: (context) => [
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildMarketFinanceInvoiceTitle(logoBytes, headerFonts),
+                pw.SizedBox(height: 12),
+                _buildMfiInfoBlock(partner, supplierRows.length),
+                pw.SizedBox(height: 16),
+                _buildMfiPurchaseOrderTable(partner.id, supplierRows),
+                pw.SizedBox(height: 16),
+                _buildMfiAccountDetailsTable(accountRows),
+                pw.SizedBox(height: 16),
+                _buildMfiResumerDuClient(
+                  totalDelivery: totalDelivery,
+                  totalChargesCommission: totalChargesCommission,
+                  partner: partner,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  /// Ligne Purchase Order par fournisseur: P.O.="-", Supplier (depuis Items), P.O.Amount, Delivery (items reçus), Deposit=0, Balance=P.O.Amount-Delivery.
+  /// Les fournisseurs viennent des items (Items.supplierId / Items.supplierName), pas de Achat.
+  static List<({String supplierName, double poAmount, double delivery, double balance})> _computeSupplierPoRows(List<Versement> versements) {
+    final map = <String, ({String supplierName, double poAmount, double delivery})>{};
+    for (final v in versements) {
+      final rate = v.tauxUtilise ?? 1.0;
+      for (final achat in (v.achats ?? [])) {
+        for (final item in (achat.items ?? [])) {
+          final supplierKey = '${item.supplierId ?? 0}_${item.supplierName ?? "Inconnu"}';
+          final supplierName = (item.supplierName?.trim().isEmpty == true || item.supplierName == null) ? 'Inconnu' : item.supplierName!;
+          final itemAmount = item.totalPriceCNY ?? ((item.totalPrice ?? 0) * rate);
+          final isReceived = item.receivedAt != null;
+          final prev = map[supplierKey];
+          if (prev == null) {
+            map[supplierKey] = (
+              supplierName: supplierName,
+              poAmount: itemAmount,
+              delivery: isReceived ? itemAmount : 0.0,
+            );
+          } else {
+            map[supplierKey] = (
+              supplierName: prev.supplierName,
+              poAmount: prev.poAmount + itemAmount,
+              delivery: prev.delivery + (isReceived ? itemAmount : 0.0),
+            );
+          }
+        }
+      }
+    }
+    return map.values.map((v) => (
+      supplierName: v.supplierName,
+      poAmount: v.poAmount,
+      delivery: v.delivery,
+      balance: v.poAmount - v.delivery,
+    )).toList();
+  }
+
+  static pw.Widget _buildMarketFinanceInvoiceTitle(
+      Uint8List logoBytes, PdfHeaderFonts headerFonts) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        PdfHeader.build(logoBytes, headerFonts),
+        pw.SizedBox(height: 16),
+        pw.Text(
+          'Market Finance Invoice',
+          style: PrintStyles.mainTitleStyle(),
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildMfiInfoBlock(Partner partner, int totalPurchaseOrder) {
+    final invoiceDate = _invoiceDateFormat.format(DateTime.now());
+    final customerName = '${partner.firstName} ${partner.lastName}'.trim();
+
+    return pw.Container(
+      decoration: pw.BoxDecoration(border: PrintStyles.tableBorder),
+      child: pw.Column(
+        children: [
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PrintStyles.tableHeaderBackground),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Row(
+              children: [
+                _mfiInfoCell('Invoice No.', '${partner.id}'),
+                _mfiInfoCell('Invoice Date', invoiceDate),
+                _mfiInfoCell('Customer Register No.', '${partner.id}'),
+              ],
+            ),
+          ),
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PdfColors.white),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Row(
+              children: [
+                _mfiInfoCell('Customer Name', customerName),
+                _mfiInfoCell('Currency', 'CNY'),
+                _mfiInfoCell('Exchange Rate', '1.00'),
+                _mfiInfoCell('Total Purchase Order', '$totalPurchaseOrder'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _mfiInfoCell(String label, String value) {
+    return pw.Expanded(
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        mainAxisSize: pw.MainAxisSize.min,
+        children: [
+          pw.Text(label, style: PrintStyles.labelStyle()),
+          pw.SizedBox(height: 2),
+          pw.Text(value, style: PrintStyles.cellTextStyle()),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _buildMfiPurchaseOrderTable(
+    int regNo,
+    List<({String supplierName, double poAmount, double delivery, double balance})> supplierRows,
+  ) {
+    final headers = ['Reg.No.', 'P.O.', 'Supplier', 'P.O.Amount', 'Delivery', 'Deposit', 'Balance'];
+    final totalPo = supplierRows.fold(0.0, (s, r) => s + r.poAmount);
+    final totalDelivery = supplierRows.fold(0.0, (s, r) => s + r.delivery);
+    const totalDeposit = 0.0;
+    final totalBalance = supplierRows.fold(0.0, (s, r) => s + r.balance);
+
+    return pw.Container(
+      decoration: pw.BoxDecoration(border: PrintStyles.tableBorder),
+      child: pw.Column(
+        children: [
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PrintStyles.tableHeaderBackground),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Row(
+              children: headers.map((h) => pw.Expanded(child: pw.Text(h, style: PrintStyles.tableHeaderStyle()))).toList(),
+            ),
+          ),
+          for (int i = 0; i < supplierRows.length; i++) ...[
+            pw.Container(
+              decoration: pw.BoxDecoration(
+                color: PdfColors.white,
+                border: pw.Border(bottom: PrintStyles.tableBorderSide),
+              ),
+              padding: pw.EdgeInsets.symmetric(
+                  vertical: PrintStyles.cellPaddingV,
+                  horizontal: PrintStyles.cellPaddingH),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(child: pw.Text('$regNo', style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text('-', style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text(supplierRows[i].supplierName, style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(supplierRows[i].poAmount), style: PrintStyles.cellTextStyle(), textAlign: pw.TextAlign.right)),
+                  pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(supplierRows[i].delivery), style: PrintStyles.cellTextStyle(), textAlign: pw.TextAlign.right)),
+                  pw.Expanded(child: pw.Text('0.00', style: PrintStyles.cellTextStyle(), textAlign: pw.TextAlign.right)),
+                  pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(supplierRows[i].balance), style: PrintStyles.cellTextStyle(), textAlign: pw.TextAlign.right)),
+                ],
+              ),
+            ),
+          ],
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PrintStyles.tableHeaderBackground),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Row(
+              children: [
+                pw.Expanded(child: pw.Text('Total :', style: PrintStyles.tableHeaderStyle())),
+                pw.Expanded(child: pw.SizedBox()),
+                pw.Expanded(child: pw.SizedBox()),
+                pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalPo), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
+                pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalDelivery), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
+                pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalDeposit), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
+                pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalBalance), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _buildMfiAccountDetailsTable(
+    List<({String name, String remarks, String rate, String addLess, double amount})> rows,
+  ) {
+    final headers = ['Account Name', 'Remarks', 'Rate %', 'Add/Less', 'Amount'];
+    final totalAmount = rows.fold(0.0, (s, r) => s + r.amount);
+    final lightGreen = PrintStyles.tableHeaderBackground; // vert clair comme dans l'image
+
+    return pw.Container(
+      decoration: pw.BoxDecoration(border: PrintStyles.tableBorder),
+      child: pw.Column(
+        children: [
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PrintStyles.tableHeaderBackground),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Row(
+              children: headers.map((h) => pw.Expanded(child: pw.Text(h, style: PrintStyles.tableHeaderStyle()))).toList(),
+            ),
+          ),
+          for (int i = 0; i < rows.length; i++) ...[
+            pw.Container(
+              decoration: pw.BoxDecoration(
+                color: i.isEven ? lightGreen : PdfColors.white,
+                border: pw.Border(bottom: PrintStyles.tableBorderSide),
+              ),
+              padding: pw.EdgeInsets.symmetric(
+                  vertical: PrintStyles.cellPaddingV,
+                  horizontal: PrintStyles.cellPaddingH),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(child: pw.Text(rows[i].name, style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text(rows[i].remarks, style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text(rows[i].rate, style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text(rows[i].addLess, style: PrintStyles.cellTextStyle())),
+                  pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(rows[i].amount), style: PrintStyles.cellTextStyle(), textAlign: pw.TextAlign.right)),
+                ],
+              ),
+            ),
+          ],
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PrintStyles.tableHeaderBackground),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Row(
+              children: [
+                pw.Expanded(child: pw.Text('Total :', style: PrintStyles.tableHeaderStyle())),
+                pw.Expanded(flex: 3, child: pw.SizedBox()),
+                pw.Expanded(child: pw.Text(NumberFormat('#,##0.00').format(totalAmount), style: PrintStyles.tableHeaderStyle(), textAlign: pw.TextAlign.right)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Noms des charges comme dans l'image : Commission Income, Sea Freight Account, OTHERS EXPENSE DIVERS, Over Weight Chage Expenses.
+  static List<({String name, String remarks, String rate, String addLess, double amount})> _buildMfiAccountDetailRows() {
+    return [
+      (name: 'Commission Income', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: 'Sea Freight Account', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: 'OTHERS EXPENSE DIVERS', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: 'Sea Freight Account', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: 'Over Weight Chage Expenses', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+      (name: 'OTHERS EXPENSE DIVERS', remarks: '', rate: '0.00', addLess: '+', amount: 0.0),
+    ];
+  }
+
+  static pw.Widget _buildMfiResumerDuClient({
+    required double totalDelivery,
+    required double totalChargesCommission,
+    required Partner partner,
+  }) {
+    final a = totalDelivery;
+    final b = 0.0;
+    final c = a - b;
+    final d = totalChargesCommission;
+    final e = c + d;
+    final f = 0.0;
+    final g = partner.balance ?? 0.0;
+    final balanceAmount = e - f + g;
+
+    final fmt = NumberFormat('#,##0.00');
+    final rows = <({String label, String value, PdfColor bgColor})>[
+      (label: 'Total Delivery Amount [A]', value: fmt.format(a), bgColor: PdfColors.white),
+      (label: 'Less: Customer Paid Deposit [B]', value: fmt.format(b), bgColor: PdfColors.white),
+      (label: 'Payable Delivery Amount [C]=[A]-[B]', value: fmt.format(c), bgColor: PdfColors.white),
+      (label: 'Add: Charges + Commission [D]', value: fmt.format(d), bgColor: PdfColors.white),
+      (label: 'Invoice Amount [E]=[C]+[D]', value: fmt.format(e), bgColor: PrintStyles.invoiceAmountHighlight),
+      (label: 'Less: Money Received [F]', value: fmt.format(f), bgColor: PrintStyles.moneyReceivedHighlight),
+      (label: 'Previous M.F.Balance [G]', value: fmt.format(g), bgColor: PdfColors.white),
+      (label: 'Balance Amount = [E]-[F]+[G]', value: fmt.format(balanceAmount), bgColor: PdfColors.white),
+    ];
+
+    return pw.Container(
+      decoration: pw.BoxDecoration(border: PrintStyles.tableBorder),
+      child: pw.Column(
+        children: [
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PrintStyles.tableHeaderBackground),
+            padding: pw.EdgeInsets.symmetric(
+                vertical: PrintStyles.cellPaddingV,
+                horizontal: PrintStyles.cellPaddingH),
+            child: pw.Text('Resumer du client', style: PrintStyles.sectionTitleStyle()),
+          ),
+          for (final r in rows)
+            pw.Container(
+              decoration: pw.BoxDecoration(
+                color: r.bgColor,
+                border: pw.Border(bottom: PrintStyles.tableBorderSide),
+              ),
+              padding: pw.EdgeInsets.symmetric(
+                  vertical: PrintStyles.cellPaddingV,
+                  horizontal: PrintStyles.cellPaddingH),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(child: pw.Text(r.label, style: PrintStyles.cellTextStyle())),
+                  pw.Container(width: 100, child: pw.Text(r.value, style: PrintStyles.cellTextStyle(), textAlign: pw.TextAlign.right)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   static List<Versement> _filterVersements(
       List<Versement>? versements, DateTimeRange? range) {
     if (versements == null) return [];
@@ -243,11 +592,19 @@ class PartnerPrintService {
     List<CashWithdrawal> depenses,
     PrintLocalizations printLocalizations,
   ) {
-    final totalVersements =
-        versements.fold<double>(0, (sum, v) => sum + (v.montantVerser ?? 0));
+    // Calculer les totaux en CNY
+    final totalVersementsCNY = versements.fold<double>(0, (sum, v) {
+      final montantCNY =
+          v.montantCNY ?? ((v.montantVerser ?? 0) * (v.tauxUtilise ?? 1.0));
+      return sum + montantCNY;
+    });
 
-    final totalDepenses = depenses.fold<double>(0, (sum, d) => sum + d.montant);
-    final balance = totalVersements - totalDepenses;
+    final totalDepensesCNY = depenses.fold<double>(0, (sum, d) {
+      final rate = d.versement.tauxUtilise ?? 1.0;
+      return sum + (d.montant * rate);
+    });
+
+    final balanceCNY = totalVersementsCNY - totalDepensesCNY;
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -282,19 +639,21 @@ class PartnerPrintService {
                 ),
               ),
               _buildSummaryRow(
-                  printLocalizations.translate('pdf_total_versements'),
-                  _currencyFormat.format(totalVersements),
+                  '${printLocalizations.translate('pdf_total_versements')} (CNY)',
+                  _currencyFormat.format(totalVersementsCNY),
                   PdfColors.white),
               _buildSummaryRow(
-                  printLocalizations.translate('pdf_total_retraits'),
-                  _currencyFormat.format(totalDepenses),
+                  '${printLocalizations.translate('pdf_total_retraits')} (CNY)',
+                  _currencyFormat.format(totalDepensesCNY),
                   PdfColors.white),
               _buildSummaryRow(
                   printLocalizations.translate('pdf_packages_count'),
                   '${packages.length}',
                   PdfColors.white),
               // Balance row with accent color
-              _buildSummaryRow('Balance', _currencyFormat.format(balance),
+              _buildSummaryRow(
+                  'Balance (CNY)',
+                  _currencyFormat.format(balanceCNY),
                   PrintStyles.totalRowBackground,
                   bold: true),
             ],
@@ -342,8 +701,12 @@ class PartnerPrintService {
 
   static pw.Widget _buildVersementsSection(
       List<Versement> versements, PrintLocalizations printLocalizations) {
-    final totalVers =
-        versements.fold<double>(0, (sum, v) => sum + (v.montantVerser ?? 0));
+    // Calculer le total en CNY
+    final totalVersCNY = versements.fold<double>(0, (sum, v) {
+      final montantCNY =
+          v.montantCNY ?? ((v.montantVerser ?? 0) * (v.tauxUtilise ?? 1.0));
+      return sum + montantCNY;
+    });
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -376,7 +739,8 @@ class PartnerPrintService {
                             style: PrintStyles.tableHeaderStyle())),
                     pw.SizedBox(width: 4),
                     pw.Container(
-                        width: 60,
+                        width:
+                            75, // Légèrement plus large pour accommoder le code devise
                         child: pw.Text(
                             printLocalizations.translate('pdf_amount_paid'),
                             style: PrintStyles.tableHeaderStyle(),
@@ -384,14 +748,7 @@ class PartnerPrintService {
                     pw.SizedBox(width: 4),
                     pw.Container(
                         width: 40,
-                        child: pw.Text('Devise',
-                            style: PrintStyles.tableHeaderStyle(),
-                            textAlign: pw.TextAlign.center)),
-                    pw.SizedBox(width: 4),
-                    pw.Container(
-                        width: 40,
-                        child: pw.Text(
-                            printLocalizations.translate('pdf_exchange_rate'),
+                        child: pw.Text('Taux',
                             style: PrintStyles.tableHeaderStyle(),
                             textAlign: pw.TextAlign.center)),
                     pw.SizedBox(width: 4),
@@ -402,7 +759,7 @@ class PartnerPrintService {
                             textAlign: pw.TextAlign.center)),
                     pw.SizedBox(width: 4),
                     pw.Container(
-                        width: 65,
+                        width: 80, // Plus large pour le double affichage CNY
                         child: pw.Text(
                             printLocalizations
                                 .translate('pdf_remaining_amount'),
@@ -439,17 +796,9 @@ class PartnerPrintService {
                       )),
                       pw.SizedBox(width: 4),
                       pw.Container(
-                          width: 60,
+                          width: 75,
                           child: pw.Text(
-                            _currencyFormat.format(v.montantVerser ?? 0),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center,
-                          )),
-                      pw.SizedBox(width: 4),
-                      pw.Container(
-                          width: 40,
-                          child: pw.Text(
-                            v.deviseCode ?? '-',
+                            '${NumberFormat('#,##0.00').format(v.montantVerser ?? 0)} ${v.deviseCode ?? ""}',
                             style: PrintStyles.cellTextStyle(),
                             textAlign: pw.TextAlign.center,
                           )),
@@ -472,11 +821,25 @@ class PartnerPrintService {
                           )),
                       pw.SizedBox(width: 4),
                       pw.Container(
-                          width: 65,
-                          child: pw.Text(
-                            _currencyFormat.format(v.montantRestant ?? 0),
-                            style: PrintStyles.cellTextStyle(),
-                            textAlign: pw.TextAlign.center,
+                          width: 80,
+                          child: pw.Column(
+                            mainAxisSize: pw.MainAxisSize.min,
+                            children: [
+                              pw.Text(
+                                '${NumberFormat('#,##0.00').format(v.montantRestant ?? 0)} ${v.deviseCode ?? ""}',
+                                style: PrintStyles.cellTextStyle(),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                              if ((v.deviseCode ?? '').toUpperCase() != 'CNY')
+                                pw.Text(
+                                  '(${_currencyFormat.format((v.montantRestant ?? 0) * (v.tauxUtilise ?? 1.0))})',
+                                  style: PrintStyles.cellTextStyle().copyWith(
+                                    fontSize: 7,
+                                    color: PdfColors.grey700,
+                                  ),
+                                  textAlign: pw.TextAlign.center,
+                                ),
+                            ],
                           )),
                     ],
                   ),
@@ -494,16 +857,16 @@ class PartnerPrintService {
                   children: [
                     pw.Expanded(
                         child: pw.Text(
-                      printLocalizations.translate('pdf_total'),
+                      '${printLocalizations.translate('pdf_total')} (CNY)',
                       style: pw.TextStyle(
                           fontSize: PrintStyles.tableFontSize,
                           fontWeight: pw.FontWeight.bold,
                           color: PrintStyles.accentColor),
                     )),
                     pw.Container(
-                        width: 65,
+                        width: 80,
                         child: pw.Text(
-                          _currencyFormat.format(totalVers),
+                          _currencyFormat.format(totalVersCNY),
                           style: pw.TextStyle(
                               fontSize: PrintStyles.tableFontSize,
                               fontWeight: pw.FontWeight.bold,
@@ -523,7 +886,11 @@ class PartnerPrintService {
   /// Section Dépenses (cash withdrawals)
   static pw.Widget _buildDepensesSection(
       List<CashWithdrawal> depenses, PrintLocalizations printLocalizations) {
-    final totalDep = depenses.fold<double>(0, (sum, d) => sum + d.montant);
+    // Calculer le total en CNY
+    final totalDepCNY = depenses.fold<double>(0, (sum, d) {
+      final rate = d.versement.tauxUtilise ?? 1.0;
+      return sum + (d.montant * rate);
+    });
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -609,7 +976,7 @@ class PartnerPrintService {
                       pw.Container(
                           width: 80,
                           child: pw.Text(
-                            _currencyFormat.format(d.montant),
+                            NumberFormat('#,##0.00').format(d.montant),
                             style: PrintStyles.cellTextStyle(),
                             textAlign: pw.TextAlign.right,
                           )),
@@ -629,7 +996,7 @@ class PartnerPrintService {
                   children: [
                     pw.Expanded(
                         child: pw.Text(
-                      printLocalizations.translate('pdf_total'),
+                      '${printLocalizations.translate('pdf_total')} (CNY)',
                       style: pw.TextStyle(
                           fontSize: PrintStyles.tableFontSize,
                           fontWeight: pw.FontWeight.bold,
@@ -638,7 +1005,7 @@ class PartnerPrintService {
                     pw.Container(
                         width: 80,
                         child: pw.Text(
-                          _currencyFormat.format(totalDep),
+                          _currencyFormat.format(totalDepCNY),
                           style: pw.TextStyle(
                               fontSize: PrintStyles.tableFontSize,
                               fontWeight: pw.FontWeight.bold,
@@ -827,12 +1194,22 @@ class PartnerPrintService {
       List<Versement> versements, PrintLocalizations printLocalizations) {
     // Collect all articles from all achats within versements
     final List<
-            ({Items item, String versementRef, String montantRestantDisplay})>
-        allItems = [];
+        ({
+          Items item,
+          String versementRef,
+          String originalBalance,
+          String? cnyBalance
+        })> allItems = [];
     for (final versement in versements) {
-      final montantRestantDisplay = versement.montantRestant != null
-          ? _currencyFormat.format(versement.montantRestant!)
-          : '-';
+      final rate = versement.tauxUtilise ?? 1.0;
+      final isCNY = (versement.deviseCode ?? '').toUpperCase() == 'CNY';
+
+      final originalBalance =
+          '${NumberFormat('#,##0.00').format(versement.montantRestant ?? 0)} ${versement.deviseCode ?? ""}';
+      final cnyBalance = isCNY
+          ? null
+          : _currencyFormat.format((versement.montantRestant ?? 0) * rate);
+
       for (final achat in (versement.achats ?? [])) {
         for (final item in (achat.items ?? [])) {
           final versementRef = (achat.isDebt == true ||
@@ -843,7 +1220,8 @@ class PartnerPrintService {
           allItems.add((
             item: item,
             versementRef: versementRef,
-            montantRestantDisplay: montantRestantDisplay
+            originalBalance: originalBalance,
+            cnyBalance: cnyBalance,
           ));
         }
       }
@@ -907,7 +1285,7 @@ class PartnerPrintService {
                             textAlign: pw.TextAlign.center)),
                     pw.SizedBox(width: 4),
                     pw.Container(
-                        width: 65,
+                        width: 75, // Plus large pour le double affichage
                         child: pw.Text(
                             printLocalizations
                                 .translate('pdf_remaining_amount_label'),
@@ -956,7 +1334,8 @@ class PartnerPrintService {
                         pw.Container(
                             width: 60,
                             child: pw.Text(
-                              _currencyFormat.format(entry.item.unitPrice ?? 0),
+                              NumberFormat('#,##0.00')
+                                  .format(entry.item.unitPrice ?? 0),
                               style: PrintStyles.cellTextStyle(),
                               textAlign: pw.TextAlign.center,
                             )),
@@ -964,19 +1343,32 @@ class PartnerPrintService {
                         pw.Container(
                             width: 60,
                             child: pw.Text(
-                              _currencyFormat
+                              NumberFormat('#,##0.00')
                                   .format(entry.item.totalPrice ?? 0),
                               style: PrintStyles.cellTextStyle(),
                               textAlign: pw.TextAlign.center,
                             )),
                         pw.SizedBox(width: 4),
                         pw.Container(
-                            width: 65,
-                            child: pw.Text(
-                              entry.montantRestantDisplay,
-                              style: PrintStyles.cellTextStyle(),
-                              textAlign: pw.TextAlign.center,
-                              maxLines: 2,
+                            width: 75,
+                            child: pw.Column(
+                              mainAxisSize: pw.MainAxisSize.min,
+                              children: [
+                                pw.Text(
+                                  entry.originalBalance,
+                                  style: PrintStyles.cellTextStyle(),
+                                  textAlign: pw.TextAlign.center,
+                                ),
+                                if (entry.cnyBalance != null)
+                                  pw.Text(
+                                    '(${entry.cnyBalance})',
+                                    style: PrintStyles.cellTextStyle().copyWith(
+                                      fontSize: 7,
+                                      color: PdfColors.grey700,
+                                    ),
+                                    textAlign: pw.TextAlign.center,
+                                  ),
+                              ],
                             )),
                       ],
                     ),

@@ -1145,6 +1145,7 @@
   "verify_account": "Vérifier le compte",
   "unverify_account": "Ne plus vérifier le compte",
   "pdf_client_status": "STATUT CLIENT",
+  "pdf_client_summary": "Résumé du client",
   "pdf_client_information": "INFORMATION CLIENT",
   "pdf_remaining_amount": "MONTANT RESTANT",
   "pdf_date": "DATE",

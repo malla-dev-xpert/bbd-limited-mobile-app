@@ -12,6 +12,7 @@ class PartnerListItem extends StatelessWidget {
   final Function(Partner) onDelete;
   final Function(Partner) onMerge;
   final Function(Partner)? onPartnerUpdated;
+  final Function(Partner)? onPrint;
 
   const PartnerListItem({
     Key? key,
@@ -20,6 +21,7 @@ class PartnerListItem extends StatelessWidget {
     required this.onDelete,
     required this.onMerge,
     this.onPartnerUpdated,
+    this.onPrint,
   }) : super(key: key);
 
   @override
@@ -35,6 +37,20 @@ class PartnerListItem extends StatelessWidget {
 
     return Slidable(
       key: ValueKey(partner.id),
+      startActionPane: onPrint != null
+          ? ActionPane(
+              motion: const DrawerMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) => onPrint!(partner),
+                  backgroundColor: const Color(0xFF1A1E49),
+                  foregroundColor: Colors.white,
+                  icon: Icons.print,
+                  label: AppLocalizations.of(context).translate('print'),
+                ),
+              ],
+            )
+          : null,
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
         children: [

@@ -270,6 +270,7 @@ class _PartnerScreenState extends State<PartnerScreen> {
               onDelete: _deletePartner,
               onMerge: _mergePartner,
               onPartnerUpdated: _updatePartnerInList,
+              onPrint: _showClientSummaryPreview,
             );
           },
         ),
@@ -526,6 +527,34 @@ class _PartnerScreenState extends State<PartnerScreen> {
       );
     } catch (e) {
       if (context.mounted) {
+        showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context).translate('report_generation_error'),
+        );
+        print('Error generating PDF: $e');
+      }
+    }
+  }
+
+  Future<void> _showClientSummaryPreview(Partner partner) async {
+    try {
+      final pdfBytes = await PartnerPrintService.buildMarketFinanceInvoicePdfBytes(partner);
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: PdfPreview(
+              build: (format) => pdfBytes,
+              pdfFileName: 'resume_client_${partner.id}.pdf',
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
         showErrorTopSnackBar(
           context,
           AppLocalizations.of(context).translate('report_generation_error'),

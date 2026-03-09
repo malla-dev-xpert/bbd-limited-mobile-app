@@ -97,6 +97,14 @@ class PrintStyles {
   /// Couleur accent (titres, montants importants) - bleu/teal foncé (#1A1E49), RGB explicite.
   static final PdfColor accentColor = PdfColor(26 / 255, 30 / 255, 73 / 255);
 
+  /// Fond vert clair pour la ligne "Invoice Amount [E]" (Résumé du client).
+  static final PdfColor invoiceAmountHighlight =
+      PdfColor(217 / 255, 242 / 255, 231 / 255);
+
+  /// Fond vert plus foncé pour la ligne "Less: Money Received [F]" (Résumé du client).
+  static final PdfColor moneyReceivedHighlight =
+      PdfColor(180 / 255, 220 / 255, 200 / 255);
+
   /// Style texte cellule (tableau).
   static pw.TextStyle cellTextStyle({double? fontSize}) => pw.TextStyle(
         fontSize: fontSize ?? tableFontSize,

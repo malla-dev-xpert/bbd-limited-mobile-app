@@ -1123,6 +1123,7 @@
   "pdf_status": "状态",
   "pdf_packages": "包裹",
   "pdf_client_status": "客户状态",
+  "pdf_client_summary": "客户摘要",
   "pdf_amount_paid_label": "已付金额",
   "pdf_remaining_amount_label": "剩余金额",
   "pdf_name": "姓名",
