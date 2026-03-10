@@ -1364,6 +1364,7 @@
   "container_add_package_add": "添加选中的包裹",
   "container_add_package_adding": "添加中...",
   "container_add_package_error": "添加包裹时出错",
+  "security_enhanced": "安全增强",
   "expedition_type_title": "运输类型",
   "please_enter_valid_number": "请输入有效数字",
   "choose_departure_port": "选择出发港...",

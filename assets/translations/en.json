@@ -1408,6 +1408,7 @@
   "optional": "(optional)",
   "container_add_package_title": "Add packages to container",
   "container_add_package_cartons": "cartons",
+  "security_enhanced": "Security enhanced",
   "container_add_package_add": "Add selected packages",
   "container_add_package_adding": "Adding...",
   "container_add_package_added": "Packages added successfully",

@@ -1,4 +1,5 @@
 import 'package:bbd_limited/components/confirm_btn.dart';
+import 'package:bbd_limited/components/text_input.dart';
 import 'package:bbd_limited/core/services/auth_services.dart';
 import 'package:bbd_limited/core/localization/app_localizations.dart';
 import 'package:bbd_limited/utils/snackbar_utils.dart';
@@ -86,21 +87,18 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                     onPressed: () async {
                       try {
                         await _authService.logout();
-                        if (mounted) {
-                          // Fermer le dialogue
-                          Navigator.of(dialogContext).pop();
-                          // Naviguer vers la page de connexion
-                          navigator.pushNamedAndRemoveUntil(
-                            '/login',
-                            (route) => false,
-                          );
-                        }
                       } catch (e) {
                         // En cas d'erreur, fermer le dialogue quand même
-                        if (mounted) {
-                          Navigator.of(dialogContext).pop();
-                        }
+                        Navigator.of(dialogContext).pop();
+                        return;
                       }
+                      // Fermer le dialogue
+                      Navigator.of(dialogContext).pop();
+                      // Naviguer vers la page de connexion
+                      navigator.pushNamedAndRemoveUntil(
+                        '/login',
+                        (route) => false,
+                      );
                     },
                     child: Text(localizations.translate('understood')),
                   ),
@@ -166,29 +164,21 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                 ],
               ),
               const SizedBox(height: 20),
-              TextFormField(
+              buildTextField(
                 controller: _currentPasswordController,
-                obscureText: _obscureCurrentPassword,
-                decoration: InputDecoration(
-                  labelText: localizations.translate('current_password'),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                label: localizations.translate('current_password'),
+                icon: Icons.lock,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureCurrentPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                   ),
-                  prefixIcon: const Icon(
-                    Icons.lock,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureCurrentPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureCurrentPassword = !_obscureCurrentPassword;
-                      });
-                    },
-                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureCurrentPassword = !_obscureCurrentPassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -199,29 +189,21 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              buildTextField(
                 controller: _newPasswordController,
-                obscureText: _obscureNewPassword,
-                decoration: InputDecoration(
-                  labelText: localizations.translate('new_password'),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                label: localizations.translate('new_password'),
+                icon: Icons.lock,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNewPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                   ),
-                  prefixIcon: const Icon(
-                    Icons.lock,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureNewPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureNewPassword = !_obscureNewPassword;
-                      });
-                    },
-                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureNewPassword = !_obscureNewPassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -234,29 +216,21 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              buildTextField(
                 controller: _confirmPasswordController,
-                obscureText: _obscureConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: localizations.translate('confirm_new_password'),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                label: localizations.translate('confirm_new_password'),
+                icon: Icons.lock,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                   ),
-                  prefixIcon: const Icon(
-                    Icons.lock,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
