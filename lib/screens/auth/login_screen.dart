@@ -36,6 +36,7 @@ class _LoginViewState extends State<_LoginView> {
     final controller = context.watch<LoginController>();
     final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
+    final isTablet = DeviceBreakpoints.isTablet(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -104,146 +105,182 @@ class _LoginViewState extends State<_LoginView> {
                 ),
                 // Card blanche
                 ResponsiveContainer(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 32, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 24,
-                          offset: Offset(0, 8),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        // Réduit la largeur maximale sur tablette pour avoir plus de marge
+                        maxWidth: isTablet
+                            ? MediaQuery.of(context).size.width * 0.5
+                            : double.infinity,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 32,
+                          horizontal: 24,
                         ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          buildTextField(
-                            controller: controller.usernameController,
-                            label: "Nom d'utilisateur",
-                            icon: Icons.person_outline,
-                            validator: (v) => v == null || v.isEmpty
-                                ? "Veuillez entrer votre nom d'utilisateur"
-                                : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: controller.passwordController,
-                            obscureText: _obscurePassword,
-                            validator: (v) => v == null || v.isEmpty
-                                ? "Veuillez entrer votre mot de passe"
-                                : null,
-                            decoration: InputDecoration(
-                              labelText: "Mot de passe",
-                              prefixIcon: const Icon(Icons.lock_outline,
-                                  color: Colors.black),
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.black,
-                                ),
-                                onPressed: () => setState(
-                                    () => _obscurePassword = !_obscurePassword),
-                              ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(32),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 24,
+                              offset: Offset(0, 8),
                             ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () => Navigator.pushNamed(
-                                  context, '/forgot-password'),
-                              child: const Text("Mot de passe oublié ?",
-                                  style: TextStyle(color: Color(0xFF7F78AF))),
-                            ),
-                          ),
-                          if (controller.errorMessage != null)
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: controller.errorMessage!
-                                        .contains('désactivé')
-                                    ? Colors.orange[50]
-                                    : Colors.red[50],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: controller.errorMessage!
-                                          .contains('désactivé')
-                                      ? Colors.orange[200]!
-                                      : Colors.red[200]!,
-                                ),
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              buildTextField(
+                                controller: controller.usernameController,
+                                label: "Nom d'utilisateur",
+                                icon: Icons.person_outline,
+                                validator: (v) => v == null || v.isEmpty
+                                    ? "Veuillez entrer votre nom d'utilisateur"
+                                    : null,
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    controller.errorMessage!
-                                            .contains('désactivé')
-                                        ? Icons.warning_amber_rounded
-                                        : Icons.error_outline,
-                                    color: controller.errorMessage!
-                                            .contains('désactivé')
-                                        ? Colors.orange[600]
-                                        : Colors.red[600],
-                                    size: 20,
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: controller.passwordController,
+                                obscureText: _obscurePassword,
+                                validator: (v) => v == null || v.isEmpty
+                                    ? "Veuillez entrer votre mot de passe"
+                                    : null,
+                                decoration: InputDecoration(
+                                  labelText: "Mot de passe",
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: Colors.black,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      controller.errorMessage!,
-                                      style: AppTextSize.bodyStyle(context,
-                                          color: controller.errorMessage!
-                                                  .contains('désactivé')
-                                              ? Colors.orange[700]
-                                              : Colors.red[700],
-                                          fontWeight: FontWeight.w500),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey.shade300,
                                     ),
                                   ),
-                                ],
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          const SizedBox(height: 8),
-                          RoundedButton(
-                            text: "Connexion",
-                            loading: controller.isLoading,
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                final success = await controller.login();
-                                if (success && context.mounted) {
-                                  Navigator.pushReplacementNamed(
-                                      context, '/welcome');
-                                }
-                              }
-                            },
+                              // Align(
+                              //   alignment: Alignment.centerRight,
+                              //   child: TextButton(
+                              //     onPressed: () => Navigator.pushNamed(
+                              //       context,
+                              //       '/forgot-password',
+                              //     ),
+                              //     child: const Text(
+                              //       "Mot de passe oublié ?",
+                              //       style: TextStyle(color: Color(0xFF7F78AF)),
+                              //     ),
+                              //   ),
+                              // ),
+                              const SizedBox(height: 24),
+                              if (controller.errorMessage != null)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: controller.errorMessage!
+                                            .contains('désactivé')
+                                        ? Colors.orange[50]
+                                        : Colors.red[50],
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: controller.errorMessage!
+                                              .contains('désactivé')
+                                          ? Colors.orange[200]!
+                                          : Colors.red[200]!,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        controller.errorMessage!
+                                                .contains('désactivé')
+                                            ? Icons.warning_amber_rounded
+                                            : Icons.error_outline,
+                                        color: controller.errorMessage!
+                                                .contains('désactivé')
+                                            ? Colors.orange[600]
+                                            : Colors.red[600],
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          controller.errorMessage!,
+                                          style: AppTextSize.bodyStyle(
+                                            context,
+                                            color: controller.errorMessage!
+                                                    .contains('désactivé')
+                                                ? Colors.orange[700]
+                                                : Colors.red[700],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              const SizedBox(height: 8),
+                              RoundedButton(
+                                text: "Connexion",
+                                loading: controller.isLoading,
+                                onPressed: () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    final success = await controller.login();
+                                    if (success && context.mounted) {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        '/welcome',
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "Vous n'avez pas de compte ?",
+                                style: AppTextSize.bodyStyle(
+                                  context,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                textAlign: TextAlign.center,
+                                'Veuillez contacter l\'administrateur pour toute assistance.',
+                                style: AppTextSize.bodyStyle(
+                                  context,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          Text("Vous n'avez pas de compte ?",
-                              style: AppTextSize.bodyStyle(context,
-                                  color: Colors.black54)),
-                          const SizedBox(height: 8),
-                          Text(
-                            textAlign: TextAlign.center,
-                            'Veuillez contacter l\'administrateur pour toute assistance.',
-                            style: AppTextSize.bodyStyle(context,
-                                color: Colors.grey, fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
