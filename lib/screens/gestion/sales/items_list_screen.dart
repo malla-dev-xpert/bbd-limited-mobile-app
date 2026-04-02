@@ -179,7 +179,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
   }
 
   String _formatDate(DateTime? d) {
-    if (d == null) return '—';
+    if (d == null) return AppLocalizations.of(context).translate('not_available');
     return DateFormat('dd/MM/yyyy').format(d);
   }
 
@@ -286,7 +286,8 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                         Text(
                           quantityTotal != null
                               ? quantityTotal.toString()
-                              : '—',
+                              : AppLocalizations.of(context)
+                                  .translate('not_available'),
                           style: AppTextSize.subtitleStyle(context,
                               color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.bold),

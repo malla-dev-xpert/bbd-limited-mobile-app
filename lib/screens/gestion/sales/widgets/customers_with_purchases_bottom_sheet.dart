@@ -152,7 +152,8 @@ class _CustomersWithPurchasesBottomSheetState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Clients avec achats',
+                      AppLocalizations.of(context)
+                          .translate('customers_with_purchases'),
                       style: AppTextSize.headlineStyle(context,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1A1E49)),
@@ -168,7 +169,8 @@ class _CustomersWithPurchasesBottomSheetState
                   controller: _searchController,
                   onChanged: _filterCustomers,
                   decoration: InputDecoration(
-                    hintText: 'Rechercher un client...',
+                    hintText:
+                        AppLocalizations.of(context).translate('search_customer'),
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),

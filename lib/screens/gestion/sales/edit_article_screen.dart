@@ -379,7 +379,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                             Expanded(
                               child: _readOnlyField(
                                 controller: _totalWeightController,
-                                label: '${loc.translate('weight')} total',
+                                label: loc.translate('edit_item_total_weight'),
                                 hint: loc.translate('calculated_automatically'),
                               ),
                             ),
@@ -387,14 +387,14 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'CBN / CBM (m³)',
+                          loc.translate('edit_item_cbn_section_title'),
                           style: AppTextSize.bodyStyle(context,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[700]),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Dimensions en centimètres',
+                          loc.translate('edit_item_dimensions_cm'),
                           style: AppTextSize.captionStyle(context, color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 8),
@@ -403,7 +403,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                             Expanded(
                               child: buildTextField(
                                 controller: _lengthController,
-                                label: 'Longueur (cm)',
+                                label: loc.translate('edit_item_length_cm'),
                                 icon: Icons.straighten,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
@@ -414,7 +414,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                             Expanded(
                               child: buildTextField(
                                 controller: _widthController,
-                                label: 'Largeur (cm)',
+                                label: loc.translate('edit_item_width_cm'),
                                 icon: Icons.straighten,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
@@ -425,7 +425,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                             Expanded(
                               child: buildTextField(
                                 controller: _heightController,
-                                label: 'Hauteur (cm)',
+                                label: loc.translate('edit_item_height_cm'),
                                 icon: Icons.straighten,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
@@ -440,7 +440,8 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                             Expanded(
                               child: _readOnlyField(
                                 controller: _cbnIndividualController,
-                                label: 'CBN (individuel) m³',
+                                label:
+                                    loc.translate('edit_item_cbn_individual'),
                                 hint: loc.translate('calculated_automatically'),
                               ),
                             ),
@@ -448,7 +449,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                             Expanded(
                               child: _readOnlyField(
                                 controller: _cbnTotalController,
-                                label: 'CBN total m³',
+                                label: loc.translate('edit_item_cbn_total'),
                                 hint: loc.translate('calculated_automatically'),
                               ),
                             ),
@@ -500,7 +501,7 @@ class _EditArticleScreenState extends State<EditArticleScreen> {
                                 label:
                                     loc.translate('purchase_history_edit_save'),
                                 isLoading: _isSaving,
-                                subLabel: 'Modification...',
+                                subLabel: loc.translate('updating'),
                                 onPressed: _save,
                               ),
                             ),

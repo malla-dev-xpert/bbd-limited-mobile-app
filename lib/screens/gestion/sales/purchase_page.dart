@@ -1061,7 +1061,9 @@ class _PurchasePageState extends State<PurchasePage> {
                                 _buildDetailItem(
                                     AppLocalizations.of(context)
                                         .translate('invoice_number'),
-                                    item['invoiceNumber']?.toString() ?? 'N/A'),
+                                    item['invoiceNumber']?.toString() ??
+                                        AppLocalizations.of(context)
+                                            .translate('not_available')),
                                 _buildDetailItem(
                                     AppLocalizations.of(context)
                                         .translate('sales_rate'),

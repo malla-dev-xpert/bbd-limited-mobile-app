@@ -191,7 +191,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   }
 
   String _formatDate(DateTime? d) {
-    if (d == null) return '—';
+    if (d == null) return AppLocalizations.of(context).translate('not_available');
     return DateFormat('dd/MM/yyyy').format(d);
   }
 
@@ -484,8 +484,27 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                   endActionPane: canEditAchat
                                       ? ActionPane(
                                           motion: const DrawerMotion(),
-                                          extentRatio: 0.25,
+                                          extentRatio: 0.50,
                                           children: [
+                                            SlidableAction(
+                                              onPressed: (_) async {
+                                                final confirmed =
+                                                    await _showConfirmAllDeliveryDialog(
+                                                        achat);
+                                                if (confirmed && mounted) {
+                                                  await _confirmAllItemsDelivery(
+                                                      achat);
+                                                }
+                                              },
+                                              backgroundColor:
+                                                  _getPendingItems(achat).isNotEmpty
+                                                      ? const Color(0xFF2E7D32)
+                                                      : Colors.grey[350]!,
+                                              foregroundColor: Colors.white,
+                                              icon: Icons.local_shipping,
+                                              label: AppLocalizations.of(context)
+                                                  .translate('purchase_history_deliver_all_action'),
+                                            ),
                                             SlidableAction(
                                               onPressed: (_) =>
                                                   _showEditDateDialog(achat),
@@ -539,7 +558,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
+                                                          '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? AppLocalizations.of(context).translate('not_available')}',
                                                           style: AppTextSize
                                                               .titleStyle(
                                                                   context,
@@ -923,7 +942,7 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? 'N/A'}',
+              '${AppLocalizations.of(context).translate('purchase_number')} : ${achat.id ?? AppLocalizations.of(context).translate('not_available')}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -1345,6 +1364,202 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
           context,
           AppLocalizations.of(context)
               .translate('purchase_history_error_during_confirmation'));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  List<Items> _getPendingItems(Achat achat) {
+    if (achat.items == null) return const <Items>[];
+    return achat.items!
+        .where((item) => item.status != Status.RECEIVED)
+        .toList(growable: false);
+  }
+
+  String _mapBulkDeliveryErrorMessage({
+    required String? apiMessage,
+    required List<String>? apiErrors,
+    required AppLocalizations loc,
+  }) {
+    final bucket = <String>[
+      if (apiMessage != null) apiMessage,
+      ...?apiErrors,
+    ].join(' | ').toUpperCase();
+
+    if (bucket.contains('NO_ITEMS_PROVIDED')) {
+      return loc.translate('purchase_history_bulk_no_items_to_deliver');
+    }
+    if (bucket.contains('ACHAT_ID_REQUIRED')) {
+      return loc.translate('purchase_history_bulk_achat_id_required');
+    }
+    if (bucket.contains('NO_ITEMS_FOR_ACHAT')) {
+      return loc.translate('purchase_history_bulk_no_items_for_achat');
+    }
+    if (bucket.contains('ITEM_ALREADY_RECEIVED')) {
+      return loc.translate('purchase_history_bulk_item_already_received');
+    }
+    if (bucket.contains('ACHAT NON TROUVE')) {
+      return loc.translate('purchase_history_bulk_achat_not_found');
+    }
+    if (bucket.contains('NOT_FOUND') ||
+        bucket.contains('ITEM NOT FOUND') ||
+        bucket.contains('USER NOT FOUND')) {
+      return loc.translate('purchase_history_bulk_resource_not_found');
+    }
+    if (bucket.contains('QUANTITY_NEGATIVE') ||
+        bucket.contains('CARTON_NEGATIVE') ||
+        bucket.contains('QUANTITY_PER_CARTON_NEGATIVE')) {
+      return loc.translate('purchase_history_bulk_invalid_quantities');
+    }
+    if (bucket.contains('NO INTERNET CONNECTION') ||
+        bucket.contains('NETWORK ERROR')) {
+      return loc.translate('purchase_history_bulk_no_internet');
+    }
+    if (bucket.contains('INVALID SERVER RESPONSE FORMAT')) {
+      return loc.translate('purchase_history_bulk_invalid_response');
+    }
+    if (bucket.contains('SERVER_ERROR')) {
+      return loc.translate('purchase_history_bulk_server_error');
+    }
+    return apiMessage?.trim().isNotEmpty == true
+        ? apiMessage!
+        : loc.translate('purchase_history_confirmation_error');
+  }
+
+  Future<bool> _showConfirmAllDeliveryDialog(Achat achat) async {
+    final pendingCount = _getPendingItems(achat).length;
+    if (pendingCount == 0) {
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('purchase_history_bulk_all_already_delivered'));
+      return false;
+    }
+
+    final shouldConfirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(AppLocalizations.of(context)
+            .translate('purchase_history_bulk_confirm_title')),
+        content: Text(
+          AppLocalizations.of(context)
+              .translate('purchase_history_bulk_confirm_message')
+              .replaceAll('{count}', pendingCount.toString()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(AppLocalizations.of(context).translate('cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              AppLocalizations.of(context)
+                  .translate('purchase_history_deliver_all_action'),
+              style: TextStyle(color: Color(0xFF2E7D32)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return shouldConfirm == true;
+  }
+
+  Future<void> _confirmAllItemsDelivery(Achat achat) async {
+    if (isLoading) return;
+
+    final pendingItems = _getPendingItems(achat);
+    if (pendingItems.isEmpty) {
+      showErrorTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('purchase_history_bulk_all_already_delivered'));
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final user = await AuthService().getUserInfo();
+      if (user == null) {
+        showErrorTopSnackBar(
+            context, AppLocalizations.of(context).translate('user_not_connected'));
+        return;
+      }
+
+      final achatId = achat.id;
+      if (achatId == null) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_bulk_achat_id_required_short'));
+        return;
+      }
+
+      final pendingIds = pendingItems.map((e) => e.id).whereType<int>().toList();
+      if (pendingIds.isEmpty) {
+        showErrorTopSnackBar(
+            context,
+            AppLocalizations.of(context)
+                .translate('purchase_history_bulk_no_valid_items'));
+        return;
+      }
+
+      final result = await _achatsService.confirmAllItemsDelivery(
+        achatId: achatId,
+        userId: user.id,
+      );
+
+      if (result.isSuccess) {
+        setState(() {
+          for (final currentAchat in _achats) {
+            if (currentAchat.id == achat.id && currentAchat.items != null) {
+              for (final item in currentAchat.items!) {
+                if (pendingIds.contains(item.id)) {
+                  item.status = Status.RECEIVED;
+                }
+              }
+              _updateAchatStatusFromItems(currentAchat);
+            }
+          }
+          for (final currentAchat in _filteredAchats) {
+            if (currentAchat.id == achat.id && currentAchat.items != null) {
+              for (final item in currentAchat.items!) {
+                if (pendingIds.contains(item.id)) {
+                  item.status = Status.RECEIVED;
+                }
+              }
+              _updateAchatStatusFromItems(currentAchat);
+            }
+          }
+        });
+
+        showSuccessTopSnackBar(
+          context,
+          AppLocalizations.of(context)
+              .translate('purchase_history_bulk_success')
+              .replaceAll('{count}', pendingIds.length.toString()),
+        );
+      } else {
+        final friendlyError = _mapBulkDeliveryErrorMessage(
+          apiMessage: result.errorMessage,
+          apiErrors: result.errors,
+          loc: AppLocalizations.of(context),
+        );
+        showErrorTopSnackBar(context, friendlyError);
+      }
+    } catch (_) {
+      showErrorTopSnackBar(
+        context,
+        AppLocalizations.of(context)
+            .translate('purchase_history_bulk_unexpected_error'),
+      );
     } finally {
       setState(() {
         isLoading = false;

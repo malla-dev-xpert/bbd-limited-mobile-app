@@ -123,7 +123,7 @@ class _CustomersWithPurchasesScreenState
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
-          'Clients avec achats',
+          AppLocalizations.of(context).translate('customers_with_purchases'),
           style: AppTextSize.titleStyle(context, color: Colors.white),
         ),
         backgroundColor: _primary,
@@ -139,7 +139,8 @@ class _CustomersWithPurchasesScreenState
                 controller: _searchController,
                 onChanged: _filterCustomers,
                 decoration: InputDecoration(
-                  hintText: 'Rechercher un client...',
+                  hintText:
+                      AppLocalizations.of(context).translate('search_customer'),
                   prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.md),

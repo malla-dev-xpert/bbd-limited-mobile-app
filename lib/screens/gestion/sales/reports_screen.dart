@@ -310,12 +310,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           // Clients les plus actifs
           _buildSection(
             key: 'customers',
-            title: 'Clients les plus actifs',
+            title: AppLocalizations.of(context).translate('top_customers'),
             icon: Icons.people,
             iconColor: Colors.blue,
             content: reportsState.topCustomers.isNotEmpty
                 ? _buildCustomersList(reportsState.topCustomers)
-                : _buildEmptyState('Aucun client actif disponible'),
+                : _buildEmptyState(
+                    AppLocalizations.of(context).translate('no_customers_period')),
           ),
 
           const SizedBox(height: 16),
@@ -323,12 +324,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           // Fournisseurs les plus sollicités
           _buildSection(
             key: 'suppliers',
-            title: 'Fournisseurs les plus sollicités',
+            title: AppLocalizations.of(context).translate('top_suppliers'),
             icon: Icons.business,
             iconColor: Colors.orange,
             content: reportsState.topSuppliers.isNotEmpty
                 ? _buildSuppliersList(reportsState.topSuppliers)
-                : _buildEmptyState('Aucun fournisseur sollicité disponible'),
+                : _buildEmptyState(
+                    AppLocalizations.of(context).translate('no_suppliers_period')),
           ),
 
           const SizedBox(height: 16),
@@ -336,12 +338,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           // Produits les plus achetés
           _buildSection(
             key: 'products',
-            title: 'Produits les plus achetés',
+            title: AppLocalizations.of(context).translate('top_products'),
             icon: Icons.shopping_bag,
             iconColor: Colors.green,
             content: reportsState.topProducts.isNotEmpty
                 ? _buildProductsList(reportsState.topProducts)
-                : _buildEmptyState('Aucun produit acheté disponible'),
+                : _buildEmptyState(
+                    AppLocalizations.of(context).translate('no_products_period')),
           ),
 
           const SizedBox(height: 16),
@@ -349,25 +352,31 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           // Ports (Envoi / Réception)
           _buildSection(
             key: 'harbors',
-            title: 'Ports les plus utilisés',
+            title: AppLocalizations.of(context).translate('top_harbors'),
             icon: Icons.local_shipping,
             iconColor: Colors.purple,
             content: Column(
               children: [
                 // Ports d'envoi
                 if (reportsState.shippingHarbors.isNotEmpty) ...[
-                  _buildSubSectionTitle('Ports d\'envoi', Icons.send),
+                  _buildSubSectionTitle(
+                      AppLocalizations.of(context)
+                          .translate('reports_shipping_harbors'),
+                      Icons.send),
                   const SizedBox(height: 12),
                   _buildHarborsList(reportsState.shippingHarbors,
                       isShipping: true),
                   const SizedBox(height: 24),
                 ] else if (reportsState.receivingHarbors.isEmpty)
-                  _buildEmptyState('Aucun port utilisé disponible'),
+                  _buildEmptyState(
+                      AppLocalizations.of(context).translate('no_harbors_period')),
 
                 // Ports de réception
                 if (reportsState.receivingHarbors.isNotEmpty) ...[
                   _buildSubSectionTitle(
-                      'Ports de réception', Icons.call_received),
+                      AppLocalizations.of(context)
+                          .translate('reports_receiving_harbors'),
+                      Icons.call_received),
                   const SizedBox(height: 12),
                   _buildHarborsList(reportsState.receivingHarbors,
                       isShipping: false),

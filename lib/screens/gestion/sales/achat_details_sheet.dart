@@ -224,7 +224,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                         Text(
                           quantityTotal != null
                               ? quantityTotal.toString()
-                              : '—',
+                              : AppLocalizations.of(context)
+                                  .translate('not_available'),
                           style: AppTextSize.subtitleStyle(
                             context,
                             fontWeight: FontWeight.bold,
@@ -561,7 +562,8 @@ class _AchatDetailsSheetState extends State<AchatDetailsSheet> {
                                           .translate(
                                               'purchase_history_edit_save'),
                                       isLoading: isLoading,
-                                      subLabel: 'Modification...',
+                                      subLabel: AppLocalizations.of(context)
+                                          .translate('updating'),
                                       onPressed: () async {
                                         if (isLoading) return;
                                         setState(() {

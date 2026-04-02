@@ -364,7 +364,7 @@ class _CustomerPurchasesPageState extends State<CustomerPurchasesPage> {
   }
 
   String _formatDate(DateTime? d) {
-    if (d == null) return '—';
+    if (d == null) return AppLocalizations.of(context).translate('not_available');
     return DateFormat('dd/MM/yyyy').format(d);
   }
 }
