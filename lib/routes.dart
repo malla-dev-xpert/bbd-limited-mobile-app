@@ -11,6 +11,7 @@ import 'package:bbd_limited/screens/gestion/accounts/account_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/sales_home_screen.dart';
 import 'package:bbd_limited/screens/gestion/sales/purchase_page.dart';
 import 'package:bbd_limited/screens/gestion/sales/items_list_screen.dart';
+import 'package:bbd_limited/screens/gestion/sales/historique_achats_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/cbm_pricing/cbm_pricing_screen.dart';
 import 'package:bbd_limited/screens/gestion/basics/subScreens/carrier/carrier_list_page.dart';
 import 'package:bbd_limited/screens/gestion/profil/privacy_policy_page.dart';
@@ -96,7 +97,13 @@ class Routes {
       case sales:
         return MaterialPageRoute(builder: (_) => const SalesHomeScreen());
       case Routes.itemsList:
-        return MaterialPageRoute(builder: (_) => const ItemsListScreen());
+        final user = AuthService.currentUser;
+        final isEmployeD = AccessControlService().isEmployeD(user);
+        return MaterialPageRoute(
+          builder: (_) => isEmployeD
+              ? const HistoriqueAchatsScreen()
+              : const ItemsListScreen(),
+        );
       case Routes.privacyPolicy:
         return MaterialPageRoute(builder: (_) => const PrivacyPolicyPage());
       case purchase:

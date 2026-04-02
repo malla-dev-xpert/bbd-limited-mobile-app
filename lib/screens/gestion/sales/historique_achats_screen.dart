@@ -477,45 +477,58 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                               itemBuilder: (context, index) {
                                 final achat = _filteredAchats[index];
                                 final user = AuthService.currentUser;
+                                final access = AccessControlService();
+                                final canConfirmDelivery =
+                                    access.canConfirmItemDelivery(user);
                                 final canEditAchat = user != null &&
-                                    !AccessControlService().isEmployeD(user);
+                                    !access.isEmployeD(user);
+                                final actionsCount =
+                                    (canConfirmDelivery ? 1 : 0) +
+                                        (canEditAchat ? 1 : 0);
                                 return Slidable(
                                   key: ValueKey('achat_${achat.id ?? index}'),
-                                  endActionPane: canEditAchat
+                                  endActionPane: actionsCount > 0
                                       ? ActionPane(
                                           motion: const DrawerMotion(),
-                                          extentRatio: 0.50,
+                                          extentRatio:
+                                              actionsCount == 1 ? 0.25 : 0.50,
                                           children: [
-                                            SlidableAction(
-                                              onPressed: (_) async {
-                                                final confirmed =
-                                                    await _showConfirmAllDeliveryDialog(
+                                            if (canConfirmDelivery)
+                                              SlidableAction(
+                                                onPressed: (_) async {
+                                                  final confirmed =
+                                                      await _showConfirmAllDeliveryDialog(
+                                                          achat);
+                                                  if (confirmed && mounted) {
+                                                    await _confirmAllItemsDelivery(
                                                         achat);
-                                                if (confirmed && mounted) {
-                                                  await _confirmAllItemsDelivery(
-                                                      achat);
-                                                }
-                                              },
-                                              backgroundColor:
-                                                  _getPendingItems(achat).isNotEmpty
-                                                      ? const Color(0xFF2E7D32)
-                                                      : Colors.grey[350]!,
-                                              foregroundColor: Colors.white,
-                                              icon: Icons.local_shipping,
-                                              label: AppLocalizations.of(context)
-                                                  .translate('purchase_history_deliver_all_action'),
-                                            ),
-                                            SlidableAction(
-                                              onPressed: (_) =>
-                                                  _showEditDateDialog(achat),
-                                              backgroundColor:
-                                                  const Color(0xFF1976D2),
-                                              foregroundColor: Colors.white,
-                                              icon: Icons.edit_calendar,
-                                              label:
-                                                  AppLocalizations.of(context)
-                                                      .translate('edit_date'),
-                                            ),
+                                                  }
+                                                },
+                                                backgroundColor:
+                                                    _getPendingItems(achat)
+                                                            .isNotEmpty
+                                                        ? const Color(
+                                                            0xFF2E7D32)
+                                                        : Colors.grey[350]!,
+                                                foregroundColor: Colors.white,
+                                                icon: Icons.local_shipping,
+                                                label:
+                                                    AppLocalizations.of(context)
+                                                        .translate(
+                                                            'purchase_history_deliver_all_action'),
+                                              ),
+                                            if (canEditAchat)
+                                              SlidableAction(
+                                                onPressed: (_) =>
+                                                    _showEditDateDialog(achat),
+                                                backgroundColor:
+                                                    const Color(0xFF1976D2),
+                                                foregroundColor: Colors.white,
+                                                icon: Icons.edit_calendar,
+                                                label:
+                                                    AppLocalizations.of(context)
+                                                        .translate('edit_date'),
+                                              ),
                                           ],
                                         )
                                       : null,
