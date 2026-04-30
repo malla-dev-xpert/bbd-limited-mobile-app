@@ -191,7 +191,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
   }
 
   String _formatDate(DateTime? d) {
-    if (d == null) return AppLocalizations.of(context).translate('not_available');
+    if (d == null)
+      return AppLocalizations.of(context).translate('not_available');
     return DateFormat('dd/MM/yyyy').format(d);
   }
 
@@ -480,8 +481,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                 final access = AccessControlService();
                                 final canConfirmDelivery =
                                     access.canConfirmItemDelivery(user);
-                                final canEditAchat = user != null &&
-                                    !access.isEmployeD(user);
+                                final canEditAchat =
+                                    user != null && !access.isEmployeD(user);
                                 final actionsCount =
                                     (canConfirmDelivery ? 1 : 0) +
                                         (canEditAchat ? 1 : 0);
@@ -512,10 +513,10 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                         : Colors.grey[350]!,
                                                 foregroundColor: Colors.white,
                                                 icon: Icons.local_shipping,
-                                                label:
-                                                    AppLocalizations.of(context)
-                                                        .translate(
-                                                            'purchase_history_deliver_all_action'),
+                                                label: AppLocalizations.of(
+                                                        context)
+                                                    .translate(
+                                                        'purchase_history_deliver_all_action'),
                                               ),
                                             if (canEditAchat)
                                               SlidableAction(
@@ -794,30 +795,35 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
                                                       MainAxisAlignment
                                                           .spaceBetween,
                                                   children: [
-                                                    Text(
-                                                      AppLocalizations.of(
-                                                              context)
-                                                          .translate(
-                                                              'purchase_history_total_amount'),
-                                                      style: AppTextSize
-                                                          .subtitleStyle(
-                                                              context,
-                                                              color: Colors
-                                                                  .grey[600],
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500),
+                                                    Expanded(
+                                                      child: Text(
+                                                        AppLocalizations.of(
+                                                                context)
+                                                            .translate(
+                                                                'purchase_history_total_amount'),
+                                                        style: AppTextSize
+                                                            .subtitleStyle(
+                                                                context,
+                                                                color: Colors
+                                                                    .grey[600],
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500),
+                                                      ),
                                                     ),
-                                                    Text(
-                                                      '${_formatAmount(achat.montantTotal)} ¥',
-                                                      style: AppTextSize
-                                                          .headlineStyle(
-                                                              context,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: const Color(
-                                                                  0xFF1A1E49)),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${_formatAmount(achat.montantTotal)} ¥',
+                                                        style: AppTextSize
+                                                            .subtitleStyle(
+                                                                context,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: const Color(
+                                                                    0xFF1A1E49)),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -1501,8 +1507,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
     try {
       final user = await AuthService().getUserInfo();
       if (user == null) {
-        showErrorTopSnackBar(
-            context, AppLocalizations.of(context).translate('user_not_connected'));
+        showErrorTopSnackBar(context,
+            AppLocalizations.of(context).translate('user_not_connected'));
         return;
       }
 
@@ -1515,7 +1521,8 @@ class _HistoriqueAchatsScreenState extends State<HistoriqueAchatsScreen> {
         return;
       }
 
-      final pendingIds = pendingItems.map((e) => e.id).whereType<int>().toList();
+      final pendingIds =
+          pendingItems.map((e) => e.id).whereType<int>().toList();
       if (pendingIds.isEmpty) {
         showErrorTopSnackBar(
             context,
