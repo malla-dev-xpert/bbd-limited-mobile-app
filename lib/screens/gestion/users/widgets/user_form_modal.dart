@@ -58,11 +58,14 @@ class _UserFormModalState extends State<UserFormModal> {
       final roles = await _roleServices.getAllRoles();
       setState(() {
         _roles = roles;
-        if (widget.user != null && widget.user!.roleName != null) {
-          _selectedRole = _roles.firstWhere(
-            (role) => role.name == widget.user!.roleName,
-            orElse: () => _roles.first,
-          );
+        if (widget.user != null) {
+          final userRoleName = widget.user!.roleName ?? widget.user!.role?.name;
+          if (userRoleName != null) {
+            _selectedRole = _roles.firstWhere(
+              (role) => role.name.toLowerCase() == userRoleName.toLowerCase(),
+              orElse: () => _roles.first,
+            );
+          }
         }
       });
     } catch (e) {
@@ -80,8 +83,12 @@ class _UserFormModalState extends State<UserFormModal> {
         try {
           _selectedBranch = Branch.fromName(widget.user!.branchName!);
         } catch (e) {
-          // Si le nom de branche n'est pas trouvé, utiliser la première branche
-          _selectedBranch = _branches.first;
+          try {
+            _selectedBranch = Branch.fromCode(widget.user!.branchName!);
+          } catch (e2) {
+            // Si le nom et le code de la branche ne sont pas trouvés, utiliser la première branche
+            _selectedBranch = _branches.first;
+          }
         }
       }
     });
